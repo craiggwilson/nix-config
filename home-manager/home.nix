@@ -1,4 +1,4 @@
-{ lib, username, homeDirectory, pkgsStable, ... }: {
+{ lib, username, homeDirectory, repoDirectory, pkgsStable, ... }: {
 	imports = [
 		./features/aws
 		./features/azure
@@ -24,8 +24,6 @@
 		./features/xclip
 		#./features/wezterm
 		./features/zoxide
-
-		../private/home-manager
 	] ++ lib.optional (builtins.pathExists ../private/home-manager/default.nix) ../private/home-manager;
 
 	targets.genericLinux.enable = true;
@@ -38,7 +36,9 @@
 		stateVersion = "23.05";
 
 		shellAliases = {
-			start="xdg-open";
+			start = "xdg-open";
+			nix-repo = "git -C ${repoDirectory}";
+			hm-switch = "nix-repo add -A . && home-manager switch --flake ${repoDirectory}?submodules=1";
 		};
 	};
 }
