@@ -1,0 +1,19 @@
+parent = "sub-template.toml"
+
+[[keys]]
+    index = 6
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/Stream-On.png"
+    [keys.action]
+        exec = "nmcli con up 'MongoDB - New York'"
+
+[[keys]]
+    index = 8
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/Stream-Off.png"
+    [keys.action]
+        exec = "nmcli con down 'MongoDB - New York'"

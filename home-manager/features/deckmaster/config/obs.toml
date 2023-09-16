@@ -1,0 +1,57 @@
+parent = "sub-template.toml"
+
+[[keys]]
+    index = 3
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/App-Power-On.png"
+        [keys.action]
+            exec = "flatpak run com.obsproject.Studio"
+
+
+[[keys]]
+    index = 4
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/App-Power-Off.png"
+        [keys.action]
+            exec = "flatpak kill com.obsproject.Studio"
+
+[[keys]]
+    index = 6
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/Scene-1-On.png"
+    [keys.action]
+        exec = "obs-cmd scene scene-name DroidCam"
+
+[[keys]]
+    index = 7
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/Scene-2-On.png"
+    [keys.action]
+        exec = "obs-cmd scene scene-name WebCam"
+
+
+[[keys]]
+    index = 13
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/Record-On.png"
+    [keys.action]
+        exec = "obs-cmd virtualcam start"
+
+[[keys]]
+    index = 14
+    [keys.widget]
+        id = "button"
+        [keys.widget.config]
+            icon = "assets/Record-Off.png"
+    [keys.action]
+        exec = "obs-cmd virtualcam stop"
