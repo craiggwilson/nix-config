@@ -10,24 +10,12 @@
 
   boot = {
     initrd = {
-        availableKernelModules = [ "ahci" "xhci_pci" "virtio_pci" "sr_mod" "virtio_blk" ];
-        kernelModules = [ ];
+      availableKernelModules = [ "ahci" "xhci_pci" "virtio_pci" "virtio_scsi" "sr_mod" "virtio_blk" ];
+      kernelModules = [ ];
     };
     kernelModules = [ "kvm-intel" ];
     extraModulePackages = [ ];
-
-    loader.grub = {
-        enable = true;
-        version = 2;
-        device = "/dev/vda";
-    }; 
   };
 
-  fileSystems."/" ={ 
-    device = "/dev/vda1";
-    fsType = "ext4";
-  };
-
-  networking.useDHCP = lib.mkDefault true;
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }

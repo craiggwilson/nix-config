@@ -1,9 +1,44 @@
-## Manual Steps
+## Getting Started
 
-### Install 1Password
+### Install Git
 
 ```
+nix-env -iA nixos.git
+```
 
+### Clone Nix Config
+
+```
+git clone https://github.com/craiggwilson/nix-config
+```
+
+### Partitioning
+```
+sudo nix --extra-experimental-features nix-commands --extra-experimental-features flakes run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#playground
+```
+
+### Install NixOS
+
+```
+nix-shell -p git
+
+git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
+
+sudo nixos-install --impure --flake /tmp/nix-config#playground
+```
+
+### Rebuild and Switch
+
+```
+sudo nixos-rebuild switch --flake .#playground
+```
+
+## Manual Steps
+
+### Setup Onedrive
+
+```
+onedrive --resync
 ```
 
 ### Add Streamdeck into the system (Ubuntu)
