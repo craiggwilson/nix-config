@@ -2,62 +2,67 @@
   description = "Craig's Nix Flake";
 
   inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     home-manager = {
     	url = "github:nix-community/home-manager";	
-    	inputs.nixpkgs.follows = "nixpkgs-unstable";
+    	inputs.nixpkgs.follows = "nixpkgs";
     };
     disko.url = "github:nix-community/disko";
-    disko.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = {nixpkgs-stable, nixpkgs-unstable, home-manager, disko, ...}: 
+  outputs = {nixpkgs, nixpkgs-stable, home-manager, disko, ...}: 
   let
-    system = "x86_64-linux";
-    username = "craig";
+    hosts = [{
+      name = "playground";
+      system = "x86_64-linux";
+      users = [ "craig" ];
+    }];
 
-    pkgs = import nixpkgs-unstable {
+    forAllHosts = f: builtins.listToAttrs (builtins.map (host: { name = host.name; value = f host; }) hosts);
+
+    pkgsForSystem = system: import nixpkgs {
       inherit system;
       config.allowUnfree = true;
-      overlays = [ 
-        # This overlay allows the use of pkgs.stable.<package name>.
-        (final: prev: {
-          stable = nixpkgs-stable.legacyPackages.${prev.system};
-        }) 
+
+      # Allows the use of stable packages with pkgs.stable.<package name>.
+      overlays =[ 
+        (final: prev: { stable = nixpkgs-stable.legacyPackages.${prev.system}; }) 
       ];
     };
 
-    # I use mkOutOfStoreSymlink to link back to the repository for certain configuration that _must_ be mutable.
-    # As such, I need the repo directory that isn't accessible at runtime due to how flakes work.
-    extraSpecialArgs = { 
-      repoDirectory = "/home/${username}/Projects/github.com/craiggwilson/nix-config";
-    };
   in {
-    nixosConfigurations = {
-      playground = nixpkgs-unstable.lib.nixosSystem {
-        inherit system;
-        modules = [ 
-          ./hosts/playground/configuration.nix 
-          disko.nixosModules.disko
-          ./disks/single-disk-full-size-btrfs.nix {
-            _module.args.disks = ["/dev/vda"];
-          }
-          home-manager.nixosModules.home-manager {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = extraSpecialArgs;
-            home-manager.users.${username} = import ./users/${username}/nixos-home.nix;
-          }      
-        ];
-      };
-    };
- 
+
+    nixosConfigurations = forAllHosts (host:
+      let
+        forAllUsers = nixpkgs.lib.genAttrs host.users;
+      in nixpkgs.lib.nixosSystem {
+          system = host.system;
+          pkgs = pkgsForSystem host.system;
+          modules = [ 
+            ./hosts/${host.name}/configuration.nix 
+            disko.nixosModules.disko
+            ./hosts/${host.name}/disco.nix
+            home-manager.nixosModules.home-manager {
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = {
+                repoDirectory = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+              };
+              home-manager.users = forAllUsers (username: import ./users/${username}/nixos-home.nix);
+            }
+          ];
+        }
+      );
+
     homeConfigurations = {
-      ${username} = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = extraSpecialArgs;
-	      modules = [ ./users/${username}/generic-home.nix ];
+      craig = home-manager.lib.homeManagerConfiguration {
+        pkgs = pkgsForSystem "x86_64-linux";
+        extraSpecialArgs = {
+          repoDirectory = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+        };
+	      modules = [ ./users/craig/generic-home.nix ];
       };
     };
   };

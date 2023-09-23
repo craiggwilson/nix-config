@@ -1,7 +1,7 @@
 { disks, ...}: {
   disko.devices.disk.main = {
     type = "disk";
-    device = builtins.elemAt disks 0;
+    device = "/dev/vda";
     content = {
       type = "table";
       format = "gpt";
