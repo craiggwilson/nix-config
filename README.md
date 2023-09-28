@@ -10,6 +10,7 @@ nix-env -iA nixos.git
 
 ```
 git clone https://github.com/craiggwilson/nix-config
+
 ```
 
 ### Partitioning
@@ -27,8 +28,16 @@ git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
 sudo nixos-install --impure --flake /tmp/nix-config#playground
 ```
 
-### Rebuild and Switch
+After reboot
 
+```
+mkdir -p ~/Projects/github.com/craiggwilson
+cd ~/Projects/github.com/craiggwilson
+git submodule update --init --recursive
+nix-config-switch
+```
+
+### Rebuild and Switch
 ```
 sudo nixos-rebuild switch --flake .#playground
 ```

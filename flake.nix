@@ -8,23 +8,37 @@
     	url = "github:nix-community/home-manager";	
     	inputs.nixpkgs.follows = "nixpkgs";
     };
-    disko.url = "github:nix-community/disko";
-    disko.inputs.nixpkgs.follows = "nixpkgs";
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
-  outputs = {nixpkgs, nixpkgs-stable, home-manager, disko, ...}: 
+  outputs = {nixpkgs, nixpkgs-stable, nixos-hardware, home-manager, disko, ...}: 
   let
     hosts = [{
-      name = "playground";
-      system = "x86_64-linux";
-      users = [ "craig" ];
-    }];
+        name = "playground";
+        system = "x86_64-linux";
+        users = [ "craig" ];
+        modules = [ ];
+      }
+      {
+        name = "ghostwater";
+        system = "x86_64-linux";
+        users = [ "craig" ];
+        modules = [
+          nixos-hardware.nixosModules.microsoft-surface-common
+        ];
+      }
+    ];
 
     forAllHosts = f: builtins.listToAttrs (builtins.map (host: { name = host.name; value = f host; }) hosts);
 
     pkgsForSystem = system: import nixpkgs {
       inherit system;
       config.allowUnfree = true;
+      config.nvidia.acceptLicense = true;
 
       # Allows the use of stable packages with pkgs.stable.<package name>.
       overlays =[ 
@@ -52,7 +66,7 @@
               };
               home-manager.users = forAllUsers (username: import ./users/${username}/nixos-home.nix);
             }
-          ];
+          ] ++ host.modules;
         }
       );
 
