@@ -1,21 +1,11 @@
-{ config, lib, pkgs, modulesPath, ... }: 
-let
-  nvidia-offload = pkgs.writeShellScriptBin "nvidia-offload" ''
-      export __NV_PRIME_RENDER_OFFLOAD=1
-      export __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
-      export __GLX_VENDOR_LIBRARY_NAME=nvidia
-      export __VK_LAYER_NV_optimus=NVIDIA_only
-      exec -a "$0" "$@"
-    '';
-in {
-
+{ config, lib, pkgs, modulesPath, ... }: {
   boot = {
     initrd = {
       availableKernelModules = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" ];
       kernelModules = [ ];
     };
     kernelModules = [ "kvm-intel" "v4l2loopback" ];
-    kernelParams = [ "i915.enable_psr=0" ];
+    kernelParams = [ "i915.enable_psr=0" "i915.fastboot=1" ];
     extraModulePackages = with config.boot.kernelPackages;[ 
       v4l2loopback.out 
     ];
@@ -24,29 +14,25 @@ in {
     '';
   };
 
+  microsoft-surface.surface-control.enable = true;
+
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-  environment.systemPackages = with pkgs; [ nvidia-offload nvtop ];
+  environment.systemPackages = with pkgs; [ 
+    libcamera
+    nvtop 
+  ];
 
   nixpkgs.config.packageOverrides = pkgs: {
     vaapiIntel = pkgs.vaapiIntel.override { enableHybridCodec = true; };
   };
 
-  services.xserver.videoDrivers = [ "nvidia" ];
+  services.xserver.videoDrivers = [ "nvidia" "intel" ];
 
   hardware = {
-    opengl = {
+    bumblebee = {
       enable = true;
-      driSupport32Bit = true;
-      driSupport = true;
-      extraPackages = with pkgs; [
-        intel-media-driver # LIBVA_DRIVER_NAME=iHD
-        vaapiIntel         # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
-        vaapiVdpau
-        libvdpau-va-gl
-      ];
     };
     nvidia = {
       prime = {
@@ -60,8 +46,16 @@ in {
       modesetting.enable = true;
       nvidiaPersistenced = false;
     };
-    bumblebee = {
+    opengl = {
       enable = true;
+      driSupport32Bit = true;
+      driSupport = true;
+      extraPackages = with pkgs; [
+        intel-media-driver # LIBVA_DRIVER_NAME=iHD
+        vaapiIntel         # LIBVA_DRIVER_NAME=i965 (older but works better for Firefox/Chromium)
+        vaapiVdpau
+        libvdpau-va-gl
+      ];
     };
   };
 }

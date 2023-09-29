@@ -4,6 +4,7 @@
 		./compass
 		./firefox
 		./gimp
+		./libreoffice
 		./meld
 		./musescore
 		./slack

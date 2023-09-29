@@ -28,7 +28,7 @@ git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
 sudo nixos-install --impure --flake /tmp/nix-config#playground
 ```
 
-After reboot
+## After Install
 
 ```
 mkdir -p ~/Projects/github.com/craiggwilson
@@ -38,8 +38,16 @@ nix-config-switch
 ```
 
 ### Rebuild and Switch
+
 ```
 sudo nixos-rebuild switch --flake .#playground
+```
+
+### Offload Steam to NVIDIA
+
+```
+mkdir -p ~/.local/share/applications
+sed 's/^Exec=/&nvidia-offload /' /etc/profiles/per-user/craig/share/applications/steam.desktop > ~/.local/share/applications/steam.desktop
 ```
 
 ## Manual Steps
