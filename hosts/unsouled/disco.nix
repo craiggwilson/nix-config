@@ -27,10 +27,10 @@
           start = "512MiB";
           end = "100%";
           content = {
+            name = "crypted";
             type = "luks";
             keyFile = "/tmp/secret.key";
             content = {
-              name = "crypted";
               type = "btrfs";
               extraArgs = [ "-f" ];
               mountpoint = "/";
