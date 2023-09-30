@@ -36,6 +36,8 @@
 
   environment.systemPackages = with pkgs; [ 
     libcamera
+    lshw
+    neofetch
     nvtop 
   ];
 
