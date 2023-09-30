@@ -1,7 +1,7 @@
 { config, pkgs, lib, nixos-hardware, ... }: {
 
   imports = [
-    ../../hardware/dell-xps9520.nix
+    ../../hardware/dell-xps-9520.nix
 
     ../../nixos/audio.nix
     ../../nixos/gnome-x.nix

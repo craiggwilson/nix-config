@@ -1,7 +1,7 @@
 { config, pkgs, lib, nixos-hardware, ... }: {
 
   imports = [
-    ../../hardware/surface-book-2.nix
+    ../../hardware/microsoft-surface-book-2.nix
 
     ../../nixos/audio.nix
     ../../nixos/gnome-x.nix
