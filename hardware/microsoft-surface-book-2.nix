@@ -30,21 +30,11 @@
     '';
   };
 
-  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  nixpkgs.hostPlatform = "x86_64-linux";
 
-  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-
-  environment.systemPackages = with pkgs; [ 
-    libcamera
-    lshw
-    neofetch
-    nvtop 
-  ];
+  powerManagement.cpuFreqGovernor = "powersave";
 
   hardware = {
-    bumblebee = {
-      enable = true;
-    };
     nvidia = {
       prime = {
         intelBusId = "PCI:00:02:0";
@@ -60,6 +50,13 @@
     };
   };
 
-  # Touchpad
   services.xserver.libinput.enable = true;
+
+  environment.systemPackages = with pkgs; [ 
+    libcamera
+    lshw
+    neofetch
+    nvtop 
+    pciutils
+  ];
 }
