@@ -56,7 +56,6 @@ sed 's/^Exec=/&nvidia-offload /' /etc/profiles/per-user/craig/share/applications
 ## Manual Steps
 
 ### Setup Onedrive
-
 ```
 onedrive --resync
 ```
@@ -66,4 +65,9 @@ onedrive --resync
 sudo apt-get install libhidapi-libusb0
 sudo sh -c 'echo "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"0fd9\", TAG+=\"uaccess\"" > /etc/udev/rules.d/70-streamdeck.rules'
 sudo udevadm trigger
+```
+
+### Correct LT2P VPN Issue
+```
+sudo touch /etc/ipsec.secrets
 ```

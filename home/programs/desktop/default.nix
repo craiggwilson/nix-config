@@ -5,6 +5,7 @@
 		./firefox
 		./gimp
 		./goland
+		./kitty
 		./libreoffice
 		./meld
 		./musescore
@@ -13,7 +14,7 @@
 		./steam
 		./virt-manager
 		./vscode
-		./wezterm
+		#./wezterm
 		./yuzu
 		./zoom-us
 	];

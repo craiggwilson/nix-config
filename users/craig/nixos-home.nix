@@ -1,8 +1,9 @@
 { pkgs, config, lib, repoDirectory, ... }: {
 	imports = [
 		./common-home.nix
-
 		../../home/programs/desktop
+
+		../../home/system/hyprland.nix
 	];
 
 	home.shellAliases = {

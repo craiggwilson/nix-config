@@ -24,6 +24,9 @@
                 ];
             };
             "explorer.confirmDragAndDrop" = false;
+            "terminal.integrated.fontFamily" = "DroidSansMono";
+            "window.menuBarVisibility" = "toggle";
+            "workbench.startupEditor" = "none";
         };
     };
 }

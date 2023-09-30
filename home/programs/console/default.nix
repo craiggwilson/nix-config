@@ -4,6 +4,7 @@
 		./azure
 		./bash
 		./bat
+		./btop
 		./buf
 		./direnv
 		./fonts
@@ -17,6 +18,7 @@
 		./lsd
 		./micro
 		./mongosh
+		./procps
 		./ripgrep
 		./ssh
 		./starship

@@ -3,13 +3,8 @@
   imports = [
     ../../hardware/qemu-guest-intel.nix
 
-    ../../nixos/audio.nix
-    ../../nixos/gnome-x.nix
-    ../../nixos/networking.nix
-    ../../nixos/printing.nix
-
-    ../../nixos/1password.nix
-    ../../nixos/openssh.nix
+    ../../nixos
+    ../../nixos/gnome
   ];
 
   system.stateVersion = "23.05";
