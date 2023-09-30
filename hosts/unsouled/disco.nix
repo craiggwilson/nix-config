@@ -24,6 +24,7 @@
           };
         }
         {
+          name = "root";
           start = "512MiB";
           end = "100%";
           content = {
