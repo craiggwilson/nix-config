@@ -4,6 +4,7 @@
 		./compass
 		./firefox
 		./gimp
+		./goland
 		./libreoffice
 		./meld
 		./musescore

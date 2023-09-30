@@ -23,6 +23,11 @@
         users = [ "craig" ];
       }
       {
+        name = "unsouled";
+        system = "x86_64-linux";
+        users = [ "craig" ];
+      }
+      {
         name = "ghostwater";
         system = "x86_64-linux";
         users = [ "craig" ];

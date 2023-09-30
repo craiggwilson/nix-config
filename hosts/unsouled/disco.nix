@@ -24,23 +24,30 @@
           };
         }
         {
-          name = "root";
           start = "512MiB";
           end = "100%";
-          part-type = "primary";
           content = {
-            type = "btrfs";
-            extraArgs = [ "-f" ];
-            mountpoint = "/";
-            mountOptions = ["discard" "noatime"];
-            subvolumes = {
-              "/home" = {
-                mountpoint = "/home";
-                mountOptions = ["compress=zstd"];
-              };
-              "/nix" = {
-                mountpoint = "/nix";
-                mountOptions = ["compress=zstd" "noatime"];
+            name = "crypted";
+            type = "luks";
+            keyFile = "/tmp/secret.key";
+            content = {
+              type = "btrfs";
+              extraArgs = [ "-f" ];
+              mountpoint = "/";
+              mountOptions = ["discard" "noatime"];
+              subvolumes = {
+                "/root" = {
+                  mountpoint = "/";
+                  mountOptions = ["compress=zstd" "noatime"];
+                };
+                "/home" = {
+                  mountpoint = "/home";
+                  mountOptions = ["compress=zstd" "noatime"];
+                };
+                "/nix" = {
+                  mountpoint = "/nix";
+                  mountOptions = ["compress=zstd" "noatime"];
+                };
               };
             };
           };

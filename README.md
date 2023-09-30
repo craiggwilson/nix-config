@@ -15,7 +15,10 @@ git clone https://github.com/craiggwilson/nix-config
 
 ### Partitioning
 ```
-sudo nix --extra-experimental-features nix-commands --extra-experimental-features flakes run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#playground
+# If using luks, write out password to /tmp/secret.key
+echo -n "<password>" > /tmp/secret.key
+
+sudo nix --extra-experimental-features nix-commands --extra-experimental-features flakes run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#<host>
 ```
 
 ### Install NixOS
@@ -25,7 +28,7 @@ nix-shell -p git
 
 git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
 
-sudo nixos-install --impure --flake /tmp/nix-config#playground
+sudo nixos-install --impure --flake /tmp/nix-config#<host>
 ```
 
 ## After Install
@@ -40,7 +43,7 @@ nix-config-switch
 ### Rebuild and Switch
 
 ```
-sudo nixos-rebuild switch --flake .#playground
+nix-config-switch
 ```
 
 ### Offload Steam to NVIDIA
@@ -64,4 +67,3 @@ sudo apt-get install libhidapi-libusb0
 sudo sh -c 'echo "SUBSYSTEM==\"usb\", ATTRS{idVendor}==\"0fd9\", TAG+=\"uaccess\"" > /etc/udev/rules.d/70-streamdeck.rules'
 sudo udevadm trigger
 ```
-
