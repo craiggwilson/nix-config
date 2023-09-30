@@ -1,7 +1,7 @@
 { config, lib, pkgs, modulesPath, nixos-hardware, ... }: {
 
   imports = [
-    nixos-hardware.nixosModules.dell-xps-15-9520
+    nixos-hardware.nixosModules.dell-xps-15-9520-nvidia
   ];
 
   boot = {
@@ -24,24 +24,13 @@
 
   hardware.enableRedistributableFirmware = true;
 
-  # hardware = {
-  #   nvidia = {
-  #     package = config.boot.kernelPackages.nvidiaPackages.latest;
-  #     prime = {
-  #       # sync.enable = true;
-  #       offload.enable = true;
-  #       intelBusId = "PCI:00:02:0";
-  #       nvidiaBusId = "PCI:01:00:0";
-  #     };
-  #     modesetting.enable = true;
-  #     nvidiaPersistenced = false;
-  #   };
-  #   opengl = {
-  #     enable = true;
-  #     driSupport32Bit = true;
-  #     driSupport = true;
-  #   };
-  # };
+  hardware = {
+    opengl = {
+      enable = true;
+      driSupport32Bit = true;
+      driSupport = true;
+    };
+  };
 
   services.xserver.libinput.enable = true;
   services.thermald.enable = true;
