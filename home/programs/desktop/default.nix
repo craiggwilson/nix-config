@@ -8,6 +8,7 @@
 		./libreoffice
 		./meld
 		./musescore
+		./obs-studio
 		./slack
 		./steam
 		./virt-manager
