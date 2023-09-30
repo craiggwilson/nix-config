@@ -30,7 +30,7 @@
           content = {
             name = "crypted";
             type = "luks";
-            keyFile = "/tmp/secret.key";
+            passwordFile = "/tmp/secret.key";
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];

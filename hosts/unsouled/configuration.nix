@@ -1,7 +1,7 @@
 { config, pkgs, lib, nixos-hardware, ... }: {
 
   imports = [
-    ../../hardware/dell-xps-9520.nix
+    ../../hardware/dell-xps-15-9520.nix
 
     ../../nixos/audio.nix
     ../../nixos/gnome-x.nix
@@ -13,6 +13,7 @@
   ];
 
   system.stateVersion = "23.05";
+  nix.settings.experimental-features = "nix-command flakes";
   nixpkgs.config.allowUnfree = true;
 
   # Boot
