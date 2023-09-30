@@ -21,15 +21,11 @@
         name = "playground";
         system = "x86_64-linux";
         users = [ "craig" ];
-        modules = [ ];
       }
       {
         name = "ghostwater";
         system = "x86_64-linux";
         users = [ "craig" ];
-        modules = [
-          nixos-hardware.nixosModules.microsoft-surface-common
-        ];
       }
     ];
 
@@ -54,6 +50,7 @@
       in nixpkgs.lib.nixosSystem {
           system = host.system;
           pkgs = pkgsForSystem host.system;
+          specialArgs = { inherit nixos-hardware; };
           modules = [ 
             ./hosts/${host.name}/configuration.nix 
             disko.nixosModules.disko
@@ -66,7 +63,7 @@
               };
               home-manager.users = forAllUsers (username: import ./users/${username}/nixos-home.nix);
             }
-          ] ++ host.modules;
+          ];
         }
       );
 
