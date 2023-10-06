@@ -35,4 +35,17 @@
       ../../users/craig/programs/ssh/config/id_rsa.pub
     ];
   };
+
+  environment.systemPackages = with pkgs; [ 
+    libcamera
+    libmtp
+    lshw
+    mtpfs
+    neofetch
+    nvtop 
+    pciutils
+    usbutils
+  ];
+
+  services.udisks2.enable = true;
 }

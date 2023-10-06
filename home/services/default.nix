@@ -2,5 +2,6 @@
   imports = [
     ./deckmaster
     ./onedrive
+    ./udiskie
   ];
 }

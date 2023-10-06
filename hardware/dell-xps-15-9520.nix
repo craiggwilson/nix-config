@@ -38,12 +38,4 @@
   services.xserver.libinput.enable = true;
   services.thermald.enable = true;
   services.hardware.bolt.enable = true;
-
-  environment.systemPackages = with pkgs; [ 
-    libcamera
-    lshw
-    neofetch
-    nvtop 
-    pciutils
-  ];
 }
