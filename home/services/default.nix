@@ -1,7 +1,0 @@
-{ ... }: {
-  imports = [
-    ./deckmaster
-    ./onedrive
-    ./udiskie
-  ];
-}

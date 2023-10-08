@@ -1,8 +1,0 @@
-[[keys]]
-    index = 0
-    [keys.widget]
-        id = "button"
-        [keys.widget.config]
-            icon = "assets/Arrow-Up.png"
-    [keys.action]
-        deck = "main.toml"
