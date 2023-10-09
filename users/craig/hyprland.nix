@@ -104,7 +104,7 @@ with lib;
     "$launcher" = "${getBin pkgs.rofi}/bin/rofi -show drun -show-icons";
     "$launcherAlt" = "${getBin pkgs.rofi}/bin/rofi -show run -show-icons";
     "$locker" = "${getBin pkgs.swaylock}/bin/swaylock";
-    "$networkTray" = "${getBin pkgs.networkmanagerapplet}/bin/networkmanagerapplet --indicator";
+    "$networkTray" = "${getBin pkgs.networkmanagerapplet}/bin/nm-applet --indicator";
     "$notifications" = "${getBin pkgs.dunst}/bin/dunst";
     "$passwords" = "${getBin pkgs._1password-gui}/bin/1password --silent";
     "$switchWindows" = "${getBin pkgs.rofi}/bin/rofi -show window -show-icons";
