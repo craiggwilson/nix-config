@@ -1,11 +1,12 @@
 { inputs, lib, ... }:
 {
   imports = [
-    ./hyprland.nix
-    ./hyprpaper.nix
-    ./starship.nix
-    ./swaylock.nix
-    ./vscode.nix
-    ./waybar.nix
+    ./gtk
+    ./hyprland
+    ./hyprpaper
+    ./starship
+    ./swaylock
+    ./vscode
+    ./waybar
   ] ++ lib.optional (builtins.pathExists ../../private/craig/default.nix) ../../private/craig;
 }

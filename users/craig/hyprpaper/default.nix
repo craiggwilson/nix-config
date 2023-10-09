@@ -1,6 +1,6 @@
 { lib, pkgs, config, ... }:
 let 
-  wallpaper = ./assets/wallpaper.jpg;
+  wallpaper = ../assets/wallpaper.jpg;
 in {
   hdwlinux.packages.hyprpaper = {
     monitors = [
