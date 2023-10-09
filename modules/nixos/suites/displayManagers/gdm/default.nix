@@ -2,10 +2,10 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.suites.displayManager.gdm;
+let cfg = config.hdwlinux.suites.displayManagers.gdm;
 in
 {
-  options.hdwlinux.suites.displayManager.gdm = with types; {
+  options.hdwlinux.suites.displayManagers.gdm = with types; {
     enable = mkBoolOpt false "Whether or not to enable the gdm display manager.";
   };
 

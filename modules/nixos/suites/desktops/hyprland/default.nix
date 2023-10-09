@@ -2,10 +2,10 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.suites.desktop.hyprland;
+let cfg = config.hdwlinux.suites.desktops.hyprland;
 in
 {
-  options.hdwlinux.suites.desktop.hyprland = with types; {
+  options.hdwlinux.suites.desktops.hyprland = with types; {
     enable = mkBoolOpt false "Whether or not to enable the hyprland desktop environment.";
   };
 
