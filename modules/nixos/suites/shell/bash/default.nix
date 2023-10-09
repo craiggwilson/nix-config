@@ -11,7 +11,13 @@ in
   };
 
   config.hdwlinux.packages = mkIf cfg.enable {
-    bash.enable = true;
+    bash = {
+      enable = true;
+      initExtra = ''
+        source ~/.profile
+      '';
+    };
+    
     direnv.enable = true;
     fzf.enable = true;
     starship.enable = true;
