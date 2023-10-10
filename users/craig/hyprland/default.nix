@@ -91,37 +91,28 @@ with lib;
       sensitivity = -0.5;
     };
  
-    "$hyprctl" = "${getBin pkgs.hyprland}/bin/hyprctl";
-    "$hyprpaper" = "${getBin pkgs.hyprpaper}/bin/hyprpaper";
-    "$pgrep" = "${getBin pkgs.procps}/bin/pgrep";
-    
     "$mainMod" = "SUPER";
-    "$browser" = "${getBin pkgs.firefox}/bin/firefox";
-    "$colorPicker" = "${getBin pkgs.hyprpicker}/bin/hyprpicker -r -n -a";
-    "$fileManager" = "${getBin pkgs.gnome.nautilus}/bin/nautilus";
-    "$idle" = "${getBin pkgs.swayidle}/bin/swayidle";
-    "$infobar" = "${getBin pkgs.waybar}/bin/waybar";
-    "$launcher" = "${getBin pkgs.rofi}/bin/rofi -show drun -show-icons";
-    "$launcherAlt" = "${getBin pkgs.rofi}/bin/rofi -show run -show-icons";
-    "$locker" = "${getBin pkgs.swaylock}/bin/swaylock";
-    "$networkTray" = "${getBin pkgs.networkmanagerapplet}/bin/nm-applet --indicator";
-    "$notifications" = "${getBin pkgs.dunst}/bin/dunst";
-    "$passwords" = "${getBin pkgs._1password-gui}/bin/1password --silent";
-    "$switchWindows" = "${getBin pkgs.rofi}/bin/rofi -show window -show-icons";
-    "$term" = "${getBin pkgs.kitty}/bin/kitty";
-    "$wallpaper" = "${getBin pkgs.hyprpaper}/bin/hyprpaper";
+    "$browser" = "firefox";
+    "$colorPicker" = "hyprpicker -r -n -a";
+    "$fileManager" = "nautilus";
+    "$infoBar" = "waybar";
+    "$launcher" = "rofi -show drun -show-icons";
+    "$launcherAlt" = "rofi -show run -show-icons";
+    "$locker" = "swaylock";
+    "$switchWindows" = "rofi -show window -show-icons";
+    "$term" = "kitty";
 
-    "$onIdle" = "$idle -w timeout 300 '$locker' timeout 330 '$hyprctl dispatch dpms off' resume '$hyprctl dispatch dpms on'";
-    "$onIdleLocked" = "$idle -w timeout 60 'if $pgrep -x $locker; then $hyprctl dispatch dpms off; fi' resume '$hyprctl dispatch dpms on'";
+    "$onIdle" = "swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'";
+    "$onIdleLocked" = "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'";
 
     exec-once = [
-      "$wallpaper"
+      "hyprpaper"
       #"$onIdle"
       "$onIdleLocked"
-      "$infobar"
-      "$networkTray"
-      "$notifications"
-      "$passwords"
+      "$infoBar"
+      "nm-applet --indicator"
+      "dunst"
+      "1password --silent"
     ];
 
     bind = [

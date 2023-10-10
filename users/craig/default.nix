@@ -4,6 +4,7 @@
     ./gtk
     ./hyprland
     ./hyprpaper
+    ./rofi
     ./starship
     ./swaylock
     ./vscode

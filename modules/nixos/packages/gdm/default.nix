@@ -15,7 +15,7 @@ in
     libinput.enable = true;
     displayManager.gdm = {
       enable = true;
-      wayland = true; #mkAliasDefinitions options.hdwlinux.packages.gdm.wayland;
+      wayland = true;
     };
   };
 }
