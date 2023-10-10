@@ -105,7 +105,7 @@ in {
     }
 
     tooltip {
-        background: #2e3440;
+        background: #1F232B;
         border-radius: 10px;
         border-width: 2px;
         border-style: solid;
@@ -121,7 +121,7 @@ in {
     #tray,
     #window,
     #workspaces {
-        background: #2e3440;
+        background: #1F232B;
         padding: 0px 10px;
         margin: 3px 0px;
         border: 1px solid #181825;
@@ -136,7 +136,6 @@ in {
     #backlight {
         color: #d8dee9;
         border-radius: 10px 0px 0px 10px;
-        border-left: 0px;
         border-right: 0px;
         margin-left: 5px;
     }
@@ -163,7 +162,6 @@ in {
         color: #b48ead;
         border-radius: 0px 10px 10px 0px;
         border-left: 0px;
-        border-right: 0px;
         margin-right: 5px;
     }
 
