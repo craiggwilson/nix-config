@@ -26,6 +26,7 @@
       "window.menuBarVisibility" = "toggle";
       "window.titleBarStyle" = "custom";
       "workbench.startupEditor" = "none";
+      "workbench.colorTheme" = "Nord Deep";
     };
   };
 }
