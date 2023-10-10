@@ -15,7 +15,7 @@
 
     suites = {
       boot.systemd.enable = true;
-      #displayManager.gdm.enable = true;
+
       displayManagers.greetd.enable = true;
 
       desktops.hyprland.enable = true;
