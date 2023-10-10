@@ -1,6 +1,10 @@
 { lib, pkgs, config, ... }:
 {
   hdwlinux.home = {
+    sessionVariables = {
+      # not sure why nautlius isn't picking this up, but...
+      GTK_THEME = "Nordic-darker";
+    };
     extraOptions.gtk = {
       enable = true;
       theme = {
@@ -8,11 +12,11 @@
         package = pkgs.nordic;
       };
       iconTheme = {
-        name = "Nordzy";
+        name = "Nordzy-dark";
         package = pkgs.nordzy-icon-theme;
       };
       cursorTheme = {
-        name = "Nordzy";
+        name = "Nordzy-cursors";
         package = pkgs.nordzy-cursor-theme;
       };
 

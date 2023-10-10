@@ -105,7 +105,7 @@ in {
     }
 
     tooltip {
-        background: #1e1e2e;
+        background: #2e3440;
         border-radius: 10px;
         border-width: 2px;
         border-style: solid;
@@ -121,19 +121,20 @@ in {
     #tray,
     #window,
     #workspaces {
-        background: #1e1e2e;
+        background: #2e3440;
         padding: 0px 10px;
         margin: 3px 0px;
         border: 1px solid #181825;
     }
 
     #battery {
-        color: #a6e3a1;
+        color: #a3be8c;
         border-radius: 10px;
         margin-right: 10px;
     }
 
     #backlight {
+        color: #d8dee9;
         border-radius: 10px 0px 0px 10px;
         border-left: 0px;
         border-right: 0px;
@@ -141,7 +142,7 @@ in {
     }
 
     #clock {
-        color: #fab387;
+        color: #d08770;
         border-radius: 10px;
         margin-left: 5px;
     }
@@ -153,13 +154,13 @@ in {
     }
 
     #pulseaudio {
-        color: #89b4fa;
+        color: #5e81ac;
         border-left: 0px;
         border-right: 0px;
     }
 
     #pulseaudio.microphone {
-        color: #cba6f7;
+        color: #b48ead;
         border-radius: 0px 10px 10px 0px;
         border-left: 0px;
         border-right: 0px;
@@ -178,7 +179,6 @@ in {
     }
 
     #workspaces {
-        background: #1e1e2e;
         border-radius: 10px;
         margin-left: 10px;
         padding-right: 0px;
@@ -186,8 +186,8 @@ in {
     }
 
     #workspaces button {
-        padding: 5px;
         color: #313244;
+        padding: 5px;
         margin-right: 5px;
     }
 
