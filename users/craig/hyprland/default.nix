@@ -4,6 +4,7 @@ with lib;
   hdwlinux.packages.hyprland.settings = {
     misc = {
       disable_hyprland_logo = true;
+      focus_on_activate = true;
     };
 
     monitor = [
@@ -124,6 +125,10 @@ with lib;
       "$mainMod, T, exec, $term"
       "$mainMod, TAB, exec, $switchWindows"
       "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+      ", xf86audioraisevolume, exec, pamixer -i 5"
+      ", xf86audiolowervolume, exec, pamixer -d 5"
+      ", xf86audiomute, exec, pamixer -t"
+
       "$mainMod CONTROL, ESCAPE, exec, $term btop"
 
       # Move focus with mainMod + arrow keys
