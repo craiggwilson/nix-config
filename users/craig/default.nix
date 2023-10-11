@@ -11,4 +11,8 @@
     ./vscode
     ./waybar
   ] ++ lib.optional (builtins.pathExists ../../private/craig/default.nix) ../../private/craig;
+
+  hdwlinux.home.shellAliases = {
+    "start" = "xdg-open";
+  };
 }

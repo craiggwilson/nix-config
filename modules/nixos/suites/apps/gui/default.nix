@@ -20,7 +20,6 @@ in
       kitty.enable = true;
       libreoffice.enable = true;
       musescore.enable = true;
-      udiskie.enable = true;
     };
   };
 }

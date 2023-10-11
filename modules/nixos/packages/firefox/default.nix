@@ -8,7 +8,9 @@ in
     enable = mkBoolOpt false "Whether or not to enable firefox.";
   };
 
-  config.hdwlinux.home.programs.firefox = mkIf cfg.enable {
-    enable = true;
+  config = mkIf cfg.enable {
+    hdwlinux.home.programs.firefox.enable = true;
+
+    xdg.mime.defaultApplications."application/pdf" = "firefox.desktop";
   };
 }

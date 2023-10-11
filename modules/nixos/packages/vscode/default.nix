@@ -19,5 +19,7 @@ in
       userSettings = mkAliasDefinitions options.hdwlinux.packages.vscode.settings;
       extensions = mkAliasDefinitions options.hdwlinux.packages.vscode.extensions;
     };
+
+    xdg.mime.defaultApplications."text/plain" = "code.desktop";
   };
 }

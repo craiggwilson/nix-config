@@ -24,8 +24,11 @@ in {
       home.sessionVariables = mkAliasDefinitions options.hdwlinux.home.sessionVariables;
       home.shellAliases = mkAliasDefinitions options.hdwlinux.home.shellAliases;
       
-      xdg.enable = true;
-      xdg.configFile = mkAliasDefinitions options.hdwlinux.home.configFile;
+      xdg = {
+        enable = true;
+        configFile = mkAliasDefinitions options.hdwlinux.home.configFile;
+        mime.enable = true;
+      };
 
       programs = mkAliasDefinitions options.hdwlinux.home.programs;
       services = mkAliasDefinitions options.hdwlinux.home.services;

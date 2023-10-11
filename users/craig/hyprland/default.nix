@@ -90,43 +90,41 @@ with lib;
     "device:epic-mouse-v1" = {
       sensitivity = -0.5;
     };
- 
+
+    exec-once = [
+      #"swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'"
+      "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'"
+      "waybar"
+      "hyprpaper"
+      "nm-applet --indicator"
+      "dunst"
+      "1password --silent"
+      "wl-paste --type text --watch cliphist store"
+      "wl-paste --type image --watch cliphist store"
+    ];
+
     "$mainMod" = "SUPER";
     "$browser" = "firefox";
     "$colorPicker" = "hyprpicker -r -n -a";
-    "$fileManager" = "nautilus";
-    "$infoBar" = "waybar";
+    "$fileManager" = "thunar";
     "$launcher" = "rofi -show drun -show-icons";
     "$launcherAlt" = "rofi -show run -show-icons";
     "$locker" = "swaylock";
     "$switchWindows" = "rofi -show window -show-icons";
     "$term" = "kitty";
 
-    "$onIdle" = "swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'";
-    "$onIdleLocked" = "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'";
-
-    exec-once = [
-      "hyprpaper"
-      #"$onIdle"
-      "$onIdleLocked"
-      "$infoBar"
-      "nm-applet --indicator"
-      "dunst"
-      "1password --silent"
-    ];
-
     bind = [
-      "$mainMod, T, exec, $term"
-      "$mainMod, M, exit,"
-      "$mainMod, E, exec, $fileManager"
-      "$mainMod, V, togglefloating,"
-      "$mainMod, SPACE, exec, $launcher"
-      "$mainMod CONTROL, SPACE, exec, $launcherAlt"
-      "$mainMod, L, exec, $locker"
-      "$mainMod CONTROL, ESCAPE, exec, $term btop"
       "$mainMod, B, exec, $browser"
+      "$mainMod, E, exec, $fileManager"
+      "$mainMod, L, exec, $locker"
+      "$mainMod, M, exit,"
       "$mainMod, P, exec, $colorPicker"
+      "$mainMod, R, exec, $launcherAlt"
+      "$mainMod, SPACE, exec, $launcher"
+      "$mainMod, T, exec, $term"
       "$mainMod, TAB, exec, $switchWindows"
+      "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+      "$mainMod CONTROL, ESCAPE, exec, $term btop"
 
       # Move focus with mainMod + arrow keys
       "$mainMod, left, movefocus, l"
@@ -135,6 +133,8 @@ with lib;
       "$mainMod, down, movefocus, d"
 
       # Switch workspaces with mainMod + [0-9]
+      "$mainMod CONTROL, left, workspace, -1"
+      "$mainMod CONTROL, right, workspace, +1"
       "$mainMod, 1, workspace, 1"
       "$mainMod, 2, workspace, 2"
       "$mainMod, 3, workspace, 3"
@@ -147,9 +147,11 @@ with lib;
       "$mainMod, 0, workspace, 10"
 
       # Manipuate active window mainMod + SHIFT
-      "$mainMod SHIFT, q, killactive,"
+      "$mainMod SHIFT, W, killactive,"
       "$mainMod SHIFT, P, pseudo,"
       "$mainMod SHIFT, J, togglesplit,"
+      "$mainMod SHIFT, F, togglefloating,"
+      "$mainMod SHIFT, RETURN, fullscreen, 1"
       "$mainMod SHIFT, left, movetoworkspace, -1"
       "$mainMod SHIFT, right, movetoworkspace, +1"
       "$mainMod SHIFT, 1, movetoworkspace, 1"
