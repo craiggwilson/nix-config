@@ -11,21 +11,22 @@ in
 
   config = mkIf cfg.enable {
   	hdwlinux.packages = {
-	  cliphist.enable = true;
-	  dunst.enable = true;
-	  fonts.enable = true;
-	  electronSupport.enable = true;
-	  hyprland.enable = true;
-	  hyprpaper.enable = true;
-	  hyprpicker.enable = true;
-	  libnotify.enable = true;
-	  networkmanagerapplet.enable = true;
-	  thunar.enable = true;
-	  pavucontrol.enable = true;
-	  rofi.enable = true;
-	  swayidle.enable = true;
-	  swaylock.enable = true;
-	  waybar.enable = true;
+      brightnessctl.enable = true;
+      cliphist.enable = true;
+      dunst.enable = true;
+      fonts.enable = true;
+      electronSupport.enable = true;
+      hyprland.enable = true;
+      hyprpaper.enable = true;
+      hyprpicker.enable = true;
+      libnotify.enable = true;
+      networkmanagerapplet.enable = true;
+      thunar.enable = true;
+      pavucontrol.enable = true;
+      rofi.enable = true;
+      swayidle.enable = true;
+      swaylock.enable = true;
+      waybar.enable = true;
       udiskie.enable = true;
     };
   };

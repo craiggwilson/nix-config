@@ -125,8 +125,6 @@ with lib;
       "$mainMod, T, exec, $term"
       "$mainMod, TAB, exec, $switchWindows"
       "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-      ", xf86audioraisevolume, exec, pamixer -i 5"
-      ", xf86audiolowervolume, exec, pamixer -d 5"
       ", xf86audiomute, exec, pamixer -t"
 
       "$mainMod CONTROL, ESCAPE, exec, $term btop"
@@ -175,11 +173,17 @@ with lib;
       "$mainMod, mouse_up, workspace, e-1"
     ];
 
+    binde = [
+      ", xf86audioraisevolume, exec, pamixer -i 5"
+      ", xf86audiolowervolume, exec, pamixer -d 5"
+      ", xf86monbrightnessup, exec, brightnessctl set 10%+"
+      ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
+    ];
+
     bindm = [
       # Move/resize windows with mainMod + LMB/RMB and dragging
       "$mainMod, mouse:272, movewindow"
       "$mainMod, mouse:273, resizewindow"
     ];
-
   };
 }

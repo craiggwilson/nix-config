@@ -58,8 +58,8 @@ in {
       format-muted = " Muted";
       on-click = "${pamixer} -t";
       on-click-right = "${pavucontrol} -t 3";
-      on-scroll-up = "${pamixer} -i 5";
-      on-scroll-down = "${pamixer} -d 5";
+      on-scroll-up = "${pamixer} -i 1";
+      on-scroll-down = "${pamixer} -d 1";
       scroll-step = 5;
       format-icons = {
         headphone =  "";
@@ -67,6 +67,7 @@ in {
         headset =  "";
         phone =  "";
         portable =  "";
+
         car =  "";
         default =  [ "" "" "" ];
       };
@@ -78,8 +79,8 @@ in {
       format-source-muted = " Muted";
       on-click = "${pamixer} --default-source -t";
       on-click-right = "${pavucontrol} -t 4";
-      on-scroll-up = "${pamixer} --default-source -i 5";
-      on-scroll-down = "${pamixer} --default-source -d 5";
+      on-scroll-up = "${pamixer} --default-source -i 1";
+      on-scroll-down = "${pamixer} --default-source -d 1";
       scroll-step = 5;
     };
 
