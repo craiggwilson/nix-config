@@ -14,7 +14,10 @@ in
     hdwlinux.home.programs.starship = {
       enable = true;
       enableBashIntegration = mkAliasDefinitions options.hdwlinux.packages.bash.enable;
-      settings = mkAliasDefinitions options.hdwlinux.packages.starship.settings;
+      settings = cfg.settings // {
+        command_timeout = 5000;
+        format = "$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
+      };
     };
   };
 }

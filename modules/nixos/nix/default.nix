@@ -15,6 +15,7 @@ in
   options.hdwlinux.nix = with types; {
     enable = mkBoolOpt true "Whether or not to manage nix configuration.";
     package = mkOpt package pkgs.nixUnstable "Which nix package to use.";
+    flake = mkOpt (nullOr str) null "The git repository directory that holds the flake.";
 
     default-substituter = {
       url = mkOpt str "https://cache.nixos.org" "The url for the substituter.";
@@ -71,11 +72,11 @@ in
           keep-derivations = true;
         });
 
-        #TODO: enable this # gc = {
-        #   automatic = true;
-        #   dates = "weekly";
-        #   options = "--delete-older-than 30d";
-        # };
+        gc = {
+          automatic = true;
+          dates = "weekly";
+          options = "--delete-older-than 30d";
+        };
 
         # flake-utils-plus
         generateRegistryFromInputs = true;

@@ -1,9 +1,7 @@
 { lib, pkgs, config, ... }:
-let 
-  wallpaper = ../assets/wallpaper.jpg;
-in {
-  hdwlinux.packages.rofi.theme = "craig";
-  hdwlinux.home.configFile."rofi/themes/craig.rasi".text = ''
+{
+  hdwlinux.packages.rofi.theme = "nord";
+  hdwlinux.home.configFile."rofi/themes/nord.rasi".text = ''
     * {
         font:   "IBM Plex Mono 12";
 

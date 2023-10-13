@@ -22,7 +22,11 @@ in {
       home.file = mkAliasDefinitions options.hdwlinux.home.file;
       home.packages = mkAliasDefinitions options.hdwlinux.home.packages;
       home.sessionVariables = mkAliasDefinitions options.hdwlinux.home.sessionVariables;
-      home.shellAliases = mkAliasDefinitions options.hdwlinux.home.shellAliases;
+      home.shellAliases = cfg.shellAliases // {
+        "start" = "xdg-open";
+        "nix-config" = "git -C ${config.hdwlinux.nix.flake}";
+        "nixos-rebuild-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${config.hdwlinux.nix.flake}?submodules=1";
+      };
       
       xdg = {
         enable = true;

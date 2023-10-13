@@ -11,14 +11,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.home.extraOptions.wayland.windowManager.hyprland = {
-      enable = true;
-      xwayland.enable = true;
-      enableNvidiaPatches = false;
-      systemd.enable = false;
-      settings = mkAliasDefinitions options.hdwlinux.packages.hyprland.settings;
-    };
-
     programs.hyprland = {
       enable = true;
       enableNvidiaPatches = false; #TODO: check if nvidia is enabled...
@@ -30,6 +22,157 @@ in
       extraPortals = [ 
         pkgs.xdg-desktop-portal-gtk
       ];
+    };
+
+    hdwlinux.home.extraOptions.wayland.windowManager.hyprland = {
+      enable = true;
+      xwayland.enable = true;
+      enableNvidiaPatches = false;
+      systemd.enable = false;
+      settings = cfg.settings // {
+        misc = {
+          focus_on_activate = true;
+        };
+
+        monitor = [
+          "DP-5, 2560x1440, 0x0, 1"
+          "DP-6, 2560x1440, 2560x0, 1"
+          "eDP-1, highres, 0x1440, 1"
+          ", preferred, auto, auto"
+        ];
+
+        workspace = [
+          "1, monitor:eDP-1"
+          "2, monitor:DP-5"
+          "3, monitor:DP-6"
+        ];
+
+        input = {
+          kb_layout = "us";
+          kb_variant = "";
+          kb_model = "";
+          kb_options = "";
+          kb_rules = "";
+          follow_mouse = 1;
+
+          touchpad = {
+            natural_scroll = true;
+          };
+
+          sensitivity = 0;
+        };
+
+        dwindle = {
+          pseudotile = true;
+          preserve_split = true;
+        };
+
+        master = {
+          new_is_master = true;
+        };
+
+        gestures = {
+          workspace_swipe = true;
+        };
+
+        "device:epic-mouse-v1" = {
+          sensitivity = -0.5;
+        };
+
+        exec-once = [
+          #"swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'"
+          "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'"
+          "waybar"
+          "hyprpaper"
+          "nm-applet --indicator"
+          "dunst"
+          "1password --silent"
+          "wl-paste --type text --watch cliphist store"
+          "wl-paste --type image --watch cliphist store"
+        ];
+
+        "$mainMod" = "SUPER";
+        "$browser" = "firefox";
+        "$colorPicker" = "hyprpicker -r -n -a";
+        "$fileManager" = "thunar";
+        "$launcher" = "rofi -show drun -show-icons";
+        "$launcherAlt" = "rofi -show run -show-icons";
+        "$locker" = "swaylock";
+        "$switchWindows" = "rofi -show window -show-icons";
+        "$term" = "kitty";
+
+        bind = [
+          "$mainMod, B, exec, $browser"
+          "$mainMod, E, exec, $fileManager"
+          "$mainMod, L, exec, $locker"
+          "$mainMod, M, exit,"
+          "$mainMod, P, exec, $colorPicker"
+          "$mainMod, R, exec, $launcherAlt"
+          "$mainMod, SPACE, exec, $launcher"
+          "$mainMod, T, exec, $term"
+          "$mainMod, TAB, exec, $switchWindows"
+          "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+          ", xf86audiomute, exec, pamixer -t"
+
+          "$mainMod CONTROL, ESCAPE, exec, $term btop"
+
+          # Move focus with mainMod + arrow keys
+          "$mainMod, left, movefocus, l"
+          "$mainMod, right, movefocus, r"
+          "$mainMod, up, movefocus, u"
+          "$mainMod, down, movefocus, d"
+
+          # Switch workspaces with mainMod + [0-9]
+          "$mainMod CONTROL, left, workspace, -1"
+          "$mainMod CONTROL, right, workspace, +1"
+          "$mainMod, 1, workspace, 1"
+          "$mainMod, 2, workspace, 2"
+          "$mainMod, 3, workspace, 3"
+          "$mainMod, 4, workspace, 4"
+          "$mainMod, 5, workspace, 5"
+          "$mainMod, 6, workspace, 6"
+          "$mainMod, 7, workspace, 7"
+          "$mainMod, 8, workspace, 8"
+          "$mainMod, 9, workspace, 9"
+          "$mainMod, 0, workspace, 10"
+
+          # Manipuate active window mainMod + SHIFT
+          "$mainMod SHIFT, W, killactive,"
+          "$mainMod SHIFT, P, pseudo,"
+          "$mainMod SHIFT, J, togglesplit,"
+          "$mainMod SHIFT, F, togglefloating,"
+          "$mainMod SHIFT, RETURN, fullscreen, 1"
+          "$mainMod SHIFT, left, movetoworkspace, -1"
+          "$mainMod SHIFT, right, movetoworkspace, +1"
+          "$mainMod SHIFT, 1, movetoworkspace, 1"
+          "$mainMod SHIFT, 2, movetoworkspace, 2"
+          "$mainMod SHIFT, 3, movetoworkspace, 3"
+          "$mainMod SHIFT, 4, movetoworkspace, 4"
+          "$mainMod SHIFT, 5, movetoworkspace, 5"
+          "$mainMod SHIFT, 6, movetoworkspace, 6"
+          "$mainMod SHIFT, 7, movetoworkspace, 7"
+          "$mainMod SHIFT, 8, movetoworkspace, 8"
+          "$mainMod SHIFT, 9, movetoworkspace, 9"
+          "$mainMod SHIFT, 0, movetoworkspace, 10"
+
+          # Scroll through existing workspaces with mainMod + scroll
+          "$mainMod, mouse_down, workspace, e+1"
+          "$mainMod, mouse_up, workspace, e-1"
+        ];
+
+        binde = [
+          ", xf86audioraisevolume, exec, pamixer -i 5"
+          ", xf86audiolowervolume, exec, pamixer -d 5"
+          ", xf86monbrightnessup, exec, brightnessctl set 10%+"
+          ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
+        ];
+
+        bindm = [
+          # Move/resize windows with mainMod + LMB/RMB and dragging
+          "$mainMod, mouse:272, movewindow"
+          "$mainMod, mouse:273, resizewindow"
+        ];
+      };
     };
   };
 }

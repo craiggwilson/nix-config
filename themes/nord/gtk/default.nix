@@ -2,7 +2,6 @@
 {
   hdwlinux.home = {
     sessionVariables = {
-      # not sure why nautlius isn't picking this up, but...
       GTK_THEME = "Nordic-darker";
     };
     extraOptions.gtk = {

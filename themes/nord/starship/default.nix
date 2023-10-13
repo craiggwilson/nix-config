@@ -1,10 +1,6 @@
 { lib, pkgs, config, ... }:
 {
   hdwlinux.packages.starship.settings = {
-    command_timeout = 5000;
-
-    format = "$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
-
     character = {
       success_symbol = "[❯](#ff9400)";
       error_symbol = "[❯](#ff4b00)";
