@@ -20,5 +20,9 @@ in
       slack.enable = true;
       zoom-us.enable = true;
     };
+
+    hdwlinux.home.shellAliases = {
+      "build!" = "./build.sh";
+    };
   };
 }

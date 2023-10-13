@@ -14,6 +14,7 @@ in
     hdwlinux.packages = {
       bat.enable = true;
       btop.enable = true;
+      gh.enable = true;
       git.enable = true;
       jq.enable = true;
       lsd.enable = true;
