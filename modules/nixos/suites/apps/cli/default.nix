@@ -14,7 +14,6 @@ in
     hdwlinux.packages = {
       bat.enable = true;
       btop.enable = true;
-      gh.enable = true;
       git.enable = true;
       jq.enable = true;
       lsd.enable = true;
@@ -23,6 +22,7 @@ in
       nvtop.enable = true;
       pamixer.enable = true;
       procps.enable = true;
+      ranger.enable = true;
       ripgrep.enable = true;
       ssh.enable = true;
     };

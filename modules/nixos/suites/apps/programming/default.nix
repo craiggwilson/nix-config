@@ -12,6 +12,7 @@ in
 
   config = mkIf cfg.enable {
     hdwlinux.packages = {
+      gh.enable = true;
       go.enable = true;
       goland.enable = true;
       meld.enable = true;
