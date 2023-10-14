@@ -142,20 +142,20 @@ in
         }
 
         #battery {
-            color: #${config.hdwlinux.theme.color14};
+            color: ${config.lib.stylix.colors.withHashtag.base00};
             border-radius: 10px;
             margin-right: 10px;
         }
 
         #backlight {
-            color: #${config.hdwlinux.theme.color4};
+            color: ${config.lib.stylix.colors.withHashtag.base04};
             border-radius: 10px 0px 0px 10px;
             border-right: 0px;
             margin-left: 5px;
         }
 
         #clock {
-            color: #${config.hdwlinux.theme.color12};
+            color: ${config.lib.stylix.colors.withHashtag.base0C};
             border-radius: 10px;
             margin-left: 5px;
         }
@@ -167,13 +167,13 @@ in
         }
 
         #pulseaudio {
-            color: #${config.hdwlinux.theme.color10};
+            color: ${config.lib.stylix.colors.withHashtag.base0A};
             border-left: 0px;
             border-right: 0px;
         }
 
         #pulseaudio.microphone {
-            color: #${config.hdwlinux.theme.color15};
+            color: ${config.lib.stylix.colors.withHashtag.base0F};
             border-radius: 0px 10px 10px 0px;
             border-left: 0px;
             margin-right: 5px;

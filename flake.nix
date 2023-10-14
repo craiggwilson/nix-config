@@ -28,6 +28,9 @@
       url = "github:snowfallorg/lib";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # stylix provides consistent styling to a number of packages
+    stylix.url = "github:danth/stylix";
   };
 
   outputs = inputs: 
@@ -57,6 +60,7 @@
           nixos = with inputs; [
             home-manager.nixosModules.home-manager
             disko.nixosModules.disko
+            stylix.nixosModules.stylix
           ];
         };
       };

@@ -13,7 +13,7 @@
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
     };
 
-    theme.nord.enable = true;
+    theme.custom.enable = true;
 
     packages = {
       hyprland.settings = {
@@ -34,8 +34,8 @@
       hyprpaper = {
         monitors = [
           { name = "eDP-1"; wallpaper = config.hdwlinux.theme.wallpaper1; }
-          { name = "DP-5"; wallpaper = config.hdwlinux.theme.wallpaper2; }
-          { name = "DP-6"; wallpaper = config.hdwlinux.theme.wallpaper3; }
+          { name = "DP-5"; wallpaper = config.hdwlinux.theme.wallpaper1; }
+          { name = "DP-6"; wallpaper = config.hdwlinux.theme.wallpaper1; }
         ];
       };
 
