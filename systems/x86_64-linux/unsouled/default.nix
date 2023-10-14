@@ -1,4 +1,4 @@
-{ inputs, lib, ... }: 
+{ inputs, config, lib, ... }: 
 {
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
@@ -33,11 +33,10 @@
 
       hyprpaper = {
         monitors = [
-          { name = "eDP-1"; wallpaper = ../../../themes/nord/assets/wallpapers/bubbles-nord.png; }
-          { name = "DP-5"; wallpaper = ../../../themes/nord/assets/wallpapers/bubbles-nord.png; }
-          { name = "DP-6"; wallpaper = ../../../themes/nord/assets/wallpapers/bubbles-nord.png; }
+          { name = "eDP-1"; wallpaper = config.hdwlinux.theme.wallpaper1; }
+          { name = "DP-5"; wallpaper = config.hdwlinux.theme.wallpaper2; }
+          { name = "DP-6"; wallpaper = config.hdwlinux.theme.wallpaper3; }
         ];
-        wallpapers = [ ../../../themes/nord/assets/wallpapers/bubbles-nord.png ];
       };
 
       openssh.enable = true;

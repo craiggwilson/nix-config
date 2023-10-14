@@ -4,8 +4,6 @@
     ./dunst
     ./gtk
     ./hyprland
-    ./kitty
-    ./rofi
     ./starship
     ./swaylock
     ./vscode

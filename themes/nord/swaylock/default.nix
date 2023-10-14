@@ -2,7 +2,7 @@
 {
   hdwlinux.packages.swaylock.settings = {
     ignore-empty-password = true;
-    image = "${../assets/wallpapers/bubbles-nord.png}";
+    image = "${config.hdwlinux.theme.wallpaper1}";
     color = "2e3440ff";
 
     bs-hl-color = "b48eadff";

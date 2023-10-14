@@ -17,7 +17,6 @@ in
         };
       });
     };
-    wallpapers = mkOpt (listOf path) [ ] "Wallpapers to preload.";
   };
 
   config.hdwlinux.home = mkIf cfg.enable {
@@ -28,10 +27,9 @@ in
     configFile."hypr/hyprpaper.conf".text = ''
       ipc = off
       
-      ${concatStringsSep "\n" (map (wallpaper: "preload = ${wallpaper}") cfg.wallpapers)}
+      ${concatStringsSep "\n" (map (monitor: "preload = ${monitor.wallpaper}") (lib.hdwlinux.uniqueBy (f: "${f.wallpaper}") cfg.monitors))}
           
       ${concatStringsSep "\n" (map (monitor: "wallpaper = ${monitor.name},${monitor.wallpaper}") cfg.monitors)}
-
     '';
   };
 }
