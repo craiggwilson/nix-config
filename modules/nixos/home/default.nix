@@ -22,16 +22,23 @@ in {
       home.file = mkAliasDefinitions options.hdwlinux.home.file;
       home.packages = mkAliasDefinitions options.hdwlinux.home.packages;
       home.sessionVariables = mkAliasDefinitions options.hdwlinux.home.sessionVariables;
-      home.shellAliases = cfg.shellAliases // {
+      home.shellAliases = {
         "start" = "xdg-open";
         "nix-config" = "git -C ${config.hdwlinux.nix.flake}";
         "nixos-rebuild-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${config.hdwlinux.nix.flake}?submodules=1";
-      };
+      } // cfg.shellAliases; #TODO optional?
       
       xdg = {
         enable = true;
         configFile = mkAliasDefinitions options.hdwlinux.home.configFile;
         mime.enable = true;
+        userDirs = {
+          enable = true;
+          createDirectories = true;
+          extraConfig = {
+            XDG_PROJECTS_DIR = "/home/${config.hdwlinux.user.name}/Projects";
+          };
+        };
       };
 
       programs = mkAliasDefinitions options.hdwlinux.home.programs;
