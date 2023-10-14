@@ -3,6 +3,8 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.theme.nord; 
+  theme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
+  wallpaper = ./assets/wild.png;
 in {
 
   options.hdwlinux.theme.nord = with types; {
@@ -10,10 +12,10 @@ in {
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.theme.wallpaper1 = ./assets/wild.png;
-    hdwlinux.theme.wallpaper2 = ./assets/wild.png;
-    hdwlinux.theme.wallpaper3 = ./assets/wild.png;
+    hdwlinux.theme.wallpaper1 = wallpaper;
+    hdwlinux.theme.wallpaper2 = wallpaper;
+    hdwlinux.theme.wallpaper3 = wallpaper;
 
-    stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/nord.yaml";
+    stylix.base16Scheme = theme;
   };
 }

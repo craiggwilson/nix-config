@@ -114,7 +114,7 @@ in
         }
 
         window#waybar {
-            background: rgba(21, 18, 27, 0);
+            background: rgba(21, 18, 27, .5);
             color: #cdd6f4;
         }
 

@@ -26,14 +26,50 @@ in {
       image = cfg.wallpaper1;
       polarity = "dark";
       autoEnable = true;
+      fonts = {
+        serif = {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Serif";
+        };
+
+        sansSerif = {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans";
+        };
+
+        monospace = {
+          package = pkgs.dejavu_fonts;
+          name = "DejaVu Sans Mono";
+        };
+
+        emoji = {
+          package = pkgs.noto-fonts-emoji;
+          name = "Noto Color Emoji";
+        };
+      };
+
+      opacity = {
+        applications = 0.9;
+        desktop = 1.0;
+        popups = 0.8;
+        terminal = 0.8;
+      };
     };
 
     hdwlinux.home.extraOptions.stylix.targets = {
-      # kitty.enable = true;
-      # gtk.enable = true;
-      # swaylock.enable = true;
-      # vscode.enable = true;
       waybar.enable = false;
+    };
+
+    hdwlinux.home.extraOptions.gtk = {
+      enable = true;
+      iconTheme = {
+        name = "Nordzy-dark";
+        package = pkgs.nordzy-icon-theme;
+      };
+      cursorTheme = {
+        name = "Nordzy-cursors";
+        package = pkgs.nordzy-cursor-theme;
+      };
     };
   };
 }
