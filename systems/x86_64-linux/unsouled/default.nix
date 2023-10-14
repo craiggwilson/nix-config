@@ -3,8 +3,6 @@
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
-
-    ../../../themes/nord
   ] ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
 
   time.timeZone = "America/Chicago";
@@ -14,6 +12,8 @@
       enable = true;
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
     };
+
+    theme.nord.enable = true;
 
     packages = {
       hyprland.settings = {

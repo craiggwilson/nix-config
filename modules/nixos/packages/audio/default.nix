@@ -4,7 +4,6 @@ with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.packages.audio; 
 in {
-  
   options.hdwlinux.packages.audio = with types; {
     enable = mkBoolOpt false "Whether or not to enable audio support.";
   };

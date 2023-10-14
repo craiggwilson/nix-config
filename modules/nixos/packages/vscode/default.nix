@@ -7,8 +7,6 @@ in
 {
   options.hdwlinux.packages.vscode = with types; {
     enable = mkBoolOpt false "Whether or not to enable vscode.";
-    settings = mkOpt attrs { } (mdDoc "Options passed directly to home-manager's `programs.vscode.userSettings`.");
-    extensions = mkOpt (listOf package) { } (mdDoc "Options passed directly to home-manager's `programs.vscode.extensions`.");
   };
 
   config = mkIf cfg.enable {
@@ -16,7 +14,7 @@ in
       enable = true;
       mutableExtensionsDir = true;
 
-      extensions = with pkgs.vscode-extensions; cfg.extensions ++ [
+      extensions = with pkgs.vscode-extensions; [
         bbenoist.nix
         golang.go
         tamasfe.even-better-toml
