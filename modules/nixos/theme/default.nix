@@ -47,13 +47,6 @@ in {
           name = "Noto Color Emoji";
         };
       };
-
-      opacity = {
-        applications = 0.9;
-        desktop = 1.0;
-        popups = 0.8;
-        terminal = 0.8;
-      };
     };
 
     hdwlinux.home.extraOptions.stylix.targets = {

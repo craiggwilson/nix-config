@@ -29,7 +29,7 @@ in
       xwayland.enable = true;
       enableNvidiaPatches = false;
       systemd.enable = false;
-      settings = cfg.settings // {
+      settings = {
         misc = {
           disable_hyprland_logo = true;
           focus_on_activate = true;
@@ -61,9 +61,9 @@ in
         decoration = {
           rounding = 10;
           blur = {
-            enabled = true;
-            size = 3;
-            passes = 1;
+            size = 7;
+            passes = 2;
+            ignore_opacity = true;
           };
 
           drop_shadow = true;
@@ -210,7 +210,13 @@ in
           "$mainMod, mouse:272, movewindow"
           "$mainMod, mouse:273, resizewindow"
         ];
-      };
+
+        windowrulev2 = [
+          "opacity .95 .85,class:^(kitty)$"
+          "opacity .95 .85,title:^(.*Code.*)$"
+          "opacity .95 .85,class:^(firefox)$"
+        ];
+      } // cfg.settings;
     };
   };
 }

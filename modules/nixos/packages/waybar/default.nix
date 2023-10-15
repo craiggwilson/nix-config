@@ -104,6 +104,23 @@ in
       }];
 
       style = ''
+        @define-color base00 ${config.lib.stylix.colors.withHashtag.base00};
+        @define-color base01 ${config.lib.stylix.colors.withHashtag.base01};
+        @define-color base02 ${config.lib.stylix.colors.withHashtag.base02};
+        @define-color base03 ${config.lib.stylix.colors.withHashtag.base03};
+        @define-color base04 ${config.lib.stylix.colors.withHashtag.base04};
+        @define-color base05 ${config.lib.stylix.colors.withHashtag.base05};
+        @define-color base06 ${config.lib.stylix.colors.withHashtag.base06};
+        @define-color base07 ${config.lib.stylix.colors.withHashtag.base07};
+        @define-color base08 ${config.lib.stylix.colors.withHashtag.base08};
+        @define-color base09 ${config.lib.stylix.colors.withHashtag.base09};
+        @define-color base0A ${config.lib.stylix.colors.withHashtag.base0A};
+        @define-color base0B ${config.lib.stylix.colors.withHashtag.base0B};
+        @define-color base0C ${config.lib.stylix.colors.withHashtag.base0C};
+        @define-color base0D ${config.lib.stylix.colors.withHashtag.base0D};
+        @define-color base0E ${config.lib.stylix.colors.withHashtag.base0E};
+        @define-color base0F ${config.lib.stylix.colors.withHashtag.base0F};
+
         * {
             border: none;
             border-radius: 0;
@@ -115,15 +132,14 @@ in
 
         window#waybar {
             background: rgba(21, 18, 27, .5);
-            color: #cdd6f4;
         }
 
         tooltip {
-            background: #1F232B;
+            background: @base01;
             border-radius: 10px;
             border-width: 2px;
             border-style: solid;
-            border-color: #11111b;
+            border-color: @base01;
         }
 
         #backlight,
@@ -135,45 +151,39 @@ in
         #tray,
         #window,
         #workspaces {
-            background: #1F232B;
+            background: @base00;
             padding: 0px 10px;
             margin: 3px 0px;
-            border: 1px solid #181825;
+            border: 1px solid @base01;
         }
 
         #battery {
-            color: ${config.lib.stylix.colors.withHashtag.base00};
+            color: @base09;
             border-radius: 10px;
             margin-right: 10px;
         }
 
         #backlight {
-            color: ${config.lib.stylix.colors.withHashtag.base04};
+            color: @base04;
             border-radius: 10px 0px 0px 10px;
             border-right: 0px;
             margin-left: 5px;
         }
 
         #clock {
-            color: ${config.lib.stylix.colors.withHashtag.base0C};
+            color: @base0C;
             border-radius: 10px;
             margin-left: 5px;
         }
 
-        #network {
-            color: #f9e2af;
-            border-left: 0px;
-            border-right: 0px;
-        }
-
         #pulseaudio {
-            color: ${config.lib.stylix.colors.withHashtag.base0A};
+            color: @base0A;
             border-left: 0px;
             border-right: 0px;
         }
 
         #pulseaudio.microphone {
-            color: ${config.lib.stylix.colors.withHashtag.base0F};
+            color: @base0F;
             border-radius: 0px 10px 10px 0px;
             border-left: 0px;
             margin-right: 5px;
@@ -198,30 +208,27 @@ in
         }
 
         #workspaces button {
-            color: #313244;
+            color: @base02;
             padding: 5px;
             margin-right: 5px;
         }
 
         #workspaces button.active {
-            color: #a6adc8;
+            color: @base09;
         }
 
         #workspaces button.focused {
-            color: #a6adc8;
-            background: #eba0ac;
+            color: @base09;
             border-radius: 10px;
         }
 
         #workspaces button.urgent {
-            color: #11111b;
-            background: #a6e3a1;
+            color: @base08;
             border-radius: 10px;
         }
 
         #workspaces button:hover {
-            background: #11111b;
-            color: #cdd6f4;
+            color: @base02;
             border-radius: 10px;
         }
       '';
