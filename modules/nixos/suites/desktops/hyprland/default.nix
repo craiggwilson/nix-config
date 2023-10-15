@@ -16,6 +16,7 @@ in
       dunst.enable = true;
       fonts.enable = true;
       electronSupport.enable = true;
+      grimblast.enable = true;
       hyprland.enable = true;
       hyprpaper.enable = true;
       hyprpicker.enable = true;
