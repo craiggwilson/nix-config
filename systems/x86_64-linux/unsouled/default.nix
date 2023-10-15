@@ -13,7 +13,7 @@
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
     };
 
-    theme.atelier-lakeside.enable = true;
+    theme.ayu-dark.enable = true;
 
     packages = {
       hyprland.settings = {

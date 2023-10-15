@@ -32,7 +32,8 @@ in
       settings = {
         misc = {
           disable_hyprland_logo = true;
-          focus_on_activate = true;
+          disable_splash_rendering = true;
+          #focus_on_activate = true;
         };
 
         monitor = [
@@ -135,22 +136,23 @@ in
         "$fileManager" = "thunar";
         "$launcher" = "rofi -show drun -show-icons";
         "$launcherAlt" = "rofi -show run -show-icons";
-        "$locker" = "swaylock";
+        "$password" = "1password --quick-access";
+        "$logoutMenu" = "wlogout -b 2";
         "$switchWindows" = "rofi -show window -show-icons";
         "$term" = "kitty";
 
         bind = [
           "$mainMod, B, exec, $browser"
           "$mainMod, E, exec, $fileManager"
-          "$mainMod, L, exec, $locker"
-          "$mainMod, M, exit,"
+          "$mainMod, L, exec, $password"
+          "$mainMod, X, exec, $logoutMenu"
           "$mainMod, P, exec, $colorPicker"
           "$mainMod, R, exec, $launcherAlt"
           "$mainMod, SPACE, exec, $launcher"
           "$mainMod, T, exec, $term"
           "$mainMod, TAB, exec, $switchWindows"
           "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-          ", xf86audiomute, exec, pamixer -t"
+          ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
 
           "$mainMod CONTROL, ESCAPE, exec, $term btop"
 
@@ -199,8 +201,8 @@ in
         ];
 
         binde = [
-          ", xf86audioraisevolume, exec, pamixer -i 5"
-          ", xf86audiolowervolume, exec, pamixer -d 5"
+          ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
+          ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
           ", xf86monbrightnessup, exec, brightnessctl set 10%+"
           ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
         ];
@@ -215,6 +217,10 @@ in
           "opacity .95 .85,class:^(kitty)$"
           "opacity .95 .85,title:^(.*Code.*)$"
           "opacity .95 .85,class:^(firefox)$"
+          "opacity .95 .85,class:^(Slack)$"
+          "dimaround, class:^(1Password)$, floating"
+          "center, class:^(1Password)$"
+          "stayfocused,class:^(1Password)$"
         ];
       } // cfg.settings;
     };

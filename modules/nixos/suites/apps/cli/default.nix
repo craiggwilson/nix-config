@@ -20,7 +20,6 @@ in
       micro.enable = true;
       neofetch.enable = true;
       nvtop.enable = true;
-      pamixer.enable = true;
       procps.enable = true;
       ranger.enable = true;
       ripgrep.enable = true;

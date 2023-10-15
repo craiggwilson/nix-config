@@ -4,15 +4,11 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.packages.waybar;
-  pamixer = "${getBin pkgs.pamixer}/bin/pamixer";
-  pavucontrol = "${getBin pkgs.pavucontrol}/bin/pavucontrol";
 in
 {
   options.hdwlinux.packages.waybar = with types; {
     enable = mkBoolOpt false "Whether or not to enable waybar.";
   };
-
-  #TODO: finish colors here...
 
   config = mkIf cfg.enable {
     hdwlinux.home.programs.waybar = {
@@ -69,10 +65,10 @@ in
           format = "{icon} {volume}%";
           tooltip = false;
           format-muted = " Muted";
-          on-click = "${pamixer} -t";
-          on-click-right = "${pavucontrol} -t 3";
-          on-scroll-up = "${pamixer} -i 1";
-          on-scroll-down = "${pamixer} -d 1";
+          on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+          on-click-right = "pavucontrol -t 3";
+          on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
+          on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
           scroll-step = 5;
           format-icons = {
             headphone =  "";
@@ -90,10 +86,10 @@ in
           format = "{format_source}";
           format-source =" {volume}%";
           format-source-muted = " Muted";
-          on-click = "${pamixer} --default-source -t";
-          on-click-right = "${pavucontrol} -t 4";
-          on-scroll-up = "${pamixer} --default-source -i 1";
-          on-scroll-down = "${pamixer} --default-source -d 1";
+          on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+          on-click-right = "pavucontrol -t 4";
+          on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
+          on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
           scroll-step = 5;
         };
 
