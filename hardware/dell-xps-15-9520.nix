@@ -11,7 +11,6 @@
     fingerprint.enable = true;
     libcamera.enable = true;
     networking.enable = true;
-    printing.enable = true;
     redistributableFirmware.enable = true;
     thunderbolt.enable = true;
     v4l2loopback.enable = true;

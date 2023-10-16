@@ -14,12 +14,13 @@ in
     hdwlinux.packages = {
       _1password.enable = true;
       calibre.enable = true;
-      fonts.enable = true;
       firefox.enable = true;
+      fonts.enable = true;
       gimp.enable = true;
       kitty.enable = true;
       libreoffice.enable = true;
       musescore.enable = true;
+      simplescan.enable = config.hdwlinux.packages.scanning.enable;
     };
   };
 }

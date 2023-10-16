@@ -15,6 +15,8 @@ in {
     networking = {
       networkmanager.enable = true;
       useDHCP = lib.mkDefault true;
+
+      firewall.enable = true;
     };
 
     environment.systemPackages = with pkgs; mkIf cfg.enableL2tpVpn [
