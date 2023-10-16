@@ -11,7 +11,7 @@ in
 
   config = mkIf cfg.enable {
     hdwlinux.home.packages = with pkgs; [ 
-        awscli
+        awscli2
     ];
   };
 }

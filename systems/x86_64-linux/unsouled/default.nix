@@ -41,12 +41,12 @@
 
       openssh.enable = true;
 
-      printing = {
-        enable = true;
-        brother.laser.enable = true;
-      };
+      # printing = {
+      #   enable = true;
+      #   brother.laser.enable = true;
+      # };
 
-      scanning.enable = true;
+      # scanning.enable = true;
     };
 
     suites = {
