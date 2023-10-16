@@ -93,7 +93,7 @@ in
           kb_model = "";
           kb_options = "";
           kb_rules = "";
-          follow_mouse = 1;
+          follow_mouse = 2;
 
           touchpad = {
             natural_scroll = true;
@@ -219,6 +219,7 @@ in
           "opacity .95 .85,class:^(firefox)$"
           "opacity .95 .85,class:^(jetbrains-goland)$"
           "opacity .95 .85,class:^(kitty)$"
+          "opacity .95 .85,class:^(Logseq)$"
           "opacity .95 .85,class:^(Slack)$"
           "dimaround, class:^(1Password)$, floating"
           "center, class:^(1Password)$"
