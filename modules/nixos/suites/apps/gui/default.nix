@@ -19,6 +19,7 @@ in
       gimp.enable = true;
       kitty.enable = true;
       libreoffice.enable = true;
+      logseq.enable = true;
       musescore.enable = true;
       simplescan.enable = config.hdwlinux.packages.scanning.enable;
     };

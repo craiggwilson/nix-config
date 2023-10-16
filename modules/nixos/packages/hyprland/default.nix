@@ -215,9 +215,10 @@ in
         ];
 
         windowrulev2 = [
-          "opacity .95 .85,class:^(kitty)$"
           "opacity .95 .85,title:^(.*Code.*)$"
           "opacity .95 .85,class:^(firefox)$"
+          "opacity .95 .85,class:^(jetbrains-goland)$"
+          "opacity .95 .85,class:^(kitty)$"
           "opacity .95 .85,class:^(Slack)$"
           "dimaround, class:^(1Password)$, floating"
           "center, class:^(1Password)$"
