@@ -13,13 +13,17 @@ in
     hdwlinux.home.programs.swaylock = {
       enable = true;
       settings = {
-        ignore-empty-password = true;
+        ignore-empty-password = false;
         line-uses-ring = true;
         indicator-radius = 100;
         indicator-thickness = 10;
       };
     };
 
-    security.pam.services.swaylock = { }; # "auth include login";
+    security.pam.services.swaylock.text = ''
+      auth sufficient pam_unix.so try_first_pass likeauth nullok
+      auth sufficient pam_fprintd.so
+      auth include login
+    '';
   };
 }

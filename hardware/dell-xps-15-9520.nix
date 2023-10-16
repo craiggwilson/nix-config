@@ -8,6 +8,7 @@
     audio.enable = true;
     bluetooth.enable = true;
     boot.enable = true;
+    fingerprint.enable = true;
     libcamera.enable = true;
     networking.enable = true;
     printing.enable = true;
