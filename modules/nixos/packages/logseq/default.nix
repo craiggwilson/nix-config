@@ -13,27 +13,8 @@ in
     hdwlinux.home.packages = with pkgs; [ 
         logseq
     ];
-    
-    # hdwlinux.home.file.".logseq/preferences.json".text = ''
-    #   {
-    #     "theme": "nixos-custom",
-    #     "themes": {
-    #       "mode": "dark",
-    #       "dark": {
-    #         "name": "nixos-custom",
-    #         "url": "assets:///home/craig/.logseq/custom.css",
-    #         "description": "Logseq nixos-custom theme.",
-    #         "mode": "dark",
-    #         "selected": true,
-    #         "group-first": true,
-    #         "group-desc": "dark themes"
-    #       }
-    #     },
-    #     "externals": []
-    #   }
-    # '';
 
-    hdwlinux.home.file.".logseq/custom2.css".text = ''
+    hdwlinux.home.file.".logseq/custom.css".text = ''
       :root {
         --base00: ${config.lib.stylix.colors.withHashtag.base00};
         --base01: ${config.lib.stylix.colors.withHashtag.base01};
