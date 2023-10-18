@@ -41,6 +41,8 @@ in
       nix-output-monitor
     ];
 
+    hdwlinux.packages.nix-ld.enable = true;
+
     nix =
       let 
         users = [ "root" config.hdwlinux.user.name ];

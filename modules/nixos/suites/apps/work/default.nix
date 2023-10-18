@@ -17,6 +17,7 @@ in
       aws.enable = true;
       azure.enable = true;
       kube.enable = true;
+      mongodb.enable = true;
       slack.enable = true;
       zoom-us.enable = true;
     };

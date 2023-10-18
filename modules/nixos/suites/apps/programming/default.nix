@@ -16,6 +16,8 @@ in
       go.enable = true;
       goland.enable = true;
       meld.enable = true;
+      podman.enable = true;
+      python.enable = true;
       vscode.enable = true;
     };
   };

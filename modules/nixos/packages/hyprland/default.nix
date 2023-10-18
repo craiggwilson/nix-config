@@ -221,9 +221,10 @@ in
           "opacity .95 .85,class:^(kitty)$"
           "opacity .95 .85,class:^(Logseq)$"
           "opacity .95 .85,class:^(Slack)$"
-          "dimaround, class:^(1Password)$, floating"
-          "center, class:^(1Password)$"
-          "stayfocused,class:^(1Password)$"
+          "float, title:^(Quick Access — 1Password)$"
+          "dimaround, title:^(Quick Access — 1Password)$, floating"
+          "center, title:^(Quick Access — 1Password)$"
+          "stayfocused,title:^(Quick Access — 1Password)$"
         ];
       } // cfg.settings;
 

@@ -13,10 +13,10 @@ in
   config = mkIf cfg.enable {
     hdwlinux.home.programs.starship = {
       enable = true;
-      enableBashIntegration = mkAliasDefinitions options.hdwlinux.packages.bash.enable;
+      enableBashIntegration = config.hdwlinux.packages.bash.enable;
       settings = cfg.settings // {
         command_timeout = 5000;
-        format = "$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
+        format = "$nix_shell$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
 
         character = {
           success_symbol = "[❯](#ff9400)";
@@ -39,6 +39,11 @@ in
         };
 
         git_status.style = "#666666";
+
+        nix_shell = {
+          symbol = "❄️ ";
+          format = "[$symbol]($style)";
+        };
 
         shell = {
           disabled = false;

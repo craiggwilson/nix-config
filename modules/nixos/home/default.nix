@@ -20,7 +20,10 @@ in {
     hdwlinux.home.extraOptions = {
       home.stateVersion = config.system.stateVersion;
       home.file = mkAliasDefinitions options.hdwlinux.home.file;
-      home.packages = mkAliasDefinitions options.hdwlinux.home.packages;
+      home.packages = with pkgs; [
+        xdg-utils
+      ] ++ cfg.packages;
+
       home.sessionVariables = mkAliasDefinitions options.hdwlinux.home.sessionVariables;
       home.shellAliases = {
         "start" = "xdg-open";
@@ -28,10 +31,16 @@ in {
         "nixos-rebuild-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${config.hdwlinux.nix.flake}?submodules=1";
       } // cfg.shellAliases; #TODO optional?
       
+      programs = mkAliasDefinitions options.hdwlinux.home.programs;
+      services = mkAliasDefinitions options.hdwlinux.home.services;
+
+      systemd.user.startServices = true;
+
       xdg = {
         enable = true;
         configFile = mkAliasDefinitions options.hdwlinux.home.configFile;
         mime.enable = true;
+        mimeApps.enable = true;
         userDirs = {
           enable = true;
           createDirectories = true;
@@ -40,11 +49,6 @@ in {
           };
         };
       };
-
-      programs = mkAliasDefinitions options.hdwlinux.home.programs;
-      services = mkAliasDefinitions options.hdwlinux.home.services;
-
-      systemd.user.startServices = true;
     };
 
     lib.file.mkOutOfStoreSymlink = path: 
