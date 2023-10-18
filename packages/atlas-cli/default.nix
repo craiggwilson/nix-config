@@ -11,6 +11,8 @@ stdenv.mkDerivation {
 
     meta = {
         mainProgram = "atlas";
+        description = "MongoDB Atlas CLI";
+        platforms = [ "x86_64-linux" ];
     };
 
     installPhase = ''
