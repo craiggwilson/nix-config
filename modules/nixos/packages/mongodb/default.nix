@@ -12,6 +12,8 @@ in
   config.hdwlinux.home = mkIf cfg.enable {
     packages = with pkgs; [ 
       mongodb-5_0
+      mongosh
+      mongodb-tools
     ];
   };
 }

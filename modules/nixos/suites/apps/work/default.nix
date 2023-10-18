@@ -14,6 +14,7 @@ in
     hdwlinux.suites.apps.programming.enable = true;
     
     hdwlinux.packages = {
+      atlas-cli.enable = true;
       aws.enable = true;
       azure.enable = true;
       kube.enable = true;
