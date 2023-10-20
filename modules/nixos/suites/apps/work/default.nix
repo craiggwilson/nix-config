@@ -17,6 +17,7 @@ in
       atlas-cli.enable = true;
       aws.enable = true;
       azure.enable = true;
+      evergreen.enable = true;
       kube.enable = true;
       mongodb.enable = true;
       slack.enable = true;

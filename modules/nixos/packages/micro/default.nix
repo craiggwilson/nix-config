@@ -14,6 +14,7 @@ in
       enable = true;
       settings = {
         mkparents = true;
+        softwrap = true;
       };
     };
 
