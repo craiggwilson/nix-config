@@ -10,10 +10,9 @@ in
   };
 
   config = mkIf cfg.enable {
-    #security.pam.services.greetd.enableGnomeKeyring = true;
-    #hdwlinux.packages.gnome-keyring.enable = true;
-    
-    hdwlinux.packages.tuigreet.enable = true;
+    hdwlinux.features.tuigreet.enable = true;
+
+    security.pam.services.greetd.enableGnomeKeyring = config.hdwlinux.features.gnome-keyring.enable;
 
     services.greetd = {
       enable = true;
@@ -24,6 +23,5 @@ in
         };
       };
     };
-
   };
 }

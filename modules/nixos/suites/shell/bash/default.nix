@@ -10,7 +10,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable bash and shell integrations.";
   };
 
-  config.hdwlinux.packages = mkIf cfg.enable {
+  config.hdwlinux.features = mkIf cfg.enable {
     bash = {
       enable = true;
       initExtra = ''

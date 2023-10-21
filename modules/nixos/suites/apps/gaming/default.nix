@@ -11,7 +11,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.packages = {
+    hdwlinux.features = {
       protonup-qt.enable = true;
       steam.enable = true;
     };

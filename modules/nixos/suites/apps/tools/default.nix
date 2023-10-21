@@ -11,7 +11,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.packages = {
+    hdwlinux.features = {
       dconf.enable = true;
       lshw.enable = true;
       pciutils.enable = true;

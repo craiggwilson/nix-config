@@ -13,7 +13,7 @@ in
   config = mkIf cfg.enable {
     hdwlinux.suites.apps.programming.enable = true;
     
-    hdwlinux.packages = {
+    hdwlinux.features = {
       atlas-cli.enable = true;
       aws.enable = true;
       azure.enable = true;

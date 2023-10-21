@@ -11,7 +11,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.packages = {
+    hdwlinux.features = {
       gh.enable = true;
       go.enable = true;
       goland.enable = true;

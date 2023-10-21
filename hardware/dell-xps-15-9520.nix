@@ -4,7 +4,7 @@
     inputs.nixos-hardware.nixosModules.dell-xps-15-9520-nvidia
   ];
 
-  hdwlinux.packages = {
+  hdwlinux.features = {
     audio.enable = true;
     bluetooth.enable = true;
     boot.enable = true;

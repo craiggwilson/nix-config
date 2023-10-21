@@ -10,18 +10,20 @@ in
   };
 
   config = mkIf cfg.enable {
-  	hdwlinux.packages = {
+  	hdwlinux.features = {
       brightnessctl.enable = true;
       cliphist.enable = true;
       dunst.enable = true;
       fonts.enable = true;
       electronSupport.enable = true;
+      gnome-keyring.enable = true;
       grimblast.enable = true;
       hyprland.enable = true;
       hyprpaper.enable = true;
       hyprpicker.enable = true;
       libnotify.enable = true;
       networkmanagerapplet.enable = true;
+      polkit.enable = true;
       thunar.enable = true;
       pavucontrol.enable = true;
       rofi.enable = true;

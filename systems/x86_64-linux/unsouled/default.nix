@@ -15,7 +15,7 @@
 
     theme.ayu-dark.enable = true;
 
-    packages = {
+    features = {
       hyprland.settings = {
         monitor = [
           "DP-5, 2560x1440, 0x0, 1"

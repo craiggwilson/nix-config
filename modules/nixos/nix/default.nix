@@ -41,7 +41,7 @@ in
       nix-output-monitor
     ];
 
-    hdwlinux.packages.nix-ld.enable = true;
+    hdwlinux.features.nix-ld.enable = true;
 
     nix =
       let 
@@ -69,7 +69,7 @@ in
               ++
               (mapAttrsToList (name: value: value.key) cfg.extra-substituters);
 
-        } // (lib.optionalAttrs config.hdwlinux.packages.direnv.enable {
+        } // (lib.optionalAttrs config.hdwlinux.features.direnv.enable {
           keep-outputs = true;
           keep-derivations = true;
         });

@@ -18,7 +18,7 @@ in
   };
 
   config = {
-    hdwlinux.packages.openssh.authorizedKeys = [ cfg.publicKey ];
+    hdwlinux.features.openssh.authorizedKeys = [ cfg.publicKey ];
     hdwlinux.home.file.".ssh/id_rsa.pub".text = cfg.publicKey;
 
     users.users.${cfg.name} = {

@@ -11,7 +11,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.packages = {
+    hdwlinux.features = {
       _1password.enable = true;
       calibre.enable = true;
       firefox.enable = true;
@@ -21,7 +21,7 @@ in
       libreoffice.enable = true;
       logseq.enable = true;
       musescore.enable = true;
-      simplescan.enable = config.hdwlinux.packages.scanning.enable;
+      simplescan.enable = config.hdwlinux.features.scanning.enable;
     };
   };
 }

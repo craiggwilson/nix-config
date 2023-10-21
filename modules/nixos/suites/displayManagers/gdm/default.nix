@@ -10,7 +10,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.packages = {
+    hdwlinux.features = {
         gdm.enable = true;
     };
   };

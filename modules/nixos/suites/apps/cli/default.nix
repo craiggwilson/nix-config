@@ -11,7 +11,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.packages = {
+    hdwlinux.features = {
       bat.enable = true;
       btop.enable = true;
       git.enable = true;
