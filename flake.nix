@@ -8,6 +8,9 @@
     # also provide stable packages if unstable are breaking
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.05";
 
+    # nix user repository provides additional packages.
+    nur.url = github:nix-community/NUR;
+
     # home manager for config files and user installs
     home-manager = {
     	url = "github:nix-community/home-manager";	
@@ -59,6 +62,7 @@
         modules = {
           nixos = with inputs; [
             home-manager.nixosModules.home-manager
+            nur.nixosModules.nur
             disko.nixosModules.disko
             stylix.nixosModules.stylix
           ];
