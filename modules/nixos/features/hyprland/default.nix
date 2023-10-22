@@ -13,7 +13,7 @@ in
   config = mkIf cfg.enable {
     programs.hyprland = {
       enable = true;
-      enableNvidiaPatches = false; #TODO: check if nvidia is enabled...
+      enableNvidiaPatches = true; #TODO: check if nvidia is enabled...
       xwayland.enable = true;
     };
 
@@ -28,8 +28,8 @@ in
       
       enable = true;
       xwayland.enable = true;
-      enableNvidiaPatches = false;
-      systemd.enable = false;
+      enableNvidiaPatches = true;
+      systemd.enable = true;
 
       settings = {
         misc = {
@@ -130,7 +130,6 @@ in
           "1password --silent"
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
-          "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1"
         ];
 
         "$mainMod" = "SUPER";
