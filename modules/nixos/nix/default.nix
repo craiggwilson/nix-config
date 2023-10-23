@@ -59,7 +59,8 @@ in
           auto-optimise-store = true;
           trusted-users = users;
           allowed-users = users;
-
+          keep-outputs = true;
+          keep-derivations = true;
           substituters =
             [ cfg.default-substituter.url ]
               ++
@@ -69,10 +70,7 @@ in
               ++
               (mapAttrsToList (name: value: value.key) cfg.extra-substituters);
 
-        } // (lib.optionalAttrs config.hdwlinux.features.direnv.enable {
-          keep-outputs = true;
-          keep-derivations = true;
-        });
+        };
 
         gc = {
           automatic = true;

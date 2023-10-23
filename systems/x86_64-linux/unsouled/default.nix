@@ -66,7 +66,6 @@
       boot.systemd.enable = true;
       displayManagers.greetd.enable = true;
       desktops.hyprland.enable = true;
-      shell.bash.enable = true;
 
       apps.gaming.enable = true;
       apps.gui.enable = true;

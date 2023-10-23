@@ -8,7 +8,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable fzf.";
   };
 
-  config.hdwlinux.home.programs.fzf = mkIf cfg.enable {
+  config.programs.fzf = mkIf cfg.enable {
     enable = true;
     enableBashIntegration = config.hdwlinux.features.bash.enable;
   };

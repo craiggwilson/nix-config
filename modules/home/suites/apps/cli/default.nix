@@ -14,6 +14,8 @@ in
     hdwlinux.features = {
       bat.enable = true;
       btop.enable = true;
+      direnv.enable = true;
+      fzf.enable = true;
       git.enable = true;
       jq.enable = true;
       lsd.enable = true;
@@ -24,6 +26,8 @@ in
       ranger.enable = true;
       ripgrep.enable = true;
       ssh.enable = true;
+      starship.enable = true;
+      zoxide.enable = true;
     };
   };
 }

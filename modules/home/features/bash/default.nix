@@ -10,20 +10,18 @@ in
     initExtra = mkOpt lines "" (mdDoc "Options passed directly to home-manager's `programs.bash.initExtra`.");
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.programs.bash = {
+  config.programs.bash = mkIf cfg.enable {
       enable = true;
       initExtra = mkAliasDefinitions options.hdwlinux.features.bash.initExtra;
       enableVteIntegration = true;
-        historyControl = [
-            "ignoredups"
-            "ignorespace"
-        ];
-        historyIgnore = [
-            "cd"
-            "exit"
-            "ls"
-        ];
-    };
+      historyControl = [
+          "ignoredups"
+          "ignorespace"
+      ];
+      historyIgnore = [
+          "cd"
+          "exit"
+          "ls"
+      ];
   };
 }

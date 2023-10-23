@@ -8,10 +8,8 @@ in
     enable = mkBoolOpt false "Whether or not to enable zoxide.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.programs.zoxide = {
-      enable = true;
-      enableBashIntegration = config.hdwlinux.features.bash.enable;
-    };
+  config.programs.zoxide = mkIf cfg.enable {
+    enable = true;
+    enableBashIntegration = config.hdwlinux.features.bash.enable;
   };
 }

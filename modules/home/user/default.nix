@@ -8,9 +8,9 @@ in
 {
   options.hdwlinux.user = with types; {
     name = mkStrOpt config.snowfallorg.user.name "The name to use for the user account.";
-    fullName = mkStrOpt "Craig Wilson" "The full name of the user.";
-    email = mkStrOpt "craiggwilson@gmail.com" "The email of the user.";
-    publicKey = mkStrOpt publicKey "The public key for the user.";
+    fullName = mkOption { type = str; description = "The full name of the user."; };
+    email = mkOption { type = str; description = "The email of the user."; };
+    publicKey = mkOption { type = str; description = "The public key for the user."; };
     homeDirectory = mkOpt (nullOr str) "/home/${cfg.name}" "The user's home directory.";
   };
 

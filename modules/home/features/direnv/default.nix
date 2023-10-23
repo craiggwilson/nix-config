@@ -1,4 +1,4 @@
-{ options, config, lib, pkgs, ... }:
+{ options, config, lib, pkgs, osConfig, ... }:
 with lib;
 with lib.hdwlinux;
 let cfg = config.hdwlinux.features.direnv;
@@ -8,10 +8,8 @@ in
     enable = mkBoolOpt false "Whether or not to enable direnv.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.programs.direnv = {
-      enable = true;
-      nix-direnv.enable = true;
-    };
+  config.programs.direnv = mkIf cfg.enable {
+    enable = true;
+    nix-direnv.enable = true;
   };
 }
