@@ -10,4 +10,5 @@
 
     hdwlinux.suites.shell.bash.enable = true;
     hdwlinux.suites.apps.cli.enable = true;
+    hdwlinux.suites.apps.gui.gaming.enable = true;
 }

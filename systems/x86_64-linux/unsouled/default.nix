@@ -67,7 +67,6 @@
       displayManagers.greetd.enable = true;
       desktops.hyprland.enable = true;
 
-      apps.gaming.enable = true;
       apps.gui.enable = true;
       apps.programming.enable = true;
       apps.tools.enable = true;

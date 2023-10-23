@@ -9,9 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable steam.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.packages = with pkgs; [
-      steam
-    ];
-  };
+  config.home.packages = with pkgs; mkIf cfg.enable [
+    steam
+  ];
 }
