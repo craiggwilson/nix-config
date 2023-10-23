@@ -11,8 +11,8 @@ in
     includes = mkOpt (listOf str) [ ] (mdDoc "Options passed directly to home-manager's `programs.ssh.includes`.");
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.programs.ssh.enable = true;
-    hdwlinux.home.programs.ssh.includes = mkAliasDefinitions options.hdwlinux.features.ssh.includes;
+  config.programs.ssh = mkIf cfg.enable {
+    enable = true;
+    includes = mkAliasDefinitions options.hdwlinux.features.ssh.includes;
   };
 }

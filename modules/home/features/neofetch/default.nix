@@ -9,9 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable neofetch.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.packages = with pkgs; [
-      neofetch
-    ];
-  };
+  config.home.packages = with pkgs; mkIf cfg.enable [
+    neofetch
+  ];
 }

@@ -9,9 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable nvtop.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.packages = with pkgs; [ 
-        nvtop
-    ];
-  };
+  config.home.packages = with pkgs; mkIf cfg.enable [
+    nvtop
+  ];
 }

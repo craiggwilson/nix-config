@@ -8,7 +8,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable ranger.";
   };
 
-  config.hdwlinux.home.packages = with pkgs; mkIf cfg.enable [
+  config.home.packages = with pkgs; mkIf cfg.enable [
     ranger    
   ];
 }

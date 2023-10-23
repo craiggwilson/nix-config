@@ -1,5 +1,7 @@
 { lib, pkgs, inputs, config, ... }:
 {
+    imports = [ ]; # ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
+
     hdwlinux.user = {
         name = "craig";
         fullName = "Craig Wilson";

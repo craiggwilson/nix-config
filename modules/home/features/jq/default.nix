@@ -9,7 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable jq.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.programs.jq.enable = true;
+  config.programs.jq = mkIf cfg.enable {
+    enable = true;
   };
 }

@@ -8,7 +8,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable ripgrep.";
   };
 
-  config.hdwlinux.home.programs.ripgrep = mkIf cfg.enable {
+  config.programs.ripgrep = mkIf cfg.enable {
     enable = true;
   };
 }

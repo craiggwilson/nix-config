@@ -16,6 +16,8 @@ in
       # Require public key authentication
       settings.PasswordAuthentication = false;
       settings.KbdInteractiveAuthentication = false;
+      #TODO: authorizedKeys 
     };
+    #hdwlinux.user.extraOptions.openssh.authorizedKeys.keys = mkAliasDefinitions options.hdwlinux.features.openssh.authorizedKeys;
   };
 }

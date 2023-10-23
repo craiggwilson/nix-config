@@ -15,6 +15,15 @@ in
       bat.enable = true;
       btop.enable = true;
       git.enable = true;
+      jq.enable = true;
+      lsd.enable = true;
+      micro.enable = true;
+      neofetch.enable = true;
+      nvtop.enable = true;
+      procps.enable = true;
+      ranger.enable = true;
+      ripgrep.enable = true;
+      ssh.enable = true;
     };
   };
 }

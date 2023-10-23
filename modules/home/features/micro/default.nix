@@ -10,7 +10,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.home.programs.micro = {
+    programs.micro = {
       enable = true;
       settings = {
         mkparents = true;
@@ -18,7 +18,7 @@ in
       };
     };
 
-    hdwlinux.home.sessionVariables = {
+    home.sessionVariables = {
       EDITOR = "micro";
       VISUAL = "micro";
     };

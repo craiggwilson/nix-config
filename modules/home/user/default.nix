@@ -21,7 +21,5 @@ in
 
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
     };
-
-    #services.openssh.authorizedKeys.keys = [ cfg.publicKey ]; #TODO: figure this out.
   };
 }

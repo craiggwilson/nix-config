@@ -8,8 +8,6 @@ in
 {
   options.hdwlinux.user = with types; {
     name = mkStrOpt "craig" "The name to use for the user account.";
-    fullName = mkStrOpt "Craig Wilson" "The full name of the user.";
-    email = mkStrOpt "craiggwilson@gmail.com" "The email of the user.";
     publicKey = mkStrOpt publicKey "The public key for the user.";
 
     initialPassword = mkStrOpt "password" "The initial password to use when the user is first created.";
@@ -18,9 +16,6 @@ in
   };
 
   config = {
-    #hdwlinux.features.openssh.authorizedKeys = [ cfg.publicKey ];
-    #hdwlinux.home.file.".ssh/id_rsa.pub".text = cfg.publicKey;
-
     users.users.${cfg.name} = {
       isNormalUser = true;
 

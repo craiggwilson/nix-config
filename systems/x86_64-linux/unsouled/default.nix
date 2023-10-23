@@ -3,7 +3,7 @@
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
-  ] ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
+  ]; # ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
 
   time.timeZone = "America/Chicago";
 
@@ -68,7 +68,6 @@
       desktops.hyprland.enable = true;
       shell.bash.enable = true;
 
-      apps.cli.enable = true;
       apps.gaming.enable = true;
       apps.gui.enable = true;
       apps.programming.enable = true;
