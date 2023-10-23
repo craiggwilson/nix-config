@@ -12,7 +12,6 @@ in
   config = mkIf cfg.enable {
     virtualisation.docker.enable = true;
     virtualisation.docker.storageDriver = "btrfs"; #TODO: get this from disko???
-
     hdwlinux.user.extraGroups = [ "docker" ];
   };
 }

@@ -8,7 +8,7 @@ in
 {
   options.hdwlinux.features._1password = with types; {
     enable = mkBoolOpt false "Whether or not to enable 1password.";
-    enableGui = mkBoolOpt true "Whether or not to enable the GUI."; # TODO: see if there is a way to default this if graphics are enabled...
+    enableGui = mkBoolOpt true "Whether or not to enable the GUI.";
   };
 
   config.hdwlinux.user.extraGroups = mkIf cfg.enable [ "1password-cli" ];

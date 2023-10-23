@@ -16,26 +16,39 @@
     theme.ayu-dark.enable = true;
 
     features = {
-      hyprland.settings = {
-        monitor = [
-          "DP-5, 2560x1440, 0x0, 1"
-          "DP-6, 2560x1440, 2560x0, 1"
-          "eDP-1, highres, 0x1440, 1"
-          ", preferred, auto, auto"
-        ];
-
-        workspace = [
-          "1, monitor:eDP-1"
-          "2, monitor:DP-5"
-          "3, monitor:DP-6"
-        ];
-      };
-
-      hyprpaper = {
+      monitors = {
+        enable = true;
         monitors = [
-          { name = "eDP-1"; wallpaper = config.hdwlinux.theme.wallpaper1; }
-          { name = "DP-5"; wallpaper = config.hdwlinux.theme.wallpaper1; }
-          { name = "DP-6"; wallpaper = config.hdwlinux.theme.wallpaper1; }
+          { 
+            name = "eDP-1"; 
+            workspace = "1";
+            width = 1920;
+            height = 1200;
+            x = 0;
+            y = 1440;
+            scale = 1;
+            wallpaper = config.hdwlinux.theme.wallpaper1; 
+          }
+          { 
+            name = "DP-5"; 
+            workspace = "2";
+            width = 2560;
+            height = 1440;
+            x = 0;
+            y = 0;
+            scale = 1;
+            wallpaper = config.hdwlinux.theme.wallpaper1; 
+          }
+          { 
+            name = "DP-6"; 
+            workspace = "3";
+            width = 2560;
+            height = 1440;
+            x = 2560;
+            y = 0;
+            scale = 1;
+            wallpaper = config.hdwlinux.theme.wallpaper1; 
+          }
         ];
       };
 

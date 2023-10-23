@@ -13,7 +13,7 @@ in
   config = mkIf cfg.enable {
     programs.hyprland = {
       enable = true;
-      enableNvidiaPatches = true; #TODO: check if nvidia is enabled...
+      enableNvidiaPatches = builtins.elem "nvidia" config.services.xserver.videoDrivers;
       xwayland.enable = true;
     };
 
@@ -25,31 +25,25 @@ in
     };
 
     hdwlinux.home.extraOptions.wayland.windowManager.hyprland = {
-      
       enable = true;
       xwayland.enable = true;
-      enableNvidiaPatches = true;
+      enableNvidiaPatches = builtins.elem "nvidia" config.services.xserver.videoDrivers;
       systemd.enable = true;
 
       settings = {
         misc = {
           disable_hyprland_logo = true;
           disable_splash_rendering = true;
-          #focus_on_activate = true;
         };
 
-        monitor = [
-          "DP-5, 2560x1440, 0x0, 1"
-          "DP-6, 2560x1440, 2560x0, 1"
-          "eDP-1, highres, 0x1440, 1"
-          ", preferred, auto, auto"
-        ];
+        monitor = (builtins.map (m: 
+          "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
+        ) config.hdwlinux.features.monitors.monitors)
+        ++ [ ", preferred, auto, auto" ];
 
-        workspace = [
-          "1, monitor:eDP-1"
-          "2, monitor:DP-5"
-          "3, monitor:DP-6"
-        ];
+        workspace = map (m: 
+          "${m.workspace}, monitor:${m.name}"
+        ) config.hdwlinux.features.monitors.monitors;
 
         env = [
           "XCURSOR_SIZE,24"
