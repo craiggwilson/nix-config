@@ -12,6 +12,7 @@ in
 
   config.hdwlinux.features = mkIf cfg.enable {
     bat.enable = true;
+    bc.enable = true;
     btop.enable = true;
     direnv.enable = true;
     fzf.enable = true;
