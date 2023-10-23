@@ -8,7 +8,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable git.";
   };
 
-  config.hdwlinux.home = mkIf cfg.enable {
+  config = mkIf cfg.enable {
     programs.git = {
       enable = true;
       aliases = {
@@ -29,7 +29,7 @@ in
       extraConfig = {
           commit.gpgsign = true;
           gpg.format = "ssh";
-          #TODO: gpg.ssh.allowedSignersFile = "${config.xdg.configHome}/git/allowed_signers";
+          gpg.ssh.allowedSignersFile = "${config.xdg.configHome}/git/allowed_signers";
           pull.rebase = true;
           rerere.enabled = true;
           submodule.recurse = true;
@@ -48,7 +48,7 @@ in
       userName = config.hdwlinux.user.fullName;
     };
 
-    configFile."/git/allowed_signers".text = ''
+    xdg.configFile."/git/allowed_signers".text = ''
       ${config.hdwlinux.user.email} ${config.hdwlinux.user.publicKey}
     '';
   };

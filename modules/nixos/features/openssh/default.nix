@@ -8,7 +8,6 @@ in
 {
   options.hdwlinux.features.openssh = with types; {
     enable = mkBoolOpt false "Whether or not to configure OpenSSH support.";
-    authorizedKeys = mkOpt (listOf str) [ ] "The public keys to authorize for use.";
   };
 
   config = mkIf cfg.enable {
@@ -18,7 +17,5 @@ in
       settings.PasswordAuthentication = false;
       settings.KbdInteractiveAuthentication = false;
     };
-
-    hdwlinux.user.extraOptions.openssh.authorizedKeys.keys = mkAliasDefinitions options.hdwlinux.features.openssh.authorizedKeys;
   };
 }

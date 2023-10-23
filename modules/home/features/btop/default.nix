@@ -9,7 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable btop.";
   };
 
-  config.hdwlinux.home.programs.btop = mkIf cfg.enable {
+  config.programs.btop = mkIf cfg.enable {
      enable = true;
   };
 }

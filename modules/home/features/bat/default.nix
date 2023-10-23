@@ -9,7 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable bat.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.programs.bat.enable = true;
+  config.programs.bat = mkIf cfg.enable {
+    enable = true;
   };
 }

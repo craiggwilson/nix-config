@@ -7,29 +7,21 @@ let
 in
 {
   options.hdwlinux.user = with types; {
-    name = mkStrOpt "craig" "The name to use for the user account.";
+    name = mkStrOpt config.snowfallorg.user.name "The name to use for the user account.";
     fullName = mkStrOpt "Craig Wilson" "The full name of the user.";
     email = mkStrOpt "craiggwilson@gmail.com" "The email of the user.";
     publicKey = mkStrOpt publicKey "The public key for the user.";
-
-    initialPassword = mkStrOpt "password" "The initial password to use when the user is first created.";
-    extraGroups = mkOpt (listOf str) [ ] "Groups for the user to be assigned.";
-    extraOptions = mkOpt attrs { } (mdDoc "Extra options passed to `users.users.<name>`.");
+    homeDirectory = mkOpt (nullOr str) "/home/${cfg.name}" "The user's home directory.";
   };
 
   config = {
-    #hdwlinux.features.openssh.authorizedKeys = [ cfg.publicKey ];
-    #hdwlinux.home.file.".ssh/id_rsa.pub".text = cfg.publicKey;
+    home = {
+      username = mkDefault cfg.name;
+      homeDirectory = mkDefault cfg.home;
 
-    users.users.${cfg.name} = {
-      isNormalUser = true;
+      file.".ssh/id_rsa.pub".text = cfg.publicKey;
+    };
 
-      inherit (cfg) name initialPassword;
-
-      home = "/home/${cfg.name}";
-      group = "users";
-
-      extraGroups = [ "wheel" ] ++ cfg.extraGroups;
-    } // cfg.extraOptions;
+    #services.openssh.authorizedKeys.keys = [ cfg.publicKey ]; #TODO: figure this out.
   };
 }
