@@ -10,9 +10,9 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.home.programs.go.enable = true;
+    programs.go.enable = true;
 
-    hdwlinux.home.packages = with pkgs; [
+    home.packages = with pkgs; [
       gotools
     ];
   };

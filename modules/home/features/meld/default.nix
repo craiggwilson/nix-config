@@ -1,5 +1,4 @@
 { options, config, lib, pkgs, ... }:
-
 with lib;
 with lib.hdwlinux;
 let cfg = config.hdwlinux.features.meld;
@@ -9,9 +8,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable meld.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.packages = with pkgs; [
-      meld
-    ];
-  };
+  config.home.packages = with pkgs; mkIf cfg.enable [
+    meld
+  ];
 }

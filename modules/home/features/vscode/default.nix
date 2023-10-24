@@ -10,7 +10,7 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.home.programs.vscode = {
+    programs.vscode = {
       enable = true;
       mutableExtensionsDir = true;
 
@@ -42,6 +42,6 @@ in
       };
     };
 
-    xdg.mime.defaultApplications."text/plain" = "code.desktop";
+    xdg.mimeApps.defaultApplications."text/plain" = "code.desktop";
   };
 }

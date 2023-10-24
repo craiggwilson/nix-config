@@ -8,7 +8,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable gh.";
   };
 
-  config.hdwlinux.home.programs.gh = mkIf cfg.enable {
+  config.programs.gh = mkIf cfg.enable {
     enable = true;
   };
 }

@@ -15,6 +15,7 @@ in
       dconf.enable = true;
       lshw.enable = true;
       pciutils.enable = true;
+      podman.enable = true;
       usbutils.enable = true;
     };
   };

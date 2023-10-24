@@ -3,11 +3,11 @@
 with lib;
 with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.suites.apps.cli;
+  cfg = config.hdwlinux.suites.apps.cli.core;
 in
 {
-  options.hdwlinux.suites.apps.cli = with types; {
-    enable = mkBoolOpt false "Whether or not to enable the command line apps.";
+  options.hdwlinux.suites.apps.cli.core = with types; {
+    enable = mkBoolOpt false "Whether or not to enable the core command line apps.";
   };
 
   config.hdwlinux.features = mkIf cfg.enable {

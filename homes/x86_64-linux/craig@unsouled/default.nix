@@ -9,6 +9,8 @@
     };
 
     hdwlinux.suites.shell.bash.enable = true;
-    hdwlinux.suites.apps.cli.enable = true;
+    hdwlinux.suites.apps.cli.core.enable = true;
+    hdwlinux.suites.apps.cli.programming.enable = true;
     hdwlinux.suites.apps.gui.gaming.enable = true;
+    hdwlinux.suites.apps.gui.programming.enable = true;
 }

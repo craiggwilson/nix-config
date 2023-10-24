@@ -68,7 +68,6 @@
       desktops.hyprland.enable = true;
 
       apps.gui.enable = true;
-      apps.programming.enable = true;
       apps.tools.enable = true;
       apps.work.enable = true;
     };
