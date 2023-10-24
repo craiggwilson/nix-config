@@ -9,11 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable mongodb.";
   };
 
-  config.hdwlinux.home = mkIf cfg.enable {
-    packages = with pkgs; [ 
-      mongodb-5_0
-      mongosh
-      mongodb-tools
-    ];
-  };
+  config.environment.systemPackages = with pkgs; mkIf cfg.enable [
+    mongodb-5_0
+  ];
 }

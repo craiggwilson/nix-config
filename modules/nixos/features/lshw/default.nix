@@ -9,9 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable lshw.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.packages = with pkgs; [ 
-        lshw
-    ];
-  };
+  config.environment.systemPackages = with pkgs; mkIf cfg.enable [
+    lshw
+  ];
 }

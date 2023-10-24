@@ -62,14 +62,15 @@
       # scanning.enable = true;
     };
 
+    features.mongodb.enable = true;
+
     suites = {
       boot.systemd.enable = true;
       displayManagers.greetd.enable = true;
       desktops.hyprland.enable = true;
 
-      apps.gui.enable = true;
-      apps.tools.enable = true;
-      apps.work.enable = true;
+      apps.cli.core.enable = true;
+      apps.gui.core.enable = true;
     };
   };
 

@@ -13,8 +13,8 @@ in
   	hdwlinux.features = {
       brightnessctl.enable = true;
       cliphist.enable = true;
+      dconf.enable = true;
       dunst.enable = true;
-      fonts.enable = true;
       electronSupport.enable = true;
       gnome-keyring.enable = true;
       grimblast.enable = true;

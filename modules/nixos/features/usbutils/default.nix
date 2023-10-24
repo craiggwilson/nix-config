@@ -9,9 +9,7 @@ in
     enable = mkBoolOpt false "Whether or not to enable pciutils.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.home.packages = with pkgs; [ 
-        usbutils
-    ];
-  };
+  config.environment.systemPackages = with pkgs; mkIf cfg.enable [
+    usbutils
+  ];
 }
