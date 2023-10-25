@@ -51,6 +51,7 @@ in {
     };
 
     stylix.targets = {
+      gnome.enable = mkForce false;
       waybar.enable = false;
     };
 

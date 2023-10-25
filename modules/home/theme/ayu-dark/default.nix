@@ -12,7 +12,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.theme.wallpapers = [ wallpaper wallpaper wallpaper ];
+    hdwlinux.theme.wallpapers = [ wallpaper ];
 
     stylix.base16Scheme = theme;
   };

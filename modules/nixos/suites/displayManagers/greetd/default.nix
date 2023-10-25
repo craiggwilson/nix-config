@@ -12,7 +12,7 @@ in
   config = mkIf cfg.enable {
     hdwlinux.features.tuigreet.enable = true;
 
-    security.pam.services.greetd.enableGnomeKeyring = config.hdwlinux.features.gnome-keyring.enable;
+    security.pam.services.greetd.enableGnomeKeyring = true;
 
     services.greetd = {
       enable = true;

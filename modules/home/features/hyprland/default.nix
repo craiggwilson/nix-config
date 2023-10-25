@@ -1,4 +1,4 @@
-{ options, config, lib, pkgs, ... }:
+{ options, config, lib, pkgs, osConfig, ... }:
 
 with lib;
 with lib.hdwlinux;
