@@ -13,47 +13,7 @@
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
     };
 
-    theme.ayu-dark.enable = true;
-
     features = {
-      monitors = {
-        enable = true;
-        monitors = [
-          { 
-            name = "eDP-1"; 
-            workspace = "1";
-            width = 1920;
-            height = 1200;
-            x = 0;
-            y = 1440;
-            scale = 1;
-            wallpaper = config.hdwlinux.theme.wallpaper1; 
-          }
-          { 
-            name = "DP-5"; 
-            workspace = "2";
-            width = 2560;
-            height = 1440;
-            x = 0;
-            y = 0;
-            scale = 1;
-            wallpaper = config.hdwlinux.theme.wallpaper1; 
-          }
-          { 
-            name = "DP-6"; 
-            workspace = "3";
-            width = 2560;
-            height = 1440;
-            x = 2560;
-            y = 0;
-            scale = 1;
-            wallpaper = config.hdwlinux.theme.wallpaper1; 
-          }
-        ];
-      };
-
-      openssh.enable = true;
-
       # printing = {
       #   enable = true;
       #   brother.laser.enable = true;
@@ -62,15 +22,16 @@
       # scanning.enable = true;
     };
 
+    features.hyprland.enable = true;
     features.mongodb.enable = true;
 
     suites = {
       boot.systemd.enable = true;
       displayManagers.greetd.enable = true;
-      desktops.hyprland.enable = true;
 
       apps.cli.core.enable = true;
       apps.gui.core.enable = true;
+      services.core.enable = true;
     };
   };
 

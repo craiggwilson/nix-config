@@ -58,16 +58,22 @@
         allowUnfree = true;
       };
 
-      overlays = [
-        inputs.nur.overlay
+      overlays = with inputs; [
+        nur.overlay
       ];
+
+      homes = {
+        modules = with inputs; [
+          stylix.homeManagerModules.stylix
+        ];
+      };
 
       systems = {
         modules = {
           nixos = with inputs; [
             home-manager.nixosModules.home-manager
             disko.nixosModules.disko
-            stylix.nixosModules.stylix
+            #stylix.nixosModules.stylix
           ];
         };
       };
