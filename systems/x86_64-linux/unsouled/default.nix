@@ -1,10 +1,10 @@
 { inputs, config, lib, pkgs, ... }: 
 let
-  wallpaper = pkgs.runCommand "image.png" {} ''
-    COLOR=000000
-    COLOR="#"$COLOR
-    ${pkgs.imagemagick}/bin/magick convert -size 1920x1080 xc:$COLOR $out
-  '';
+  # wallpaper = pkgs.runCommand "image.png" {} ''
+  #   COLOR=000000
+  #   COLOR="#"$COLOR
+  #   ${pkgs.imagemagick}/bin/magick convert -size 1920x1080 xc:$COLOR $out
+  # '';
 in
 {
   imports = [
@@ -78,7 +78,7 @@ in
 
   # This is needed to skin the things unrelated to a user. Technically, we could probably only use the home-manager module,
   # but something isn't exactly working, so we'll bootstrap with a solid-color background.
-  stylix.image = wallpaper;
+  stylix.image = ./bubbles.jpg;
   stylix.polarity = "dark";
 
   # This value determines the NixOS release from which the default
