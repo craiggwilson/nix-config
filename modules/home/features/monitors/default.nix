@@ -6,10 +6,8 @@ let cfg = config.hdwlinux.features.monitors;
 in
 {
   options.hdwlinux.features.monitors = with types; {
-    enable = mkBoolOpt false "Whether or not to enable monitors.";
     monitors = mkOption {
-      default = [ ];
-      description = "Monitors and their wallpaper.";
+      description = "Options to set the monitor configuration.";
       type = listOf (submodule {
         options = {
           name = mkOption { type = str; };

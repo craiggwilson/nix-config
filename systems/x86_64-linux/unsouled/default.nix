@@ -1,4 +1,11 @@
-{ inputs, config, lib, ... }: 
+{ inputs, config, lib, pkgs, ... }: 
+let
+  wallpaper = pkgs.runCommand "image.png" {} ''
+    COLOR=000000
+    COLOR="#"$COLOR
+    ${pkgs.imagemagick}/bin/magick convert -size 1920x1080 xc:$COLOR $out
+  '';
+in
 {
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
@@ -35,8 +42,44 @@
     };
   };
 
-  # TODO: figure out how to make theming 
-  stylix.image = ../../../modules/home/theme/ayu-dark/assets/bubbles.jpg;
+  home-manager.sharedModules = [
+    {
+      hdwlinux.features.monitors.monitors = [
+        { 
+          name = "eDP-1"; 
+          workspace = "1";
+          width = 1920;
+          height = 1200;
+          x = 0;
+          y = 1440;
+          scale = 1;
+        }
+        { 
+          name = "DP-5"; 
+          workspace = "2";
+          width = 2560;
+          height = 1440;
+          x = 0;
+          y = 0;
+          scale = 1;
+        }
+        { 
+          name = "DP-6"; 
+          workspace = "3";
+          width = 2560;
+          height = 1440;
+          x = 2560;
+          y = 0;
+          scale = 1;
+        }
+      ];
+    }
+  ];
+
+  # This is needed to skin the things unrelated to a user. Technically, we could probably only use the home-manager module,
+  # but something isn't exactly working, so we'll bootstrap with a solid-color background.
+  stylix.image = wallpaper;
+  stylix.polarity = "dark";
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

@@ -4,7 +4,9 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.features.hyprpaper;
-  wallpaper = i: if (builtins.length config.hdwlinux.theme.wallpapers) > i then (builtins.elemAt config.hdwlinux.theme.wallpapers i) else (builtins.elemAt config.hdwlinux.theme.wallpapers 0);
+  wallpapers = config.hdwlinux.features.theme.wallpapers;
+  monitors = config.hdwlinux.features.monitors.monitors;
+  wallpaperAt = i: if (builtins.length wallpapers) > i then (builtins.elemAt wallpapers i) else (builtins.elemAt wallpapers 0);
 in
 {
   options.hdwlinux.features.hyprpaper = with types; {
@@ -19,9 +21,9 @@ in
     xdg.configFile."hypr/hyprpaper.conf".text = ''
       ipc = off
       
-      ${concatStringsSep "\n" (map (w: "preload = ${w}") config.hdwlinux.theme.wallpapers)}
+      ${concatStringsSep "\n" (map (w: "preload = ${w}") wallpapers)}
           
-      ${concatStringsSep "\n" (lib.lists.imap0 (i: m: "wallpaper = ${m.name},${wallpaper i}") config.hdwlinux.features.monitors.monitors)}
+      ${concatStringsSep "\n" (lib.lists.imap0 (i: m: "wallpaper = ${m.name},${wallpaperAt i}") monitors)}
     '';
   };
 }

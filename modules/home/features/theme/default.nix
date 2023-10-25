@@ -2,23 +2,13 @@
 with lib;
 with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.theme;
+  cfg = config.hdwlinux.features.theme;
 in {
-  options.hdwlinux.theme = with types; {
-    wallpapers = mkOpt (listOf path) [ ] "The wallpapers for the system.";
-    wallpaper1 = mkOption {
-      type = path;
-      description = "Wallpaper for monitor 1.";
-    };
-
-    wallpaper2 = mkOption {
-      type = path;
-      description = "Wallpaper for monitor 2.";
-    };
-
-    wallpaper3 = mkOption {
-      type = path;
-      description = "Wallpaper for monitor 3.";
+  options.hdwlinux.features.theme = with types; {
+    enable = mkBoolOpt false "Whether or not to enable themes.";
+    wallpapers = mkOption {
+      description = "The wallpapers for the system.";
+      type = listOf path;
     };
   };
 
