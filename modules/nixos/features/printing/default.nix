@@ -10,12 +10,8 @@ in
     enable = mkBoolOpt false "Whether or not to configure printing support.";
   };
 
-  config = mkIf cfg.enable {
-    services.printing.enable = true;
-    services.avahi = {
-      enable = true;
-      nssmdns = true;
-      openFirewall = true;
-    };
+  config.services.printing = mkIf cfg.enable {
+    enable = true;
+    webInterface = false;
   };
 }

@@ -1,17 +1,9 @@
-{ inputs, config, lib, pkgs, ... }: 
-let
-  # wallpaper = pkgs.runCommand "image.png" {} ''
-  #   COLOR=000000
-  #   COLOR="#"$COLOR
-  #   ${pkgs.imagemagick}/bin/magick convert -size 1920x1080 xc:$COLOR $out
-  # '';
-in
-{
+{ inputs, config, lib, pkgs, ... }: {
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
     ./users.nix
-  ]; # ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
+  ];
 
   time.timeZone = "America/Chicago";
 
@@ -22,16 +14,11 @@ in
     };
 
     features = {
-      # printing = {
-      #   enable = true;
-      #   brother.laser.enable = true;
-      # };
-
+      hyprland.enable = true;
+      printing.enable = true;
       # scanning.enable = true;
+      mongodb.enable = true;
     };
-
-    features.hyprland.enable = true;
-    features.mongodb.enable = true;
 
     suites = {
       boot.systemd.enable = true;
@@ -79,6 +66,17 @@ in
             scale = 1;
           }
         ];
+      }
+    ];
+  };
+
+  hardware.printers = lib.mkIf config.hdwlinux.features.printing.enable {
+    ensurePrinters = [
+      {
+        name = "Brother_HL-L2380DW";
+        location = "Raeford";
+        deviceUri = "https://printer.raeford.wilsonfamilyhq.com";
+        model = "drv:///sample.drv/generic.ppd";
       }
     ];
   };

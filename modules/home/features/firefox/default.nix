@@ -19,7 +19,7 @@ in
           "browser.disableResetPrompt" = true;
           "browser.newtabpage.activity-stream.showSponsoredTopSites" = false;
           "browser.shell.checkDefaultBrowser" = false;
-          "browser.startup.homepage" = "https://kagi.com";
+          "browser.startup.homepage" = "https://www.raeford.wilsonfamilyhq.com/";
           "browser.toolbars.bookmarks.visibility" = "always";
           "privacy.trackingprotection.enabled" = true;
           "signon.rememberSignons" = false;
