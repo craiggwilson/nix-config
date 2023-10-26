@@ -1,6 +1,8 @@
 { lib, pkgs, inputs, config, flake, ... }:
-{
-  imports = [ ]; # ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
+let
+  privatePath = ../../../private/craig/default.nix;
+in {
+  imports = lib.optional (builtins.pathExists privatePath) privatePath;
 
   hdwlinux = {
     user = {
