@@ -19,6 +19,7 @@ in
       homeDirectory = mkDefault cfg.home;
 
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
+      file.".ssh/authorized_keys".text = cfg.publicKey;
     };
   };
 }
