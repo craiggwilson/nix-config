@@ -42,44 +42,45 @@ in
     };
   };
 
-  home-manager.sharedModules = [
-    {
-      hdwlinux.features.monitors.monitors = [
-        { 
-          name = "eDP-1"; 
-          workspace = "1";
-          width = 1920;
-          height = 1200;
-          x = 0;
-          y = 1440;
-          scale = 1;
-        }
-        { 
-          name = "DP-5"; 
-          workspace = "2";
-          width = 2560;
-          height = 1440;
-          x = 0;
-          y = 0;
-          scale = 1;
-        }
-        { 
-          name = "DP-6"; 
-          workspace = "3";
-          width = 2560;
-          height = 1440;
-          x = 2560;
-          y = 0;
-          scale = 1;
-        }
-      ];
-    }
-  ];
+  home-manager = {
+    extraSpecialArgs = {
+      flake = config.hdwlinux.nix.flake;
+    };
 
-  # This is needed to skin the things unrelated to a user. Technically, we could probably only use the home-manager module,
-  # but something isn't exactly working, so we'll bootstrap with a solid-color background.
-  stylix.image = ./bubbles.jpg;
-  stylix.polarity = "dark";
+    sharedModules = [
+      {
+        hdwlinux.features.monitors.monitors = [
+          { 
+            name = "eDP-1"; 
+            workspace = "1";
+            width = 1920;
+            height = 1200;
+            x = 0;
+            y = 1440;
+            scale = 1;
+          }
+          { 
+            name = "DP-5"; 
+            workspace = "2";
+            width = 2560;
+            height = 1440;
+            x = 0;
+            y = 0;
+            scale = 1;
+          }
+          { 
+            name = "DP-6"; 
+            workspace = "3";
+            width = 2560;
+            height = 1440;
+            x = 2560;
+            y = 0;
+            scale = 1;
+          }
+        ];
+      }
+    ];
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

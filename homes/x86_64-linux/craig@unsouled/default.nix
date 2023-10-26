@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, config, ... }:
+{ lib, pkgs, inputs, config, flake, ... }:
 {
   imports = [ ]; # ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
 
@@ -25,12 +25,27 @@
           work.enable = true;
         };
       };
+      services = {
+        core.enable = true;
+      };
     };
 
     features = {
       theme.ayu-dark.enable = true;
-
-      
     };
   };
+
+  home.shellAliases = {
+    "start" = "xdg-open";
+    "nix-config" = "git -C ${flake}";
+    "nixos-rebuild-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
+  };
+
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  home.stateVersion = "23.05";
 }

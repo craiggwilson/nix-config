@@ -10,8 +10,11 @@ in
     enable = mkBoolOpt false "Whether or not to enable the core command line apps.";
   };
 
-  config.hdwlinux.features = mkIf cfg.enable {
-    _1password-gui.enable = true;
-    thunar.enable = true;
+  config = {
+    hdwlinux.features = mkIf cfg.enable {
+      _1password-gui.enable = true;
+      stylix.enable = true;
+      thunar.enable = true;
+    };
   };
 }
