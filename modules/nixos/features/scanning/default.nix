@@ -15,10 +15,5 @@ in
       enable = true;
       brscan5.enable = true;
     };
-
-    hdwlinux.user.extraGroups = [
-      "scanner" 
-      "lp"
-    ];
   };
 }

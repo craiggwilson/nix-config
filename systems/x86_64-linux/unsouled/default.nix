@@ -10,6 +10,7 @@ in
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
+    ./users.nix
   ]; # ++ lib.optional (builtins.pathExists ../../../private/craig/default.nix) ../../../private/craig;
 
   time.timeZone = "America/Chicago";

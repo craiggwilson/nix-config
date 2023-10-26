@@ -12,6 +12,5 @@ in
 
   config.programs._1password-gui = mkIf cfg.enable {
     enable = true;
-    polkitPolicyOwners = [ config.hdwlinux.user.name ];
   };
 }

@@ -43,45 +43,41 @@ in
 
     hdwlinux.features.nix-ld.enable = true;
 
-    nix =
-      let 
-        users = [ "root" config.hdwlinux.user.name ];
-      in
-      {
-        package = cfg.package;
+    nix = {
+      package = cfg.package;
 
-        settings = {
-          experimental-features = "nix-command flakes";
-          http-connections = 50;
-          warn-dirty = false;
-          log-lines = 50;
-          sandbox = "relaxed";
-          auto-optimise-store = true;
-          trusted-users = users;
-          allowed-users = users;
-          keep-outputs = true;
-          keep-derivations = true;
-          substituters =
-            [ cfg.default-substituter.url ]
-              ++
-              (mapAttrsToList (name: value: name) cfg.extra-substituters);
-          trusted-public-keys =
-            [ cfg.default-substituter.key ]
-              ++
-              (mapAttrsToList (name: value: value.key) cfg.extra-substituters);
+      settings = {
+        experimental-features = "nix-command flakes";
+        http-connections = 50;
+        warn-dirty = false;
+        log-lines = 50;
+        sandbox = "relaxed";
+        auto-optimise-store = true;
+        trusted-users = [ "root" ];
+        allowed-users = [ "root" ];
+        keep-outputs = true;
+        keep-derivations = true;
+        substituters =
+          [ cfg.default-substituter.url ]
+            ++
+            (mapAttrsToList (name: value: name) cfg.extra-substituters);
+        trusted-public-keys =
+          [ cfg.default-substituter.key ]
+            ++
+            (mapAttrsToList (name: value: value.key) cfg.extra-substituters);
 
-        };
-
-        gc = {
-          automatic = true;
-          dates = "weekly";
-          options = "--delete-older-than 30d";
-        };
-
-        # flake-utils-plus
-        generateRegistryFromInputs = true;
-        generateNixPathFromInputs = true;
-        linkInputs = true;
       };
+
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 30d";
+      };
+
+      # flake-utils-plus
+      generateRegistryFromInputs = true;
+      generateNixPathFromInputs = true;
+      linkInputs = true;
+    };
   };
 }

@@ -10,8 +10,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.user.extraGroups = [ "networkmanager" ];
-
     networking = {
       networkmanager.enable = true;
       useDHCP = lib.mkDefault true;
