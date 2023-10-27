@@ -7,10 +7,13 @@ in
 {
   options.hdwlinux.suites.displayManagers.greetd = with types; {
     enable = mkBoolOpt false "Whether or not to enable greetd.";
+    startCommand = mkOption { type = str; description = "The command to startup upon loginc."; };
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.features.tuigreet.enable = true;
+    environment.systemPackages = with pkgs; [
+      greetd.tuigreet
+    ];
 
     security.pam.services.greetd.enableGnomeKeyring = true;
 
@@ -19,6 +22,7 @@ in
       settings = {
         vt = 7;
         default_session = {
+          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --remember --remember-user-session --time --cmd ${cfg.startCommand}";
           user = "greeter";
         };
       };

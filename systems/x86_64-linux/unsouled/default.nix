@@ -14,14 +14,17 @@
     };
 
     features = {
-      hyprland.enable = true;
       printing.enable = true;
       mongodb.enable = true;
     };
 
     suites = {
       boot.systemd.enable = true;
-      displayManagers.greetd.enable = true;
+      displayManagers.greetd = {
+        enable = true;
+        startCommand = "Hyprland";
+      };
+      desktops.hyprland.enable = true;
 
       apps.cli.core.enable = true;
       apps.gui.core.enable = true;

@@ -9,9 +9,13 @@ in
     enable = mkBoolOpt false "Whether or not to enable the gdm display manager.";
   };
 
-  config = mkIf cfg.enable {
-    hdwlinux.features = {
-        gdm.enable = true;
+  config.services.xserver = mkIf cfg.enable {
+    enable = true;
+    layout = "us";
+    libinput.enable = true;
+    displayManager.gdm = {
+      enable = true;
+      wayland = true;
     };
   };
 }
