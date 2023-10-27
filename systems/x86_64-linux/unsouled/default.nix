@@ -16,7 +16,6 @@
     features = {
       hyprland.enable = true;
       printing.enable = true;
-      # scanning.enable = true;
       mongodb.enable = true;
     };
 
@@ -70,15 +69,17 @@
     ];
   };
 
-  hardware.printers = lib.mkIf config.hdwlinux.features.printing.enable {
-    ensurePrinters = [
-      {
-        name = "Brother_HL-L2380DW";
-        location = "Raeford";
-        deviceUri = "https://printer.raeford.wilsonfamilyhq.com";
-        model = "drv:///sample.drv/generic.ppd";
-      }
-    ];
+  hardware = {
+    printers = lib.mkIf config.hdwlinux.features.printing.enable {
+      ensurePrinters = [
+        {
+          name = "Brother_HL-L2380DW";
+          location = "Raeford";
+          deviceUri = "https://printer.raeford.wilsonfamilyhq.com";
+          model = "drv:///sample.drv/generic.ppd";
+        }
+      ];
+    };
   };
 
   # This value determines the NixOS release from which the default

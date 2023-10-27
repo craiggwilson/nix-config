@@ -1,4 +1,4 @@
-{ options, config, lib, pkgs, osConfig, ... }:
+{ options, config, lib, pkgs, ... }:
 
 with lib;
 with lib.hdwlinux;
@@ -20,7 +20,6 @@ in
       logseq.enable = true;
       musescore.enable = true;
       nerdfonts.enable = true;
-      simplescan.enable = osConfig.hdwlinux.features.scanning.enable;
     };
   };
 }

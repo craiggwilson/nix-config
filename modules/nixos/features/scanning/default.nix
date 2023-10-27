@@ -11,9 +11,16 @@ in
   };
 
   config = mkIf cfg.enable {
-    hardware.sane = {
-      enable = true;
-      brscan5.enable = true;
-    };
+    hardware.sane.enable = true;
+    hardware.sane.extraBackends = with pkgs; [
+      sane-airscan
+    ];
+
+    # TODO: move...
+    # services.avahi = {
+    #   enable = true;
+    #   nssmdns = true;
+    #   openFirewall = true;
+    # };
   };
 }

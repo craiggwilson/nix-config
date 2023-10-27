@@ -33,6 +33,7 @@ in {
     };
 
     features = {
+      simplescan.enable = true;
       theme.ayu-dark.enable = true;
     };
   };
