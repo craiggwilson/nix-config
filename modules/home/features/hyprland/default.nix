@@ -247,5 +247,7 @@ in
         submap = reset
       '';
     };
+
+    hdwlinux.theme.targets.hyprland.enable = true;
   };
 }
