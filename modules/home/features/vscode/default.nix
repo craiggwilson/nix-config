@@ -27,6 +27,8 @@ in
         "rust-analyzer.inlayHints.typeHints.enable" = false;
         "explorer.confirmDelete" = false;
         "editor.inlineSuggest.enabled" = true;
+        "editor.fontFamily" = "FiraCode Nerd Font Mono";
+        "editor.fontLigatures" = true;
         "rust-analyzer.inlayHints.closingBraceHints.enable" = false;
         "lldb.suppressUpdateNotifications" = true;
         "protoc" = {
@@ -35,7 +37,7 @@ in
             ];
         };
         "explorer.confirmDragAndDrop" = false;
-        "terminal.integrated.fontFamily" = "DroidSansMono";
+        "terminal.integrated.fontFamily" = "FiraCode Nerd Font Mono";
         "window.menuBarVisibility" = "toggle";
         "window.titleBarStyle" = "custom";
         "workbench.startupEditor" = "none";

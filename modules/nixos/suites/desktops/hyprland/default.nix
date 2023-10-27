@@ -10,6 +10,8 @@ in
   };
 
   config = mkIf cfg.enable {
+    hdwlinux.features.fonts.enable = true;
+
     programs.hyprland = {
       enable = true;
       enableNvidiaPatches = builtins.elem "nvidia" config.services.xserver.videoDrivers;

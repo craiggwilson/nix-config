@@ -13,6 +13,7 @@ in
   config = mkIf cfg.enable {
     programs.kitty = {
       enable = true;
+      font.name = mkForce "FiraCode Nerd Font Mono";
       extraConfig = cfg.extraConfig + ''
         map ctrl+c copy_or_interrupt
         map ctrl+v paste_from_clipboard

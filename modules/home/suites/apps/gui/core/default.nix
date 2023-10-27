@@ -19,7 +19,6 @@ in
       libreoffice.enable = true;
       logseq.enable = true;
       musescore.enable = true;
-      nerdfonts.enable = true;
     };
   };
 }
