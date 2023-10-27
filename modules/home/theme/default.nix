@@ -16,7 +16,9 @@ in {
   config = {
     stylix = {
       image = builtins.elemAt cfg.wallpapers 0;
-      targets = mkAliasDefinitions options.hdwlinux.theme.targets;
+      targets = {
+        gtk.enable = true;
+      } // cfg.targets;
       polarity = "dark";
       autoEnable = false;
       fonts = {
