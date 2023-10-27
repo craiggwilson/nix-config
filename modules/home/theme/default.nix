@@ -2,10 +2,11 @@
 with lib;
 with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.theme;
+  cfg = config.hdwlinux.theme;
 in {
-  options.hdwlinux.features.theme = with types; {
+  options.hdwlinux.theme = with types; {
     enable = mkBoolOpt false "Whether or not to enable themes.";
+    targets = mkOpt attrs { } (mdDoc "Options passed directly to stylix's `targets`.");
     wallpapers = mkOption {
       description = "The wallpapers for the system.";
       type = listOf path;
@@ -15,8 +16,9 @@ in {
   config = {
     stylix = {
       image = builtins.elemAt cfg.wallpapers 0;
+      targets = mkAliasDefinitions options.hdwlinux.theme.targets;
       polarity = "dark";
-      autoEnable = true;
+      autoEnable = false;
       fonts = {
         serif = {
           package = pkgs.dejavu_fonts;
@@ -38,11 +40,6 @@ in {
           name = "Noto Color Emoji";
         };
       };
-    };
-
-    stylix.targets = {
-      gnome.enable = mkForce false;
-      waybar.enable = false;
     };
 
     gtk = {

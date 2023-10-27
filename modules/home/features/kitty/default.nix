@@ -10,15 +10,19 @@ in
     extraConfig = mkStrOpt "" (mdDoc "Option passed to home-manager's `programs.kitty.extraConfig`.");
   };
 
-  config.programs.kitty = mkIf cfg.enable {
-    enable = true;
-    extraConfig = cfg.extraConfig + ''
-      map ctrl+c copy_or_interrupt
-      map ctrl+v paste_from_clipboard
+  config = mkIf cfg.enable {
+    programs.kitty = {
+      enable = true;
+      extraConfig = cfg.extraConfig + ''
+        map ctrl+c copy_or_interrupt
+        map ctrl+v paste_from_clipboard
 
-      enable_audio_bell no
-      tab_bar_style powerline
-      tab_bar_edge = top
-    '';
+        enable_audio_bell no
+        tab_bar_style powerline
+        tab_bar_edge = top
+      '';
+    };
+
+    hdwlinux.theme.targets.kitty.enable = true;
   };
 }

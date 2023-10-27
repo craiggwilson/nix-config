@@ -4,7 +4,7 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.features.hyprpaper;
-  wallpapers = config.hdwlinux.features.theme.wallpapers;
+  wallpapers = config.hdwlinux.theme.wallpapers;
   monitors = config.hdwlinux.features.monitors.monitors;
   wallpaperAt = i: if (builtins.length wallpapers) > i then (builtins.elemAt wallpapers i) else (builtins.elemAt wallpapers 0);
 in

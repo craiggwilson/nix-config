@@ -5,6 +5,8 @@ in {
   imports = lib.optional (builtins.pathExists privatePath) privatePath;
 
   hdwlinux = {
+    theme.ayu-dark.enable = true;
+
     user = {
       fullName = "Craig Wilson";
       email = "craiggwilson@gmail.com";
@@ -34,7 +36,6 @@ in {
 
     features = {
       simplescan.enable = true;
-      theme.ayu-dark.enable = true;
     };
   };
 
