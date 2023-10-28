@@ -11,7 +11,9 @@ in
   };
 
   config.hdwlinux.features = mkIf cfg.enable {
+    lutris.enable = true;
     protonup-qt.enable = true;
     steam.enable = true;
+    wine.enable = true;
   };
 }

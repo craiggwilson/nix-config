@@ -1,6 +1,6 @@
 { lib, inputs, pkgs, stdenv, ...}:
 
-pkgs.buildGoModule rec {
+pkgs.buildGoModule {
     name = "evergreen";
 
     src = pkgs.fetchFromGitHub {
