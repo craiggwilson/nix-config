@@ -111,78 +111,68 @@ in
           "1password --silent"
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
+          "[workspace special:dropdown silent] $term --class kitty-special-dropdown"
         ];
 
-        "$mainMod" = "SUPER";
-        "$browser" = "firefox";
-        "$colorPicker" = "hyprpicker -r -n -a";
-        "$fileManager" = "thunar";
-        "$launcher" = "rofi -show drun -show-icons";
-        "$launcherAlt" = "rofi -show run -show-icons";
-        "$password" = "1password --toggle";
-        "$passwordQuick" = "1password --quick-access";
-        "$logoutMenu" = "wlogout -b 2";
-        "$switchWindows" = "rofi -show window -show-icons";
-        "$term" = "kitty";
-
         bind = [
-          "$mainMod, B, exec, $browser"
-          "$mainMod, E, exec, $fileManager"
-          "$mainMod, L, exec, $password"
-          "$mainMod CONTROL, L, exec, $passwordQuick"
-          "$mainMod, X, exec, $logoutMenu"
-          "$mainMod, P, exec, $colorPicker"
-          "$mainMod, R, exec, $launcherAlt"
-          "$mainMod, SPACE, exec, $launcher"
-          "$mainMod, T, exec, $term"
-          "$mainMod, TAB, exec, $switchWindows"
-          "$mainMod, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+          "SUPER, B, exec, firefox"
+          "SUPER, E, exec, thunar"
+          "SUPER, L, exec, 1password --toggle"
+          "SUPER ALT, L, exec, 1password --quick-access"
+          "SUPER, X, exec, rofi -show power-menu"
+          "SUPER, P, exec, $colorPicker"
+          "SUPER, SPACE, exec, rofi -show drun -show-icons"
+          "SUPER ALT , SPACE, exec, rofi -show run -show-icons"
+          "SUPER, TAB, exec, rofi -show window -show-icons"
+          "SUPER, T, exec, kitty"
+          "SUPER, GRAVE, togglespecialworkspace, dropdown"
+          "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
           ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-
-          "$mainMod CONTROL, ESCAPE, exec, $term btop"
+          "SUPER, ESCAPE, exec, kitty btop"
 
           # Move focus with mainMod + arrow keys
-          "$mainMod, left, movefocus, l"
-          "$mainMod, right, movefocus, r"
-          "$mainMod, up, movefocus, u"
-          "$mainMod, down, movefocus, d"
+          "SUPER, left, movefocus, l"
+          "SUPER, right, movefocus, r"
+          "SUPER, up, movefocus, u"
+          "SUPER, down, movefocus, d"
 
           # Switch workspaces with mainMod + [0-9]
-          "$mainMod CONTROL, left, workspace, -1"
-          "$mainMod CONTROL, right, workspace, +1"
-          "$mainMod, 1, workspace, 1"
-          "$mainMod, 2, workspace, 2"
-          "$mainMod, 3, workspace, 3"
-          "$mainMod, 4, workspace, 4"
-          "$mainMod, 5, workspace, 5"
-          "$mainMod, 6, workspace, 6"
-          "$mainMod, 7, workspace, 7"
-          "$mainMod, 8, workspace, 8"
-          "$mainMod, 9, workspace, 9"
-          "$mainMod, 0, workspace, 10"
+          "SUPER ALT, left, workspace, -1"
+          "SUPER ALT, right, workspace, +1"
+          "SUPER, 1, workspace, 1"
+          "SUPER, 2, workspace, 2"
+          "SUPER, 3, workspace, 3"
+          "SUPER, 4, workspace, 4"
+          "SUPER, 5, workspace, 5"
+          "SUPER, 6, workspace, 6"
+          "SUPER, 7, workspace, 7"
+          "SUPER, 8, workspace, 8"
+          "SUPER, 9, workspace, 9"
+          "SUPER, 0, workspace, 10"
 
           # Manipuate active window mainMod + SHIFT
-          "$mainMod SHIFT, W, killactive,"
-          "$mainMod SHIFT, P, pseudo,"
-          "$mainMod SHIFT, J, togglesplit,"
-          "$mainMod SHIFT, F, togglefloating,"
-          "$mainMod SHIFT, RETURN, fullscreen, 1"
-          "$mainMod SHIFT, left, movetoworkspace, -1"
-          "$mainMod SHIFT, right, movetoworkspace, +1"
-          "$mainMod SHIFT, 1, movetoworkspace, 1"
-          "$mainMod SHIFT, 2, movetoworkspace, 2"
-          "$mainMod SHIFT, 3, movetoworkspace, 3"
-          "$mainMod SHIFT, 4, movetoworkspace, 4"
-          "$mainMod SHIFT, 5, movetoworkspace, 5"
-          "$mainMod SHIFT, 6, movetoworkspace, 6"
-          "$mainMod SHIFT, 7, movetoworkspace, 7"
-          "$mainMod SHIFT, 8, movetoworkspace, 8"
-          "$mainMod SHIFT, 9, movetoworkspace, 9"
-          "$mainMod SHIFT, 0, movetoworkspace, 10"
+          "SUPER SHIFT, W, killactive,"
+          "SUPER SHIFT, P, pseudo,"
+          "SUPER SHIFT, J, togglesplit,"
+          "SUPER SHIFT, F, togglefloating,"
+          "SUPER SHIFT, RETURN, fullscreen, 1"
+          "SUPER SHIFT, left, movetoworkspace, -1"
+          "SUPER SHIFT, right, movetoworkspace, +1"
+          "SUPER SHIFT, 1, movetoworkspace, 1"
+          "SUPER SHIFT, 2, movetoworkspace, 2"
+          "SUPER SHIFT, 3, movetoworkspace, 3"
+          "SUPER SHIFT, 4, movetoworkspace, 4"
+          "SUPER SHIFT, 5, movetoworkspace, 5"
+          "SUPER SHIFT, 6, movetoworkspace, 6"
+          "SUPER SHIFT, 7, movetoworkspace, 7"
+          "SUPER SHIFT, 8, movetoworkspace, 8"
+          "SUPER SHIFT, 9, movetoworkspace, 9"
+          "SUPER SHIFT, 0, movetoworkspace, 10"
+          "SUPER SHIFT, T, movetoworkspace, special:dropdown"
 
           # Scroll through existing workspaces with mainMod + scroll
-          "$mainMod, mouse_down, workspace, e+1"
-          "$mainMod, mouse_up, workspace, e-1"
+          "SUPER, mouse_down, workspace, e+1"
+          "SUPER, mouse_up, workspace, e-1"
         ];
 
         binde = [
@@ -194,21 +184,22 @@ in
 
         bindm = [
           # Move/resize windows with mainMod + LMB/RMB and dragging
-          "$mainMod, mouse:272, movewindow"
-          "$mainMod, mouse:273, resizewindow"
+          "SUPER, mouse:272, movewindow"
+          "SUPER, mouse:273, resizewindow"
         ];
 
         windowrulev2 = [
           "opacity .95 .85,title:^(.*Code.*)$"
           "opacity .95 .85,class:^(firefox)$"
           "opacity .95 .85,class:^(jetbrains-goland)$"
-          "opacity .95 .85,class:^(kitty)$"
+          "opacity .95 .85,class:^(kitty.*)$"
           "opacity .95 .85,class:^(Logseq)$"
           "opacity .95 .85,class:^(Slack)$"
-          "float, title:^(Quick Access — 1Password)$"
-          "dimaround, title:^(Quick Access — 1Password)$, floating"
-          "center, title:^(Quick Access — 1Password)$"
+          "float,title:^(Quick Access — 1Password)$"
+          "dimaround,title:^(Quick Access — 1Password)$, floating"
+          "center,title:^(Quick Access — 1Password)$"
           "stayfocused,title:^(Quick Access — 1Password)$"
+          "workspace special:dropdown,class:^(.*special-dropdown)$"
         ];
       } // cfg.settings;
 

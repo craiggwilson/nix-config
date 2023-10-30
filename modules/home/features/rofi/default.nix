@@ -12,8 +12,30 @@ in
   config = with pkgs; mkIf cfg.enable {
     programs.rofi =  {
       enable = true;
-      package = pkgs.rofi-wayland-unwrapped;
+      package = pkgs.rofi-wayland;
+      cycle = true;
       theme = "theme.rasi";
+      plugins = with pkgs; [
+        #rofi-pulse-select
+        #rofi-screenshot
+        #rofi-vpn
+      ];
+      extraConfig = {
+        "show-icons" = true;
+        "display-drun" = "";
+        "display-run" = "";
+        "display-filebrowser" = "";
+        "display-power-menu" = "󰐥";
+        "display-window" = "";
+        "drun-display-format" = "{name}";
+        "window-format" = "{w} · {c} · {t}";
+        "modes" = "window,drun,run,ssh,power-menu:${config.xdg.configHome}/rofi/scripts/power-menu.sh";
+      };
+    };
+
+    xdg.configFile."rofi/scripts" = {
+      source = ./scripts;
+      recursive = true;
     };
 
     xdg.configFile."rofi/colors.rasi".text = ''
@@ -28,18 +50,6 @@ in
     '';
 
     xdg.configFile."rofi/theme.rasi".text = ''
-      /*****----- Configuration -----*****/
-      configuration {
-        modi:                       "drun,run,filebrowser,window";
-          show-icons:                 true;
-          display-drun:               "";
-          display-run:                "";
-          display-filebrowser:        "";
-          display-window:             "";
-        drun-display-format:        "{name}";
-        window-format:              "{w} · {c} · {t}";
-      }
-
       /*****----- Global Properties -----*****/
       @import "colors.rasi"
 

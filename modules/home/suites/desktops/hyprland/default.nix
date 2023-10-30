@@ -27,7 +27,6 @@ in
       swayidle.enable = true;
       swaylock.enable = true;
       waybar.enable = true;
-      wlogout.enable = true;
       udiskie.enable = true;
     };
   };
