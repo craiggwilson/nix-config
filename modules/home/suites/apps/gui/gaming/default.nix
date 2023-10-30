@@ -11,6 +11,7 @@ in
   };
 
   config.hdwlinux.features = mkIf cfg.enable {
+    bottles.enable = true;
     protonup-qt.enable = true;
     steam.enable = true;
   };
