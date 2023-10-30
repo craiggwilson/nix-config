@@ -8,6 +8,9 @@
     # also provide stable packages if unstable are breaking
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.05";
 
+    # gaminig specific nix work, mostly related to wine.
+    nix-gaming.url = "github:craiggwilson/nix-gaming";
+
     # nix user repository provides additional packages.
     nur.url = github:nix-community/NUR;
 

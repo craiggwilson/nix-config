@@ -11,6 +11,7 @@ in
   };
 
   config.hdwlinux.features = mkIf cfg.enable {
+    legends-of-runeterra.enable = true;
     lutris.enable = true;
     protonup-qt.enable = true;
     steam.enable = true;
