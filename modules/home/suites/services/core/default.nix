@@ -12,6 +12,7 @@ in
 
   config = mkIf cfg.enable {
     hdwlinux.features = {
+      onedrive.enable = true;
       xdg.enable = true;
     };
 
