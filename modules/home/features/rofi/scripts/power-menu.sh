@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
-# This script defines just a mode for rofi instead of being a self-contained
-# executable that launches rofi by itself. This makes it more flexible than
-# running rofi inside this script as now the user can call rofi as one pleases.
-# For instance:
-#
-#   rofi -show powermenu -modi powermenu:./rofi-power-menu
-#
-# See README.md for more information.
-
 set -e
 set -u
 
@@ -32,7 +23,7 @@ icons[shutdown]="\Uf0425"
 icons[cancel]="\Uf0156"
 
 declare -A actions
-actions[lockscreen]="1password --lock && swaylock"
+actions[lockscreen]="$HOME/.config/rofi/scripts/lockscreen.sh"
 actions[logout]="hyprctl dispatch exit"
 actions[reboot]="systemctl reboot"
 actions[shutdown]="systemctl poweroff"

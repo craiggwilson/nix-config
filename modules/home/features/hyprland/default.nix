@@ -111,7 +111,7 @@ in
           "1password --silent"
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
-          "[workspace special:dropdown silent] $term --class kitty-special-dropdown"
+          "[workspace special:dropdown silent] kitty --class kitty-special-dropdown"
         ];
 
         bind = [
