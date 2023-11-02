@@ -137,8 +137,8 @@ in
           "SUPER, down, movefocus, d"
 
           # Switch workspaces with mainMod + [0-9]
-          "SUPER ALT, left, workspace, -1"
-          "SUPER ALT, right, workspace, +1"
+          "SUPER CONTROL, left, workspace, -1"
+          "SUPER CONTROL, right, workspace, +1"
           "SUPER, 1, workspace, 1"
           "SUPER, 2, workspace, 2"
           "SUPER, 3, workspace, 3"

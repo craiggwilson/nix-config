@@ -41,6 +41,10 @@ in
       nix-output-monitor
     ];
 
+    environment.variables = {
+      NIXPKGS_ALLOW_UNFREE = "1";
+    };
+
     hdwlinux.features.nix-ld.enable = true;
 
     nix = {

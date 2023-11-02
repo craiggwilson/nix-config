@@ -57,7 +57,6 @@
       channels-config = {
         allowUnfree = true;
 
-        # TODO: cleanup when available
         permittedInsecurePackages = [
           "electron-24.8.6"
         ];
