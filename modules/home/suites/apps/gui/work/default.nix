@@ -13,6 +13,7 @@ in
   config = mkIf cfg.enable {
     hdwlinux.features = {
       slack.enable = true;
+      structurizr-lite.enable = true;
       zoom-us.enable = true;
     };
   };

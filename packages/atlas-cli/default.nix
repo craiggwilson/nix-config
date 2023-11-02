@@ -9,14 +9,14 @@ stdenv.mkDerivation {
         hash = "sha256-o8IYxhlk8agaIgIZgkn9rI/wT6ZtnnCEAmJOJuOwpbQ=";
     };
 
+    installPhase = ''
+        mkdir -p $out/bin
+        cp $src/bin/atlas $out/bin/atlas
+    '';
+
     meta = {
         mainProgram = "atlas";
         description = "MongoDB Atlas CLI";
         platforms = [ "x86_64-linux" ];
     };
-
-    installPhase = ''
-        mkdir -p $out/bin
-        cp $src/bin/atlas $out/bin/atlas
-    '';
 }

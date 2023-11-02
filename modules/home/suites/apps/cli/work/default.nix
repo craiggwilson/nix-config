@@ -18,6 +18,7 @@ in
       evergreen.enable = true;
       kube-cli.enable = true;
       mongodb-tools.enable = true;
+      structurizr-cli.enable = true;
     };
 
     home.shellAliases = {
