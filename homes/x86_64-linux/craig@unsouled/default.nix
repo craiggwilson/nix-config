@@ -31,12 +31,17 @@ in {
       };
       services = {
         core.enable = true;
+        gui.enable = true;
       };
     };
 
     features = {
       simplescan.enable = true;
     };
+  };
+
+  home.sessionVariables = {
+    NIX_CONFIG_FLAKE=flake;
   };
 
   home.shellAliases = {

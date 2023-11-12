@@ -12,6 +12,7 @@ in
 
   config = mkIf cfg.enable {
     hdwlinux.features = {
+      distrobox.enable = true;
       gh.enable = true;
       go.enable = true;
       python.enable = true;

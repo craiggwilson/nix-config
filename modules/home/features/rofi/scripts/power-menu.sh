@@ -4,7 +4,7 @@ set -e
 set -u
 
 # All supported choices
-all=(shutdown reboot logout lockscreen)
+all=(lockscreen logout reboot shutdown)
 
 # By default, show all (i.e., just copy the array)
 show=("${all[@]}")

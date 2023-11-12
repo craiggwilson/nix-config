@@ -48,8 +48,10 @@ in
             size = 7;
             passes = 2;
             ignore_opacity = true;
+            special = true;
           };
 
+          dim_special = .2;
           drop_shadow = true;
           shadow_range = 4;
           shadow_render_power = 3;
