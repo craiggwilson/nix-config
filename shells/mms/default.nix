@@ -8,6 +8,5 @@
     git
     glibc
     openssh
-    python3
   ]);
 }).env

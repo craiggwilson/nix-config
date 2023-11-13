@@ -15,6 +15,8 @@ in {
       useDHCP = lib.mkDefault true;
 
       firewall.enable = true;
+
+      firewall.checkReversePath = mkIf config.hdwlinux.features.tailscale.enable "loose";
     };
 
     environment.systemPackages = with pkgs; mkIf cfg.enableL2tpVpn [
