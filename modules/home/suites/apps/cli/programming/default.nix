@@ -16,6 +16,7 @@ in
       gh.enable = true;
       go.enable = true;
       python.enable = true;
+      wire.enable = true;
     };
   };
 }

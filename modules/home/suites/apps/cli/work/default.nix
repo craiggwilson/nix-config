@@ -23,6 +23,12 @@ in
 
     home.shellAliases = {
       "build!" = "./build.sh";
+      "run!" = "go run ./cmd/mongohoused/mongohoused.go --config ./testdata/config/inline_local/frontend-agent-backend.yaml";
+      "loginaws" = "aws sso login --profile adl && eval $(aws configure export-credentials --format env)";
+    };
+
+    home.sessionVariables = {
+      GOPRIVATE = "github.com/10gen";
     };
   };
 }

@@ -28,9 +28,11 @@ in
         ) config.hdwlinux.features.monitors.monitors)
         ++ [ ", preferred, auto, auto" ];
 
-        workspace = map (m: 
+        workspace = (map (m: 
           "${m.workspace}, monitor:${m.name}"
-        ) config.hdwlinux.features.monitors.monitors;
+        ) config.hdwlinux.features.monitors.monitors) ++ [
+          "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
+        ];
 
         env = [
           "XCURSOR_SIZE,24"
@@ -89,10 +91,12 @@ in
         dwindle = {
           pseudotile = true;
           preserve_split = true;
+          special_scale_factor = 1;
         };
 
         master = {
           new_is_master = true;
+          special_scale_factor = 1;
         };
 
         gestures = {
@@ -113,7 +117,6 @@ in
           "1password --silent"
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
-          "[workspace special:dropdown silent] kitty --class kitty-special-dropdown"
         ];
 
         bind = [
@@ -123,7 +126,7 @@ in
           "SUPER ALT, L, exec, 1password --quick-access"
           "SUPER, X, exec, rofi -show power-menu"
           "SUPER, P, exec, $colorPicker"
-          "SUPER, SPACE, exec, rofi -show drun -show-icons"
+          "SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons"
           "SUPER ALT , SPACE, exec, rofi -show run -show-icons"
           "SUPER, TAB, exec, rofi -show window -show-icons"
           "SUPER, T, exec, kitty"
@@ -194,14 +197,14 @@ in
           "opacity .95 .85,title:^(.*Code.*)$"
           "opacity .95 .85,class:^(firefox)$"
           "opacity .95 .85,class:^(jetbrains-goland)$"
-          "opacity .95 .85,class:^(kitty.*)$"
+          "opacity .95 .85,class:^(kitty)$"
           "opacity .95 .85,class:^(Logseq)$"
           "opacity .95 .85,class:^(Slack)$"
           "float,title:^(Quick Access — 1Password)$"
           "dimaround,title:^(Quick Access — 1Password)$, floating"
           "center,title:^(Quick Access — 1Password)$"
           "stayfocused,title:^(Quick Access — 1Password)$"
-          "workspace special:dropdown,class:^(.*special-dropdown)$"
+          "workspace special:dropdown,class:^(kitty)$"
         ];
       } // cfg.settings;
 
