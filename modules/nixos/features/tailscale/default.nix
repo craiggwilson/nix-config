@@ -18,5 +18,11 @@ in
       enable = true;
       useRoutingFeatures = "none";
     };
+
+    programs.bash.shellAliases = {
+      ts = "tailscale";
+      "ts-up" = "sudo tailscale up --exit-node synology";
+      "ts-down" = "sudp tailscale down";
+    };
   };
 }

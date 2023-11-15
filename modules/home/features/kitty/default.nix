@@ -14,10 +14,17 @@ in
       enable = true;
       font.name = mkForce "FiraCode Nerd Font Mono";
       extraConfig = ''
-        enabled_layouts tall
-        enabled_layouts fat
+        enabled_layouts splits,tall,fat
         map ctrl+c copy_or_interrupt
         map ctrl+v paste_from_clipboard
+        map ctrl+equal change_font_size all +2.0
+        map ctrl+minus change_font_size all -2.0
+        map ctrl+shift+minus launch --location=hsplit
+        map ctrl+shift+\ launch --location=vsplit
+        map ctrl+shift+left resize_window narrower
+        map ctrl+shift+right resize_window wider
+        map ctrl+shift+up resize_window taller
+        map ctrl+shift+down resize_window shorter 3
 
         enable_audio_bell no
 
