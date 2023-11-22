@@ -47,7 +47,7 @@ in {
   home.shellAliases = {
     "start" = "xdg-open";
     "nix-config" = "git -C ${flake}";
-    "nixos-rebuild-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
+    "nix-config-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
   };
 
   # This value determines the NixOS release from which the default

@@ -24,8 +24,6 @@ sudo nix --extra-experimental-features nix-commands --extra-experimental-feature
 ### Install NixOS
 
 ```
-nix-shell -p git
-
 git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
 
 sudo nixos-install --impure --flake /tmp/nix-config#<host>

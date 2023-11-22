@@ -15,7 +15,6 @@ in
       openssh.enable = true;
       pam.enable = true;
       polkit.enable = true;
-      tailscale.enable = true;
       udisks2.enable = true;
     };
   };

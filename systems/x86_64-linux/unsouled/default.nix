@@ -16,6 +16,10 @@
     features = {
       printing.enable = true;
       mongodb.enable = true;
+      tailscale = {
+        enable = true;
+        exitNode = "synology";
+      };
     };
 
     suites = {

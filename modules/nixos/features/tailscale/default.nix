@@ -7,6 +7,7 @@ in
 {
   options.hdwlinux.features.tailscale = {
     enable = mkBoolOpt false "Whether or not to enable support for tailscale.";
+    exitNode = mkStrOpt "" "The exit node to use.";
   };
 
   config = mkIf cfg.enable {
@@ -19,10 +20,13 @@ in
       useRoutingFeatures = "none";
     };
 
-    programs.bash.shellAliases = {
-      ts = "tailscale";
-      "ts-up" = "sudo tailscale up --exit-node synology";
-      "ts-down" = "sudp tailscale down";
-    };
+    programs.bash.shellAliases = let 
+      suffix = if cfg.exitNode != "" then " --exit-node ${cfg.exitNode}" else "";
+    in
+      {
+        ts = "tailscale";
+        ts-up = "sudo tailscale up${suffix}";
+        ts-down = "sudo tailscale down";
+      };
   };
 }
