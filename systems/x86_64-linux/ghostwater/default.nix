@@ -1,6 +1,6 @@
 { inputs, config, lib, pkgs, ... }: {
   imports = [
-    ../../../hardware/dell-xps-15-9520.nix
+    ../../../hardware/microsoft-surface-book-2.nix
     ./disko.nix
     ./users.nix
   ];
@@ -18,7 +18,6 @@
         enable = true;
         raeford = true;
       };
-      mongodb.enable = true;
       tailscale = {
         enable = true;
         exitNode = "synology";
@@ -46,35 +45,17 @@
 
     sharedModules = [
       {
-        hdwlinux.features.monitors.monitors = [
-          { 
-            name = "eDP-1"; 
-            workspace = "1";
-            width = 1920;
-            height = 1200;
-            x = 0;
-            y = 1440;
-            scale = 1;
-          }
-          { 
-            name = "DP-5"; 
-            workspace = "2";
-            width = 2560;
-            height = 1440;
-            x = 0;
-            y = 0;
-            scale = 1;
-          }
-          { 
-            name = "DP-6"; 
-            workspace = "3";
-            width = 2560;
-            height = 1440;
-            x = 2560;
-            y = 0;
-            scale = 1;
-          }
-        ];
+        # hdwlinux.features.monitors.monitors = [
+        #   { 
+        #     name = "eDP-1"; 
+        #     workspace = "1";
+        #     width = 1920;
+        #     height = 1200;
+        #     x = 0;
+        #     y = 1440;
+        #     scale = 1;
+        #   }
+        # ];
       }
     ];
   };

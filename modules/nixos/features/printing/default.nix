@@ -8,10 +8,22 @@ in
 {
   options.hdwlinux.features.printing = with types; {
     enable = mkBoolOpt false "Whether or not to configure printing support.";
+    raeford = mkBoolOpt false "Wheter or not to enable Raeford printers.";
   };
 
-  config.services.printing = mkIf cfg.enable {
-    enable = true;
-    webInterface = false;
+  config = mkIf cfg.enable {
+    services.printing = {
+      enable = true;
+      webInterface = false;
+    };
+
+    hardware.printers.ensurePrinters = lib.optionals cfg.raeford [
+      {
+        name = "Brother_HL-L2380DW";
+        location = "Raeford";
+        deviceUri = "https://printer.raeford.wilsonfamilyhq.com";
+        model = "drv:///sample.drv/generic.ppd";
+      }
+    ];
   };
 }

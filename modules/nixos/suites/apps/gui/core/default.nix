@@ -14,7 +14,6 @@ in
     hdwlinux.features = mkIf cfg.enable {
       _1password-gui.enable = true;
       stylix.enable = true;
-      thunar.enable = true;
     };
   };
 }

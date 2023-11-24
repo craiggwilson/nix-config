@@ -10,7 +10,10 @@ in
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.features.fonts.enable = true;
+    hdwlinux.features = {
+      fonts.enable = true;
+      thunar.enable = true;
+    };
 
     programs.hyprland = {
       enable = true;

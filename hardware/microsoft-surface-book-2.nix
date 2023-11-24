@@ -1,41 +1,39 @@
-{ config, lib, pkgs, modulesPath, nixos-hardware, ... }: {
+{ pkgs, lib, inputs, config, ... }: {
 
   imports = [
-    nixos-hardware.nixosModules.microsoft-surface-common
-    nixos-hardware.nixosModules.common-cpu-intel
-    nixos-hardware.nixosModules.common-gpu-nvidia
-    nixos-hardware.nixosModules.common-pc
-    nixos-hardware.nixosModules.common-pc-ssd
-    nixos-hardware.nixosModules.common-hidpi 
+    inputs.nixos-hardware.nixosModules.microsoft-surface-common
+    inputs.nixos-hardware.nixosModules.common-cpu-intel
+    inputs.nixos-hardware.nixosModules.common-gpu-nvidia
+    inputs.nixos-hardware.nixosModules.common-pc
+    inputs.nixos-hardware.nixosModules.common-pc-ssd
+    inputs.nixos-hardware.nixosModules.common-hidpi 
   ];
 
-  # IPTSD has problems shutting down, in that, it doesn't.
-  # Basically, can't shutdown or reboot.
-  # microsoft-surface.ipts.enable = true; 
-
-  microsoft-surface.surface-control.enable = true;
+  hdwlinux.features = {
+    audio.enable = true;
+    bluetooth.enable = true;
+    boot.enable = true;
+    libcamera.enable = true;
+    networking.enable = true;
+    redistributableFirmware.enable = true;
+    v4l2loopback.enable = true;
+  };
 
   boot = {
     initrd = {
       availableKernelModules = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" ];
       kernelModules = [ ];
     };
-    kernelModules = [ "kvm-intel" "v4l2loopback" ];
+    kernelModules = [ "kvm-intel" ];
     kernelParams = [ "i915.enable_psr=0" "i915.fastboot=1" ];
-    extraModulePackages = with config.boot.kernelPackages;[ 
-      v4l2loopback.out 
-    ];
-    extraModprobeConfig = ''
-      options v4l2loopback exclusive_caps=1 card_label="Virtual Camera"
-    '';
   };
 
-  nixpkgs.hostPlatform = "x86_64-linux";
-
-  powerManagement.cpuFreqGovernor = "powersave";
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
   hardware = {
     nvidia = {
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
       prime = {
         intelBusId = "PCI:00:02:0";
         nvidiaBusId = "PCI:02:00:0";
@@ -50,13 +48,16 @@
     };
   };
 
-  services.xserver.libinput.enable = true;
+  # IPTSD has problems shutting down, in that, it doesn't.
+  # Basically, can't shutdown or reboot.
+  # microsoft-surface.ipts.enable = true; 
+  microsoft-surface.surface-control.enable = true;
 
-  environment.systemPackages = with pkgs; [ 
-    libcamera
-    lshw
-    neofetch
-    nvtop 
-    pciutils
-  ];
+  # This value determines the NixOS release from which the default
+  # settings for stateful data, like file locations and database versions
+  # on your system were taken. It‘s perfectly fine and recommended to leave
+  # this value at the release version of the first install of this system.
+  # Before changing this value read the documentation for this option
+  # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
+  system.stateVersion = "23.05"; # Did you read the comment?
 }
