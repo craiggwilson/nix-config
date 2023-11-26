@@ -7,7 +7,7 @@
       partitions = {
         ESP = {
           type = "EF00";
-          size = "500MiB";
+          size = "512M";
           content = {
             type = "filesystem";
             format = "vfat";
@@ -32,6 +32,10 @@
               mountpoint = "/";
               mountOptions = ["discard" "noatime"];
               subvolumes = {
+                "/root" = {
+                  mountpoint = "/";
+                  mountOptions = [ "compress=zstd" "noatime" ];
+                };
                 "/home" = {
                   mountpoint = "/home";
                   mountOptions = ["compress=zstd noatime"];
@@ -42,7 +46,7 @@
                 };
                 "/swap" = {
                   mountpoint = "/.swapvol";
-                  swap.swapfile.size = "4GiB";
+                  swap.swapfile.size = "4G";
                 };
               };
             };

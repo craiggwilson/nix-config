@@ -53,7 +53,6 @@
     };
   in 
     lib.mkFlake {
-
       channels-config = {
         allowUnfree = true;
 
