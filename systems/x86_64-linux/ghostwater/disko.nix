@@ -29,8 +29,6 @@
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];
-              mountpoint = "/";
-              mountOptions = ["discard" "noatime"];
               subvolumes = {
                 "/root" = {
                   mountpoint = "/";
