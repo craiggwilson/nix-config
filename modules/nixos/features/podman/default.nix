@@ -12,7 +12,7 @@ in
   config = mkIf cfg.enable {
     virtualisation.podman = {
       enable = true;
-      dockerCompat = true;
+      dockerCompat = !config.hdwlinux.features.docker.enable;
       defaultNetwork.settings.dns_enabled = true;
     };
   };

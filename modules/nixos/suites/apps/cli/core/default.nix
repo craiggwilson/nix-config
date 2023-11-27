@@ -12,6 +12,7 @@ in
 
   config.hdwlinux.features = mkIf cfg.enable {
     _1password-cli.enable = true;
+    docker.enable = true;
     lshw.enable = true;
     neofetch.enable = true;
     nvtop.enable = true;

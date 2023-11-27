@@ -2,7 +2,7 @@
   imports = [
     ../../../hardware/microsoft-surface-book-2.nix
     ./disko.nix
-    ./users.nix
+    ../../../users/nixos/craig.nix
   ];
 
   time.timeZone = "America/Chicago";
