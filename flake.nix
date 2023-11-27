@@ -7,9 +7,13 @@
     
     # also provide stable packages if unstable are breaking
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.05";
-
+    
     # nix user repository provides additional packages.
     nur.url = github:nix-community/NUR;
+
+     # Generate System Images
+    nixos-generators.url = "github:nix-community/nixos-generators";
+    nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 
     # home manager for config files and user installs
     home-manager = {

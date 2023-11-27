@@ -16,9 +16,10 @@ git clone https://github.com/craiggwilson/nix-config
 ### Partitioning
 ```
 # If using luks, write out password to /tmp/secret.key
-echo -n "<password>" > /tmp/secret.key
+echo -n "<password>" > /t              mountOptions = ["discard" "noatime"];
+mp/secret.key
 
-sudo nix --extra-experimental-features nix-commands --extra-experimental-features flakes run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#<host>
+sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#<host>
 ```
 
 ### Install NixOS

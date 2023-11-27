@@ -29,6 +29,8 @@
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];
+              mountpoint = "/";
+              mountOptions = ["discard" "noatime"];
               subvolumes = {
                 "/root" = {
                   mountpoint = "/";
@@ -42,10 +44,10 @@
                   mountpoint = "/nix";
                   mountOptions = ["compress=zstd" "noatime"];
                 };
-                "/swap" = {
-                  mountpoint = "/.swapvol";
-                  swap.swapfile.size = "4G";
-                };
+                # "/swap" = {
+                #   mountpoint = "/.swapvol";
+                #   swap.swapfile.size = "4G";
+                # };
               };
             };
           };
