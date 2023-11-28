@@ -15,7 +15,6 @@ in
       distrobox.enable = true;
       gh.enable = true;
       go.enable = true;
-      python.enable = true;
       wire.enable = true;
     };
   };

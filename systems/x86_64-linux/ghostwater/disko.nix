@@ -1,53 +1,38 @@
 { disks, ...}: {
-  disko.devices.disk.nvme0n1 = {
+  disko.devices.disk.main = {
     type = "disk";
     device = "/dev/nvme0n1";
     content = {
       type = "gpt";
       partitions = {
+        boot = {
+          size = "1M";
+          type = "EF02"; # for grub MBR
+        };
         ESP = {
-          type = "EF00";
           size = "512M";
+          type = "EF00";
           content = {
             type = "filesystem";
             format = "vfat";
             mountpoint = "/boot";
-            mountOptions = [
-              "defaults"
-            ];
           };
         };
-        luks = {
+        root = {
           size = "100%";
           content = {
-            type = "luks";
-            name = "crypted-root";
-            settings = {
-              allowDiscards = true;
-            };
-            passwordFile = "/tmp/secret.key";
-            content = {
-              type = "btrfs";
-              extraArgs = [ "-f" ];
-              mountpoint = "/";
-              mountOptions = ["discard" "noatime"];
-              subvolumes = {
-                "/root" = {
-                  mountpoint = "/";
-                  mountOptions = [ "compress=zstd" "noatime" ];
-                };
-                "/home" = {
-                  mountpoint = "/home";
-                  mountOptions = ["compress=zstd noatime"];
-                };
-                "/nix" = {
-                  mountpoint = "/nix";
-                  mountOptions = ["compress=zstd" "noatime"];
-                };
-                # "/swap" = {
-                #   mountpoint = "/.swapvol";
-                #   swap.swapfile.size = "4G";
-                # };
+            type = "btrfs";
+            extraArgs = [ "-f" ];
+            mountpoint = "/";
+            mountOptions = ["discard" "noatime"];
+            subvolumes = {
+              "/home" = {
+                mountpoint = "/home";
+                mountOptions = [ "compress=zstd" "noatime" ];
+              };
+              "/nix" = {
+                mountpoint = "/nix";
+                mountOptions = [ "compress=zstd" "noatime" ];
               };
             };
           };
