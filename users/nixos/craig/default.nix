@@ -7,7 +7,7 @@ in {
     allowed-users = [ username ];
   };
 
-  users.users.craig = {
+  users.users.${username} = {
     isNormalUser = true;
 
     name = username;

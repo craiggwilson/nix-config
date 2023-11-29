@@ -2,7 +2,7 @@
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
-    ../../../users/nixos/craig.nix
+    ../../../users/nixos/craig
   ];
 
   time.timeZone = "America/Chicago";

@@ -1,4 +1,4 @@
-{ lib, pkgs, inputs, config, options, ... }: 
+{ lib, pkgs, inputs, config, flake, options, ... }: 
 with lib;
 with lib.hdwlinux;
 let
@@ -20,6 +20,16 @@ in
 
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
       file.".ssh/authorized_keys".text = cfg.publicKey;
+
+      sessionVariables = {
+        NIX_CONFIG_FLAKE=flake;
+      };
+
+      shellAliases = {
+        "start" = "xdg-open";
+        "nix-config" = "git -C ${flake}";
+        "nix-config-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
+      };
     };
   };
 }
