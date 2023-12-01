@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features.ssh = with types; {
-    enable = mkBoolOpt false "Whether or not to configure ssh.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
     includes = mkOpt (listOf str) [ ] (mdDoc "Options passed directly to home-manager's `programs.ssh.includes`.");
   };
 

@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.viddy;
 in
 {
   options.hdwlinux.features.viddy = with types; {
-    enable = mkBoolOpt false "Whether or not to enable viddy.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

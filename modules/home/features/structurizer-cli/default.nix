@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.structurizr-cli;
 in
 {
   options.hdwlinux.features.structurizr-cli = with types; {
-    enable = mkBoolOpt false "Whether or not to enable structurizr-cli.";
+    enable = mkEnableOpt ["cli" "programming" "work"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

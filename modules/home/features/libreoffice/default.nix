@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.libreoffice;
 in
 {
   options.hdwlinux.features.libreoffice = with types; {
-    enable = mkBoolOpt false "Whether or not to enable libreoffice.";
+    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

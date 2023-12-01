@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.logseq;
 in
 {
   options.hdwlinux.features.logseq = with types; {
-    enable = mkBoolOpt false "Whether or not to enable logseq.";
+    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

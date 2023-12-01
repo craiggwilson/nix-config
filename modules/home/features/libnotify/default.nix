@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.libnotify;
 in
 {
   options.hdwlinux.features.libnotify = with types; {
-    enable = mkBoolOpt false "Whether or not to enable libnotify.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

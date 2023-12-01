@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.git;
 in
 {
   options.hdwlinux.features.git = with types; {
-    enable = mkBoolOpt false "Whether or not to enable git.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

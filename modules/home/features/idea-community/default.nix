@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.idea-community;
 in
 {
   options.hdwlinux.features.idea-community = with types; {
-    enable = mkBoolOpt false "Whether or not to enable idea-community.";
+    enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

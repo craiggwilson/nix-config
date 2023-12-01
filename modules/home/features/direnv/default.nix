@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.direnv;
 in
 {
   options.hdwlinux.features.direnv = with types; {
-    enable = mkBoolOpt false "Whether or not to enable direnv.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.direnv = mkIf cfg.enable {

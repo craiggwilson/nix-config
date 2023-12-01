@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.ripgrep;
 in
 {
   options.hdwlinux.features.ripgrep = with types; {
-    enable = mkBoolOpt false "Whether or not to enable ripgrep.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.ripgrep = mkIf cfg.enable {

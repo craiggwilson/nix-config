@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.swayidle;
 in
 {
   options.hdwlinux.features.swayidle = with types; {
-    enable = mkBoolOpt false "Whether or not to enable swayidle.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

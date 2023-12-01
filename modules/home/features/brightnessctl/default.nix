@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.brightnessctl;
 in
 {
   options.hdwlinux.features.brightnessctl = with types; {
-    enable = mkBoolOpt false "Whether or not to enable brightnessctl.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

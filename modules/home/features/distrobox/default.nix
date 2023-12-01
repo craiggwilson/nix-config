@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.distrobox;
 in
 {
   options.hdwlinux.features.distrobox = with types; {
-    enable = mkBoolOpt false "Whether or not to enable distrobox.";
+    enable = mkEnableOpt ["cli" "programming"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

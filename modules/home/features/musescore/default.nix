@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.musescore;
 in
 {
   options.hdwlinux.features.musescore = with types; {
-    enable = mkBoolOpt false "Whether or not to enable musescore.";
+    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

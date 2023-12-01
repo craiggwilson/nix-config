@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.rofi;
 in
 {
   options.hdwlinux.features.rofi = with types; {
-    enable = mkBoolOpt false "Whether or not to enable rofi.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = with pkgs; mkIf cfg.enable {

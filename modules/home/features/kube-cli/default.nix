@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.kube-cli;
 in
 {
   options.hdwlinux.features.kube-cli = with types; {
-    enable = mkBoolOpt false "Whether or not to enable kubectl and kubectx.";
+    enable = mkEnableOpt ["cli" "programming" "work"] config.hdwlinux.features.tags;
     enableAliases = mkBoolOpt true "Whether or not to enable aliases.";
   };
 

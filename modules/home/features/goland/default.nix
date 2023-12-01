@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.goland;
 in
 {
   options.hdwlinux.features.goland = with types; {
-    enable = mkBoolOpt false "Whether or not to enable goland.";
+    enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

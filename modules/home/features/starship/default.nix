@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.starship;
 in
 {
   options.hdwlinux.features.starship = with types; {
-    enable = mkBoolOpt false "Whether or not to enable starship.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
     settings = mkOpt attrs { } (mdDoc "Options to pass directly to `programs.starship.settings`.");
   };
 

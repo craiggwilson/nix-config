@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.micro;
 in
 {
   options.hdwlinux.features.micro = with types; {
-    enable = mkBoolOpt false "Whether or not to enable dunst.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

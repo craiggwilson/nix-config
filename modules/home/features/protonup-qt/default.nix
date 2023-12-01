@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.protonup-qt;
 in
 {
   options.hdwlinux.features.protonup-qt = with types; {
-    enable = mkBoolOpt false "Whether or not to enable protonup-qt.";
+    enable = mkEnableOpt ["gui" "gaming"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

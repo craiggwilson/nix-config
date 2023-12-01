@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.lsd;
 in
 {
   options.hdwlinux.features.lsd = with types; {
-    enable = mkBoolOpt false "Whether or not to enable lsd.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.lsd = mkIf cfg.enable {

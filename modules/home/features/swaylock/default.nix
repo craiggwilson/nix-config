@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.swaylock;
 in
 {
   options.hdwlinux.features.swaylock = with types; {
-    enable = mkBoolOpt false "Whether or not to enable swaylock.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

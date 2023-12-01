@@ -6,7 +6,7 @@ let
 in {
   
   options.hdwlinux.features.cliphist = with types; {
-    enable = mkBoolOpt false "Whether or not to enable cliphist.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

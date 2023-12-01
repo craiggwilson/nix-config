@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.go;
 in
 {
   options.hdwlinux.features.go = with types; {
-    enable = mkBoolOpt false "Whether or not to enable go.";
+    enable = mkEnableOpt ["cli" "programming"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

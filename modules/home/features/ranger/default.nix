@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.ranger;
 in
 {
   options.hdwlinux.features.ranger = with types; {
-    enable = mkBoolOpt false "Whether or not to enable ranger.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

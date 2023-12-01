@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.bc;
 in
 {
   options.hdwlinux.features.bc = with types; {
-    enable = mkBoolOpt false "Whether or not to enable bc.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

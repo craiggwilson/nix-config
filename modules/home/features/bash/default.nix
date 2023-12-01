@@ -6,13 +6,15 @@ let cfg = config.hdwlinux.features.bash;
 in
 {
   options.hdwlinux.features.bash = with types; {
-    enable = mkBoolOpt false "Whether or not to enable bash.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
     initExtra = mkOpt lines "" (mdDoc "Options passed directly to home-manager's `programs.bash.initExtra`.");
   };
 
   config.programs.bash = mkIf cfg.enable {
       enable = true;
-      initExtra = mkAliasDefinitions options.hdwlinux.features.bash.initExtra;
+      initExtra = ''
+        source ~/.profile
+      '';
       enableVteIntegration = true;
       historyControl = [
           "ignoredups"

@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.gh;
 in
 {
   options.hdwlinux.features.gh = with types; {
-    enable = mkBoolOpt false "Whether or not to enable gh.";
+    enable = mkEnableOpt ["cli" "programming"] config.hdwlinux.features.tags;
   };
 
   config.programs.gh = mkIf cfg.enable {

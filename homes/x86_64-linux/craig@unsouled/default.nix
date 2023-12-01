@@ -7,27 +7,7 @@
   hdwlinux = {
     theme.ayu-dark.enable = true;
 
-    suites = {
-      desktops.hyprland.enable = true;
-      shell.bash.enable = true;
-      apps = {
-        cli = {
-          core.enable = true;
-          programming.enable = true;
-          work.enable = true;
-        };
-        gui = {  
-          core.enable = true;
-          gaming.enable = true;
-          programming.enable = true;
-          work.enable = true;
-        };
-      };
-      services = {
-        core.enable = true;
-        gui.enable = true;
-      };
-    };
+    features.tags = ["cli" "desktop:hyprland" "gaming" "gui" "programming" "service" "work"];
   };
 
   # This value determines the NixOS release from which the default

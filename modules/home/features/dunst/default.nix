@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.dunst;
 in
 {
   options.hdwlinux.features.dunst = with types; {
-    enable = mkBoolOpt false "Whether or not to enable dunst.";
+    enable = mkEnableOpt ["gui" "desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

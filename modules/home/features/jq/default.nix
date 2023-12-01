@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.jq;
 in
 {
   options.hdwlinux.features.jq = with types; {
-    enable = mkBoolOpt false "Whether or not to enable jq.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.jq = mkIf cfg.enable {

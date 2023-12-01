@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.electronSupport;
 in
 {
   options.hdwlinux.features.electronSupport = with types; {
-    enable = mkBoolOpt false "Whether or not to enable electron support.";
+    enable = mkEnableOpt ["gui" "desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

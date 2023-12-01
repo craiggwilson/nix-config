@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.zoxide;
 in
 {
   options.hdwlinux.features.zoxide = with types; {
-    enable = mkBoolOpt false "Whether or not to enable zoxide.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.zoxide = mkIf cfg.enable {

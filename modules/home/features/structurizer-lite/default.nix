@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.structurizr-lite;
 in
 {
   options.hdwlinux.features.structurizr-lite = with types; {
-    enable = mkBoolOpt false "Whether or not to enable structurizr-lite.";
+    enable = mkEnableOpt ["gui" "programming" "work"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

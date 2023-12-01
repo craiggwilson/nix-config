@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.fzf;
 in
 {
   options.hdwlinux.features.fzf = with types; {
-    enable = mkBoolOpt false "Whether or not to enable fzf.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.fzf = mkIf cfg.enable {

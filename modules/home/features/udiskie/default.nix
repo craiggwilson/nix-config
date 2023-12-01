@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.udiskie;
 in
 {
   options.hdwlinux.features.udiskie = with types; {
-    enable = mkBoolOpt false "Whether or not to enable the udiskie service.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.services.udiskie = mkIf cfg.enable {

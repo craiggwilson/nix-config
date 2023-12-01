@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.meld;
 in
 {
   options.hdwlinux.features.meld = with types; {
-    enable = mkBoolOpt false "Whether or not to enable meld.";
+    enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.slack;
 in
 {
   options.hdwlinux.features.slack = with types; {
-    enable = mkBoolOpt false "Whether or not to enable slack.";
+    enable = mkEnableOpt ["gui" "work"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

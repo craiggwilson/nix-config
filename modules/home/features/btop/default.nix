@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.btop;
 in
 {
   options.hdwlinux.features.btop = with types; {
-    enable = mkBoolOpt false "Whether or not to enable btop.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.btop = mkIf cfg.enable {

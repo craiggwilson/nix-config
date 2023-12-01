@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.bat;
 in
 {
   options.hdwlinux.features.bat = with types; {
-    enable = mkBoolOpt false "Whether or not to enable bat.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs.bat = mkIf cfg.enable {

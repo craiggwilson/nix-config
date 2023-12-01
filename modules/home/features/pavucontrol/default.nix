@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.pavucontrol;
 in
 {
   options.hdwlinux.features.pavucontrol = with types; {
-    enable = mkBoolOpt false "Whether or not to enable pavucontrol.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

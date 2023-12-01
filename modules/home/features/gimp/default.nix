@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.gimp;
 in
 {
   options.hdwlinux.features.gimp = with types; {
-    enable = mkBoolOpt false "Whether or not to enable gimp.";
+    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

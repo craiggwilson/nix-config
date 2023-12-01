@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features.waybar = with types; {
-    enable = mkBoolOpt false "Whether or not to enable waybar.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.programs.waybar = mkIf cfg.enable {

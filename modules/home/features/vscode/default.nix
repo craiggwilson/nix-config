@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.vscode;
 in
 {
   options.hdwlinux.features.vscode = with types; {
-    enable = mkBoolOpt false "Whether or not to enable vscode.";
+    enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

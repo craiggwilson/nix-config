@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.evergreen;
 in
 {
   options.hdwlinux.features.evergreen = with types; {
-    enable = mkBoolOpt false "Whether or not to enable evergreen.";
+    enable = mkEnableOpt ["cli" "programming" "work"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

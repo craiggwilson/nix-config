@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.features.hyprpaper = with types; {
-    enable = mkBoolOpt false "Whether or not to enable hyprpaper.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

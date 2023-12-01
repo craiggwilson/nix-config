@@ -6,11 +6,13 @@ let cfg = config.hdwlinux.features.hyprland;
 in
 {
   options.hdwlinux.features.hyprland = with types; {
-    enable = mkBoolOpt false "Whether or not to enable hyprland.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
     settings = mkOpt attrs { } (mdDoc "Options passed directly to home-manager's `wayland.windowManager.hyprland.settings`.");
   };
 
   config = mkIf cfg.enable {
+    systemd.user.startServices = true;
+
     wayland.windowManager.hyprland = {
       enable = true;
       xwayland.enable = true;
