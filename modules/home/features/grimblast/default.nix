@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.grimblast;
 in
 {
   options.hdwlinux.features.grimblast = with types; {
-    enable = mkEnableOpt ["gui" "desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [

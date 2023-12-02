@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.dunst;
 in
 {
   options.hdwlinux.features.dunst = with types; {
-    enable = mkEnableOpt ["gui" "desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
@@ -14,7 +14,7 @@ in
         dunst
     ];
 
-    xdg.configFile."dunst/dunstrc".text = ''
+    xdg.configFile."dunst/dunstrc".text = mkIf config.hdwlinux.theme.enable ''
       [global]
         frame_color = "${config.hdwlinux.theme.colors.withHashtag.base05}"
         separator_color = "${config.hdwlinux.theme.colors.withHashtag.base05}"

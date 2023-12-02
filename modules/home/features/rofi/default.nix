@@ -38,13 +38,14 @@ in
       recursive = true;
     };
 
-    xdg.configFile."rofi/colors.rasi".text = ''
+    xdg.configFile."rofi/colors.rasi".text = mkIf config.hdwlinux.theme.enable ''
       * {
           background:     ${config.hdwlinux.theme.colors.withHashtag.base00};
           background-alt: ${config.hdwlinux.theme.colors.withHashtag.base01};
           foreground:     ${config.hdwlinux.theme.colors.withHashtag.base05};
           selected:       ${config.hdwlinux.theme.colors.withHashtag.base03};
           active:         ${config.hdwlinux.theme.colors.withHashtag.base06};
+
           urgent:         ${config.hdwlinux.theme.colors.withHashtag.base0E};
       }
     '';

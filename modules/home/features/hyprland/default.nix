@@ -2,12 +2,14 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.hyprland;
+let 
+  cfg = config.hdwlinux.features.hyprland;
+  rgb = color: "rgb(${color})";
+  rgba = color: alpha: "rgba(${color}${alpha})";
 in
 {
   options.hdwlinux.features.hyprland = with types; {
     enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
-    settings = mkOpt attrs { } (mdDoc "Options passed directly to home-manager's `wayland.windowManager.hyprland.settings`.");
   };
 
   config = mkIf cfg.enable {
@@ -19,196 +21,211 @@ in
       enableNvidiaPatches = builtins.elem "nvidia" osConfig.services.xserver.videoDrivers;
       systemd.enable = true;
 
-      settings = {
-        misc = {
-          disable_hyprland_logo = true;
-          disable_splash_rendering = true;
-        };
-
-        monitor = (builtins.map (m: 
-          "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
-        ) config.hdwlinux.features.monitors.monitors)
-        ++ [ ", preferred, auto, auto" ];
-
-        workspace = (map (m: 
-          "${m.workspace}, monitor:${m.name}"
-        ) config.hdwlinux.features.monitors.monitors) ++ [
-          "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
-        ];
-
-        env = [
-          "XCURSOR_SIZE,24"
-        ];
-
-        general = {
-          gaps_in = 5;
-          gaps_out = 20;
-          border_size = 2;
-        };
-
-        decoration = {
-          rounding = 10;
-          blur = {
-            size = 7;
-            passes = 2;
-            ignore_opacity = true;
-            special = true;
+      settings = mkMerge [
+        (mkIf config.hdwlinux.theme.enable {
+          misc.background_color = rgb config.hdwlinux.theme.colors.base00;
+          general = {
+            "col.active_border" = rgb config.hdwlinux.theme.colors.base0A;
+            "col.inactive_border" = rgb config.hdwlinux.theme.colors.base03;
+          };
+          decoration."col.shadow" = rgba config.hdwlinux.theme.colors.base00 "99";
+          group = {
+            "col.border_inactive" = rgb config.hdwlinux.theme.colors.base0D;
+            "col.border_active" = rgb config.hdwlinux.theme.colors.base06;
+            "col.border_locked_active" = rgb config.hdwlinux.theme.colors.base06;
+          };
+        })
+        {
+          misc = {
+            disable_hyprland_logo = true;
+            disable_splash_rendering = true;
           };
 
-          dim_special = .2;
-          drop_shadow = true;
-          shadow_range = 4;
-          shadow_render_power = 3;
-        };
+          monitor = (builtins.map (m: 
+            "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
+          ) config.hdwlinux.features.monitors.monitors)
+          ++ [ ", preferred, auto, auto" ];
 
-        animations = {
-          enabled = true;
-          bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
-
-          animation = [
-            "windows, 1, 7, myBezier"
-            "windowsOut, 1, 7, default, popin 80%"
-            "border, 1, 10, default"
-            "borderangle, 1, 8, default"
-            "fade, 1, 7, default"
-            "workspaces, 1, 6, default"
+          workspace = (map (m: 
+            "${m.workspace}, monitor:${m.name}"
+          ) config.hdwlinux.features.monitors.monitors) ++ [
+            "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
           ];
-        };
 
-        input = {
-          kb_layout = "us";
-          kb_variant = "";
-          kb_model = "";
-          kb_options = "";
-          kb_rules = "";
-          follow_mouse = 2;
+          env = [
+            "XCURSOR_SIZE,24"
+          ];
 
-          touchpad = {
-            natural_scroll = true;
+          general = {
+            gaps_in = 5;
+            gaps_out = 20;
+            border_size = 2;
           };
 
-          sensitivity = 0;
-        };
+          decoration = {
+            rounding = 10;
+            blur = {
+              size = 7;
+              passes = 2;
+              ignore_opacity = true;
+              special = true;
+            };
 
-        dwindle = {
-          pseudotile = true;
-          preserve_split = true;
-          special_scale_factor = 1;
-        };
+            dim_special = .2;
+            drop_shadow = true;
+            shadow_range = 4;
+            shadow_render_power = 3;
+          };
 
-        master = {
-          new_is_master = true;
-          special_scale_factor = 1;
-        };
+          animations = {
+            enabled = true;
+            bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
 
-        gestures = {
-          workspace_swipe = true;
-        };
+            animation = [
+              "windows, 1, 7, myBezier"
+              "windowsOut, 1, 7, default, popin 80%"
+              "border, 1, 10, default"
+              "borderangle, 1, 8, default"
+              "fade, 1, 7, default"
+              "workspaces, 1, 6, default"
+            ];
+          };
 
-        "device:epic-mouse-v1" = {
-          sensitivity = -0.5;
-        };
+          input = {
+            kb_layout = "us";
+            kb_variant = "";
+            kb_model = "";
+            kb_options = "";
+            kb_rules = "";
+            follow_mouse = 2;
 
-        exec-once = [
-          #"swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'"
-          "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'"
-          "waybar"
-          "hyprpaper"
-          "nm-applet --indicator"
-          "dunst"
-          "1password --silent"
-          "wl-paste --type text --watch cliphist store"
-          "wl-paste --type image --watch cliphist store"
-        ];
+            touchpad = {
+              natural_scroll = true;
+            };
 
-        bind = [
-          "SUPER, B, exec, firefox"
-          "SUPER, E, exec, thunar"
-          "SUPER, L, exec, 1password --toggle"
-          "SUPER ALT, L, exec, 1password --quick-access"
-          "SUPER, X, exec, rofi -show power-menu"
-          "SUPER, P, exec, $colorPicker"
-          "SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons"
-          "SUPER ALT , SPACE, exec, rofi -show run -show-icons"
-          "SUPER, TAB, exec, rofi -show window -show-icons"
-          "SUPER, T, exec, kitty"
-          "SUPER, GRAVE, togglespecialworkspace, dropdown"
-          "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-          ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
-          "SUPER, ESCAPE, exec, kitty btop"
+            sensitivity = 0;
+          };
 
-          # Move focus with mainMod + arrow keys
-          "SUPER, left, movefocus, l"
-          "SUPER, right, movefocus, r"
-          "SUPER, up, movefocus, u"
-          "SUPER, down, movefocus, d"
+          dwindle = {
+            pseudotile = true;
+            preserve_split = true;
+            special_scale_factor = 1;
+          };
 
-          # Switch workspaces with mainMod + [0-9]
-          "SUPER CONTROL, left, workspace, -1"
-          "SUPER CONTROL, right, workspace, +1"
-          "SUPER, 1, workspace, 1"
-          "SUPER, 2, workspace, 2"
-          "SUPER, 3, workspace, 3"
-          "SUPER, 4, workspace, 4"
-          "SUPER, 5, workspace, 5"
-          "SUPER, 6, workspace, 6"
-          "SUPER, 7, workspace, 7"
-          "SUPER, 8, workspace, 8"
-          "SUPER, 9, workspace, 9"
-          "SUPER, 0, workspace, 10"
+          master = {
+            new_is_master = true;
+            special_scale_factor = 1;
+          };
 
-          # Manipuate active window mainMod + SHIFT
-          "SUPER SHIFT, W, killactive,"
-          "SUPER SHIFT, P, pseudo,"
-          "SUPER SHIFT, J, togglesplit,"
-          "SUPER SHIFT, F, togglefloating,"
-          "SUPER SHIFT, RETURN, fullscreen, 1"
-          "SUPER SHIFT, left, movetoworkspace, -1"
-          "SUPER SHIFT, right, movetoworkspace, +1"
-          "SUPER SHIFT, 1, movetoworkspace, 1"
-          "SUPER SHIFT, 2, movetoworkspace, 2"
-          "SUPER SHIFT, 3, movetoworkspace, 3"
-          "SUPER SHIFT, 4, movetoworkspace, 4"
-          "SUPER SHIFT, 5, movetoworkspace, 5"
-          "SUPER SHIFT, 6, movetoworkspace, 6"
-          "SUPER SHIFT, 7, movetoworkspace, 7"
-          "SUPER SHIFT, 8, movetoworkspace, 8"
-          "SUPER SHIFT, 9, movetoworkspace, 9"
-          "SUPER SHIFT, 0, movetoworkspace, 10"
-          "SUPER SHIFT, T, movetoworkspace, special:dropdown"
+          gestures = {
+            workspace_swipe = true;
+          };
 
-          # Scroll through existing workspaces with mainMod + scroll
-          "SUPER, mouse_down, workspace, e+1"
-          "SUPER, mouse_up, workspace, e-1"
-        ];
+          "device:epic-mouse-v1" = {
+            sensitivity = -0.5;
+          };
 
-        binde = [
-          ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
-          ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-          ", xf86monbrightnessup, exec, brightnessctl set 10%+"
-          ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
-        ];
+          exec-once = [
+            #"swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'"
+            "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'"
+            "waybar"
+            "hyprpaper"
+            "nm-applet --indicator"
+            "dunst"
+            "1password --silent"
+            "wl-paste --type text --watch cliphist store"
+            "wl-paste --type image --watch cliphist store"
+          ];
 
-        bindm = [
-          # Move/resize windows with mainMod + LMB/RMB and dragging
-          "SUPER, mouse:272, movewindow"
-          "SUPER, mouse:273, resizewindow"
-        ];
+          bind = [
+            "SUPER, B, exec, firefox"
+            "SUPER, E, exec, thunar"
+            "SUPER, L, exec, 1password --toggle"
+            "SUPER ALT, L, exec, 1password --quick-access"
+            "SUPER, X, exec, rofi -show power-menu"
+            "SUPER, P, exec, $colorPicker"
+            "SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons"
+            "SUPER ALT , SPACE, exec, rofi -show run -show-icons"
+            "SUPER, TAB, exec, rofi -show window -show-icons"
+            "SUPER, T, exec, kitty"
+            "SUPER, GRAVE, togglespecialworkspace, dropdown"
+            "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+            ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+            "SUPER, ESCAPE, exec, kitty btop"
 
-        windowrulev2 = [
-          "opacity .95 .85,title:^(.*Code.*)$"
-          "opacity .95 .85,class:^(firefox)$"
-          "opacity .95 .85,class:^(jetbrains-goland)$"
-          "opacity .95 .85,class:^(kitty)$"
-          "opacity .95 .85,class:^(Logseq)$"
-          "opacity .95 .85,class:^(Slack)$"
-          "float,title:^(Quick Access — 1Password)$"
-          "dimaround,title:^(Quick Access — 1Password)$, floating"
-          "center,title:^(Quick Access — 1Password)$"
-          "stayfocused,title:^(Quick Access — 1Password)$"
-          "workspace special:dropdown,class:^(kitty)$"
-        ];
-      } // cfg.settings;
+            # Move focus with mainMod + arrow keys
+            "SUPER, left, movefocus, l"
+            "SUPER, right, movefocus, r"
+            "SUPER, up, movefocus, u"
+            "SUPER, down, movefocus, d"
+
+            # Switch workspaces with mainMod + [0-9]
+            "SUPER CONTROL, left, workspace, -1"
+            "SUPER CONTROL, right, workspace, +1"
+            "SUPER, 1, workspace, 1"
+            "SUPER, 2, workspace, 2"
+            "SUPER, 3, workspace, 3"
+            "SUPER, 4, workspace, 4"
+            "SUPER, 5, workspace, 5"
+            "SUPER, 6, workspace, 6"
+            "SUPER, 7, workspace, 7"
+            "SUPER, 8, workspace, 8"
+            "SUPER, 9, workspace, 9"
+            "SUPER, 0, workspace, 10"
+
+            # Manipuate active window mainMod + SHIFT
+            "SUPER SHIFT, W, killactive,"
+            "SUPER SHIFT, P, pseudo,"
+            "SUPER SHIFT, J, togglesplit,"
+            "SUPER SHIFT, F, togglefloating,"
+            "SUPER SHIFT, RETURN, fullscreen, 1"
+            "SUPER SHIFT, left, movetoworkspace, -1"
+            "SUPER SHIFT, right, movetoworkspace, +1"
+            "SUPER SHIFT, 1, movetoworkspace, 1"
+            "SUPER SHIFT, 2, movetoworkspace, 2"
+            "SUPER SHIFT, 3, movetoworkspace, 3"
+            "SUPER SHIFT, 4, movetoworkspace, 4"
+            "SUPER SHIFT, 5, movetoworkspace, 5"
+            "SUPER SHIFT, 6, movetoworkspace, 6"
+            "SUPER SHIFT, 7, movetoworkspace, 7"
+            "SUPER SHIFT, 8, movetoworkspace, 8"
+            "SUPER SHIFT, 9, movetoworkspace, 9"
+            "SUPER SHIFT, 0, movetoworkspace, 10"
+            "SUPER SHIFT, T, movetoworkspace, special:dropdown"
+
+            # Scroll through existing workspaces with mainMod + scroll
+            "SUPER, mouse_down, workspace, e+1"
+            "SUPER, mouse_up, workspace, e-1"
+          ];
+
+          binde = [
+            ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
+            ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+            ", xf86monbrightnessup, exec, brightnessctl set 10%+"
+            ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
+          ];
+
+          bindm = [
+            # Move/resize windows with mainMod + LMB/RMB and dragging
+            "SUPER, mouse:272, movewindow"
+            "SUPER, mouse:273, resizewindow"
+          ];
+
+          windowrulev2 = [
+            "opacity .95 .85,title:^(.*Code.*)$"
+            "opacity .95 .85,class:^(firefox)$"
+            "opacity .95 .85,class:^(jetbrains-goland)$"
+            "opacity .95 .85,class:^(kitty)$"
+            "opacity .95 .85,class:^(Logseq)$"
+            "opacity .95 .85,class:^(Slack)$"
+            "float,title:^(Quick Access — 1Password)$"
+            "dimaround,title:^(Quick Access — 1Password)$, floating"
+            "center,title:^(Quick Access — 1Password)$"
+            "stayfocused,title:^(Quick Access — 1Password)$"
+            "workspace special:dropdown,class:^(kitty)$"
+          ];
+        }
+      ];
 
       extraConfig = ''
         bind = , PRINT, submap, screenshot

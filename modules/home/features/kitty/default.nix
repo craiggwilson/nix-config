@@ -18,7 +18,7 @@ in
     programs.kitty = {
       enable = true;
       font.name = mkForce "FiraCode Nerd Font Mono";
-      settings = with config.hdwlinux.theme.colors.withHashtag; {
+      settings = with config.hdwlinux.theme.colors.withHashtag; mkIf config.hdwlinux.theme.enable {
         color0  = base00;
         color1  = base08;
         color2  = base0B;
@@ -42,6 +42,7 @@ in
         color20 = base04;
         color21 = base06;
       };
+      
       extraConfig = ''
         enabled_layouts splits,tall,fat
         map ctrl+c copy_or_interrupt
