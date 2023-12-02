@@ -14,9 +14,17 @@ in {
     };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     gtk = {
       enable = true;
+      gtk3.extraConfig = {
+        gtk-application-prefer-dark-theme = true;
+      };
+      gtk3.extraCss = cfg.colors.adwaitaGtkCss;
+      gtk4.extraConfig = {
+        gtk-application-prefer-dark-theme = true;
+      };
+      gtk4.extraCss = cfg.colors.adwaitaGtkCss;
       cursorTheme = {
         name = "Nordzy-cursors";
         package = pkgs.nordzy-cursor-theme;

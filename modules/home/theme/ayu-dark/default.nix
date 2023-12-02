@@ -12,6 +12,7 @@ in {
 
   config = mkIf cfg.enable {
     hdwlinux.theme = {
+      enable = true;
       colors = inputs.themes.ayu-dark;
       wallpapers = [ wallpaper ];
     };
