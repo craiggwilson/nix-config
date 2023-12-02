@@ -40,12 +40,12 @@ in
 
     xdg.configFile."rofi/colors.rasi".text = ''
       * {
-          background:     ${config.lib.stylix.colors.withHashtag.base00};
-          background-alt: ${config.lib.stylix.colors.withHashtag.base01};
-          foreground:     ${config.lib.stylix.colors.withHashtag.base05};
-          selected:       ${config.lib.stylix.colors.withHashtag.base03};
-          active:         ${config.lib.stylix.colors.withHashtag.base06};
-          urgent:         ${config.lib.stylix.colors.withHashtag.base0E};
+          background:     ${config.hdwlinux.theme.colors.withHashtag.base00};
+          background-alt: ${config.hdwlinux.theme.colors.withHashtag.base01};
+          foreground:     ${config.hdwlinux.theme.colors.withHashtag.base05};
+          selected:       ${config.hdwlinux.theme.colors.withHashtag.base03};
+          active:         ${config.hdwlinux.theme.colors.withHashtag.base06};
+          urgent:         ${config.hdwlinux.theme.colors.withHashtag.base0E};
       }
     '';
 

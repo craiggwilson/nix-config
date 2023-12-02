@@ -19,7 +19,5 @@ in
         indicator-thickness = 10;
       };
     };
-
-    hdwlinux.theme.targets.swaylock.enable = true;
   };
 }

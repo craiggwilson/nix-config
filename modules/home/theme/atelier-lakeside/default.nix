@@ -3,7 +3,6 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.theme.atelier-lakeside; 
-  theme = "${pkgs.base16-schemes}/share/themes/atelier-lakeside.yaml";
   wallpaper = ./assets/lake.jpg;
 in {
 
@@ -12,10 +11,9 @@ in {
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.theme.wallpapers = [ wallpaper ];
-
-    stylix = {
-      base16Scheme = theme;
+    hdwlinux.theme = {
+      colors = inputs.themes.atelier-lakeside;
+      wallpapers = [ wallpaper ];
     };
   };
 }

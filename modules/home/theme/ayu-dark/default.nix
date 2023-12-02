@@ -3,7 +3,6 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.theme.ayu-dark; 
-  theme = "${pkgs.base16-schemes}/share/themes/ayu-dark.yaml";
   wallpaper = ./assets/bubbles.jpg;
 in {
 
@@ -12,8 +11,9 @@ in {
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.theme.wallpapers = [ wallpaper ];
-
-    stylix.base16Scheme = theme;
+    hdwlinux.theme = {
+      colors = inputs.themes.ayu-dark;
+      wallpapers = [ wallpaper ];
+    };
   };
 }

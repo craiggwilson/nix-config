@@ -7,7 +7,4 @@
     wireless.enable = false;
     networkmanager.enable = true;
   };
-
-  # This is weird, but related to how the stylix module works...
-  hdwlinux.features.stylix.enable = true;
 }

@@ -36,8 +36,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # stylix provides consistent styling to a number of packages
-    stylix.url = "github:danth/stylix";
+    # themes provides simple coloring and templates.
+    themes.url = "github:RGBCube/ThemeNix";
   };
 
   outputs = inputs: 
@@ -74,7 +74,6 @@
           nixos = with inputs; [
             home-manager.nixosModules.home-manager
             disko.nixosModules.disko
-            stylix.nixosModules.stylix
           ];
         };
       };

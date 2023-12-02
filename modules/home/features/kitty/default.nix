@@ -18,6 +18,30 @@ in
     programs.kitty = {
       enable = true;
       font.name = mkForce "FiraCode Nerd Font Mono";
+      settings = with config.hdwlinux.theme.colors.withHashtag; {
+        color0  = base00;
+        color1  = base08;
+        color2  = base0B;
+        color3  = base0A;
+        color4  = base0D;
+        color5  = base0E;
+        color6  = base0C;
+        color7  = base05;
+        color8  = base03;
+        color9  = base08;
+        color10 = base0B;
+        color11 = base0A;
+        color12 = base0D;
+        color13 = base0E;
+        color14 = base0C;
+        color15 = base07;
+        color16 = base09;
+        color17 = base0F;
+        color18 = base01;
+        color19 = base02;
+        color20 = base04;
+        color21 = base06;
+      };
       extraConfig = ''
         enabled_layouts splits,tall,fat
         map ctrl+c copy_or_interrupt
@@ -39,40 +63,6 @@ in
         tab_bar_style powerline
         tab_powerline_style slanted
         tab_activity_symbol ◉
-
-        background ${config.lib.stylix.colors.withHashtag.base00}
-        foreground ${config.lib.stylix.colors.withHashtag.base05}
-        selection_background ${config.lib.stylix.colors.withHashtag.base07}
-        selection_foreground ${config.lib.stylix.colors.withHashtag.base00}
-        url_color ${config.lib.stylix.colors.withHashtag.base0C}
-        cursor ${config.lib.stylix.colors.withHashtag.base07}
-        active_border_color ${config.lib.stylix.colors.withHashtag.base08}
-        inactive_border_color ${config.lib.stylix.colors.withHashtag.base0A}
-        active_tab_background ${config.lib.stylix.colors.withHashtag.base00}
-        active_tab_foreground ${config.lib.stylix.colors.withHashtag.base09}
-        inactive_tab_background ${config.lib.stylix.colors.withHashtag.base02}
-        inactive_tab_foreground ${config.lib.stylix.colors.withHashtag.base05}
-        tab_bar_background ${config.lib.stylix.colors.withHashtag.base02}
-
-        # normal
-        color0 ${config.lib.stylix.colors.withHashtag.base00}
-        color1 ${config.lib.stylix.colors.withHashtag.base08}
-        color2 ${config.lib.stylix.colors.withHashtag.base0B}
-        color3 ${config.lib.stylix.colors.withHashtag.base0A}
-        color4 ${config.lib.stylix.colors.withHashtag.base0D}
-        color5 ${config.lib.stylix.colors.withHashtag.base0E}
-        color6 ${config.lib.stylix.colors.withHashtag.base0C}
-        color7 ${config.lib.stylix.colors.withHashtag.base05}
-
-        # bright
-        color8  ${config.lib.stylix.colors.withHashtag.base03}
-        color9  ${config.lib.stylix.colors.withHashtag.base09}
-        color10 ${config.lib.stylix.colors.withHashtag.base01}
-        color11 ${config.lib.stylix.colors.withHashtag.base02}
-        color12 ${config.lib.stylix.colors.withHashtag.base04}
-        color13 ${config.lib.stylix.colors.withHashtag.base06}
-        color14 ${config.lib.stylix.colors.withHashtag.base0F}
-        color15 ${config.lib.stylix.colors.withHashtag.base07}
       '';
     };
   };

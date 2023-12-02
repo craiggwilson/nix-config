@@ -16,23 +16,23 @@ in
 
     xdg.configFile."dunst/dunstrc".text = ''
       [global]
-        frame_color = "${config.lib.stylix.colors.withHashtag.base05}"
-        separator_color = "${config.lib.stylix.colors.withHashtag.base05}"
+        frame_color = "${config.hdwlinux.theme.colors.withHashtag.base05}"
+        separator_color = "${config.hdwlinux.theme.colors.withHashtag.base05}"
 
       [base16_low]
         msg_urgency = low
-        background = "${config.lib.stylix.colors.withHashtag.base01}"
-        foreground = "${config.lib.stylix.colors.withHashtag.base03}"
+        background = "${config.hdwlinux.theme.colors.withHashtag.base01}"
+        foreground = "${config.hdwlinux.theme.colors.withHashtag.base03}"
 
       [base16_normal]
         msg_urgency = normal
-        background = "${config.lib.stylix.colors.withHashtag.base02}"
-        foreground = "${config.lib.stylix.colors.withHashtag.base05}"
+        background = "${config.hdwlinux.theme.colors.withHashtag.base02}"
+        foreground = "${config.hdwlinux.theme.colors.withHashtag.base05}"
 
       [base16_critical]
         msg_urgency = critical
-        background = "${config.lib.stylix.colors.withHashtag.base0B}"
-        foreground = "${config.lib.stylix.colors.withHashtag.base06}"
+        background = "${config.hdwlinux.theme.colors.withHashtag.base0B}"
+        foreground = "${config.hdwlinux.theme.colors.withHashtag.base06}"
     '';
   };
 }
