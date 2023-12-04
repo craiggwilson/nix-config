@@ -14,11 +14,21 @@
     };
 
     features = {
+      mongodb.enable = true;
+      nfs = {
+        enable = true;
+        mounts = [
+          {
+            local = "/mnt/games";
+            remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
+            auto = true;
+          }
+        ];
+      };
       printing = {
         enable = true;
         raeford = true;
       };
-      mongodb.enable = true;
       tailscale = {
         enable = true;
         exitNode = "synology";

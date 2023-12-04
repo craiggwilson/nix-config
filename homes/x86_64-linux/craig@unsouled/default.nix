@@ -8,6 +8,13 @@
     theme.ayu-dark.enable = true;
 
     features.tags = ["cli" "desktop:hyprland" "gaming" "gui" "programming" "service" "work"];
+
+    features.yuzu.backups = [
+      {
+        local = "/home/craig/.local/share/yuzu/nand/user/save/0000000000000000/B1652EE64C1FFF16A1D9F5E6D3E5CD7C/010015100B514000";
+        remote = "/home/craig/OneDrive/Games/SuperMarioWonder";
+      }
+    ];
   };
 
   # This value determines the NixOS release from which the default
