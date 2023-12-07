@@ -9,6 +9,7 @@ in
     enable = mkEnableOpt ["gaming" "gui"] config.hdwlinux.features.tags;
     backups = mkOption {
       description = "Backup options.";
+      default = [];
       type = listOf(submodule {
         options = {
           local = mkOption { type = path; };
@@ -23,7 +24,8 @@ in
       yuzu-early-access
     ] ++ lib.optionals ((builtins.length cfg.backups) > 0) [
       (pkgs.writeShellScriptBin "yuzu-backup" ''
-        ${concatStringsSep "\n" (map (b: "mkdir -p ${b.remote}/$(date +'%Y%m%d'); cp -rf ${b.local}/. ${b.remote}/$(date +'%Y%m%d-%H%M%S')") cfg.backups)}
+        dt=$(date +'%Y%m%d-%H%M%S')
+        ${concatStringsSep "\n" (map (b: "mkdir -p ${b.remote}/$dt; cp -rf ${b.local}/. ${b.remote}/$dt") cfg.backups)}
       '')
     ];
 

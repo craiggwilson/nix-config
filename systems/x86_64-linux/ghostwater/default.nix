@@ -46,15 +46,15 @@
     sharedModules = [
       {
         hdwlinux.features.monitors.monitors = [
-          # { 
-          #   name = "eDP-1"; 
-          #   workspace = "1";
-          #   width = 1920;
-          #   height = 1200;
-          #   x = 0;
-          #   y = 1440;
-          #   scale = 1;
-          # }
+          { 
+            name = "eDP-1"; 
+            workspace = "1";
+            width = 3000;
+            height = 2000;
+            x = 0;
+            y = 0;
+            scale = 2;
+          }
         ];
       }
     ];

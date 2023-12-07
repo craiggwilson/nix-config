@@ -30,6 +30,8 @@ in
         "nix-config" = "git -C ${flake}";
         "nix-config-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
       };
+
+      
     };
   };
 }
