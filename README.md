@@ -1,5 +1,11 @@
 ## Getting Started
 
+### NixOS-Anywhere
+
+```
+nix run github:nix-community/nixos-anywhere -- --flake .#<hostname> --disk-encryption-keys /tmp/secret.key /tmp/secret.key <user>@<ip>
+```
+
 ### Install Git
 
 ```
