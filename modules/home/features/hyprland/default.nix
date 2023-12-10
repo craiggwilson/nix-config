@@ -126,7 +126,7 @@ in
           };
 
           exec-once = [
-            #"swayidle -w timeout 300 'swaylock' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'"
+            "swayidle -w timeout 300 'lockscreen' timeout 330 'hyprctl dispatch dpms off' resume 'hyprctl dispatch dpms on'"
             "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'"
             "waybar"
             "hyprpaper"

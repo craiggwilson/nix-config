@@ -23,7 +23,7 @@ icons[shutdown]="\Uf0425"
 icons[cancel]="\Uf0156"
 
 declare -A actions
-actions[lockscreen]="$HOME/.config/rofi/scripts/lockscreen.sh"
+actions[lockscreen]="lockscreen"
 actions[logout]="hyprctl dispatch exit"
 actions[reboot]="systemctl reboot"
 actions[shutdown]="systemctl poweroff"

@@ -31,6 +31,7 @@ in
           commit.gpgsign = true;
           gpg.format = "ssh";
           gpg.ssh.allowedSignersFile = "${config.xdg.configHome}/git/allowed_signers";
+          mergetool.hideResolved = true;
           pull.rebase = true;
           push.default = "current";
           rerere.enabled = true;

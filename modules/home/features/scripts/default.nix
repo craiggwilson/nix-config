@@ -25,6 +25,10 @@ in
           $EDITOR +"''${linenumber}" "$file"
         fi
       '')
+      (pkgs.writeShellScriptBin "lockscreen" ''
+        1password --lock
+        swaylock
+      '')
     ];
   };
 }

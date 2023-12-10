@@ -1,10 +1,13 @@
-## Getting Started
+# Installing
 
-### NixOS-Anywhere
+## NixOS-Anywhere
 
 ```
+echo -n "<password>" > /tmp/secret.key
 nix run github:nix-community/nixos-anywhere -- --flake .#<hostname> --disk-encryption-keys /tmp/secret.key /tmp/secret.key <user>@<ip>
 ```
+
+## Manual
 
 ### Install Git
 
@@ -21,10 +24,7 @@ git clone https://github.com/craiggwilson/nix-config
 
 ### Partitioning
 ```
-# If using luks, write out password to /tmp/secret.key
-echo -n "<password>" > /t              mountOptions = ["discard" "noatime"];
-mp/secret.key
-
+echo -n "<password>" > /tmp/secret.key
 sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#<host>
 ```
 
@@ -36,8 +36,9 @@ git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
 sudo nixos-install --impure --flake /tmp/nix-config#<host>
 ```
 
-## After Install
+# After Install
 
+## Pull down config flake
 ```
 mkdir -p ~/Projects/github.com/craiggwilson
 cd ~/Projects/github.com/craiggwilson
@@ -45,24 +46,22 @@ git submodule update --init --recursive
 nix-config-switch
 ```
 
-### Rebuild and Switch
+## Fingerprints
 
 ```
-nix-config-switch
+
 ```
 
-### Offload Steam to NVIDIA
+## Offload Steam to NVIDIA
 
 ```
 mkdir -p ~/.local/share/applications
 sed 's/^Exec=/&nvidia-offload /' /etc/profiles/per-user/craig/share/applications/steam.desktop > ~/.local/share/applications/steam.desktop
 ```
 
-## Manual Steps
-
 ### Setup Onedrive
 ```
-onedrive --resync
+onedrive --synchronize
 ```
 
 ### Add Streamdeck into the system (Ubuntu)
