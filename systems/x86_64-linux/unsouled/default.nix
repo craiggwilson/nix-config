@@ -33,6 +33,7 @@
         enable = true;
         exitNode = "synology";
       };
+      xone.enable = true;
     };
 
     suites = {
