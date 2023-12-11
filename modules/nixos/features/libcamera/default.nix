@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.libcamera;
 in
 {
   options.hdwlinux.features.libcamera = with types; {
-    enable = mkBoolOpt false "Whether or not to enable libcamera.";
+    enable = mkEnableOpt ["camera"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

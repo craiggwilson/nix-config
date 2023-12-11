@@ -6,7 +6,7 @@ let
 in {
   
   options.hdwlinux.features.v4l2loopback = with types; {
-    enable = mkBoolOpt false "Whether or not to enable v4l2loopback support.";
+    enable = mkEnableOpt ["v4l2loopback"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

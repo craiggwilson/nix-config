@@ -6,7 +6,7 @@ let
 in
 {
   options.hdwlinux.features.bluetooth = {
-    enable = mkBoolOpt false "Whether or not to enable support for extra bluetooth devices.";
+    enable = mkEnableOpt ["bluetooth"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

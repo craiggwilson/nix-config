@@ -6,11 +6,11 @@ let
 in {
   
   options.hdwlinux.features.thunderbolt = with types; {
-    enable = mkBoolOpt false "Whether or not to enable thunderbolt support.";
+    enable = mkEnableOpt ["thunderbolt"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
-    boot.initrd.availableKernelModules = [ "thunderbolt" ];
+    boot.initrd.availableKernelModules = ["thunderbolt"];
 
     services.hardware.bolt.enable = true;
   };

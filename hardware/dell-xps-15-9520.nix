@@ -5,15 +5,7 @@
   ];
 
   hdwlinux.features = {
-    audio.enable = true;
-    bluetooth.enable = true;
-    boot.enable = true;
-    fingerprint.enable = true;
-    libcamera.enable = true;
-    networking.enable = true;
-    redistributableFirmware.enable = true;
-    thunderbolt.enable = true;
-    v4l2loopback.enable = true;
+    tags = ["audio" "bluetooth" "boot:systemd" "camera" "fingerprint" "networking" "redistributableFirmware" "thunderbolt" "v4l2loopback"];
   };
 
   boot = {

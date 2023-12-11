@@ -5,8 +5,7 @@ let
   cfg = config.hdwlinux.features.networking; 
 in {
   options.hdwlinux.features.networking = with types; {
-    enable = mkBoolOpt false "Whether or not to enable networking support.";
-    enableL2tpVpn = mkBoolOpt true "Whether or not to enable l2tp vpn support.";
+    enable = mkEnableOpt ["networking"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
@@ -19,7 +18,7 @@ in {
       firewall.checkReversePath = mkIf config.hdwlinux.features.tailscale.enable "loose";
     };
 
-    environment.systemPackages = with pkgs; mkIf cfg.enableL2tpVpn [
+    environment.systemPackages = with pkgs; [
       networkmanager-l2tp
     ];
   };

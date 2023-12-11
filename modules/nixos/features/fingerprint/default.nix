@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features.fingerprint = with types; {
-    enable = mkBoolOpt false "Whether or not to configure fingerprint support.";
+    enable = mkEnableOpt ["fingerprint"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

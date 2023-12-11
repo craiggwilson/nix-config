@@ -2,11 +2,11 @@
 with lib;
 with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.boot;
+  cfg = config.hdwlinux.features.boot.systemd;
 in {
   
-  options.hdwlinux.features.boot = {
-    enable = mkBoolOpt false "Whether or not to enable systemd booting.";
+  options.hdwlinux.features.boot.systemd = {
+    enable = mkEnableOpt ["boot:systemd"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

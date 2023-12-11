@@ -5,7 +5,7 @@ let
   cfg = config.hdwlinux.features.audio; 
 in {
   options.hdwlinux.features.audio = with types; {
-    enable = mkBoolOpt false "Whether or not to enable audio support.";
+    enable = mkEnableOpt ["audio"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
