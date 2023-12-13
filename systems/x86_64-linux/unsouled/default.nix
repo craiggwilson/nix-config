@@ -37,7 +37,6 @@
     };
 
     suites = {
-      boot.systemd.enable = true;
       displayManagers.greetd = {
         enable = true;
         startCommand = "Hyprland";

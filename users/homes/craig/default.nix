@@ -2,7 +2,9 @@
 let
   privatePath = ../../../private/craig/default.nix;
 in {
-  imports = lib.optional (builtins.pathExists privatePath) privatePath;
+  imports = [
+    ./gh.nix
+  ] ++ lib.optional (builtins.pathExists privatePath) privatePath;
 
   hdwlinux = {
     user = {

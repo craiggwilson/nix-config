@@ -8,7 +8,12 @@ in
     enable = mkEnableOpt ["cli" "programming"] config.hdwlinux.features.tags;
   };
 
-  config.programs.gh = mkIf cfg.enable {
-    enable = true;
+  config = mkIf cfg.enable {
+    programs.gh = {
+      enable = true;
+    };
+    programs.gh-dash = {
+      enable = true;
+    };
   };
 }

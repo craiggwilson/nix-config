@@ -21,6 +21,10 @@ in
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
       file.".ssh/authorized_keys".text = cfg.publicKey;
 
+      sessionPath = [
+        "$HOME/.local/bin"
+      ];
+
       sessionVariables = {
         NIX_CONFIG_FLAKE=flake;
       };
@@ -30,8 +34,6 @@ in
         "nix-config" = "git -C ${flake}";
         "nix-config-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
       };
-
-      
     };
   };
 }
