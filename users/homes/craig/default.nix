@@ -4,7 +4,9 @@ let
 in {
   imports = [
     ./gh.nix
-  ] ++ lib.optional (builtins.pathExists privatePath) privatePath;
+  ] ++ lib.optionals (builtins.pathExists privatePath) [
+    privatePath
+  ];
 
   hdwlinux = {
     user = {

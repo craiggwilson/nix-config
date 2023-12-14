@@ -5,7 +5,7 @@
   ];
 
   hdwlinux = {
-    theme.ayu-dark.enable = true;
+    theme.catppuccin-mocha.enable = true;
 
     features.tags = ["cli" "desktop:hyprland" "gaming" "gui" "programming" "service" "work"];
 

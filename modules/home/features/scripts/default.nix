@@ -11,8 +11,8 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = mkIf (config.hdwlinux.features.bash.enable && config.hdwlinux.features.fzf.enable && config.hdwlinux.features.ripgrep.enable) [
-      (pkgs.writeShellScriptBin "frg" ''
+    home.packages = lib.optionals (config.hdwlinux.features.bash.enable && config.hdwlinux.features.fzf.enable && config.hdwlinux.features.ripgrep.enable) [
+      (pkgs.writeShellScriptBin "ff" ''
         result=`rg --ignore-case --color=always --line-number --no-heading "$@" |
           fzf --ansi \
             --color 'hl:-1:underline,hl+:-1:underline:reverse' \
@@ -25,6 +25,7 @@ in
           $EDITOR +"''${linenumber}" "$file"
         fi
       '')
+    ] ++ lib.optionals (config.hdwlinux.features.swaylock.enable) [
       (pkgs.writeShellScriptBin "lockscreen" ''
         1password --lock
         swaylock

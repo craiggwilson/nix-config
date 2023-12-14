@@ -9,8 +9,9 @@ in
     enable = mkEnableOpt ["cli" "programming"] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [
-    distrobox
-  ];
+  config = mkIf cfg.enable {
+    home.packages = with pkgs; [
+      distrobox
+    ];
+  };
 }
-

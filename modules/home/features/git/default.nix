@@ -54,5 +54,21 @@ in
     xdg.configFile."/git/allowed_signers".text = ''
       ${config.hdwlinux.user.email} ${config.hdwlinux.user.publicKey}
     '';
+
+    home.packages = mkIf (config.hdwlinux.features.bash.enable && config.hdwlinux.features.fzf.enable && config.hdwlinux.features.ripgrep.enable) [
+      (pkgs.writeShellScriptBin "git-find" ''
+        result=`git log -G"$1" --oneline | \
+            fzf --ansi \
+              --exit-0 \
+              --delimiter " " \
+              --preview "git show {1} | rg --ignore-case --color=always --line-number --context 1 $1" \
+                --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' | \
+            cut -d' ' -f1`
+
+        if [ ! -z $result ]; then
+          git show $result
+        fi
+      '')
+    ];
   };
 }

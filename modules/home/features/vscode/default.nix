@@ -8,6 +8,7 @@ in
 {
   options.hdwlinux.features.vscode = with types; {
     enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
+    enableTheme = mkBoolOpt config.hdwlinux.theme.enable "Whether to use the built-in theme.";
   };
 
   config = mkIf cfg.enable {
@@ -21,7 +22,7 @@ in
         tamasfe.even-better-toml
         vadimcn.vscode-lldb
         zxh404.vscode-proto3
-      ] ++ lib.optionals config.hdwlinux.theme.enable [
+      ] ++ lib.optionals cfg.enableTheme [
         (let
           themeFile = pkgs.writeTextFile {
             name = "vscode-hdwlinux-theme.json";
