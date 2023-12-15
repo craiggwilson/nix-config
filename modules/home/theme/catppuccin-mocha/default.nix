@@ -3,7 +3,7 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.theme.catppuccin-mocha; 
-  wallpaper = ./assets/bubbles.jpg;
+  wallpaper = ./assets/cat-waves.png;
 in {
 
   options.hdwlinux.theme.catppuccin-mocha = with types; {
