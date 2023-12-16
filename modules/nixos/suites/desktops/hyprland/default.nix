@@ -17,7 +17,6 @@ in
 
     programs.hyprland = {
       enable = true;
-      enableNvidiaPatches = builtins.elem "nvidia" config.services.xserver.videoDrivers;
       xwayland.enable = true;
     };
 

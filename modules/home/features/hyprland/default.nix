@@ -18,7 +18,6 @@ in
     wayland.windowManager.hyprland = {
       enable = true;
       xwayland.enable = true;
-      enableNvidiaPatches = builtins.elem "nvidia" osConfig.services.xserver.videoDrivers;
       systemd.enable = true;
 
       settings = mkMerge [
