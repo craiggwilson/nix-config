@@ -8,7 +8,7 @@ in
 {
   options.hdwlinux.features.vscode = with types; {
     enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
-    enableTheme = mkBoolOpt config.hdwlinux.theme.enable "Whether to use the built-in theme.";
+    theme = mkStrOpt "hdwlinux" "The theme name to use.";
   };
 
   config = mkIf cfg.enable {
@@ -22,7 +22,6 @@ in
         tamasfe.even-better-toml
         vadimcn.vscode-lldb
         zxh404.vscode-proto3
-      ] ++ lib.optionals cfg.enableTheme [
         (let
           themeFile = pkgs.writeTextFile {
             name = "vscode-hdwlinux-theme.json";
@@ -59,7 +58,7 @@ in
         "window.menuBarVisibility" = "toggle";
         "window.titleBarStyle" = "custom";
         "workbench.startupEditor" = "none";
-        "workbench.colorTheme" = "hdwlinux";
+        "workbench.colorTheme" = "${cfg.theme}";
       };
     };
 

@@ -16,5 +16,7 @@ in {
       colors = inputs.themes.catppuccin-mocha;
       wallpapers = [ wallpaper ];
     };
+
+    hdwlinux.features.vscode.theme = "Catppuccin Mocha";
   };
 }

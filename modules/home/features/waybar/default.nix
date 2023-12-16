@@ -27,6 +27,7 @@ in
       @define-color base0C ${config.hdwlinux.theme.colors.withHashtag.base0C};
       @define-color base0D ${config.hdwlinux.theme.colors.withHashtag.base0D};
       @define-color base0E ${config.hdwlinux.theme.colors.withHashtag.base0E};
+      @define-color base0F ${config.hdwlinux.theme.colors.withHashtag.base0F};
     '';
 
     programs.waybar = {
@@ -38,13 +39,12 @@ in
         exclusive = true;
         passthrough = false;
         gtk-layer-shell = true;
-        height = 32;
+        height = 35;
         modules-left = [
-          "clock"
           "hyprland/workspaces"
         ];
         modules-center = [
-          "hyprland/window"
+          "clock"
         ];
         modules-right = [
           "tray"
@@ -53,10 +53,6 @@ in
           "pulseaudio"
           "pulseaudio#microphone"
         ];
-        "hyprland/window" = {
-          format = "{}";
-          separate-outputs = true;
-        };
         backlight = {
           format = "{icon} {percent}%";
           format-icons = [ "" "" ];
@@ -157,32 +153,31 @@ in
         }
 
         #battery {
-            color: @base09;
+            color: @base08;
             border-radius: 10px;
             margin-right: 10px;
         }
 
         #backlight {
-            color: @base04;
+            color: @base0B;
             border-radius: 10px 0px 0px 10px;
             border-right: 0px;
             margin-left: 5px;
         }
 
         #clock {
-            color: @base0C;
             border-radius: 10px;
             margin-left: 5px;
         }
 
         #pulseaudio {
-            color: @base0A;
+            color: @base0D;
             border-left: 0px;
             border-right: 0px;
         }
 
         #pulseaudio.microphone {
-            color: @base0F;
+            color: @base0E;
             border-radius: 0px 10px 10px 0px;
             border-left: 0px;
             margin-right: 5px;
@@ -213,21 +208,21 @@ in
         }
 
         #workspaces button.active {
-            color: @base09;
+            color: @base0E;
         }
 
         #workspaces button.focused {
-            color: @base09;
+            color: @base0E;
             border-radius: 10px;
         }
 
         #workspaces button.urgent {
-            color: @base08;
+            color: @base0E;
             border-radius: 10px;
         }
 
         #workspaces button:hover {
-            color: @base02;
+            color: @base0E;
             border-radius: 10px;
         }
       '';

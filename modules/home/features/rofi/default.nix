@@ -55,7 +55,7 @@ in
       @import "colors.rasi"
 
       * {
-          border-colour:               var(selected);
+          border-colour:               var(foreground);
           handle-colour:               var(selected);
           background-colour:           var(background);
           foreground-colour:           var(foreground);
