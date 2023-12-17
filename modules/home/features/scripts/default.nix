@@ -28,7 +28,7 @@ in
     ] ++ lib.optionals (config.hdwlinux.features.swaylock.enable) [
       (pkgs.writeShellScriptBin "lockscreen" ''
         1password --lock
-        swaylock
+        swaylock -f
       '')
     ];
   };

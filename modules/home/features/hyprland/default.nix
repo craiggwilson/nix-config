@@ -24,7 +24,7 @@ in
         (mkIf config.hdwlinux.theme.enable {
           misc.background_color = rgb config.hdwlinux.theme.colors.base00;
           general = {
-            "col.active_border" = rgb config.hdwlinux.theme.colors.base0A;
+            "col.active_border" = rgb config.hdwlinux.theme.colors.base0E;
             "col.inactive_border" = rgb config.hdwlinux.theme.colors.base03;
           };
           decoration."col.shadow" = rgba config.hdwlinux.theme.colors.base00 "99";
@@ -125,12 +125,11 @@ in
           };
 
           exec-once = [
-            "swayidle -w timeout 300 'lockscreen'"
-            "swayidle -w timeout 60 'if pgrep -x swaylock; then hyprctl dispatch dpms off; fi' resume 'hyprctl dispatch dpms on'"
+            "swayidle -w"
             "waybar"
             "hyprpaper"
-            "nm-applet --indicator"
             "dunst"
+            "nm-applet --indicator"
             "1password --silent"
             "wl-paste --type text --watch cliphist store"
             "wl-paste --type image --watch cliphist store"

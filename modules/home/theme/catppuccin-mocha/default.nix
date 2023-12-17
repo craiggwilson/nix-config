@@ -18,5 +18,13 @@ in {
     };
 
     hdwlinux.features.vscode.theme = "Catppuccin Mocha";
+
+    gtk.theme = {
+      name = "Catppuccin-Mocha-Standard-Lavender-Dark";
+      package = pkgs.catppuccin-gtk.override {
+        accents = ["lavender"];
+        variant = "mocha";
+      };
+    };
   };
 }

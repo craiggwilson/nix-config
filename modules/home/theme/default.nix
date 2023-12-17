@@ -7,6 +7,7 @@ in {
   options.hdwlinux.theme = with types; {
     enable = mkBoolOpt false "Whether to enable theming.";
     colors = mkOpt attrs {} "The current colors.";
+    dark = mkBoolOpt true "Whether the theme is dark.";
 
     wallpapers = mkOption {
       description = "The wallpapers for the system.";
