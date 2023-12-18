@@ -14,22 +14,9 @@
     };
 
     features = {
-      tags = ["desktop:hyprland" "displayManager:greetd"];
+      tags = ["cli" "gui" "desktop:gnome" "displayManager:gdm" "fonts" "gaming" "printing" "service"];
 
-      displayManager.greetd.startCommand = "Hyprland";
       printing.raeford = true;
-      tailscale = {
-        enable = true;
-        exitNode = "synology";
-      };
-    };
-
-    suites = {
-      boot.systemd.enable = true;
-
-      apps.cli.core.enable = true;
-      apps.gui.core.enable = true;
-      services.core.enable = true;
     };
   };
 

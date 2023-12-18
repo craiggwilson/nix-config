@@ -7,7 +7,7 @@
   hdwlinux = {
     theme.ayu-dark.enable = true;
 
-    features.tags = ["cli" "desktop:hyprland" "gaming" "gui" "programming" "service" "work"];
+    features.tags = ["cli" "desktop:gnome" "gaming" "gui" "programming" "service"];
   };
 
   # This value determines the NixOS release from which the default
