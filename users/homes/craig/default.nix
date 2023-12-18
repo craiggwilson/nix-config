@@ -1,12 +1,11 @@
 { lib, pkgs, inputs, config, flake, ... }:
 let
-  privatePath = ../../../private/craig/default.nix;
+  privatePath = "${inputs.secrets}/craig";
+  privateExists = builtins.pathExists privatePath;
 in {
   imports = [
     ./gh.nix
-  ] ++ lib.optionals (builtins.pathExists privatePath) [
-    privatePath
-  ];
+  ] ++ lib.optional privateExists privatePath;
 
   hdwlinux = {
     user = {
@@ -20,10 +19,12 @@ in {
     NIX_CONFIG_FLAKE=flake;
   };
 
-  home.shellAliases = {
+  home.shellAliases = let 
+    switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake} ${if privateExists then " --override-input secrets ${flake}/../nix-private" else ""}";
+  in {
     "start" = "xdg-open";
     "nix-config" = "git -C ${flake}";
-    "nix-config-switch" = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake}?submodules=1";
+    "nix-config-switch" = switchCommand;
   };
 
   # This value determines the NixOS release from which the default

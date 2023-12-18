@@ -5,7 +5,7 @@
   ];
 
   hdwlinux = {
-    theme.ayu-dark.enable = true;
+    theme.catppuccin-mocha.enable = true;
 
     features.tags = ["cli" "desktop:gnome" "gaming" "gui" "programming" "service"];
   };

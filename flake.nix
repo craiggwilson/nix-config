@@ -30,6 +30,9 @@
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
+    # secrets is a private repository.
+    secrets.url = "github:divnix/blank";
+
     # snowfall-lib provides structure to the flake
     snowfall-lib = {
       url = "github:snowfallorg/lib";
