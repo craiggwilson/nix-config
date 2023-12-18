@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.udisks2;
 in
 {
   options.hdwlinux.features.udisks2 = with types; {
-    enable = mkBoolOpt false "Whether or not to enable the udisks2 service.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

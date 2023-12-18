@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features._1password-gui = with types; {
-    enable = mkBoolOpt false "Whether or not to enable 1password gui.";
+    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
   config.programs._1password-gui = mkIf cfg.enable {

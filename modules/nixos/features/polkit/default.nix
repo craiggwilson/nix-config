@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.polkit;
 in
 {
   options.hdwlinux.features.polkit = with types; {
-    enable = mkBoolOpt false "Whether or not to enable polkit.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

@@ -2,19 +2,14 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.suites.desktops.hyprland;
+let cfg = config.hdwlinux.features.desktop.hyprland;
 in
 {
-  options.hdwlinux.suites.desktops.hyprland = with types; {
-    enable = mkBoolOpt false "Whether or not to enable hyprland.";
+  options.hdwlinux.features.desktop.hyprland = with types; {
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
-    hdwlinux.features = {
-      fonts.enable = true;
-      thunar.enable = true;
-    };
-
     programs.hyprland = {
       enable = true;
       xwayland.enable = true;

@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features.scanning = with types; {
-    enable = mkBoolOpt false "Whether or not to configure printing support.";
+    enable = mkEnableOpt ["scanning"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

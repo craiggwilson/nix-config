@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features._1password-cli = with types; {
-    enable = mkBoolOpt false "Whether or not to enable 1password cli.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.programs._1password.enable = mkIf cfg.enable true;

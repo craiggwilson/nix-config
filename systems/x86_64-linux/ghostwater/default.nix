@@ -14,10 +14,10 @@
     };
 
     features = {
-      printing = {
-        enable = true;
-        raeford = true;
-      };
+      tags = ["desktop:hyprland" "displayManager:greetd"];
+
+      displayManager.greetd.startCommand = "Hyprland";
+      printing.raeford = true;
       tailscale = {
         enable = true;
         exitNode = "synology";
@@ -26,11 +26,6 @@
 
     suites = {
       boot.systemd.enable = true;
-      displayManagers.greetd = {
-        enable = true;
-        startCommand = "Hyprland";
-      };
-      desktops.hyprland.enable = true;
 
       apps.cli.core.enable = true;
       apps.gui.core.enable = true;

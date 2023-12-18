@@ -2,11 +2,11 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.suites.displayManagers.greetd;
+let cfg = config.hdwlinux.features.displayManager.greetd;
 in
 {
-  options.hdwlinux.suites.displayManagers.greetd = with types; {
-    enable = mkBoolOpt false "Whether or not to enable greetd.";
+  options.hdwlinux.features.displayManager.greetd = with types; {
+    enable = mkEnableOpt ["displayManager:greetd"] config.hdwlinux.features.tags;
     startCommand = mkOption { type = str; description = "The command to startup upon loginc."; };
   };
 

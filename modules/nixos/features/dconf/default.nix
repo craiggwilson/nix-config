@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.dconf;
 in
 {
   options.hdwlinux.features.dconf = with types; {
-    enable = mkBoolOpt false "Whether or not to enable dconf.";
+    enable = mkEnableOpt ["service"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

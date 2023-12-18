@@ -14,38 +14,22 @@
     };
 
     features = {
+      tags = ["cli" "gui" "desktop:hyprland" "displayManager:greetd" "filesystem:nfs" "fonts" "gaming" "printing" "service" "virtualization:docker" "virtualization:podman"];
+
+      displayManager.greetd.startCommand = "Hyprland";
       mongodb.enable = true;
-      nfs = {
-        enable = true;
-        mounts = [
-          {
-            local = "/mnt/games";
-            remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
-            auto = true;
-          }
-        ];
-      };
-      printing = {
-        enable = true;
-        raeford = true;
-      };
+      nfs.mounts = [
+        {
+          local = "/mnt/games";
+          remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
+          auto = true;
+        }
+      ];
+      printing.raeford = true;
       tailscale = {
         enable = true;
         exitNode = "synology";
       };
-      xone.enable = true;
-    };
-
-    suites = {
-      displayManagers.greetd = {
-        enable = true;
-        startCommand = "Hyprland";
-      };
-      desktops.hyprland.enable = true;
-
-      apps.cli.core.enable = true;
-      apps.gui.core.enable = true;
-      services.core.enable = true;
     };
   };
 

@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features.printing = with types; {
-    enable = mkBoolOpt false "Whether or not to configure printing support.";
+    enable = mkEnableOpt ["printing"] config.hdwlinux.features.tags;
     raeford = mkBoolOpt false "Wheter or not to enable Raeford printers.";
   };
 

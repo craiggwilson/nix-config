@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.xone;
 in
 {
   options.hdwlinux.features.xone = with types; {
-    enable = mkBoolOpt false "Whether or not to enable the xbox one hardware.";
+    enable = mkEnableOpt ["gaming"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

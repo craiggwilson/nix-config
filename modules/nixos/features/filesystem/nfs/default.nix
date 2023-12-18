@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.nfs;
 in
 {
   options.hdwlinux.features.nfs = with types; {
-    enable = mkBoolOpt false "Whether or not to enable nfs.";
+    enable = mkEnableOpt ["filesystem:nfs"] config.hdwlinux.features.tags;
     mounts = mkOption {
       description = "Options to the set of mounts to make available.";
       type = listOf (submodule {

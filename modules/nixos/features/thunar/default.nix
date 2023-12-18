@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.thunar;
 in
 {
   options.hdwlinux.features.thunar = with types; {
-    enable = mkBoolOpt false "Whether or not to enable thunar.";
+    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

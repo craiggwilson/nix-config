@@ -45,7 +45,7 @@ in
       NIXPKGS_ALLOW_UNFREE = "1";
     };
 
-    hdwlinux.features.nix-ld.enable = true;
+    programs.nix-ld.enable = true;
 
     nix = {
       package = cfg.package;

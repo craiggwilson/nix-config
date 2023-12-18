@@ -2,11 +2,11 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.suites.displayManagers.gdm;
+let cfg = config.hdwlinux.features.displayManager.gdm;
 in
 {
-  options.hdwlinux.suites.displayManagers.gdm = with types; {
-    enable = mkBoolOpt false "Whether or not to enable the gdm display manager.";
+  options.hdwlinux.features.displayManager.gdm = with types; {
+    enable = mkEnableOpt ["displayManager:gdm"] config.hdwlinux.features.tags;
   };
 
   config.services.xserver = mkIf cfg.enable {

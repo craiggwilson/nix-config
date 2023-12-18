@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.features.fonts = with types; {
-    enable = mkBoolOpt false "Whether or not to enable fonts.";
+    enable = mkEnableOpt ["fonts"] config.hdwlinux.features.tags;
   };
 
   config.fonts = mkIf cfg.enable {

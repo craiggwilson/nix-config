@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.nvtop;
 in
 {
   options.hdwlinux.features.nvtop = with types; {
-    enable = mkBoolOpt false "Whether or not to enable nvtop.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.environment.systemPackages = with pkgs; mkIf cfg.enable [

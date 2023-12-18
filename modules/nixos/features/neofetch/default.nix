@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.neofetch;
 in
 {
   options.hdwlinux.features.neofetch = with types; {
-    enable = mkBoolOpt false "Whether or not to enable neofetch.";
+    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
   };
 
   config.environment.systemPackages = with pkgs; mkIf cfg.enable [

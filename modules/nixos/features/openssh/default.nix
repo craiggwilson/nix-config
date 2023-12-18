@@ -7,7 +7,7 @@ let
 in
 {
   options.hdwlinux.features.openssh = with types; {
-    enable = mkBoolOpt false "Whether or not to configure OpenSSH support.";
+    enable = mkEnableOpt ["service"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
