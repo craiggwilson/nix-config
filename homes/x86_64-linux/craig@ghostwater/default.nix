@@ -5,7 +5,7 @@
   ];
 
   hdwlinux = {
-    theme.catppuccin-mocha.enable = true;
+    theme.dracula.enable = true;
 
     features.tags = ["cli" "desktop:gnome" "gaming" "gui" "programming" "service"];
   };

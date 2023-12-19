@@ -36,6 +36,14 @@ in {
         name = "Catppuccin-Mocha-Dark-Cursors";
         package = pkgs.catppuccin-cursors.mochaDark;
       };
+
+      iconTheme = mkDefault {
+        name = "Papirus-Dark";
+        package = pkgs.catppuccin-papirus-folders.override {
+          accent = "lavender";
+          flavor = "mocha";
+        };
+      };
     };
 
     home.sessionVariables.GTK_THEME = name;
