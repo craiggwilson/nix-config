@@ -17,6 +17,7 @@ in
 
     environment.systemPackages = with pkgs; [
         gnomeExtensions.appindicator
+        gnome.gnome-tweaks
     ];
   };
 }

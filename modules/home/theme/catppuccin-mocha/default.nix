@@ -2,7 +2,8 @@
 with lib;
 with lib.hdwlinux;
 let 
-  cfg = config.hdwlinux.theme.catppuccin-mocha; 
+  cfg = config.hdwlinux.theme.catppuccin-mocha;
+  name = "Catppuccin-Mocha-Standard-Lavender-Dark"; 
   wallpaper = ./assets/cat-waves.png;
 in {
 
@@ -18,12 +19,30 @@ in {
     };
 
     hdwlinux.features.vscode.theme = "Catppuccin Mocha";
+    programs.vscode.extensions = with pkgs.vscode-extensions; [
+      catppuccin.catppuccin-vsc
+    ];
 
-    gtk.theme = {
-      name = "Catppuccin-Mocha-Standard-Lavender-Dark";
-      package = pkgs.catppuccin-gtk.override {
-        accents = ["lavender"];
-        variant = "mocha";
+    gtk = {
+      theme = {
+        name = name;
+        package = pkgs.catppuccin-gtk.override {
+          accents = ["lavender"];
+          variant = "mocha";
+        };
+      };
+
+      cursorTheme = mkDefault {
+        name = "Catppuccin-Mocha-Dark-Cursors";
+        package = pkgs.catppuccin-cursors.mochaDark;
+      };
+    };
+
+    home.sessionVariables.GTK_THEME = name;
+
+    dconf.settings = mkIf config.hdwlinux.features.gnome.enable {
+      "org/gnome/shell/extensions/user-theme" = {
+        name = name;
       };
     };
   };

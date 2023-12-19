@@ -16,5 +16,16 @@ in {
       colors = inputs.themes.nord;
       wallpapers = [ wallpaper ];
     };
+
+    gtk = {
+      cursorTheme = mkDefault {
+        name = "Nordzy-cursors";
+        package = pkgs.nordzy-cursor-theme;
+      };
+      iconTheme = mkDefault {
+        name = "Nordzy-dark";
+        package = pkgs.nordzy-icon-theme;
+      };
+    };
   };
 }

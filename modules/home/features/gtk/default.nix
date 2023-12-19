@@ -24,14 +24,5 @@ in
       };
       extraCss = mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
     };
-
-    cursorTheme = mkDefault {
-      name = "Nordzy-cursors";
-      package = pkgs.nordzy-cursor-theme;
-    };
-    iconTheme = mkDefault {
-      name = "Nordzy-dark";
-      package = pkgs.nordzy-icon-theme;
-    };
   };
 }
