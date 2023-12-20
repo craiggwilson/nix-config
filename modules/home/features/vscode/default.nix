@@ -55,6 +55,7 @@ in
         "rust-analyzer.inlayHints.typeHints.enable" = false;
         "rust-analyzer.inlayHints.closingBraceHints.enable" = false;
         "terminal.integrated.fontFamily" = "FiraCode Nerd Font Mono";
+        "update.mode" = "none";
         "window.menuBarVisibility" = "toggle";
         "window.titleBarStyle" = "custom";
         "workbench.startupEditor" = "none";

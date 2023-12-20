@@ -3,7 +3,14 @@ with lib;
 with lib.hdwlinux;
 let 
   cfg = config.hdwlinux.theme.catppuccin-mocha;
-  name = "Catppuccin-Mocha-Standard-Lavender-Dark"; 
+  accent = "Lavender";
+  flavor = "Mocha";
+  gtkName = "Catppuccin-${flavor}-Standard-${accent}-Dark"; 
+  kvantumName = "Catppuccin-${flavor}-${accent}";
+  kvantumPkg = pkgs.catppuccin-kvantum.override {
+    accent = accent;
+    variant = flavor;
+  };
   wallpaper = ./assets/cat-waves.png;
 in {
 
@@ -21,37 +28,53 @@ in {
     # GTK
     gtk = {
       theme = {
-        name = name;
+        name = gtkName;
         package = pkgs.catppuccin-gtk.override {
-          accents = ["lavender"];
-          variant = "mocha";
+          accents = [(lib.toLower accent)];
+          variant = lib.toLower flavor;
         };
       };
 
       cursorTheme = mkDefault {
-        name = "Catppuccin-Mocha-Dark-Cursors";
+        name = "Catppuccin-${flavor}-Dark-Cursors";
         package = pkgs.catppuccin-cursors.mochaDark;
       };
 
       iconTheme = mkDefault {
         name = "Papirus-Dark";
         package = pkgs.catppuccin-papirus-folders.override {
-          accent = "lavender";
-          flavor = "mocha";
+          accent = lib.toLower accent;
+          flavor = lib.toLower flavor;
         };
       };
     };
 
-    home.sessionVariables.GTK_THEME = name;
+    home.sessionVariables.GTK_THEME = gtkName;
 
     dconf.settings = mkIf config.hdwlinux.features.gnome.enable {
       "org/gnome/shell/extensions/user-theme" = {
-        name = name;
+        name = gtkName;
       };
     };
 
+    # QT
+    qt = {
+      enable = true;
+      platformTheme = "qtct";
+      style = {
+        name = "kvantum";
+      };
+    };
+
+    xdg.configFile."Kvantum/${kvantumName}/${kvantumName}/${kvantumName}.kvconfig".source = "${kvantumPkg}/share/Kvantum/${kvantumName}/${kvantumName}.kvconfig";
+    xdg.configFile."Kvantum/${kvantumName}/${kvantumName}/${kvantumName}.svg".source = "${kvantumPkg}/share/Kvantum/${kvantumName}/${kvantumName}.svg";
+    xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
+      [General]
+      theme=${kvantumName}
+    '';
+
     # VSCode
-    hdwlinux.features.vscode.theme = "Catppuccin Mocha";
+    hdwlinux.features.vscode.theme = "Catppuccin ${flavor}";
     programs.vscode.extensions = with pkgs.vscode-extensions; [
       catppuccin.catppuccin-vsc
     ];
