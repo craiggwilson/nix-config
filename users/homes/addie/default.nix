@@ -1,13 +1,10 @@
-{ lib, pkgs, inputs, config, flake, ... }: 
+{ lib, pkgs, inputs, config, flake, ... }:
 {
-  imports = [
-    ../../../users/homes/craig
-  ];
-
   hdwlinux = {
-    theme.catppuccin-mocha.enable = true;
-
-    features.tags = ["cli" "desktop:gnome" "gaming" "gui" "programming" "service"];
+    user = {
+      fullName = "Addie Wilson";
+      email = "addiemwilson@outlook.com";
+    };
   };
 
   # This value determines the NixOS release from which the default

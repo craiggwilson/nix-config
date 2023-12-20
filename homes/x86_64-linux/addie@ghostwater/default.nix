@@ -1,13 +1,13 @@
 { lib, pkgs, inputs, config, flake, ... }: 
 {
   imports = [
-    ../../../users/homes/craig
+    ../../../users/homes/addie
   ];
 
   hdwlinux = {
-    theme.catppuccin-mocha.enable = true;
+    theme.dracula.enable = true;
 
-    features.tags = ["cli" "desktop:gnome" "gaming" "gui" "programming" "service"];
+    features.tags = ["cli" "desktop:gnome" "gaming" "gui" "service"];
   };
 
   # This value determines the NixOS release from which the default
