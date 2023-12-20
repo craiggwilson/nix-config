@@ -10,13 +10,16 @@ in
 
   config = mkIf cfg.enable {
 
-    home.packages = with pkgs; [
-      gnomeExtensions.user-themes
-      gnomeExtensions.tray-icons-reloaded
-      gnomeExtensions.vitals
-      gnomeExtensions.dash-to-panel
-      gnomeExtensions.sound-output-device-chooser
-      gnomeExtensions.space-bar
+    home.packages = with pkgs.gnomeExtensions; [
+      appindicator
+      arc-menu
+      blur-my-shell
+      burn-my-windows
+      dash-to-panel
+      space-bar
+      tray-icons-reloaded
+      user-themes
+      vitals
     ];
 
     dconf.settings = {
@@ -24,12 +27,16 @@ in
         disable-user-extensions = false;
 
         enabled-extensions = [
-          "user-theme@gnome-shell-extensions.gcampax.github.com"
-          "trayIconsReloaded@selfmade.pl"
-          "Vitals@CoreCoding.com"
+          "appindicatorsupport@rgcjonas.gmail.com"
+          "arcmenu@arcmenu.com"
+          "blur-my-shell@aunetx"
+          #"burn-my-windows@schneegans.github.com"
           "dash-to-panel@jderose9.github.com"
-          "sound-output-device-chooser@kgshank.net"
+          "drive-menu@gnome-shell-extensions.gcampax.github.com"
           "space-bar@luchrioh"
+          "trayIconsReloaded@selfmade.pl"
+          "user-theme@gnome-shell-extensions.gcampax.github.com"
+          #"Vitals@CoreCoding.com"
         ];
       };
       "org/gnome/desktop/background" = {

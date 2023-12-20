@@ -18,11 +18,7 @@ in {
       wallpapers = [ wallpaper ];
     };
 
-    hdwlinux.features.vscode.theme = "Catppuccin Mocha";
-    programs.vscode.extensions = with pkgs.vscode-extensions; [
-      catppuccin.catppuccin-vsc
-    ];
-
+    # GTK
     gtk = {
       theme = {
         name = name;
@@ -53,5 +49,11 @@ in {
         name = name;
       };
     };
+
+    # VSCode
+    hdwlinux.features.vscode.theme = "Catppuccin Mocha";
+    programs.vscode.extensions = with pkgs.vscode-extensions; [
+      catppuccin.catppuccin-vsc
+    ];
   };
 }

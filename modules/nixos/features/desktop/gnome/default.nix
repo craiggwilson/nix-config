@@ -15,8 +15,23 @@ in
         desktopManager.gnome.enable = true;
     };
 
+    environment.gnome.excludePackages = (with pkgs; [
+      gnome-photos
+      gnome-tour
+    ]) ++ (with pkgs.gnome; [
+      cheese
+      gnome-music
+      gnome-terminal
+      epiphany
+      geary
+      gnome-characters
+      totem
+      trayIconsReloadediagno
+      hitori
+      atomix
+    ]);
+
     environment.systemPackages = with pkgs; [
-        gnomeExtensions.appindicator
         gnome.gnome-tweaks
     ];
   };
