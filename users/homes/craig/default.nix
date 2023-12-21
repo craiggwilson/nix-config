@@ -21,11 +21,17 @@ in {
 
   home.shellAliases = let 
     switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake} ${if privateExists then " --override-input secrets ${flake}/../nix-private" else ""}";
-  in {
-    "start" = "xdg-open";
-    "nix-config" = "git -C ${flake}";
-    "nix-config-switch" = switchCommand;
-  };
+  in lib.mkMerge [
+    {
+      "start" = "xdg-open";
+      "nix-config" = "git -C ${flake}";
+      "nix-config-switch" = switchCommand;
+    } 
+    (lib.mkIf (lib.hdwlinux.elemsAll ["cli" "programming" "work"] config.hdwlinux.features.tags) {
+      "build!" = "go run ./cmd/buildscript/build.go";
+      "run!" = "go run ./cmd/mongohoused/mongohoused.go --config ./testdata/config/inline_local/frontend-agent-backend.yaml";
+    })
+  ];
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
