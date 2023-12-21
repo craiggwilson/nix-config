@@ -12,7 +12,7 @@ in
       default = [];
       type = listOf(submodule {
         options = {
-          local = mkOption { type = path; };
+          game = mkOption { type = str; };
           remote = mkOption { type = path; };
         };
       });
@@ -25,7 +25,7 @@ in
     ] ++ lib.optionals ((builtins.length cfg.backups) > 0) [
       (pkgs.writeShellScriptBin "yuzu-backup" ''
         dt=$(date +'%Y%m%d-%H%M%S')
-        ${concatStringsSep "\n" (map (b: "mkdir -p ${b.remote}/$dt; cp -rf ${b.local}/. ${b.remote}/$dt") cfg.backups)}
+        ${concatStringsSep "\n" (map (b: "mkdir -p ${b.remote}/$dt; cp -rf ${config.home.homeDirectory}/.local/share/yuzu/nand/user/save/0000000000000000/**/${b.game}/. ${b.remote}/$dt") cfg.backups)}
       '')
     ];
 
