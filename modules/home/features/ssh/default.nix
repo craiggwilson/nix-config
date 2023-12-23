@@ -5,8 +5,6 @@ with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.ssh;
 
-  knownHostsFilePath = "${config.home.homeDirectory}/.ssh/known_hosts";
-  sshConfigFilePath = "${config.home.homeDirectory}/.ssh/config";
   sshConfigFile = pkgs.writeText "ssh_config" ''
     # Default
     Host *
@@ -29,17 +27,18 @@ in
   };
 
   config = mkIf cfg.enable {
-    home.packages = [
-      (pkgs.writeShellScriptBin "update-ssh" ''
-        rm -f ${sshConfigFilePath}
-        ${concatStringsSep "\n" (map (i: "cat ${i} >> ${sshConfigFilePath}") cfg.includes)}
-        cat ${sshConfigFile} >> ${sshConfigFilePath}
-        chmod 600 ${sshConfigFilePath}
-
-        rm -f ${knownHostsFilePath}
-        ${concatStringsSep "\n" (map (i: "cat ${i} >> ${knownHostsFilePath}") cfg.knownHosts)}
-        chmod 600 ${knownHostsFilePath}
-      '')
-    ];
+    hdwlinux.user.updates.ssh = {
+      config = lib.hdwlinux.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/config" ''
+        rm -f $out
+        ${concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.includes)}
+        cat ${sshConfigFile} >> $out
+        chmod 600 $out
+      '';
+      known-hosts = lib.hdwlinux.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/known_hosts" '' 
+        rm -f $out
+        ${concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.knownHosts)}
+        chmod 600 $out
+      '';
+    };
   };
 }

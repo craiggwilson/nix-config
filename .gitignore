@@ -3,3 +3,4 @@ result
 
 .idea/*
 .vscode/*
+*.code-workspace
