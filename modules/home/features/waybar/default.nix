@@ -41,6 +41,7 @@ in
         gtk-layer-shell = true;
         height = 35;
         modules-left = [
+          "idle_inhibitor"
           "hyprland/workspaces"
         ];
         modules-center = [
@@ -73,6 +74,14 @@ in
         clock = {
           format = "{: %I:%M   %m/%d}";
           tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
+        };
+
+        idle_inhibitor = {
+          format = "{icon}";
+          format-icons = {
+            activated =  "";
+            deactivated = "";
+          };
         };
 
         pulseaudio = {
@@ -141,6 +150,7 @@ in
         #battery,
         #clock,
         #custom-caffeine,
+        #idle_inhibitor,
         #pulseaudio,
         #network,
         #tray,
@@ -168,6 +178,12 @@ in
         #clock {
             border-radius: 10px;
             margin-left: 5px;
+        }
+
+        #idle_inhibitor {
+            color: @base08;
+            border-radius: 10px;
+            margin-left: 10px;
         }
 
         #pulseaudio {
