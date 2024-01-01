@@ -22,7 +22,9 @@ in {
     extraGroups = [
         "wheel"
     ] ++ (lib.optionals config.hdwlinux.features._1password-cli.enable [
-        "1password-cli"
+        "onepassword-cli"
+    ]) ++ (lib.optionals config.hdwlinux.features._1password-gui.enable [
+        "onepassword"
     ]) ++ (lib.optionals config.hdwlinux.features.audio.enable [
         "audio"
     ]) ++ (lib.optionals config.hdwlinux.features.virtualization.docker.enable [

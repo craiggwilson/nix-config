@@ -97,6 +97,7 @@ in
             kb_options = "";
             kb_rules = "";
             follow_mouse = 2;
+            mouse_refocus = false;
 
             touchpad = {
               natural_scroll = true;

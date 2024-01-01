@@ -10,7 +10,11 @@ in
     enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
-  config.programs._1password-gui = mkIf cfg.enable {
-    enable = true;
+  config = mkIf cfg.enable {
+    programs._1password-gui = {
+      enable = true;
+    };
+
+    security.pam.services."1password".enableGnomeKeyring = true;
   };
 }

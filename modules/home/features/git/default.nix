@@ -41,6 +41,7 @@ in
           user.signingkey = "~/.ssh/id_rsa.pub";
       };
       ignores = [
+          ".envrc"
           ".idea"
           ".vscode"
       ];

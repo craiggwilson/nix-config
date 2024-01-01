@@ -13,6 +13,7 @@ in {
   config = mkIf cfg.enable {
     hdwlinux.theme = {
       enable = mkDefault true;
+      name = "nord";
       colors = inputs.themes.nord;
       wallpapers = [ wallpaper ];
     };

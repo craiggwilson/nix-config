@@ -21,6 +21,7 @@ in {
   config = mkIf cfg.enable {
     hdwlinux.theme = {
       enable = mkDefault true;
+      name = "catppuccin-mocha";
       colors = inputs.themes.catppuccin-mocha;
       wallpapers = [ wallpaper ];
     };

@@ -14,6 +14,7 @@ in {
   config = mkIf cfg.enable {
     hdwlinux.theme = {
       enable = mkDefault true;
+      name = "dracula";
       colors = inputs.themes.dracula;
       wallpapers = [ wallpaper ];
     };

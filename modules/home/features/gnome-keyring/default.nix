@@ -9,8 +9,15 @@ in
     enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
   };
 
-  config.services.gnome-keyring = mkIf cfg.enable {
-    enable = true;
-    components = [ "secrets" "ssh" ];
+  config = mkIf cfg.enable {
+
+    services.gnome-keyring = {
+      enable = true;
+      components = [ "secrets" "ssh" ];
+    };
+
+    home.packages = with pkgs; [
+      libsecret
+    ];
   };
 }
