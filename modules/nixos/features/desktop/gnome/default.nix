@@ -26,7 +26,6 @@ in
       geary
       gnome-characters
       totem
-      trayIconsReloadediagno
       hitori
       atomix
     ]);

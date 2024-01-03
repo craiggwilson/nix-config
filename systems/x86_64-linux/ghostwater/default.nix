@@ -2,6 +2,7 @@
   imports = [
     ../../../hardware/microsoft-surface-book-2.nix
     ./disko.nix
+    ../../../users/nixos/addie
     ../../../users/nixos/craig
   ];
 
