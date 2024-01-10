@@ -27,6 +27,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # nix-flatpak provides declaritive flatpak installation.
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.1.0";
+
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
@@ -72,11 +75,15 @@
         nur.overlay
       ];
 
+      homes.users."craig@unsouled".modules = with inputs; [
+        nix-flatpak.homeManagerModules.nix-flatpak
+      ];
+
       systems = {
         modules = {
           nixos = with inputs; [
-            home-manager.nixosModules.home-manager
             disko.nixosModules.disko
+            home-manager.nixosModules.home-manager
           ];
         };
       };
