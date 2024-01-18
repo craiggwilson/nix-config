@@ -2,18 +2,21 @@
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.go;
+let cfg = config.hdwlinux.features.rust;
 in
 {
-  options.hdwlinux.features.go = with types; {
+  options.hdwlinux.features.rust = with types; {
     enable = mkEnableOpt ["programming"] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
-    programs.go.enable = true;
-
     home.packages = with pkgs; [
-      gotools
+      cargo
+      cmake
+      gcc
+      gnumake
+      pkg-config
+      rustc
     ];
   };
 }

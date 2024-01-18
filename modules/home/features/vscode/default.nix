@@ -19,6 +19,7 @@ in
       extensions = with pkgs.vscode-extensions; [
         bbenoist.nix
         golang.go
+        rust-lang.rust-analyzer
         tamasfe.even-better-toml
         vadimcn.vscode-lldb
         zxh404.vscode-proto3

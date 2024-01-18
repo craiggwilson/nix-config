@@ -15,7 +15,7 @@
     };
 
     features = {
-      tags = ["cli" "gui" "desktop:gnome" "displayManager:gdm" "flatpak" "fonts" "gaming" "printing" "service"];
+      tags = ["cli" "gui" "desktop:gnome" "displayManager:gdm" "fonts" "gaming" "printing" "service"];
 
       printing.raeford = true;
     };
