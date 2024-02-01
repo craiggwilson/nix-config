@@ -9,7 +9,9 @@ in
     enable = mkEnableOpt ["gui" "work"] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [
-    zoom-us
-  ];
+  config = mkIf cfg.enable {
+    home.packages = with pkgs; [
+      zoom-us
+    ];
+  };
 }

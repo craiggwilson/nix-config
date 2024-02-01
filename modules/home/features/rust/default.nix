@@ -17,6 +17,7 @@ in
       gnumake
       pkg-config
       rustc
+      rustfmt
     ];
   };
 }

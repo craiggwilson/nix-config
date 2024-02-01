@@ -1,7 +1,13 @@
 { inputs, config, lib, pkgs, ... }: 
 let 
   username = "craig";
+  privatePath = "${inputs.secrets}/nixos/${username}";
+  privateExists = builtins.pathExists privatePath;
 in {
+  imports = [
+    
+  ] ++ lib.optional privateExists privatePath;
+
   nix.settings = {
     trusted-users = [ username ];
     allowed-users = [ username ];
