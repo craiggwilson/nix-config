@@ -20,6 +20,7 @@ in
 
     xdg.configFile."hypr/hyprpaper.conf".text = ''
       ipc = off
+      spash = false
       
       ${concatStringsSep "\n" (map (w: "preload = ${w}") wallpapers)}
           

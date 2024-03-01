@@ -19,5 +19,10 @@ in
       rustc
       rustfmt
     ];
+
+    home.file.".cargo/config".text = ''
+      [net]
+      git-fetch-with-cli = true
+    '';
   };
 }

@@ -28,7 +28,7 @@
       tags = ["cli" "gui" "desktop:hyprland" "displayManager:greetd" "filesystem:nfs" "fonts" "gaming" "printing" "service" "virtualization:docker" "virtualization:podman" "work"];
 
       displayManager.greetd.startCommand = "Hyprland";
-      mongodb.enable = true;
+      #mongodb.enable = true;
       nfs.mounts = [
         {
           local = "/mnt/games";
