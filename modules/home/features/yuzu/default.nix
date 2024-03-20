@@ -21,7 +21,7 @@ in
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
-      yuzu-early-access
+      pkgs.stable.yuzu-early-access
     ] ++ lib.optionals ((builtins.length cfg.backups) > 0) [
       (pkgs.writeShellScriptBin "yuzu-backup" ''
         dt=$(date +'%Y%m%d-%H%M%S')

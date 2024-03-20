@@ -73,6 +73,16 @@
 
       overlays = with inputs; [
         nur.overlay
+        (final: prev: {
+          stable = import nixpkgs-stable {
+            system = prev.system;
+          };
+        })
+        (final: prev: {
+          unstable = import nixpkgs {
+            system = prev.system;
+          };
+        })
       ];
 
       homes.users."craig@unsouled".modules = with inputs; [
