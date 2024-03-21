@@ -121,9 +121,9 @@ in
             workspace_swipe = true;
           };
 
-          "device:epic-mouse-v1" = {
-            sensitivity = -0.5;
-          };
+          # "device:epic-mouse-v1" = {
+          #   sensitivity = -0.5;
+          # };
 
           exec-once = [
             "swayidle -w"
