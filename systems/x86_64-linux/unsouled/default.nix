@@ -25,7 +25,7 @@
     };
 
     features = {
-      tags = ["audio:production" "cli" "gui" "desktop:hyprland" "displayManager:greetd" "filesystem:nfs" "fonts" "gaming" "programming" "printing" "service" "virtualization:docker" "virtualization:podman" "work"];
+      tags = ["ai" "audio:production" "cli" "gui" "desktop:hyprland" "displayManager:greetd" "filesystem:nfs" "fonts" "gaming" "programming" "printing" "service" "virtualization:docker" "virtualization:podman" "work"];
 
       displayManager.greetd.startCommand = "Hyprland";
       #mongodb.enable = true;
