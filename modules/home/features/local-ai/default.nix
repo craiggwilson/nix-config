@@ -31,5 +31,13 @@ in
         - name: lunademo
           max_input_tokens: null
     '';
+    xdg.configFile."aichat/roles.yaml".text = ''
+      - name: shell
+        prompt: >
+          I want you to act as a linux shell expert.
+          I want you to answer only with code.
+          Do not write explanations.
+        temperature: 0.7
+    '';
   };
 }
