@@ -9,7 +9,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    sound.enable = true;
     security.rtkit.enable = true;
     hardware.pulseaudio.enable = mkForce false;
 
@@ -23,6 +22,11 @@ in {
       jack.enable = true;
       pulse.enable = true;
       wireplumber.enable = true;
+    };
+
+    musnix = {
+      enable = true;
+      soundcardPciId = "00:1f.3";
     };
   };
 }

@@ -27,6 +27,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # musnix optimizes audio for realtime/production.
+    musnix.url = "github:musnix/musnix";
+
     # nix-flatpak provides declaritive flatpak installation.
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.1.0";
 
@@ -94,6 +97,7 @@
           nixos = with inputs; [
             disko.nixosModules.disko
             home-manager.nixosModules.home-manager
+            inputs.musnix.nixosModules.musnix
           ];
         };
       };

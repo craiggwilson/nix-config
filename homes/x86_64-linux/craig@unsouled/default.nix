@@ -7,8 +7,6 @@
   hdwlinux = {
     theme.catppuccin-mocha.enable = true;
 
-    features.tags = ["cli" "desktop:hyprland" "gaming" "gui" "programming" "service" "work"];
-
     features.yuzu.backups = [
       {
         game = "010015100B514000";
