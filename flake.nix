@@ -88,7 +88,14 @@
         })
       ];
 
+      # homes.modules = with inputs; [
+      #   nix-flatpak.homeManagerModules.nix-flatpak
+      # ];
+
       homes.users."craig@unsouled".modules = with inputs; [
+        nix-flatpak.homeManagerModules.nix-flatpak
+      ];
+      homes.users."addie@ghostwater".modules = with inputs; [
         nix-flatpak.homeManagerModules.nix-flatpak
       ];
 
