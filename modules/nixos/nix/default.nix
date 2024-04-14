@@ -50,6 +50,13 @@ in
     nix = {
       package = cfg.package;
 
+      registry = {
+        nixpkgs.flake = inputs.nixpkgs;
+        stable.flake = inputs.nixpkgs-stable;
+        unstable.flake = inputs.nixpkgs;
+        #hdwlinux.flake = self;
+      };
+
       settings = {
         experimental-features = "nix-command flakes";
         http-connections = 50;
@@ -79,7 +86,7 @@ in
       };
 
       # flake-utils-plus
-      generateRegistryFromInputs = true;
+      generateRegistryFromInputs = false;
       generateNixPathFromInputs = true;
       linkInputs = true;
     };

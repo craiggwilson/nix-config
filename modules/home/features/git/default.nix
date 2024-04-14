@@ -43,6 +43,7 @@ in
       ignores = [
           ".cheat"
           ".envrc"
+          ".direnv"
           ".idea"
           ".vscode"
       ];

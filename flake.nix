@@ -36,6 +36,9 @@
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
+    # rust-overlay provides the latest rust packages
+    rust-overlay.url = "github:oxalica/rust-overlay";
+
     # secrets is a private repository.
     secrets.url = "github:divnix/blank";
 
@@ -86,11 +89,8 @@
             system = prev.system;
           };
         })
+        rust-overlay.overlays.default
       ];
-
-      # homes.modules = with inputs; [
-      #   nix-flatpak.homeManagerModules.nix-flatpak
-      # ];
 
       homes.users."craig@unsouled".modules = with inputs; [
         nix-flatpak.homeManagerModules.nix-flatpak
