@@ -34,6 +34,7 @@ in
       cfg.extra-substituters;
 
     environment.systemPackages = with pkgs; [
+      cacert
       deploy-rs
       nixfmt
       nix-index

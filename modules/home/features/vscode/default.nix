@@ -55,12 +55,18 @@ in
         "rust-analyzer.inlayHints.parameterHints.enable" = false;
         "rust-analyzer.inlayHints.typeHints.enable" = false;
         "rust-analyzer.inlayHints.closingBraceHints.enable" = false;
-        "terminal.integrated.fontFamily" = "FiraCode Nerd Font Mono";
         "update.mode" = "none";
         "window.menuBarVisibility" = "toggle";
         "window.titleBarStyle" = "custom";
         "workbench.startupEditor" = "none";
         "workbench.colorTheme" = "${cfg.theme}";
+
+        "[rust]" = {
+          "editor.formatOnSave" = true;
+          "editor.inlayHints.enabled" = "off";
+          "files.insertFinalNewline" = true;
+          "files.trimFinalNewlines" = true;
+        };
       };
     };
 

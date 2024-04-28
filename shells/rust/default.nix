@@ -4,6 +4,13 @@ pkgs.mkShell rec {
   buildInputs = with pkgs; [
     rust-bin.stable.latest.default
 
+    # pkg-config
+    # atk
+    # cairo
+    #glib
+    # gnome2.pango
+    # gtkd
+
     fontconfig
     libxkbcommon
     libGL

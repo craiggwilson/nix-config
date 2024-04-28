@@ -9,20 +9,22 @@ in
     enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
   };
 
-  config.gtk = mkIf cfg.enable {
-    enable = true;
+  config = mkIf cfg.enable {
+    gtk =  {
+      enable = true;
 
-    gtk3 = mkIf config.hdwlinux.theme.enable {
-      extraConfig = {
-        gtk-application-prefer-dark-theme = config.hdwlinux.theme.dark;
+      gtk3 = mkIf config.hdwlinux.theme.enable {
+        extraConfig = {
+          gtk-application-prefer-dark-theme = config.hdwlinux.theme.dark;
+        };
+        extraCss = mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
       };
-      extraCss = mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
-    };
-    gtk4 = mkIf config.hdwlinux.theme.enable {
-      extraConfig = {
-        gtk-application-prefer-dark-theme = config.hdwlinux.theme.dark;
+      gtk4 = mkIf config.hdwlinux.theme.enable {
+        extraConfig = {
+          gtk-application-prefer-dark-theme = config.hdwlinux.theme.dark;
+        };
+        extraCss = mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
       };
-      extraCss = mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
     };
   };
 }
