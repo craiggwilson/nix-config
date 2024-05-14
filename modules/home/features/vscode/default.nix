@@ -1,42 +1,59 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  flake,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.features.vscode;
 in
 {
   options.hdwlinux.features.vscode = with types; {
-    enable = mkEnableOpt ["gui" "programming"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [
+      "gui"
+      "programming"
+    ] config.hdwlinux.features.tags;
     theme = mkStrOpt "hdwlinux" "The theme name to use.";
   };
 
   config = mkIf cfg.enable {
+    home.packages = with pkgs; [ nixd ];
+
     programs.vscode = {
       enable = true;
       mutableExtensionsDir = true;
 
       extensions = with pkgs.vscode-extensions; [
-        bbenoist.nix
+        #bbenoist.nix
         golang.go
         rust-lang.rust-analyzer
         tamasfe.even-better-toml
         vadimcn.vscode-lldb
+        jnoortheen.nix-ide
         zxh404.vscode-proto3
-        (let
-          themeFile = pkgs.writeTextFile {
-            name = "vscode-hdwlinux-theme.json";
-            text = (import ./template.nix) config.hdwlinux.theme.colors;
-          };
-        in pkgs.runCommandLocal "hdwlinux-vscode" {
-            vscodeExtUniqueId = "hdwlinux.hdwlinux";
-            vscodeExtPublisher = "hdwlinux";
-            version = "0.0.0";
-          } ''
-            mkdir -p "$out/share/vscode/extensions/$vscodeExtUniqueId/themes"
-            ln -s ${./package.json} "$out/share/vscode/extensions/$vscodeExtUniqueId/package.json"
-            ln -s ${themeFile} "$out/share/vscode/extensions/$vscodeExtUniqueId/themes/hdwlinux.json"
-          ''
+        (
+          let
+            themeFile = pkgs.writeTextFile {
+              name = "vscode-hdwlinux-theme.json";
+              text = (import ./template.nix) config.hdwlinux.theme.colors;
+            };
+          in
+          pkgs.runCommandLocal "hdwlinux-vscode"
+            {
+              vscodeExtUniqueId = "hdwlinux.hdwlinux";
+              vscodeExtPublisher = "hdwlinux";
+              version = "0.0.0";
+            }
+            ''
+              mkdir -p "$out/share/vscode/extensions/$vscodeExtUniqueId/themes"
+              ln -s ${./package.json} "$out/share/vscode/extensions/$vscodeExtUniqueId/package.json"
+              ln -s ${themeFile} "$out/share/vscode/extensions/$vscodeExtUniqueId/themes/hdwlinux.json"
+            ''
         )
       ];
 
@@ -47,10 +64,26 @@ in
         "editor.fontLigatures" = true;
         "explorer.confirmDelete" = false;
         "lldb.suppressUpdateNotifications" = true;
+        "nix.enableLanguageServer" = true;
+        "nix.serverPath" = "nixd";
+        "nix.serverSettings" = {
+          "nixd" = {
+            "formatting" = {
+              "command" = "nixfmt";
+            };
+            "options" = {
+              "enable" = true;
+              "nixos" = {
+                "expr" = "${flake}#nixosConfigurations.unsouled.options"; # TODO: make this dynamic
+              };
+              "home-manager" = {
+                "expr" = "${flake}#homeConfigurations.\"craig@unsouled\".options"; # TODO: make this dynamic
+              };
+            };
+          };
+        };
         "protoc" = {
-            "options" = [
-                "--proto_path=\${workspaceRoot}/proto"
-            ];
+          "options" = [ "--proto_path=\${workspaceRoot}/proto" ];
         };
         "rust-analyzer.inlayHints.parameterHints.enable" = false;
         "rust-analyzer.inlayHints.typeHints.enable" = false;
@@ -60,6 +93,10 @@ in
         "window.titleBarStyle" = "custom";
         "workbench.startupEditor" = "none";
         "workbench.colorTheme" = "${cfg.theme}";
+
+        "[nix]" = {
+          "editor.formatOnSave" = true;
+        };
 
         "[rust]" = {
           "editor.formatOnSave" = true;

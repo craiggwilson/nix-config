@@ -1,4 +1,10 @@
-{ lib, inputs, pkgs, stdenv,...}:
+{
+  lib,
+  inputs,
+  pkgs,
+  stdenv,
+  ...
+}:
 
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
@@ -26,5 +32,5 @@ pkgs.mkShell rec {
   ];
 
   LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
-  RUST_BACKTRACE="1";
+  RUST_BACKTRACE = "1";
 }

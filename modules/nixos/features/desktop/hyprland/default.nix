@@ -12,14 +12,19 @@ in
   config = mkIf cfg.enable {
     programs.hyprland = {
       enable = true;
+      portalPackage = pkgs.xdg-desktop-portal-hyprland;
       xwayland.enable = true;
     };
 
     xdg.portal = {
-      enable = true;
-      extraPortals = [ 
+      config.Hyprland = {
+        default = [ "hyprland" "gtk" ];
+        "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+      };
+      extraPortals = [
         pkgs.xdg-desktop-portal-gtk
       ];
+      xdgOpenUsePortal = true;
     };
   };
 }

@@ -1,21 +1,46 @@
-{ pkgs, lib, inputs, config, ... }: {
+{
+  pkgs,
+  lib,
+  inputs,
+  config,
+  ...
+}:
+{
 
-  imports = [
-    inputs.nixos-hardware.nixosModules.dell-xps-15-9520-nvidia
-  ];
+  imports = [ inputs.nixos-hardware.nixosModules.dell-xps-15-9520-nvidia ];
 
   hdwlinux.features = {
-    tags = ["audio" "bluetooth" "boot:systemd" "camera" "fingerprint" "networking" "redistributableFirmware" "thunderbolt" "v4l2loopback"];
+    tags = [
+      "audio"
+      "bluetooth"
+      "boot:systemd"
+      "camera"
+      "fingerprint"
+      "networking"
+      "redistributableFirmware"
+      "thunderbolt"
+      "v4l2loopback"
+    ];
   };
 
   boot = {
     initrd = {
-      availableKernelModules = [ "xhci_pci" "vmd" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+      availableKernelModules = [
+        "xhci_pci"
+        "vmd"
+        "nvme"
+        "usb_storage"
+        "sd_mod"
+        "rtsx_pci_sdmmc"
+      ];
       kernelModules = [ ];
     };
     kernelModules = [ "kvm-intel" ];
     kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
     kernelParams = [ ];
+    kernel.sysctl = {
+      "fs.inotify.max_user_watches" = "1048576";
+    };
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

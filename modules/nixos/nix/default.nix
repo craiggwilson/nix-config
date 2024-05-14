@@ -36,7 +36,7 @@ in
     environment.systemPackages = with pkgs; [
       cacert
       deploy-rs
-      nixfmt
+      nixfmt-rfc-style
       nix-index
       nix-prefetch-git
       nix-output-monitor

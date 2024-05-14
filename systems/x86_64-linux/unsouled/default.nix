@@ -1,4 +1,11 @@
-{ inputs, config, lib, pkgs, ... }: {
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   imports = [
     ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
@@ -9,13 +16,15 @@
 
   boot = {
     kernelPackages = pkgs.linuxPackages_6_1;
-    kernelPatches = [{
-      name = "crowdstrike";
-      patch = null;
-      extraConfig = ''
-        DEBUG_INFO_BTF y
-      '';
-    }];
+    kernelPatches = [
+      {
+        name = "crowdstrike";
+        patch = null;
+        extraConfig = ''
+          DEBUG_INFO_BTF y
+        '';
+      }
+    ];
   };
 
   hdwlinux = {
@@ -25,7 +34,22 @@
     };
 
     features = {
-      tags = ["ai" "audio:production" "cli" "gui" "desktop:hyprland" "displayManager:greetd" "filesystem:nfs" "fonts" "gaming" "programming" "printing" "service" "virtualization:docker" "virtualization:podman" "work"];
+      tags = [
+        "ai"
+        "audio:production"
+        "cli"
+        "gui"
+        "desktop:hyprland"
+        "displayManager:greetd"
+        "filesystem:nfs"
+        "fonts"
+        "gaming"
+        "programming"
+        "printing"
+        "service"
+        "virtualization:docker"
+        "work"
+      ];
 
       displayManager.greetd.startCommand = "Hyprland";
       #mongodb.enable = true;
@@ -53,8 +77,8 @@
       {
         hdwlinux.features = {
           monitors.monitors = [
-            { 
-              name = "eDP-1"; 
+            {
+              name = "eDP-1";
               workspace = "1";
               width = 1920;
               height = 1200;
@@ -62,8 +86,8 @@
               y = 0;
               scale = 1;
             }
-            { 
-              name = "DP-5"; 
+            {
+              name = "DP-5";
               workspace = "2";
               width = 2560;
               height = 1440;
@@ -71,8 +95,8 @@
               y = -1440;
               scale = 1;
             }
-            { 
-              name = "DP-6"; 
+            {
+              name = "DP-6";
               workspace = "3";
               width = 2560;
               height = 1440;
