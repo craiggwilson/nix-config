@@ -18,5 +18,10 @@ in
     ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [ jetbrains.idea-ultimate ];
+  config.home.packages = with pkgs; mkIf cfg.enable [ 
+    jetbrains.idea-ultimate 
+    (pkgs.writeShellScriptBin "idea" ''
+      nohup ${jetbrains.idea-ultimate}/bin/idea-ultimate "$@" &
+    '')
+  ];
 }

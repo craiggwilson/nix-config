@@ -4,21 +4,21 @@
   inputs = {
     # unstable packages are used by default
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    
+
     # also provide stable packages if unstable are breaking
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.11";
-    
-    # nix user repository provides additional packages.
-    nur.url = github:nix-community/NUR;
 
-     # Generate System Images
+    # nix user repository provides additional packages.
+    nur.url = "github:nix-community/NUR";
+
+    # Generate System Images
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 
     # home manager for config files and user installs
     home-manager = {
-    	url = "github:nix-community/home-manager";	
-    	inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # disko handles partitioning and applying disk configurations
@@ -52,49 +52,40 @@
     themes.url = "github:RGBCube/ThemeNix";
   };
 
-  outputs = inputs: 
-  let 
-    lib = inputs.snowfall-lib.mkLib {
-      inherit inputs;
-      src = ./.;
+  outputs =
+    inputs:
+    let
+      lib = inputs.snowfall-lib.mkLib {
+        inherit inputs;
+        src = ./.;
 
-      snowfall = {
-        # access through the modules will be done through hdwlinux and lib.hdwlinux
-        namespace = "hdwlinux";
-        meta = {
-          name = "hdwlinux";
-          title = "Half-Dozen Wilsons Linux";
+        snowfall = {
+          # access through the modules will be done through hdwlinux and lib.hdwlinux
+          namespace = "hdwlinux";
+          meta = {
+            name = "hdwlinux";
+            title = "Half-Dozen Wilsons Linux";
+          };
         };
       };
-    };
-  in 
+    in
     lib.mkFlake {
       channels-config = {
         allowUnfree = true;
 
-        permittedInsecurePackages = [
-          "electron-25.9.0"
-        ];
+        permittedInsecurePackages = [ "electron-25.9.0" ];
       };
+
+      #formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixfmt;
 
       overlays = with inputs; [
         nur.overlay
-        (final: prev: {
-          stable = import nixpkgs-stable {
-            system = prev.system;
-          };
-        })
-        (final: prev: {
-          unstable = import nixpkgs {
-            system = prev.system;
-          };
-        })
+        (final: prev: { stable = import nixpkgs-stable { system = prev.system; }; })
+        (final: prev: { unstable = import nixpkgs { system = prev.system; }; })
         rust-overlay.overlays.default
       ];
 
-      homes.users."craig@unsouled".modules = with inputs; [
-        nix-flatpak.homeManagerModules.nix-flatpak
-      ];
+      homes.users."craig@unsouled".modules = with inputs; [ nix-flatpak.homeManagerModules.nix-flatpak ];
       homes.users."addie@ghostwater".modules = with inputs; [
         nix-flatpak.homeManagerModules.nix-flatpak
       ];

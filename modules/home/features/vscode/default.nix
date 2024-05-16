@@ -1,10 +1,9 @@
-{
-  options,
-  config,
-  lib,
-  pkgs,
-  flake,
-  ...
+{ options
+, config
+, lib
+, pkgs
+, flake
+, ...
 }:
 
 with lib;
@@ -17,7 +16,8 @@ in
     enable = mkEnableOpt [
       "gui"
       "programming"
-    ] config.hdwlinux.features.tags;
+    ]
+      config.hdwlinux.features.tags;
     theme = mkStrOpt "hdwlinux" "The theme name to use.";
   };
 
@@ -69,7 +69,7 @@ in
         "nix.serverSettings" = {
           "nixd" = {
             "formatting" = {
-              "command" = "nixfmt";
+              "command" = "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt";
             };
             "options" = {
               "enable" = true;
