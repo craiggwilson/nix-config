@@ -76,7 +76,7 @@
         permittedInsecurePackages = [ "electron-25.9.0" ];
       };
 
-      #formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixfmt;
+      formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
 
       overlays = with inputs; [
         nur.overlay

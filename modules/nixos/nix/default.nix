@@ -1,10 +1,9 @@
-{
-  options,
-  config,
-  pkgs,
-  lib,
-  inputs,
-  ...
+{ options
+, config
+, pkgs
+, lib
+, inputs
+, ...
 }:
 
 with lib;
@@ -38,10 +37,12 @@ in
   };
 
   config = mkIf cfg.enable {
-    assertions = mapAttrsToList (name: value: {
-      assertion = value.key != null;
-      message = "hdwlinux.nix.extra-substituters.${name}.key must be set";
-    }) cfg.extra-substituters;
+    assertions = mapAttrsToList
+      (name: value: {
+        assertion = value.key != null;
+        message = "hdwlinux.nix.extra-substituters.${name}.key must be set";
+      })
+      cfg.extra-substituters;
 
     environment.systemPackages = with pkgs; [
       cacert
@@ -58,6 +59,10 @@ in
 
     programs.nix-ld.enable = true;
 
+    home-manager.extraSpecialArgs = {
+      flake = config.hdwlinux.nix.flake;
+    };
+
     nix = {
       package = cfg.package;
 
@@ -65,7 +70,10 @@ in
         nixpkgs.flake = inputs.nixpkgs;
         stable.flake = inputs.nixpkgs-stable;
         unstable.flake = inputs.nixpkgs;
-        #hdwlinux.flake = self;
+        hdwlinux.to = {
+          type = "path";
+          path = config.hdwlinux.nix.flake;
+        };
       };
 
       settings = {

@@ -1,29 +1,31 @@
-{ lib, pkgs, inputs, config, flake, options, ... }: 
+{ lib, pkgs, inputs, config, flake, options, ... }:
 with lib;
 with lib.hdwlinux;
 let
   cfg = config.hdwlinux.user;
 
   updatesToPkgs = updates:
-    let 
-      nodeToPkg = name: value: 
+    let
+      nodeToPkg = name: value:
         if builtins.isString value then {
           root = pkgs.writeShellScriptBin "${name}" value;
-          packages = [];
+          packages = [ ];
         } else toPkgs name value;
 
-      toPkgs = name: node: 
+      toPkgs = name: node:
         let
           group = builtins.map (key: nodeToPkg "${name}-${key}" node."${key}") (builtins.attrNames node);
           roots = builtins.map (g: g.root) group;
           root = pkgs.writeShellScriptBin name "${concatStringsSep "\n" (builtins.map (r: "${lib.getExe r}") roots)}";
-          packages = builtins.concatMap (g: [g.root] ++ g.packages) group;
-        in {
+          packages = builtins.concatMap (g: [ g.root ] ++ g.packages) group;
+        in
+        {
           root = root;
           packages = packages;
         };
       result = toPkgs "update" updates;
-    in [result.root] ++ result.packages;
+    in
+    [ result.root ] ++ result.packages;
 
 in
 {
@@ -34,7 +36,7 @@ in
     publicKey = mkOption { type = str; description = "The public key for the user."; };
     homeDirectory = mkOpt (nullOr str) "/home/${cfg.name}" "The user's home directory.";
 
-    updates = mkOpt (attrsOf anything) {} "Update scripts";
+    updates = mkOpt (attrsOf anything) { } "Update scripts";
   };
 
   config = {
@@ -47,10 +49,6 @@ in
       sessionPath = [
         "$HOME/.local/bin"
       ];
-
-      sessionVariables = {
-        NIX_CONFIG_FLAKE=flake;
-      };
 
       packages = updatesToPkgs cfg.updates;
     };

@@ -1,9 +1,8 @@
-{
-  inputs,
-  config,
-  lib,
-  pkgs,
-  ...
+{ inputs
+, config
+, lib
+, pkgs
+, ...
 }:
 {
   imports = [
@@ -69,10 +68,6 @@
   };
 
   home-manager = {
-    extraSpecialArgs = {
-      flake = config.hdwlinux.nix.flake;
-    };
-
     sharedModules = [
       {
         hdwlinux.features = {

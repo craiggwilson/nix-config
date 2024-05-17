@@ -15,22 +15,18 @@
     };
 
     features = {
-      tags = ["cli" "gui" "desktop:gnome" "displayManager:gdm" "fonts" "gaming" "printing" "service"];
+      tags = [ "cli" "gui" "desktop:gnome" "displayManager:gdm" "fonts" "gaming" "printing" "service" ];
 
       printing.raeford = true;
     };
   };
 
   home-manager = {
-    extraSpecialArgs = {
-      flake = config.hdwlinux.nix.flake;
-    };
-
     sharedModules = [
       {
         hdwlinux.features.monitors.monitors = [
-          { 
-            name = "eDP-1"; 
+          {
+            name = "eDP-1";
             workspace = "1";
             width = 3000;
             height = 2000;

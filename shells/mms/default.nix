@@ -1,9 +1,8 @@
-{
-  lib,
-  inputs,
-  pkgs,
-  stdenv,
-  ...
+{ lib
+, inputs
+, pkgs
+, stdenv
+, ...
 }:
 
 pkgs.mkShell rec {
@@ -34,6 +33,7 @@ pkgs.mkShell rec {
 
     # node
     nodejs_18
+    nodejs_18.pkgs.pnpm
 
     # python
     python3.pkgs.python

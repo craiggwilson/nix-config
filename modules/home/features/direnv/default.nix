@@ -5,11 +5,32 @@ let cfg = config.hdwlinux.features.direnv;
 in
 {
   options.hdwlinux.features.direnv = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
-  config.programs.direnv = mkIf cfg.enable {
-    enable = true;
-    nix-direnv.enable = true;
+  config = mkIf cfg.enable {
+    programs.direnv = {
+      enable = true;
+      nix-direnv.enable = true;
+    };
+
+    xdg.configFile."direnv/direnvrc".text = ''
+      export_alias() {
+        local name=$1
+        shift
+        local alias_dir=$PWD/.direnv/aliases
+        local target="$alias_dir/$name"
+        local oldpath="$PATH"
+        mkdir -p "$alias_dir"
+        if ! [[ ":$PATH:" == *":$alias_dir:"* ]]; then
+          PATH_add "$alias_dir"
+        fi
+
+        echo "#!/usr/bin/env bash" > "$target"
+        echo "PATH=$oldpath" >> "$target"
+        echo "$@" >> "$target"
+        chmod +x "$target"
+      }
+    '';
   };
 }

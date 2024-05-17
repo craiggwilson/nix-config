@@ -2,14 +2,14 @@
 
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.features.hyprland;
   rgb = color: "rgb(${color})";
   rgba = color: alpha: "rgba(${color}${alpha})";
 in
 {
   options.hdwlinux.features.hyprland = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
@@ -40,14 +40,18 @@ in
             disable_splash_rendering = true;
           };
 
-          monitor = (builtins.map (m: 
-            "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
-          ) config.hdwlinux.features.monitors.monitors)
+          monitor = (builtins.map
+            (m:
+              "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
+            )
+            config.hdwlinux.features.monitors.monitors)
           ++ [ ", preferred, auto, auto" ];
 
-          workspace = (map (m: 
-            "${m.workspace}, monitor:${m.name}"
-          ) config.hdwlinux.features.monitors.monitors) ++ [
+          workspace = (map
+            (m:
+              "${m.workspace}, monitor:${m.name}"
+            )
+            config.hdwlinux.features.monitors.monitors) ++ [
             "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
           ];
 
@@ -128,7 +132,7 @@ in
           exec-once = [
             "swayidle -w"
             "waybar"
-            "hyprpaper"
+            #"hyprpaper"
             "dunst"
             "nm-applet --indicator"
             "1password --silent"
