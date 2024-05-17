@@ -13,19 +13,6 @@
 
   time.timeZone = "America/Chicago";
 
-  boot = {
-    kernelPackages = pkgs.linuxPackages_6_1;
-    kernelPatches = [
-      {
-        name = "crowdstrike";
-        patch = null;
-        extraConfig = ''
-          DEBUG_INFO_BTF y
-        '';
-      }
-    ];
-  };
-
   hdwlinux = {
     nix = {
       enable = true;

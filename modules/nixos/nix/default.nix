@@ -60,7 +60,7 @@ in
     programs.nix-ld.enable = true;
 
     home-manager.extraSpecialArgs = {
-      flake = config.hdwlinux.nix.flake;
+      flake = cfg.flake;
     };
 
     nix = {
@@ -72,7 +72,7 @@ in
         unstable.flake = inputs.nixpkgs;
         hdwlinux.to = {
           type = "path";
-          path = config.hdwlinux.nix.flake;
+          path = cfg.flake;
         };
       };
 

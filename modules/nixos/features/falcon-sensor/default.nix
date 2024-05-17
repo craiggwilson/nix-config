@@ -1,17 +1,18 @@
 { options, config, lib, pkgs, ... }:
-with lib;
-with lib.hdwlinux;
-let 
-    cfg = config.hdwlinux.features.falcon-sensor;
-    falcon = "${pkgs.hdwlinux.falcon-sensor}";
+let
+  cfg = config.hdwlinux.features.falcon-sensor;
+  falcon = pkgs.hdwlinux.falcon-sensor;
 in
 {
-  options.hdwlinux.features.falcon-sensor = with types; {
-    enable = mkEnableOpt ["work"] config.hdwlinux.features.tags;
-    cid = mkOption { type = str; };
+  options.hdwlinux.features.falcon-sensor = {
+    enable = lib.hdwlinux.mkEnableOpt [ "work" ] config.hdwlinux.features.tags;
+    cid = lib.mkOption { type = lib.types.str; };
   };
 
   config = lib.mkIf cfg.enable {
+
+    environment.systemPackages = [ falcon.pkgs.falconctl falcon.pkgs.falcon-kernel-check ];
+
     systemd.services.falcon-sensor = {
       enable = true;
       description = "CrowdStrike Falcon Sensor";
@@ -23,9 +24,9 @@ in
         ExecStartPre = (pkgs.writeShellScriptBin "init-falcon" ''
           mkdir -p /opt/CrowdStrike
           ln -sf ${falcon}/opt/CrowdStrike/* /opt/CrowdStrike
-          ${falcon}/bin/fs-bash -c "${falcon}/opt/CrowdStrike/falconctl -f -s --cid=${cfg.cid}"
+          ${falcon.pkgs.falconctl}/bin/falconctl -f -s --cid=${cfg.cid}
         '') + "/bin/init-falcon";
-        ExecStart = "${falcon}/bin/fs-bash -c \"${falcon}/opt/CrowdStrike/falcond\"";
+        ExecStart = "${falcon.pkgs.falcond}/bin/falcond";
         Type = "forking";
         PIDFile = "/run/falcond.pid";
         Restart = "no";
@@ -33,6 +34,19 @@ in
         KillMode = "process";
       };
       wantedBy = [ "multi-user.target" ];
+    };
+
+    boot = {
+      kernelPackages = pkgs.linuxPackages_6_1;
+      kernelPatches = [
+        {
+          name = "crowdstrike";
+          patch = null;
+          extraConfig = ''
+            DEBUG_INFO_BTF y
+          '';
+        }
+      ];
     };
   };
 }
