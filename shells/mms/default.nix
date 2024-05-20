@@ -47,11 +47,13 @@ pkgs.mkShell rec {
     librsvg
     pango
     pkg-config
+
+    # other
+    openssl
   ];
 
   venvDir = "./.venv";
 
   BAZEL_TELEMETRY = 0;
   JAVA_HOME = "${pkgs.temurin-bin-17.home}";
-  MMS_HOME = "$XDG_PROJECTS_DIR/github.com/10gen/mms";
 }
