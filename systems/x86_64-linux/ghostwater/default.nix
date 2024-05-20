@@ -35,6 +35,8 @@
             scale = 2;
           }
         ];
+
+        tags = config.hdwlinux.features.tags;
       }
     ];
   };

@@ -38,7 +38,6 @@
       ];
 
       displayManager.greetd.startCommand = "Hyprland";
-      #mongodb.enable = true;
       nfs.mounts = [
         {
           local = "/mnt/games";

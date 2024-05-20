@@ -1,17 +1,15 @@
-{ options, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
-with lib;
-with lib.hdwlinux;
 let cfg = config.hdwlinux.features.slides;
 in
 {
-  options.hdwlinux.features.slides = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+  options.hdwlinux.features.slides = {
+    enable = lib.hdwlinux.mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      slides
+  config = lib.mkIf cfg.enable {
+    home.packages = [
+      pkgs.slides
     ];
   };
 }
