@@ -130,6 +130,7 @@ in
           # };
 
           exec-once = [
+            #"hyprpaper"
             "dunst"
             "nm-applet --indicator"
             "1password --silent"
