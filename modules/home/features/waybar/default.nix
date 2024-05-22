@@ -2,12 +2,12 @@
 
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.features.waybar;
 in
 {
   options.hdwlinux.features.waybar = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
@@ -32,6 +32,7 @@ in
 
     programs.waybar = {
       enable = true;
+      systemd.enable = true;
       settings = [{
         layer = "top";
         position = "top";
@@ -79,7 +80,7 @@ in
         idle_inhibitor = {
           format = "{icon}";
           format-icons = {
-            activated =  "";
+            activated = "";
             deactivated = "";
           };
         };
@@ -94,20 +95,20 @@ in
           on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
           scroll-step = 5;
           format-icons = {
-            headphone =  "";
+            headphone = "";
             hands-free = "";
-            headset =  "";
-            phone =  "";
-            portable =  "";
+            headset = "";
+            phone = "";
+            portable = "";
 
-            car =  "";
-            default =  [ "" "" "" ];
+            car = "";
+            default = [ "" "" "" ];
           };
         };
 
         "pulseaudio#microphone" = {
           format = "{format_source}";
-          format-source =" {volume}%";
+          format-source = " {volume}%";
           format-source-muted = " Muted";
           on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
           on-click-right = "pavucontrol -t 4";

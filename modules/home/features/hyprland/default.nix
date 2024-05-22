@@ -130,9 +130,6 @@ in
           # };
 
           exec-once = [
-            "swayidle -w"
-            "waybar"
-            #"hyprpaper"
             "dunst"
             "nm-applet --indicator"
             "1password --silent"

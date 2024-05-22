@@ -23,7 +23,7 @@ icons[shutdown]="\Uf0425"
 icons[cancel]="\Uf0156"
 
 declare -A actions
-actions[lockscreen]="lockscreen"
+actions[lockscreen]="loginctl lock-session"
 actions[logout]="hyprctl dispatch exit"
 actions[reboot]="systemctl reboot"
 actions[shutdown]="systemctl poweroff"
