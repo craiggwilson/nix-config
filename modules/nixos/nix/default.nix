@@ -66,6 +66,8 @@ in
     nix = {
       package = cfg.package;
 
+      channel.enable = false;
+
       registry = {
         nixpkgs.flake = inputs.nixpkgs;
         stable.flake = inputs.nixpkgs-stable;

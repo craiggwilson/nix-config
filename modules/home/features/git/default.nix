@@ -1,21 +1,17 @@
-{
-  options,
-  config,
-  lib,
-  pkgs,
-  ...
+{ config
+, lib
+, pkgs
+, ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.git;
 in
 {
-  options.hdwlinux.features.git = with types; {
-    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.git = {
+    enable = lib.hdwlinux.mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     programs.git = {
       enable = true;
       aliases = {
@@ -28,8 +24,8 @@ in
         "pr-view" = "!gh pr view --web";
         "main-branch" = "!git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4";
         recent = "for-each-ref --count=12 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
-        st = "status";
-        sync = "!f() { export current_branch=`git branch-name` && git co $(git main-branch) && git pull upstream $(git main-branch) && git push origin $(git main-branch) && git co $current_branch && unset $current_branch; };f";
+        #st = "status";
+        #sync = "!f() { export current_branch=`git branch-name` && git co $(git main-branch) && git pull upstream $(git main-branch) && git push origin $(git main-branch) && git co $current_branch && unset $current_branch; };f";
       };
       attributes = [ "*.sh eol=lf" ];
       extraConfig = {
@@ -65,13 +61,14 @@ in
     '';
 
     home.packages =
-      mkIf
+      lib.mkIf
         (
           config.hdwlinux.features.bash.enable
           && config.hdwlinux.features.fzf.enable
           && config.hdwlinux.features.ripgrep.enable
         )
         [
+          pkgs.git-town
           (pkgs.writeShellScriptBin "git-find" ''
             result=`git log -G"$1" --oneline | \
                 fzf --ansi \

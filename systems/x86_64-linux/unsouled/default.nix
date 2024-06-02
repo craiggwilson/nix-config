@@ -11,7 +11,7 @@
     ../../../users/nixos/craig
   ];
 
-  time.timeZone = "America/Chicago";
+  #time.timeZone = "America/Chicago";
 
   hdwlinux = {
     nix = {
@@ -37,7 +37,7 @@
         "work"
       ];
 
-      displayManager.greetd.startCommand = "Hyprland";
+      displayManager.greetd.startCommand = "dbus-run-session Hyprland";
       nfs.mounts = [
         {
           local = "/mnt/games";

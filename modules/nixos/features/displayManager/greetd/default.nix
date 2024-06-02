@@ -6,7 +6,7 @@ let cfg = config.hdwlinux.features.displayManager.greetd;
 in
 {
   options.hdwlinux.features.displayManager.greetd = with types; {
-    enable = mkEnableOpt ["displayManager:greetd"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "displayManager:greetd" ] config.hdwlinux.features.tags;
     startCommand = mkOption { type = str; description = "The command to startup upon loginc."; };
   };
 
@@ -22,7 +22,7 @@ in
       settings = {
         vt = 7;
         default_session = {
-          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --remember --remember-user-session --time --cmd ${cfg.startCommand}";
+          command = "${pkgs.greetd.tuigreet}/bin/tuigreet --remember --remember-user-session --time --cmd '${cfg.startCommand}'";
           user = "greeter";
         };
       };

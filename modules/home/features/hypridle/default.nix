@@ -20,13 +20,13 @@ in
       }
 
       listener {
-        timeout = 60                          
+        timeout = 240                          
         on-timeout = pidof swaylock || brightnessctl -s set 10
         on-resume = brightnessctl -r
       }
 
       listener {
-        timeout = 60                          
+        timeout = 240                          
         on-timeout = if pgrep -x swaylock; then hyprctl dispatch dpms off; fi
         on-resume = hyprctl dispatch dpms on
       }

@@ -1,20 +1,18 @@
-{ options, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
-with lib;
-with lib.hdwlinux;
 let cfg = config.hdwlinux.features.dunst;
 in
 {
-  options.hdwlinux.features.dunst = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+  options.hdwlinux.features.dunst = {
+    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [ 
-        dunst
+  config = lib.mkIf cfg.enable {
+    home.packages = with pkgs; [
+      dunst
     ];
 
-    xdg.configFile."dunst/dunstrc".text = mkIf config.hdwlinux.theme.enable ''
+    xdg.configFile."dunst/dunstrc".text = lib.mkIf config.hdwlinux.theme.enable ''
       [global]
         frame_color = "${config.hdwlinux.theme.colors.withHashtag.base05}"
         separator_color = "${config.hdwlinux.theme.colors.withHashtag.base05}"

@@ -5,7 +5,7 @@ let cfg = config.hdwlinux.features.firefox;
 in
 {
   options.hdwlinux.features.firefox = with types; {
-    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
@@ -25,7 +25,7 @@ in
           "signon.rememberSignons" = false;
           "trailhead.firstrun.didSeeAboutWelcome" = true;
         };
-      
+
 
         extensions = with pkgs.nur.repos.rycee.firefox-addons; [
           multi-account-containers

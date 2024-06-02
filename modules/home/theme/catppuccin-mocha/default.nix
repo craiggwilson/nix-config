@@ -1,18 +1,19 @@
-{ lib, pkgs, inputs, config, options, ... }: 
+{ lib, pkgs, inputs, config, options, ... }:
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.theme.catppuccin-mocha;
   accent = "Lavender";
   flavor = "Mocha";
-  gtkName = "Catppuccin-${flavor}-Standard-${accent}-Dark"; 
+  gtkName = "Catppuccin-${flavor}-Standard-${accent}-Dark";
   kvantumName = "Catppuccin-${flavor}-${accent}";
   kvantumPkg = pkgs.catppuccin-kvantum.override {
     accent = accent;
     variant = flavor;
   };
   wallpaper = ./assets/cat-waves.png;
-in {
+in
+{
 
   options.hdwlinux.theme.catppuccin-mocha = with types; {
     enable = mkBoolOpt false "Whether or not to enable the catppuccin-mocha theme.";
@@ -31,7 +32,7 @@ in {
       theme = {
         name = gtkName;
         package = pkgs.catppuccin-gtk.override {
-          accents = [(lib.toLower accent)];
+          accents = [ (lib.toLower accent) ];
           variant = lib.toLower flavor;
         };
       };
@@ -61,7 +62,7 @@ in {
     # QT
     qt = {
       enable = true;
-      platformTheme = "qtct";
+      platformTheme.name = "qtct";
       style = {
         name = "kvantum";
       };
