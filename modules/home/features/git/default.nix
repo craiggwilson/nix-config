@@ -68,7 +68,6 @@ in
           && config.hdwlinux.features.ripgrep.enable
         )
         [
-          pkgs.git-town
           (pkgs.writeShellScriptBin "git-find" ''
             result=`git log -G"$1" --oneline | \
                 fzf --ansi \

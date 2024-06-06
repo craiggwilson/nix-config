@@ -1,43 +1,40 @@
-{ options
-, config
+{ config
 , pkgs
 , lib
 , inputs
 , ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.nix;
 
-  substituters-submodule = types.submodule (
-    { name, ... }:
+  substituters-submodule = lib.types.submodule (
+    { ... }:
     {
-      options = with types; {
-        key = mkOpt (nullOr str) null "The trusted public key for this substituter.";
+      options = {
+        key = lib.mkOpt (lib.types.nullOr lib.types.str) lib.types.null "The trusted public key for this substituter.";
       };
     }
   );
 in
 {
-  options.hdwlinux.nix = with types; {
-    enable = mkBoolOpt true "Whether or not to manage nix configuration.";
-    package = mkOpt package pkgs.nixVersions.latest "Which nix package to use.";
-    flake = mkOpt (nullOr str) null "The git repository directory that holds the flake.";
+  options.hdwlinux.nix = {
+    enable = lib.hdwlinux.mkBoolOpt true "Whether or not to manage nix configuration.";
+    package = lib.hdwlinux.mkOpt lib.types.package pkgs.nixVersions.latest "Which nix package to use.";
+    flake = lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) null "The git repository directory that holds the flake.";
 
     default-substituter = {
-      url = mkOpt str "https://cache.nixos.org" "The url for the substituter.";
+      url = lib.hdwlinux.mkOpt lib.types.str "https://cache.nixos.org" "The url for the substituter.";
       key =
-        mkOpt str "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+        lib.hdwlinux.mkOpt lib.types.str "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
           "The trusted public key for the substituter.";
     };
 
-    extra-substituters = mkOpt (attrsOf substituters-submodule) { } "Extra substituters to configure.";
+    extra-substituters = lib.hdwlinux.mkOpt (lib.types.attrsOf substituters-submodule) { } "Extra substituters to configure.";
   };
 
-  config = mkIf cfg.enable {
-    assertions = mapAttrsToList
+  config = lib.mkIf cfg.enable {
+    assertions = lib.mapAttrsToList
       (name: value: {
         assertion = value.key != null;
         message = "hdwlinux.nix.extra-substituters.${name}.key must be set";
@@ -60,6 +57,16 @@ in
     programs.nix-ld.enable = true;
 
     home-manager.extraSpecialArgs = {
+      flake = cfg.flake;
+    };
+
+    nixpkgs.flake = {
+      setNixPath = true;
+      setFlakeRegistry = true;
+    };
+
+    programs.nh = {
+      enable = true;
       flake = cfg.flake;
     };
 
@@ -91,10 +98,10 @@ in
         keep-derivations = true;
         substituters = [
           cfg.default-substituter.url
-        ] ++ (mapAttrsToList (name: value: name) cfg.extra-substituters);
+        ] ++ (lib.mapAttrsToList (name: value: name) cfg.extra-substituters);
         trusted-public-keys = [
           cfg.default-substituter.key
-        ] ++ (mapAttrsToList (name: value: value.key) cfg.extra-substituters);
+        ] ++ (lib.mapAttrsToList (name: value: value.key) cfg.extra-substituters);
       };
 
       gc = {

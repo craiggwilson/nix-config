@@ -6,8 +6,6 @@
     ../../../users/nixos/craig
   ];
 
-  #time.timeZone = "America/Chicago";
-
   hdwlinux = {
     nix = {
       enable = true;

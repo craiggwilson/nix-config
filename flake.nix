@@ -27,6 +27,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    kolide-launcher = {
+      url = "github:/kolide/nix-agent/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # musnix optimizes audio for realtime/production.
     musnix.url = "github:musnix/musnix";
 
@@ -96,6 +101,7 @@
             disko.nixosModules.disko
             home-manager.nixosModules.home-manager
             inputs.musnix.nixosModules.musnix
+            kolide-launcher.nixosModules.kolide-launcher
           ];
         };
       };
