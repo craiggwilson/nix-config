@@ -85,9 +85,9 @@
 
       overlays = with inputs; [
         nur.overlay
+        rust-overlay.overlays.default
         (final: prev: { stable = import nixpkgs-stable { system = prev.system; }; })
         (final: prev: { unstable = import nixpkgs { system = prev.system; }; })
-        rust-overlay.overlays.default
       ];
 
       homes.users."craig@unsouled".modules = with inputs; [ nix-flatpak.homeManagerModules.nix-flatpak ];
@@ -100,7 +100,7 @@
           nixos = with inputs; [
             disko.nixosModules.disko
             home-manager.nixosModules.home-manager
-            inputs.musnix.nixosModules.musnix
+            musnix.nixosModules.musnix
             kolide-launcher.nixosModules.kolide-launcher
           ];
         };
