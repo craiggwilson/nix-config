@@ -8,19 +8,20 @@
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
     # bazel
-    (pkgs.writeShellScriptBin "bazel" ''
+    (writeShellScriptBin "bazel" ''
       if [ -z "''${CONTAINER_ID}" ]; then
         exists=`distrobox list | rg mms-bazel`
 
         if [ -z "$exists" ]; then
-          exec ${pkgs.distrobox}/bin/distrobox-create -n mms-bazel -ap "awscli2 gcc-c++ libxcrypt-compat"
+          exec ${distrobox}/bin/distrobox-create -n mms-bazel -ap "awscli2 gcc-c++ libxcrypt-compat"
         fi
 
-        exec ${pkgs.distrobox}/bin/distrobox-enter -n mms-bazel -- /usr/bin/bazel "$@"
+        exec ${distrobox}/bin/distrobox-enter -n mms-bazel -- /usr/bin/bazel "$@"
       else
         exec /usr/bin/bazel "$@"
       fi
     '')
+    bazel-gazelle
 
     # go
     go_1_21
@@ -50,6 +51,7 @@ pkgs.mkShell rec {
 
     # other
     openssl
+    amazon-ecr-credential-helper
   ];
 
   venvDir = "./.venv";

@@ -6,10 +6,10 @@ let cfg = config.hdwlinux.features.discord;
 in
 {
   options.hdwlinux.features.discord = with types; {
-    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [
-      discord
+    discord
   ];
 }

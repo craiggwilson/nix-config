@@ -180,6 +180,7 @@ in
             "SUPER SHIFT, P, pseudo,"
             "SUPER SHIFT, J, togglesplit,"
             "SUPER SHIFT, F, togglefloating,"
+            "SUPER SHIFT CONTROL, RETURN, fullscreen, 0"
             "SUPER SHIFT, RETURN, fullscreen, 1"
             "SUPER SHIFT, left, movetoworkspace, -1"
             "SUPER SHIFT, right, movetoworkspace, +1"
