@@ -1,18 +1,16 @@
-{ options, config, lib, pkgs, osConfig, ... }:
+{ config, lib, pkgs, ... }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.hyprland;
   rgb = color: "rgb(${color})";
   rgba = color: alpha: "rgba(${color}${alpha})";
 in
 {
-  options.hdwlinux.features.hyprland = with types; {
-    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.hyprland = {
+    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     systemd.user.startServices = true;
 
     wayland.windowManager.hyprland = {
@@ -20,8 +18,12 @@ in
       xwayland.enable = true;
       systemd.enable = true;
 
-      settings = mkMerge [
-        (mkIf config.hdwlinux.theme.enable {
+      plugins = [
+        pkgs.hyprlandPlugins.hyprexpo
+      ];
+
+      settings = lib.mkMerge [
+        (lib.mkIf config.hdwlinux.theme.enable {
           misc.background_color = rgb config.hdwlinux.theme.colors.base00;
           general = {
             "col.active_border" = rgb config.hdwlinux.theme.colors.base0E;
@@ -74,7 +76,7 @@ in
               special = true;
             };
 
-            dim_special = .2;
+            dim_special = 0.2;
             drop_shadow = true;
             shadow_range = 4;
             shadow_render_power = 3;
@@ -227,6 +229,20 @@ in
             "stayfocused,title:^(Quick Access — 1Password)$"
             "workspace special:dropdown,class:^(kitty)$"
           ];
+
+          plugins = {
+            hyprexpo = {
+              columns = 3;
+              gap_size = 5;
+              bg_col = "rgb(111111)";
+              workspace_method = "center current"; # [center/first] [workspace] e.g. first 1 or center m+1
+
+              enable_gesture = true; # laptop touchpad
+              gesture_fingers = 3; # 3 or 4
+              gesture_distance = 300; # how far is the "max"
+              gesture_positive = true; # positive = swipe down. Negative = swipe up.
+            };
+          };
         }
       ];
 
