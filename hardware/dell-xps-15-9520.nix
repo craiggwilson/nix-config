@@ -1,9 +1,8 @@
-{
-  pkgs,
-  lib,
-  inputs,
-  config,
-  ...
+{ pkgs
+, lib
+, inputs
+, config
+, ...
 }:
 {
 
@@ -51,10 +50,9 @@
       modesetting.enable = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
     };
-    opengl = {
+    graphics = {
       enable = true;
-      driSupport32Bit = true;
-      driSupport = true;
+      enable32Bit = true;
     };
   };
 
