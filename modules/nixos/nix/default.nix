@@ -60,9 +60,12 @@ in
       flake = cfg.flake;
     };
 
-    nixpkgs.flake = {
-      setNixPath = true;
-      setFlakeRegistry = true;
+    nixpkgs = {
+      config.allowUnfree = true;
+      flake = {
+        setNixPath = true;
+        setFlakeRegistry = true;
+      };
     };
 
     programs.nh = {

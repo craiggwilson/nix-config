@@ -1,27 +1,25 @@
-{ options, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
-with lib;
-with lib.hdwlinux;
 let cfg = config.hdwlinux.features.steam;
 in
 {
-  options.hdwlinux.features.steam = with types; {
-    enable = mkEnableOpt ["gui" "gaming"] config.hdwlinux.features.tags;
+  options.hdwlinux.features.steam = {
+    enable = lib.hdwlinux.mkEnableOpt [ "gui" "gaming" ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [
-    (steam.override {
-      extraPkgs = pkgs: with pkgs; [
-        xorg.libXcursor
-        xorg.libXi
-        xorg.libXinerama
-        xorg.libXScrnSaver
-        libpng
-        libpulseaudio
-        libvorbis
-        stdenv.cc.cc.lib
-        libkrb5
-        keyutils
+  config.home.packages = lib.mkIf cfg.enable [
+    (pkgs.steam.override {
+      extraPkgs = pkgs: [
+        pkgs.xorg.libXcursor
+        pkgs.xorg.libXi
+        pkgs.xorg.libXinerama
+        pkgs.xorg.libXScrnSaver
+        pkgs.libpng
+        pkgs.libpulseaudio
+        pkgs.libvorbis
+        pkgs.stdenv.cc.cc.lib
+        pkgs.libkrb5
+        pkgs.keyutils
       ];
     })
   ];

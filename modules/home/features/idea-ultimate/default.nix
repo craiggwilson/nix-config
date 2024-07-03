@@ -1,27 +1,24 @@
-{ options
-, config
+{ config
 , lib
 , pkgs
 , ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.idea-community;
 in
 {
-  options.hdwlinux.features.idea-community = with types; {
-    enable = mkEnableOpt [
+  options.hdwlinux.features.idea-community = {
+    enable = lib.hdwlinux.mkEnableOpt [
       "gui"
       "programming"
     ]
       config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [
-    jetbrains.idea-ultimate
+  config.home.packages = lib.mkIf cfg.enable [
+    pkgs.jetbrains.idea-ultimate
     (pkgs.writeShellScriptBin "idea" ''
-      nohup ${jetbrains.idea-ultimate}/bin/idea-ultimate "$@" </dev/null >/dev/null 2>&1 &
+      nohup ${pkgs.stable.jetbrains.idea-ultimate}/bin/idea-ultimate "$@" </dev/null >/dev/null 2>&1 &
       disown
     '')
   ];
