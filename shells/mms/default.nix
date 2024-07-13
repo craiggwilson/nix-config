@@ -22,6 +22,7 @@ pkgs.mkShell rec {
       fi
     '')
     bazel-gazelle
+    bazel-buildtools
 
     # go
     go_1_21
