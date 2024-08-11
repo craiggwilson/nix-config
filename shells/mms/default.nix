@@ -58,5 +58,6 @@ pkgs.mkShell rec {
   venvDir = "./.venv";
 
   BAZEL_TELEMETRY = 0;
+  GOPRIVATE = "github.com/10gen";
   JAVA_HOME = "${pkgs.temurin-bin-17.home}";
 }

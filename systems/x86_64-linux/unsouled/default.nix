@@ -25,7 +25,6 @@
         "cli"
         "gui"
         "desktop:hyprland"
-        "displayManager:greetd"
         "filesystem:nfs"
         "fonts"
         "gaming"
