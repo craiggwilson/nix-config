@@ -25,7 +25,7 @@ pkgs.mkShell rec {
     bazel-buildtools
 
     # go
-    go_1_21
+    go_1_22
 
     #java
     temurin-bin-17
@@ -40,6 +40,9 @@ pkgs.mkShell rec {
     # python
     python3.pkgs.python
     python3.pkgs.venvShellHook
+
+    # buf
+    buf
 
     # from $MMS_HOME/scripts/onboarding/mms_onboarding/build_deps.py
     cairo
