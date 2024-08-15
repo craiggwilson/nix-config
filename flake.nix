@@ -8,6 +8,9 @@
     # also provide stable packages if unstable are breaking
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.11";
 
+    # zoom broke screen sharing on nixos, so going to an earlier version.
+    nixpkgs-old-zoom.url = "github:NixOS/nixpkgs/06031e8a5d9d5293c725a50acf01242193635022";
+
     # nix user repository provides additional packages.
     nur.url = "github:nix-community/NUR";
 
@@ -87,6 +90,7 @@
       overlays = with inputs; [
         nur.overlay
         rust-overlay.overlays.default
+        (final: prev: { old-zoom = import nixpkgs-old-zoom { system = prev.system; config.allowUnfree = true; }; })
         (final: prev: { stable = import nixpkgs-stable { system = prev.system; config.allowUnfree = true; }; })
         (final: prev: { unstable = import nixpkgs { system = prev.system; config.allowUnfree = true; }; })
       ];
