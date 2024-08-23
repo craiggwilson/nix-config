@@ -30,6 +30,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixos-cosmic = {
+      url = "github:lilyinstarlight/nixos-cosmic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     kolide-launcher = {
       url = "github:/kolide/nix-agent/main";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -120,6 +125,7 @@
           nixos = with inputs; [
             disko.nixosModules.disko
             home-manager.nixosModules.home-manager
+            nixos-cosmic.nixosModules.default
             musnix.nixosModules.musnix
             kolide-launcher.nixosModules.kolide-launcher
           ];

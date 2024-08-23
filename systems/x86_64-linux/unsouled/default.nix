@@ -16,6 +16,12 @@
     nix = {
       enable = true;
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+
+      extra-substituters = {
+        "https://cosmic.cachix.org/" = {
+          key = "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE=";
+        };
+      };
     };
 
     features = {
@@ -35,7 +41,6 @@
         "work"
       ];
 
-      displayManager.greetd.startCommand = "dbus-run-session Hyprland";
       nfs.mounts = [
         {
           local = "/mnt/games";

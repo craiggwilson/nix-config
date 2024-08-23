@@ -24,7 +24,6 @@
         "cli"
         "gui"
         "desktop:gnome"
-        "displayManager:gdm"
         "fonts"
         "gaming"
         "printing"

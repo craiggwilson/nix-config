@@ -14,7 +14,7 @@ let
     {
       options = {
         key =
-          lib.mkOpt (lib.types.nullOr lib.types.str) lib.types.null
+          lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) lib.types.null
             "The trusted public key for this substituter.";
       };
     }
