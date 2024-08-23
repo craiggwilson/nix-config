@@ -1,7 +1,8 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 
 let
@@ -12,7 +13,5 @@ in
     enable = lib.hdwlinux.mkEnableOpt [ "work" ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = lib.mkIf cfg.enable [
-    pkgs.mongodb-5_0
-  ];
+  config.home.packages = lib.mkIf cfg.enable [ pkgs.mongodb-5_0 ];
 }

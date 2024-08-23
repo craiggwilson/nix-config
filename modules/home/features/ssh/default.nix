@@ -1,4 +1,11 @@
-{ options, config, lib, pkgs, inputs,... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -21,7 +28,7 @@ let
 in
 {
   options.hdwlinux.features.ssh = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
     includes = mkOpt (listOf path) [ ] "Other files to include in the ssh config file.";
     knownHosts = mkOpt (listOf path) [ ] "Known hosts to include in the known hosts file.";
   };
@@ -34,7 +41,7 @@ in
         cat ${sshConfigFile} >> $out
         chmod 600 $out
       '';
-      known-hosts = lib.hdwlinux.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/known_hosts" '' 
+      known-hosts = lib.hdwlinux.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/known_hosts" ''
         rm -f $out
         ${concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.knownHosts)}
         chmod 600 $out

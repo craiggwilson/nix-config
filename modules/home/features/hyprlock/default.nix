@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.hdwlinux.features.hyprlock;
@@ -10,9 +15,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [
-      pkgs.hyprlock
-    ];
+    home.packages = [ pkgs.hyprlock ];
 
     xdg.configFile."hypr/hyprlock.conf".text = ''
       general {

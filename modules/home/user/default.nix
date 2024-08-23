@@ -1,22 +1,38 @@
-{ lib, pkgs, inputs, config, flake, options, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  flake,
+  options,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
 let
   cfg = config.hdwlinux.user;
 
-  updatesToPkgs = updates:
+  updatesToPkgs =
+    updates:
     let
-      nodeToPkg = name: value:
-        if builtins.isString value then {
-          root = pkgs.writeShellScriptBin "${name}" value;
-          packages = [ ];
-        } else toPkgs name value;
+      nodeToPkg =
+        name: value:
+        if builtins.isString value then
+          {
+            root = pkgs.writeShellScriptBin "${name}" value;
+            packages = [ ];
+          }
+        else
+          toPkgs name value;
 
-      toPkgs = name: node:
+      toPkgs =
+        name: node:
         let
           group = builtins.map (key: nodeToPkg "${name}-${key}" node."${key}") (builtins.attrNames node);
           roots = builtins.map (g: g.root) group;
-          root = pkgs.writeShellScriptBin name "${concatStringsSep "\n" (builtins.map (r: "${lib.getExe r}") roots)}";
+          root = pkgs.writeShellScriptBin name "${concatStringsSep "\n" (
+            builtins.map (r: "${lib.getExe r}") roots
+          )}";
           packages = builtins.concatMap (g: [ g.root ] ++ g.packages) group;
         in
         {
@@ -31,9 +47,18 @@ in
 {
   options.hdwlinux.user = with types; {
     name = mkStrOpt config.snowfallorg.user.name "The name to use for the user account.";
-    fullName = mkOption { type = str; description = "The full name of the user."; };
-    email = mkOption { type = str; description = "The email of the user."; };
-    publicKey = mkOption { type = str; description = "The public key for the user."; };
+    fullName = mkOption {
+      type = str;
+      description = "The full name of the user.";
+    };
+    email = mkOption {
+      type = str;
+      description = "The email of the user.";
+    };
+    publicKey = mkOption {
+      type = str;
+      description = "The public key for the user.";
+    };
     homeDirectory = mkOpt (nullOr str) "/home/${cfg.name}" "The user's home directory.";
 
     updates = mkOpt (attrsOf anything) { } "Update scripts";
@@ -46,9 +71,7 @@ in
 
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
 
-      sessionPath = [
-        "$HOME/.local/bin"
-      ];
+      sessionPath = [ "$HOME/.local/bin" ];
 
       packages = updatesToPkgs cfg.updates;
     };

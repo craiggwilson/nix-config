@@ -1,15 +1,20 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.usbutils;
+let
+  cfg = config.hdwlinux.features.usbutils;
 in
 {
   options.hdwlinux.features.usbutils = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
-  config.environment.systemPackages = with pkgs; mkIf cfg.enable [
-    usbutils
-  ];
+  config.environment.systemPackages = with pkgs; mkIf cfg.enable [ usbutils ];
 }

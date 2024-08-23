@@ -1,4 +1,5 @@
-{ disks, ... }: {
+{ disks, ... }:
+{
   disko.devices.disk.main = {
     type = "disk";
     device = "/dev/nvme0n1";
@@ -33,15 +34,24 @@
               subvolumes = {
                 "/root" = {
                   mountpoint = "/";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "/home" = {
                   mountpoint = "/home";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "/nix" = {
                   mountpoint = "/nix";
-                  mountOptions = [ "compress=zstd" "noatime" ];
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                  ];
                 };
                 "/swap" = {
                   mountpoint = "/.swapvol";

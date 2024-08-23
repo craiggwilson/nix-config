@@ -1,6 +1,7 @@
 { config, lib, ... }:
 
-let cfg = config.hdwlinux.features.redshift;
+let
+  cfg = config.hdwlinux.features.redshift;
 in
 {
   options.hdwlinux.features.redshift = {

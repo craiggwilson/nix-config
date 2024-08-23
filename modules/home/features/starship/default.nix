@@ -1,12 +1,19 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.starship;
+let
+  cfg = config.hdwlinux.features.starship;
 in
 {
   options.hdwlinux.features.starship = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
     settings = mkOpt attrs { } (mdDoc "Options to pass directly to `programs.starship.settings`.");
   };
 

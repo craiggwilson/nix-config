@@ -1,4 +1,11 @@
-{ lib, pkgs, inputs, config, options, ... }: 
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  options,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
 let
@@ -6,6 +13,6 @@ let
 in
 {
   options.hdwlinux.features = with types; {
-    tags = mkOpt (listOf str) [] "The tags for features enablement.";
+    tags = mkOpt (listOf str) [ ] "The tags for features enablement.";
   };
 }

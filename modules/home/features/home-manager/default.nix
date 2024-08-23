@@ -1,8 +1,16 @@
-{ inputs, options, config, lib, pkgs, ... }:
+{
+  inputs,
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.home-manager;
+let
+  cfg = config.hdwlinux.features.home-manager;
 in
 {
   options.hdwlinux.features.home-manager = with types; {
@@ -12,11 +20,12 @@ in
   config = {
     programs.home-manager.enable = cfg.enable;
 
-    lib.file.mkOutOfStoreSymlink = path: 
+    lib.file.mkOutOfStoreSymlink =
+      path:
       let
         pathStr = toString path;
         name = inputs.home-manager.lib.hm.strings.storeFileName (baseNameOf pathStr);
       in
-        pkgs.runCommandLocal name {} ''ln -s ${lib.escapeShellArg pathStr} $out'';
+      pkgs.runCommandLocal name { } "ln -s ${lib.escapeShellArg pathStr} $out";
   };
 }

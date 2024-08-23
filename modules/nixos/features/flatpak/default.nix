@@ -1,15 +1,20 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.flatpak;
+let
+  cfg = config.hdwlinux.features.flatpak;
 in
 {
   options.hdwlinux.features.flatpak = with types; {
-    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
-    services.flatpak.enable = true;
-  };
+  config = mkIf cfg.enable { services.flatpak.enable = true; };
 }

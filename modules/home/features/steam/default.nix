@@ -1,10 +1,19 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-let cfg = config.hdwlinux.features.steam;
+let
+  cfg = config.hdwlinux.features.steam;
 in
 {
   options.hdwlinux.features.steam = {
-    enable = lib.hdwlinux.mkEnableOpt [ "gui" "gaming" ] config.hdwlinux.features.tags;
+    enable = lib.hdwlinux.mkEnableOpt [
+      "gui"
+      "gaming"
+    ] config.hdwlinux.features.tags;
   };
 
   config.home.packages = lib.mkIf cfg.enable [

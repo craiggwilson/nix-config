@@ -1,4 +1,13 @@
-{ options, config, pkgs, lib, host ? "", format ? "", inputs ? { }, ... }:
+{
+  options,
+  config,
+  pkgs,
+  lib,
+  host ? "",
+  format ? "",
+  inputs ? { },
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -10,7 +19,5 @@ in
     enable = mkBoolOpt false "Whether or not to configure simplescan.";
   };
 
-  config.home.packages = with pkgs.gnome; mkIf cfg.enable [
-    simple-scan
-  ];
+  config.home.packages = with pkgs.gnome; mkIf cfg.enable [ simple-scan ];
 }

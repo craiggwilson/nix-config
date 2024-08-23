@@ -1,18 +1,23 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.polkit;
+let
+  cfg = config.hdwlinux.features.polkit;
 in
 {
   options.hdwlinux.features.polkit = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [ 
-        polkit_gnome
-    ];
+    environment.systemPackages = with pkgs; [ polkit_gnome ];
 
     security.polkit.enable = true;
 

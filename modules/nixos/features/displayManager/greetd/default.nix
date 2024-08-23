@@ -1,19 +1,27 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.displayManager.greetd;
+let
+  cfg = config.hdwlinux.features.displayManager.greetd;
 in
 {
   options.hdwlinux.features.displayManager.greetd = with types; {
     enable = mkEnableOpt [ "displayManager:greetd" ] config.hdwlinux.features.tags;
-    startCommand = mkOption { type = str; description = "The command to startup upon loginc."; };
+    startCommand = mkOption {
+      type = str;
+      description = "The command to startup upon loginc.";
+    };
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      greetd.tuigreet
-    ];
+    environment.systemPackages = with pkgs; [ greetd.tuigreet ];
 
     security.pam.services.greetd.enableGnomeKeyring = true;
 

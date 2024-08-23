@@ -1,13 +1,24 @@
-{ lib, pkgs, inputs, config, flake, ... }: 
 {
-  imports = [
-    ../../../users/homes/addie
-  ];
+  lib,
+  pkgs,
+  inputs,
+  config,
+  flake,
+  ...
+}:
+{
+  imports = [ ../../../users/homes/addie ];
 
   hdwlinux = {
     theme.dracula.enable = true;
 
-    features.tags = ["cli" "desktop:gnome" "gaming" "gui" "service"];
+    features.tags = [
+      "cli"
+      "desktop:gnome"
+      "gaming"
+      "gui"
+      "service"
+    ];
   };
 
   # This value determines the NixOS release from which the default

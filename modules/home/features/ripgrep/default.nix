@@ -1,14 +1,19 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.ripgrep;
+let
+  cfg = config.hdwlinux.features.ripgrep;
 in
 {
   options.hdwlinux.features.ripgrep = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
-  config.programs.ripgrep = mkIf cfg.enable {
-    enable = true;
-  };
+  config.programs.ripgrep = mkIf cfg.enable { enable = true; };
 }

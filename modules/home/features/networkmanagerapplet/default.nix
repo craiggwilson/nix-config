@@ -1,15 +1,20 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.networkmanagerapplet;
+let
+  cfg = config.hdwlinux.features.networkmanagerapplet;
 in
 {
   options.hdwlinux.features.networkmanagerapplet = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [
-    networkmanagerapplet
-  ];
+  config.home.packages = with pkgs; mkIf cfg.enable [ networkmanagerapplet ];
 }

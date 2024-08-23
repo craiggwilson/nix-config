@@ -1,11 +1,18 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.electronSupport;
+let
+  cfg = config.hdwlinux.features.electronSupport;
 in
 {
   options.hdwlinux.features.electronSupport = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

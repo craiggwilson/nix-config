@@ -1,6 +1,12 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-let cfg = config.hdwlinux.features.hypridle;
+let
+  cfg = config.hdwlinux.features.hypridle;
 in
 {
   options.hdwlinux.features.hypridle = {
@@ -8,9 +14,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [
-      pkgs.hypridle
-    ];
+    home.packages = [ pkgs.hypridle ];
 
     xdg.configFile."hypr/hypridle.conf".text = ''
       general {
@@ -49,4 +53,3 @@ in
     '';
   };
 }
-

@@ -1,15 +1,20 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.udisks2;
+let
+  cfg = config.hdwlinux.features.udisks2;
 in
 {
   options.hdwlinux.features.udisks2 = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
-    services.udisks2.enable = true;
-  };
+  config = mkIf cfg.enable { services.udisks2.enable = true; };
 }

@@ -1,7 +1,8 @@
-{ config
-, lib
-, pkgs
-, ...
+{
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 let
   cfg = config.hdwlinux.features.idea-community;
@@ -11,8 +12,7 @@ in
     enable = lib.hdwlinux.mkEnableOpt [
       "gui"
       "programming"
-    ]
-      config.hdwlinux.features.tags;
+    ] config.hdwlinux.features.tags;
   };
 
   config.home.packages = lib.mkIf cfg.enable [

@@ -1,12 +1,22 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.reaper;
+let
+  cfg = config.hdwlinux.features.reaper;
 in
 {
   options.hdwlinux.features.reaper = with types; {
-    enable = mkEnableOpt ["audio:production" "gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [
+      "audio:production"
+      "gui"
+    ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

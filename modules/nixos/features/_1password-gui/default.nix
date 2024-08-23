@@ -1,4 +1,10 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -7,7 +13,7 @@ let
 in
 {
   options.hdwlinux.features._1password-gui = with types; {
-    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

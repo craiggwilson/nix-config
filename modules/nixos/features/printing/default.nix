@@ -1,4 +1,13 @@
-{ options, config, pkgs, lib, host ? "", format ? "", inputs ? { }, ... }:
+{
+  options,
+  config,
+  pkgs,
+  lib,
+  host ? "",
+  format ? "",
+  inputs ? { },
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -7,7 +16,7 @@ let
 in
 {
   options.hdwlinux.features.printing = with types; {
-    enable = mkEnableOpt ["printing"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "printing" ] config.hdwlinux.features.tags;
     raeford = mkBoolOpt false "Wheter or not to enable Raeford printers.";
   };
 

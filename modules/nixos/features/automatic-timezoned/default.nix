@@ -1,6 +1,7 @@
 { config, lib, ... }:
 
-let cfg = config.hdwlinux.features.automatic-timezoned;
+let
+  cfg = config.hdwlinux.features.automatic-timezoned;
 in
 {
   options.hdwlinux.features.automatic-timezoned = {

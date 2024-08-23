@@ -1,8 +1,9 @@
-{ config
-, pkgs
-, lib
-, inputs
-, ...
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  ...
 }:
 
 let
@@ -12,7 +13,9 @@ let
     { ... }:
     {
       options = {
-        key = lib.mkOpt (lib.types.nullOr lib.types.str) lib.types.null "The trusted public key for this substituter.";
+        key =
+          lib.mkOpt (lib.types.nullOr lib.types.str) lib.types.null
+            "The trusted public key for this substituter.";
       };
     }
   );
@@ -21,7 +24,9 @@ in
   options.hdwlinux.nix = {
     enable = lib.hdwlinux.mkBoolOpt true "Whether or not to manage nix configuration.";
     package = lib.hdwlinux.mkOpt lib.types.package pkgs.nixVersions.latest "Which nix package to use.";
-    flake = lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) null "The git repository directory that holds the flake.";
+    flake =
+      lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) null
+        "The git repository directory that holds the flake.";
 
     default-substituter = {
       url = lib.hdwlinux.mkOpt lib.types.str "https://cache.nixos.org" "The url for the substituter.";
@@ -30,21 +35,21 @@ in
           "The trusted public key for the substituter.";
     };
 
-    extra-substituters = lib.hdwlinux.mkOpt (lib.types.attrsOf substituters-submodule) { } "Extra substituters to configure.";
+    extra-substituters =
+      lib.hdwlinux.mkOpt (lib.types.attrsOf substituters-submodule) { }
+        "Extra substituters to configure.";
   };
 
   config = lib.mkIf cfg.enable {
-    assertions = lib.mapAttrsToList
-      (name: value: {
-        assertion = value.key != null;
-        message = "hdwlinux.nix.extra-substituters.${name}.key must be set";
-      })
-      cfg.extra-substituters;
+    assertions = lib.mapAttrsToList (name: value: {
+      assertion = value.key != null;
+      message = "hdwlinux.nix.extra-substituters.${name}.key must be set";
+    }) cfg.extra-substituters;
 
     environment.systemPackages = with pkgs; [
       cacert
       deploy-rs
-      nixpkgs-fmt
+      nixfmt-rfc-style
       nix-index
       nix-prefetch-git
       nix-output-monitor

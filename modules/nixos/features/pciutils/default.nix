@@ -1,15 +1,20 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.pciutils;
+let
+  cfg = config.hdwlinux.features.pciutils;
 in
 {
   options.hdwlinux.features.pciutils = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
-  config.environment.systemPackages = with pkgs; mkIf cfg.enable [
-    pciutils
-  ];
+  config.environment.systemPackages = with pkgs; mkIf cfg.enable [ pciutils ];
 }

@@ -1,14 +1,28 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.features.fonts;
-  nf = (pkgs.nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" "DejaVuSansMono" ]; });
+  nf = (
+    pkgs.nerdfonts.override {
+      fonts = [
+        "FiraCode"
+        "DroidSansMono"
+        "DejaVuSansMono"
+      ];
+    }
+  );
 in
 {
   options.hdwlinux.features.fonts = with types; {
-    enable = mkEnableOpt ["fonts"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "fonts" ] config.hdwlinux.features.tags;
   };
 
   config.fonts = mkIf cfg.enable {

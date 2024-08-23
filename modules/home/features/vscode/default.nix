@@ -1,9 +1,10 @@
-{ options
-, config
-, lib
-, pkgs
-, flake
-, ...
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  flake,
+  ...
 }:
 
 with lib;
@@ -16,14 +17,11 @@ in
     enable = mkEnableOpt [
       "gui"
       "programming"
-    ]
-      config.hdwlinux.features.tags;
+    ] config.hdwlinux.features.tags;
     theme = mkStrOpt "hdwlinux" "The theme name to use.";
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [ nixd ];
-
     programs.vscode = {
       enable = true;
       mutableExtensionsDir = true;
@@ -65,11 +63,12 @@ in
         "explorer.confirmDelete" = false;
         "lldb.suppressUpdateNotifications" = true;
         "nix.enableLanguageServer" = true;
-        "nix.serverPath" = "nixd";
+        "nix.formatterPath" = "${pkgs.nixfmt-rfc-style}/bin/nixfmt";
+        "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
         "nix.serverSettings" = {
           "nixd" = {
             "formatting" = {
-              "command" = "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt";
+              "command" = "${pkgs.nixfmt-rfc-style}/bin/nixfmt";
             };
             "options" = {
               "enable" = true;
@@ -77,7 +76,7 @@ in
                 "expr" = "${flake}#nixosConfigurations.unsouled.options"; # TODO: make this dynamic
               };
               "home-manager" = {
-                "expr" = "${flake}#homeConfigurations.\"craig@unsouled\".options"; # TODO: make this dynamic
+                "expr" = ''${flake}#homeConfigurations."craig@unsouled".options''; # TODO: make this dynamic
               };
             };
           };

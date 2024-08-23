@@ -1,8 +1,15 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.cloudflare-warp;
+let
+  cfg = config.hdwlinux.features.cloudflare-warp;
 in
 {
   options.hdwlinux.features.cloudflare-warp = with types; {
@@ -10,13 +17,13 @@ in
   };
 
   config = mkIf cfg.enable {
-    environment.systemPackages = with pkgs; [
-      cloudflare-warp
-    ];
+    environment.systemPackages = with pkgs; [ cloudflare-warp ];
 
     systemd.services.warp-svc = {
       description = "Cloudflare Zero Trust Client Daemon";
-      documentation = [ "https://developers.cloudflare.com/cloudflare-one/connections/connect-devices/warp/" ];
+      documentation = [
+        "https://developers.cloudflare.com/cloudflare-one/connections/connect-devices/warp/"
+      ];
       after = [ "pre-network.target" ];
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {

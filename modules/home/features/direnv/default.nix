@@ -1,7 +1,15 @@
-{ options, config, lib, pkgs, osConfig, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  osConfig,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.direnv;
+let
+  cfg = config.hdwlinux.features.direnv;
 in
 {
   options.hdwlinux.features.direnv = with types; {

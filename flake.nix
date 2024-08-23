@@ -85,14 +85,29 @@
         permittedInsecurePackages = [ "electron-25.9.0" ];
       };
 
-      formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
+      formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
 
       overlays = with inputs; [
         nur.overlay
         rust-overlay.overlays.default
-        (final: prev: { old-zoom = import nixpkgs-old-zoom { system = prev.system; config.allowUnfree = true; }; })
-        (final: prev: { stable = import nixpkgs-stable { system = prev.system; config.allowUnfree = true; }; })
-        (final: prev: { unstable = import nixpkgs { system = prev.system; config.allowUnfree = true; }; })
+        (final: prev: {
+          old-zoom = import nixpkgs-old-zoom {
+            system = prev.system;
+            config.allowUnfree = true;
+          };
+        })
+        (final: prev: {
+          stable = import nixpkgs-stable {
+            system = prev.system;
+            config.allowUnfree = true;
+          };
+        })
+        (final: prev: {
+          unstable = import nixpkgs {
+            system = prev.system;
+            config.allowUnfree = true;
+          };
+        })
       ];
 
       homes.users."craig@unsouled".modules = with inputs; [ nix-flatpak.homeManagerModules.nix-flatpak ];

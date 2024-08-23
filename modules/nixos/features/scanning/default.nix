@@ -1,4 +1,13 @@
-{ options, config, pkgs, lib, host ? "", format ? "", inputs ? { }, ... }:
+{
+  options,
+  config,
+  pkgs,
+  lib,
+  host ? "",
+  format ? "",
+  inputs ? { },
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -7,14 +16,12 @@ let
 in
 {
   options.hdwlinux.features.scanning = with types; {
-    enable = mkEnableOpt ["scanning"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "scanning" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
     hardware.sane.enable = true;
-    hardware.sane.extraBackends = with pkgs; [
-      sane-airscan
-    ];
+    hardware.sane.extraBackends = with pkgs; [ sane-airscan ];
 
     # TODO: move...
     # services.avahi = {

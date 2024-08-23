@@ -1,6 +1,12 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-let cfg = config.hdwlinux.features.gnome-keyring;
+let
+  cfg = config.hdwlinux.features.gnome-keyring;
 in
 {
   options.hdwlinux.features.gnome-keyring = {
@@ -13,8 +19,6 @@ in
       enable = true;
     };
 
-    environment.systemPackages = [
-      pkgs.libsecret
-    ];
+    environment.systemPackages = [ pkgs.libsecret ];
   };
 }

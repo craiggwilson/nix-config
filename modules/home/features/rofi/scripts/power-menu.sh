@@ -28,6 +28,7 @@ declare -A actions
 actions[lockscreen]="loginctl lock-session"
 actions[suspend]="systemctl hybrid-sleep"
 actions[logout]="hyprctl dispatch exit"
+actions[logout]="loginctl terminate-session $XDG_SESSION_ID"
 actions[reboot]="systemctl reboot"
 actions[shutdown]="systemctl poweroff"
 

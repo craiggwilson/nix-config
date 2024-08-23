@@ -1,4 +1,10 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -33,95 +39,110 @@ in
     programs.waybar = {
       enable = true;
       systemd.enable = false;
-      settings = [{
-        layer = "top";
-        position = "top";
-        mod = "dock";
-        exclusive = true;
-        passthrough = false;
-        gtk-layer-shell = true;
-        height = 35;
-        modules-left = [
-          "idle_inhibitor"
-          "hyprland/workspaces"
-        ];
-        modules-center = [
-          "clock"
-        ];
-        modules-right = [
-          "tray"
-          "battery"
-          "backlight"
-          "pulseaudio"
-          "pulseaudio#microphone"
-        ];
-        backlight = {
-          format = "{icon} {percent}%";
-          format-icons = [ "" "" ];
-        };
-        battery = {
-          states = {
-            good = 95;
-            warning = 30;
-            critical = 20;
+      settings = [
+        {
+          layer = "top";
+          position = "top";
+          mod = "dock";
+          exclusive = true;
+          passthrough = false;
+          gtk-layer-shell = true;
+          height = 35;
+          modules-left = [
+            "idle_inhibitor"
+            "hyprland/workspaces"
+          ];
+          modules-center = [ "clock" ];
+          modules-right = [
+            "tray"
+            "battery"
+            "backlight"
+            "pulseaudio"
+            "pulseaudio#microphone"
+          ];
+          backlight = {
+            format = "{icon} {percent}%";
+            format-icons = [
+              ""
+              ""
+            ];
           };
-          format = "{icon} {capacity}%";
-          format-charging = " {capacity}%";
-          format-plugged = " {capacity}%";
-          format-alt = "{time} {icon}";
-          format-icons = [ " " " " " " " " " " ];
-        };
-
-        clock = {
-          format = " {:%I:%M   %m/%d}";
-          tooltip-format = "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>";
-        };
-
-        idle_inhibitor = {
-          format = "{icon}";
-          format-icons = {
-            activated = "";
-            deactivated = "";
+          battery = {
+            states = {
+              good = 95;
+              warning = 30;
+              critical = 20;
+            };
+            format = "{icon} {capacity}%";
+            format-charging = " {capacity}%";
+            format-plugged = " {capacity}%";
+            format-alt = "{time} {icon}";
+            format-icons = [
+              " "
+              " "
+              " "
+              " "
+              " "
+            ];
           };
-        };
 
-        pulseaudio = {
-          format = "{icon} {volume}%";
-          tooltip = false;
-          format-muted = " Muted";
-          on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
-          on-click-right = "pavucontrol -t 3";
-          on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
-          on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
-          scroll-step = 5;
-          format-icons = {
-            headphone = "";
-            hands-free = "";
-            headset = "";
-            phone = "";
-            portable = "";
-
-            car = "";
-            default = [ "" "" "" ];
+          clock = {
+            format = " {:%I:%M   %m/%d}";
+            tooltip-format = ''
+              <big>{:%Y %B}</big>
+              <tt><small>{calendar}</small></tt>'';
           };
-        };
 
-        "pulseaudio#microphone" = {
-          format = "{format_source}";
-          format-source = " {volume}%";
-          format-source-muted = " Muted";
-          on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
-          on-click-right = "pavucontrol -t 4";
-          on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
-          on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
-          scroll-step = 5;
-        };
+          idle_inhibitor = {
+            format = "{icon}";
+            format-icons = {
+              activated = "";
+              deactivated = "";
+            };
+          };
 
-        tray = {
-          icon-size = 13;
-          spacing = 13;
-        };
-      }];
+          pulseaudio = {
+            format = "{icon} {volume}%";
+            tooltip = false;
+            format-muted = " Muted";
+            on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+            on-click-right = "pavucontrol -t 3";
+            on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
+            on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
+            scroll-step = 5;
+            format-icons = {
+              headphone = "";
+              hands-free = "";
+              headset = "";
+              phone = "";
+              portable = "";
+
+              car = "";
+              default = [
+                ""
+                ""
+                ""
+              ];
+            };
+          };
+
+          "pulseaudio#microphone" = {
+            format = "{format_source}";
+            format-source = " {volume}%";
+            format-source-muted = " Muted";
+            on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+            on-click-right = "pavucontrol -t 4";
+            on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
+            on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
+            scroll-step = 5;
+          };
+
+          tray = {
+            icon-size = 13;
+            spacing = 13;
+          };
+        }
+      ];
 
       style = ''
         @import url("colors.css"); 

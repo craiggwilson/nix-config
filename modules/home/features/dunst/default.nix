@@ -1,6 +1,12 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-let cfg = config.hdwlinux.features.dunst;
+let
+  cfg = config.hdwlinux.features.dunst;
 in
 {
   options.hdwlinux.features.dunst = {
@@ -8,9 +14,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = with pkgs; [
-      dunst
-    ];
+    home.packages = with pkgs; [ dunst ];
 
     xdg.configFile."dunst/dunstrc".text = lib.mkIf config.hdwlinux.theme.enable ''
       [global]

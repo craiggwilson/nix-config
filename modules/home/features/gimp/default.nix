@@ -1,14 +1,19 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.gimp;
+let
+  cfg = config.hdwlinux.features.gimp;
 in
 {
   options.hdwlinux.features.gimp = with types; {
-    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = with pkgs; mkIf cfg.enable [
-    gimp
-  ];
+  config.home.packages = with pkgs; mkIf cfg.enable [ gimp ];
 }

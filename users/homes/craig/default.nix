@@ -1,12 +1,17 @@
-{ lib, pkgs, inputs, config, flake, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  flake,
+  ...
+}:
 let
   privatePath = "${inputs.secrets}/craig";
   privateExists = builtins.pathExists privatePath;
 in
 {
-  imports = [
-    ./gh.nix
-  ] ++ lib.optional privateExists privatePath;
+  imports = [ ./gh.nix ] ++ lib.optional privateExists privatePath;
 
   hdwlinux = {
     user = {
@@ -18,7 +23,9 @@ in
 
   home.shellAliases =
     let
-      switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --impure --flake ${flake} ${if privateExists then " --override-input secrets ${flake}/../nix-private" else ""}";
+      switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --impure --flake ${flake} ${
+        if privateExists then " --override-input secrets ${flake}/../nix-private" else ""
+      }";
     in
     {
       "start" = "xdg-open";

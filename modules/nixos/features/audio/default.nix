@@ -1,11 +1,19 @@
-{ lib, pkgs, inputs, config, options, ... }: 
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  options,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let 
-  cfg = config.hdwlinux.features.audio; 
-in {
+let
+  cfg = config.hdwlinux.features.audio;
+in
+{
   options.hdwlinux.features.audio = with types; {
-    enable = mkEnableOpt ["audio"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "audio" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

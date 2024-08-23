@@ -1,11 +1,18 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.zoxide;
+let
+  cfg = config.hdwlinux.features.zoxide;
 in
 {
   options.hdwlinux.features.zoxide = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
   config.programs.zoxide = mkIf cfg.enable {

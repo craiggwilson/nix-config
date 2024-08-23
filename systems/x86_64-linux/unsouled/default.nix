@@ -1,8 +1,9 @@
-{ inputs
-, config
-, lib
-, pkgs
-, ...
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
 }:
 {
   imports = [
@@ -10,7 +11,6 @@
     ./disko.nix
     ../../../users/nixos/craig
   ];
-
 
   hdwlinux = {
     nix = {
@@ -92,7 +92,7 @@
 
   boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile
   boot.kernelParams = [
-    "resume_offset=533760" #btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
+    "resume_offset=533760" # btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
   ];
   systemd.sleep.extraConfig = ''
     HibernateDelaySec=60m # very low value to test suspend-then-hibernate

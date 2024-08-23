@@ -1,4 +1,10 @@
-{ lib, inputs, pkgs, stdenv,...}:
+{
+  lib,
+  inputs,
+  pkgs,
+  stdenv,
+  ...
+}:
 
 pkgs.mkShell rec {
   buildInputs = with pkgs; [

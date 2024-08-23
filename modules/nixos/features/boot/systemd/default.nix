@@ -1,12 +1,20 @@
-{ lib, pkgs, inputs, config, options, ... }: 
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  options,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.boot.systemd;
-in {
-  
+in
+{
+
   options.hdwlinux.features.boot.systemd = {
-    enable = mkEnableOpt ["boot:systemd"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "boot:systemd" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

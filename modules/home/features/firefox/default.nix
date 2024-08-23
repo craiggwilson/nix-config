@@ -1,5 +1,11 @@
-{ config, lib, pkgs, ... }:
-let cfg = config.hdwlinux.features.firefox;
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  cfg = config.hdwlinux.features.firefox;
 in
 {
   options.hdwlinux.features.firefox = {

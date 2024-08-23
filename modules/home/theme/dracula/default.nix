@@ -1,11 +1,19 @@
-{ lib, pkgs, inputs, config, options, ... }: 
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  options,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.theme.dracula;
-  name = "Dracula"; 
+  name = "Dracula";
   wallpaper = ./assets/background.png;
-in {
+in
+{
 
   options.hdwlinux.theme.dracula = with types; {
     enable = mkBoolOpt false "Whether or not to enable the dracula theme.";
@@ -20,9 +28,7 @@ in {
     };
 
     hdwlinux.features.vscode.theme = name;
-    programs.vscode.extensions = with pkgs.vscode-extensions; [
-      dracula-theme.theme-dracula
-    ];
+    programs.vscode.extensions = with pkgs.vscode-extensions; [ dracula-theme.theme-dracula ];
 
     gtk = {
       theme = {

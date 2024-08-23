@@ -1,8 +1,13 @@
-{ lib, pkgs, inputs, config, flake, ... }: 
 {
-  imports = [
-    ../../../users/homes/craig
-  ];
+  lib,
+  pkgs,
+  inputs,
+  config,
+  flake,
+  ...
+}:
+{
+  imports = [ ../../../users/homes/craig ];
 
   hdwlinux = {
     theme.catppuccin-mocha.enable = true;

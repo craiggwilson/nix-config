@@ -1,9 +1,16 @@
-{ lib, pkgs, inputs, config, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  ...
+}:
 let
   cfg = config.hdwlinux.theme.catppuccin-mocha;
   accent = "Lavender";
   flavor = "Mocha";
-  gtkName = "catppuccin-${lib.toLower flavor}-${lib.toLower accent}-standard+default";
+  gtkName = "catppuccin-${lib.toLower flavor}-${lib.toLower accent}-standard";
+  cursorThemeName = "catppuccin-${lib.toLower flavor}-dark-cursors";
   gtkPkg = pkgs.catppuccin-gtk.override {
     accents = [ (lib.toLower accent) ];
     variant = lib.toLower flavor;
@@ -24,7 +31,7 @@ in
   config = lib.mkIf cfg.enable {
     hdwlinux.theme = {
       enable = lib.mkDefault true;
-      name = "catppuccin-mocha";
+      name = "catppuccin-${lib.toLower flavor}";
       colors = inputs.themes.catppuccin-mocha;
       wallpapers = [ wallpaper ];
     };
@@ -37,7 +44,7 @@ in
       };
 
       cursorTheme = lib.mkDefault {
-        name = "Catppuccin-${flavor}-Dark-Cursors";
+        name = cursorThemeName;
         package = pkgs.catppuccin-cursors.mochaDark;
       };
 
@@ -51,12 +58,7 @@ in
     };
 
     home.sessionVariables.GTK_THEME = gtkName;
-
-    dconf.settings = lib.mkIf config.hdwlinux.features.gnome.enable {
-      "org/gnome/shell/extensions/user-theme" = {
-        name = gtkName;
-      };
-    };
+    home.sessionVariables.XCURSOR_THEME = cursorThemeName;
 
     # QT
     qt = {
@@ -78,8 +80,6 @@ in
 
     # VSCode
     hdwlinux.features.vscode.theme = "Catppuccin ${flavor}";
-    programs.vscode.extensions = with pkgs.vscode-extensions; [
-      catppuccin.catppuccin-vsc
-    ];
+    programs.vscode.extensions = with pkgs.vscode-extensions; [ catppuccin.catppuccin-vsc ];
   };
 }

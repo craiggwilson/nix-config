@@ -1,12 +1,19 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.virtualization.podman;
+let
+  cfg = config.hdwlinux.features.virtualization.podman;
 in
 {
   options.hdwlinux.features.virtualization.podman = with types; {
-    enable = mkEnableOpt ["virtualization:podman"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "virtualization:podman" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

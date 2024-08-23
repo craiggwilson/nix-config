@@ -1,12 +1,20 @@
-{ options, config, lib, pkgs, flake, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  flake,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.devshell;
+let
+  cfg = config.hdwlinux.features.devshell;
 in
 {
   options.hdwlinux.features.devshell = with types; {
-    enable = mkEnableOpt ["programming"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "programming" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

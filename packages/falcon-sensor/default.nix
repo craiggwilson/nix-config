@@ -1,4 +1,10 @@
-{ lib, inputs, pkgs, stdenv, ... }:
+{
+  lib,
+  inputs,
+  pkgs,
+  stdenv,
+  ...
+}:
 let
   src = /opt/CrowdStrike + "/Debian_9_10_11_12.deb";
   falcon-sensor = stdenv.mkDerivation rec {
@@ -25,8 +31,8 @@ let
     };
   };
 
-  falcon-env = pkgs.buildFHSUserEnv
-    {
+  falcon-env =
+    pkgs.buildFHSUserEnv {
       name = "fs-bash";
       targetPkgs = pkgs: [
         pkgs.libnl
@@ -39,19 +45,21 @@ let
       '';
 
       runScript = "bash";
-    } // {
-    pkgs = {
-      falconctl = wrapCommand "falconctl";
-      falcond = wrapCommand "falcond";
-      falcon-kernel-check = wrapCommand "falcon-kernel-check";
+    }
+    // {
+      pkgs = {
+        falconctl = wrapCommand "falconctl";
+        falcond = wrapCommand "falcond";
+        falcon-kernel-check = wrapCommand "falcon-kernel-check";
+      };
     };
-  };
 
-  wrapCommand = command: pkgs.writeScriptBin "${command}" ''
-    #! ${pkgs.bash}/bin/sh
+  wrapCommand =
+    command:
+    pkgs.writeScriptBin "${command}" ''
+      #! ${pkgs.bash}/bin/sh
 
-    "${falcon-env}/bin/fs-bash" -c "${falcon-env}/opt/CrowdStrike/${command} $*"
-  '';
+      "${falcon-env}/bin/fs-bash" -c "${falcon-env}/opt/CrowdStrike/${command} $*"
+    '';
 in
 falcon-env
-

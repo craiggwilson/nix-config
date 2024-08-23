@@ -1,4 +1,13 @@
-{ options, config, pkgs, lib, host ? "", format ? "", inputs ? { }, ... }:
+{
+  options,
+  config,
+  pkgs,
+  lib,
+  host ? "",
+  format ? "",
+  inputs ? { },
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;

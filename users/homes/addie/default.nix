@@ -1,4 +1,11 @@
-{ lib, pkgs, inputs, config, flake, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  config,
+  flake,
+  ...
+}:
 {
   hdwlinux = {
     user = {

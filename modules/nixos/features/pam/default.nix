@@ -1,8 +1,15 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.pam;
+let
+  cfg = config.hdwlinux.features.pam;
 in
 {
   options.hdwlinux.features.pam = with types; {

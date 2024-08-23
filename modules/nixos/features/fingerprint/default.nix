@@ -1,4 +1,13 @@
-{ options, config, pkgs, lib, host ? "", format ? "", inputs ? { }, ... }:
+{
+  options,
+  config,
+  pkgs,
+  lib,
+  host ? "",
+  format ? "",
+  inputs ? { },
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
@@ -7,10 +16,8 @@ let
 in
 {
   options.hdwlinux.features.fingerprint = with types; {
-    enable = mkEnableOpt ["fingerprint"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "fingerprint" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
-    services.fprintd.enable = true;
-  };
+  config = mkIf cfg.enable { services.fprintd.enable = true; };
 }

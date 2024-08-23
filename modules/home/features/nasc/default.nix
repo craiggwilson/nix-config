@@ -1,22 +1,26 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.nasc;
+let
+  cfg = config.hdwlinux.features.nasc;
 in
 {
   options.hdwlinux.features.nasc = with types; {
-    enable = mkEnableOpt ["cli"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      nasc
-    ];
+    home.packages = with pkgs; [ nasc ];
 
     home.shellAliases = {
       nasc = "com.github.parnold_x.nasc";
     };
   };
 }
-

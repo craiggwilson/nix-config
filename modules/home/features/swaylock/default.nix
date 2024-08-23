@@ -1,8 +1,14 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let 
+let
   cfg = config.hdwlinux.features.swaylock;
   inside = config.hdwlinux.theme.colors.with0x.base01;
   outside = config.hdwlinux.theme.colors.with0x.base01;
@@ -13,7 +19,7 @@ let
 in
 {
   options.hdwlinux.features.swaylock = with types; {
-    enable = mkEnableOpt ["desktop:hyprland"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

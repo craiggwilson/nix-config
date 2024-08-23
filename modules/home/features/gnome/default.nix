@@ -1,11 +1,18 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.gnome;
+let
+  cfg = config.hdwlinux.features.gnome;
 in
 {
   options.hdwlinux.features.gnome = with types; {
-    enable = mkEnableOpt ["desktop:gnome"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "desktop:gnome" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

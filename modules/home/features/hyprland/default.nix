@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.hdwlinux.features.hyprland;
@@ -18,9 +23,7 @@ in
       xwayland.enable = true;
       systemd.enable = true;
 
-      plugins = [
-        pkgs.hyprlandPlugins.hyprexpo
-      ];
+      plugins = [ pkgs.hyprlandPlugins.hyprexpo ];
 
       settings = lib.mkMerge [
         (lib.mkIf config.hdwlinux.theme.enable {
@@ -42,24 +45,20 @@ in
             disable_splash_rendering = true;
           };
 
-          monitor = (builtins.map
-            (m:
+          monitor =
+            (builtins.map (
+              m:
               "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
-            )
-            config.hdwlinux.features.monitors.monitors)
-          ++ [ ", preferred, auto, auto" ];
+            ) config.hdwlinux.features.monitors.monitors)
+            ++ [ ", preferred, auto, auto" ];
 
-          workspace = (map
-            (m:
-              "${m.workspace}, monitor:${m.name}"
-            )
-            config.hdwlinux.features.monitors.monitors) ++ [
-            "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
-          ];
+          workspace =
+            (map (m: "${m.workspace}, monitor:${m.name}") config.hdwlinux.features.monitors.monitors)
+            ++ [
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
+            ];
 
-          env = [
-            "XCURSOR_SIZE,24"
-          ];
+          env = [ "XCURSOR_SIZE,24" ];
 
           general = {
             gaps_in = 5;
@@ -150,7 +149,7 @@ in
             "SUPER, P, exec, $colorPicker"
             "SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons"
             "SUPER ALT , SPACE, exec, rofi -show run -show-icons"
-            "SUPER, TAB, hyprexpo:expo, toggle" #exec, rofi -show window -show-icons"
+            "SUPER, TAB, hyprexpo:expo, toggle" # exec, rofi -show window -show-icons"
             "SUPER, T, exec, kitty"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
             "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"

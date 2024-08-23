@@ -1,6 +1,12 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
-let cfg = config.hdwlinux.features.cloudflare-warp;
+let
+  cfg = config.hdwlinux.features.cloudflare-warp;
 in
 {
   options.hdwlinux.features.cloudflare-warp = {

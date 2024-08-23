@@ -1,16 +1,23 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.gtk;
+let
+  cfg = config.hdwlinux.features.gtk;
 in
 {
   options.hdwlinux.features.gtk = with types; {
-    enable = mkEnableOpt ["gui"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {
-    gtk =  {
+    gtk = {
       enable = true;
 
       gtk3 = mkIf config.hdwlinux.theme.enable {

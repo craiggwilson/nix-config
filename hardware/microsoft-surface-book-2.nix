@@ -1,4 +1,11 @@
-{ pkgs, lib, inputs, config, ... }: {
+{
+  pkgs,
+  lib,
+  inputs,
+  config,
+  ...
+}:
+{
 
   imports = [
     inputs.nixos-hardware.nixosModules.microsoft-surface-common
@@ -6,20 +13,36 @@
     inputs.nixos-hardware.nixosModules.common-gpu-nvidia
     inputs.nixos-hardware.nixosModules.common-pc
     inputs.nixos-hardware.nixosModules.common-pc-ssd
-    inputs.nixos-hardware.nixosModules.common-hidpi 
+    inputs.nixos-hardware.nixosModules.common-hidpi
   ];
 
   hdwlinux.features = {
-    tags = ["audio" "bluetooth" "boot:systemd" "camera" "networking" "redistributableFirmware" "v4l2loopback"];
+    tags = [
+      "audio"
+      "bluetooth"
+      "boot:systemd"
+      "camera"
+      "networking"
+      "redistributableFirmware"
+      "v4l2loopback"
+    ];
   };
 
   boot = {
     initrd = {
-      availableKernelModules = [ "xhci_pci" "nvme" "usb_storage" "sd_mod" ];
+      availableKernelModules = [
+        "xhci_pci"
+        "nvme"
+        "usb_storage"
+        "sd_mod"
+      ];
       kernelModules = [ ];
     };
     kernelModules = [ "kvm-intel" ];
-    kernelParams = [ "i915.enable_psr=0" "i915.fastboot=1" ];
+    kernelParams = [
+      "i915.enable_psr=0"
+      "i915.fastboot=1"
+    ];
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

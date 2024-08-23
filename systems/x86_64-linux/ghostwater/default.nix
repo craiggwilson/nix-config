@@ -1,4 +1,11 @@
-{ inputs, config, lib, pkgs, ... }: {
+{
+  inputs,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+{
   imports = [
     ../../../hardware/microsoft-surface-book-2.nix
     ./disko.nix
@@ -13,7 +20,16 @@
     };
 
     features = {
-      tags = [ "cli" "gui" "desktop:gnome" "displayManager:gdm" "fonts" "gaming" "printing" "service" ];
+      tags = [
+        "cli"
+        "gui"
+        "desktop:gnome"
+        "displayManager:gdm"
+        "fonts"
+        "gaming"
+        "printing"
+        "service"
+      ];
 
       printing.raeford = true;
     };

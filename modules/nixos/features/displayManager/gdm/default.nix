@@ -1,12 +1,19 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.displayManager.gdm;
+let
+  cfg = config.hdwlinux.features.displayManager.gdm;
 in
 {
   options.hdwlinux.features.displayManager.gdm = with types; {
-    enable = mkEnableOpt ["displayManager:gdm"] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "displayManager:gdm" ] config.hdwlinux.features.tags;
   };
 
   config.services.xserver = mkIf cfg.enable {

@@ -1,8 +1,15 @@
-{ options, config, lib, pkgs, ... }:
+{
+  options,
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 with lib;
 with lib.hdwlinux;
-let cfg = config.hdwlinux.features.monitors;
+let
+  cfg = config.hdwlinux.features.monitors;
 in
 {
   options.hdwlinux.features.monitors = with types; {
