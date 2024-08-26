@@ -44,7 +44,20 @@
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
+  powerManagement = {
+    cpuFreqGovernor = lib.mkDefault "powersave";
+  };
+
+  services = {
+    thermald.enable = true;
+    tlp = {
+      enable = true;
+      settings = {
+        START_CHARGE_THRESH_BAT0 = 50;
+        STOP_CHARGE_THRESH_BAT0 = 80;
+      };
+    };
+  };
 
   hardware = {
     nvidia = {
@@ -56,8 +69,6 @@
       enable32Bit = true;
     };
   };
-
-  services.thermald.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
