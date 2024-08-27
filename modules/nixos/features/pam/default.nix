@@ -1,22 +1,18 @@
 {
-  options,
   config,
   lib,
-  pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.pam;
 in
 {
-  options.hdwlinux.features.pam = with types; {
-    enable = mkEnableOpt [ "service" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.pam = {
+    enable = lib.hdwlinux.mkBoolOpt true "Enable pam feature.";
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     # TODO: figure out how to get this into userland...
     security.pam.services.hyprlock.text = ''
       auth sufficient pam_unix.so try_first_pass likeauth nullok

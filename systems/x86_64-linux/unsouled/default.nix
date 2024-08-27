@@ -17,26 +17,21 @@
       enable = true;
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 
-      extra-substituters = {
-        "https://cosmic.cachix.org/" = {
-          key = "cosmic.cachix.org-1:Dya9IyXD4xdBehWjrkPv6rtxpmMdRel02smYzA85dPE=";
-        };
-      };
     };
 
     features = {
       tags = [
         "ai"
-        "audio:production"
+        "av"
         "cli"
         "gui"
         "desktop:hyprland"
         "filesystem:nfs"
         "fonts"
         "gaming"
+        "personal"
         "programming"
         "printing"
-        "service"
         "virtualization:docker"
         "work"
       ];

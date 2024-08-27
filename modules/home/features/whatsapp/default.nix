@@ -14,6 +14,7 @@ in
   options.hdwlinux.features.whatsapp = with types; {
     enable = mkEnableOpt [
       "gui"
+      "personal"
     ] config.hdwlinux.features.tags;
   };
 

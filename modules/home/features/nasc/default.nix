@@ -13,7 +13,7 @@ let
 in
 {
   options.hdwlinux.features.nasc = with types; {
-    enable = mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

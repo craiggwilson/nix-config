@@ -14,7 +14,7 @@ in
 {
   options.hdwlinux.features.reaper = with types; {
     enable = mkEnableOpt [
-      "audio:production"
+      "av"
       "gui"
     ] config.hdwlinux.features.tags;
   };

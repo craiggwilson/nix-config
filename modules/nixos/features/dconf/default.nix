@@ -1,20 +1,16 @@
 {
-  options,
   config,
   lib,
-  pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.dconf;
 in
 {
-  options.hdwlinux.features.dconf = with types; {
-    enable = mkEnableOpt [ "service" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.dconf = {
+    enable = lib.hdwlinux.mkBoolOpt true "Enable dconf feature.";
   };
 
-  config = mkIf cfg.enable { programs.dconf.enable = true; };
+  config = lib.mkIf cfg.enable { programs.dconf.enable = true; };
 }

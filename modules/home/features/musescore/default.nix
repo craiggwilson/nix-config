@@ -13,7 +13,10 @@ let
 in
 {
   options.hdwlinux.features.musescore = with types; {
-    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [
+      "gui"
+      "personal"
+    ] config.hdwlinux.features.tags;
   };
 
   config.home.packages = with pkgs; mkIf cfg.enable [ musescore ];

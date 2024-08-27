@@ -13,7 +13,10 @@ let
 in
 {
   options.hdwlinux.features.obs-studio = with types; {
-    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [
+      "av"
+      "gui"
+    ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

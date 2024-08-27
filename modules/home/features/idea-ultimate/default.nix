@@ -12,6 +12,7 @@ in
     enable = lib.hdwlinux.mkEnableOpt [
       "gui"
       "programming"
+      "work"
     ] config.hdwlinux.features.tags;
   };
 

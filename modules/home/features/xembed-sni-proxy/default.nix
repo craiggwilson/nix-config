@@ -14,7 +14,6 @@ in
   options.hdwlinux.features.xembed-sni-proxy = with types; {
     enable = mkEnableOpt [
       "gui"
-      "service"
     ] config.hdwlinux.features.tags;
   };
 

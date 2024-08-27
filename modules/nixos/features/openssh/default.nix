@@ -1,25 +1,18 @@
 {
-  options,
   config,
-  pkgs,
   lib,
-  host ? "",
-  format ? "",
-  inputs ? { },
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.openssh;
 in
 {
-  options.hdwlinux.features.openssh = with types; {
-    enable = mkEnableOpt [ "service" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.openssh = {
+    enable = lib.hdwlinux.mkBoolOpt true "Enable OpenSSH feature.";
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     services.openssh = {
       enable = true;
 

@@ -26,8 +26,8 @@
         "desktop:gnome"
         "fonts"
         "gaming"
+        "personal"
         "printing"
-        "service"
       ];
 
       printing.raeford = true;

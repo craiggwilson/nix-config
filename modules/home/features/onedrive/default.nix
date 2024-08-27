@@ -13,7 +13,7 @@ let
 in
 {
   options.hdwlinux.features.onedrive = with types; {
-    enable = mkEnableOpt [ "service" ] config.hdwlinux.features.tags;
+    enable = mkEnableOpt [ "personal" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

@@ -17,7 +17,6 @@
       "desktop:gnome"
       "gaming"
       "gui"
-      "service"
     ];
   };
 
