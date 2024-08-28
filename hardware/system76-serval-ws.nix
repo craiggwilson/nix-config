@@ -27,11 +27,10 @@
       availableKernelModules = [
         "xhci_pci"
         "thunderbolt"
-        "vmd"
         "nvme"
         "usb_storage"
         "sd_mod"
-        "rtsx_pci_sdmmc"
+        "sdhci_pci"
       ];
       kernelModules = [ ];
     };
@@ -46,15 +45,13 @@
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
+  environment.systemPackages = [
+    pkgs.system76-firmware
+    pkgs.firmware-manager
+    pkgs.system76-keyboard-configurator
+  ];
+
   services = {
-    thermald.enable = true;
-    tlp = {
-      enable = true;
-      settings = {
-        START_CHARGE_THRESH_BAT0 = 50;
-        STOP_CHARGE_THRESH_BAT0 = 80;
-      };
-    };
     hardware.bolt.enable = true;
   };
 
@@ -62,11 +59,18 @@
     nvidia = {
       modesetting.enable = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
+      prime = {
+        sync.enable = true;
+        intelBusId = "PCI:0:2:0";
+        nvidiaBusId = "PCI:1:0:0";
+      };
     };
     graphics = {
       enable = true;
       enable32Bit = true;
     };
+
+    system76.enableAll = true;
   };
 
   # This value determines the NixOS release from which the default

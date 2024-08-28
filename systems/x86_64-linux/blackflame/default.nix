@@ -7,7 +7,7 @@
 }:
 {
   imports = [
-    ../../../hardware/dell-xps-15-9520.nix
+    ../../../hardware/system76-serval-ws.nix
     ./disko.nix
     ../../../users/nixos/craig
   ];
@@ -16,26 +16,31 @@
     nix = {
       enable = true;
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
-
     };
 
     features = {
       tags = [
+        "ai"
         "av"
         "cli"
         "gui"
         "desktop:hyprland"
+        "filesystem:nfs"
         "fonts"
         "gaming"
         "personal"
         "programming"
         "printing"
         "virtualization:docker"
-        "work"
       ];
 
-      fstrim.enable = false;
-
+      nfs.mounts = [
+        {
+          local = "/mnt/games";
+          remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
+          auto = true;
+        }
+      ];
       printing.raeford = true;
       tailscale = {
         enable = true;
@@ -83,10 +88,10 @@
     ];
   };
 
-  boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile
-  boot.kernelParams = [
-    "resume_offset=533760" # btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
-  ];
+  # boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile
+  # boot.kernelParams = [
+  #   "resume_offset=533760" # btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
+  # ];
   systemd.sleep.extraConfig = ''
     HibernateDelaySec=60m
     SuspendState=mem # suspend2idle is buggy :(

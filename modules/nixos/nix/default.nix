@@ -78,6 +78,11 @@ in
       flake = cfg.flake;
     };
 
+    system.switch = {
+      enable = false;
+      enableNg = true;
+    };
+
     nix = {
       package = cfg.package;
 

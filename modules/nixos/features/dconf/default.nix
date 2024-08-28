@@ -12,5 +12,7 @@ in
     enable = lib.hdwlinux.mkBoolOpt true "Enable dconf feature.";
   };
 
-  config = lib.mkIf cfg.enable { programs.dconf.enable = true; };
+  config = lib.mkIf cfg.enable {
+    programs.dconf.enable = true;
+  };
 }

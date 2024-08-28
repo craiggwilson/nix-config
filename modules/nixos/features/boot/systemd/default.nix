@@ -30,6 +30,8 @@ in
           configurationLimit = 20;
         };
       };
+
+      initrd.systemd.enable = true;
     };
   };
 }
