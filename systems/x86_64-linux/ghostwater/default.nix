@@ -39,7 +39,7 @@
       {
         hdwlinux.features.monitors.monitors = [
           {
-            name = "eDP-1";
+            port = "eDP-1";
             workspace = "1";
             width = 3000;
             height = 2000;

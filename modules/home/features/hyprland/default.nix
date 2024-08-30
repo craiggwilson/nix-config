@@ -9,6 +9,8 @@ let
   cfg = config.hdwlinux.features.hyprland;
   rgb = color: "rgb(${color})";
   rgba = color: alpha: "rgba(${color}${alpha})";
+
+  criteria = m: if m.description != null then "desc:${m.description}" else m.port;
 in
 {
   options.hdwlinux.features.hyprland = {
@@ -48,12 +50,12 @@ in
           monitor =
             (builtins.map (
               m:
-              "${m.name}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
+              "${criteria m}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
             ) config.hdwlinux.features.monitors.monitors)
             ++ [ ", preferred, auto, auto" ];
 
           workspace =
-            (map (m: "${m.workspace}, monitor:${m.name}") config.hdwlinux.features.monitors.monitors)
+            (map (m: "${m.workspace}, monitor:${criteria m}") config.hdwlinux.features.monitors.monitors)
             ++ [
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];

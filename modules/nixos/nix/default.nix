@@ -61,8 +61,12 @@ in
 
     programs.nix-ld.enable = true;
 
-    home-manager.extraSpecialArgs = {
-      flake = cfg.flake;
+    home-manager = {
+      backupFileExtension = ".bak";
+      verbose = true;
+      extraSpecialArgs = {
+        flake = cfg.flake;
+      };
     };
 
     nixpkgs = {

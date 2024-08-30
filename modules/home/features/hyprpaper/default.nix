@@ -9,6 +9,7 @@ let
   cfg = config.hdwlinux.features.hyprpaper;
   wallpapers = config.hdwlinux.theme.wallpapers;
   monitors = config.hdwlinux.features.monitors.monitors;
+  monitorCriteria = m: if m.description != null then "desc:${m.description}" else m.port;
   wallpaperAt =
     i:
     if (builtins.length wallpapers) > i then
@@ -25,13 +26,13 @@ in
     home.packages = with pkgs; [ hyprpaper ];
 
     xdg.configFile."hypr/hyprpaper.conf".text = ''
-      spash = false
+      splash = false
       ipc = off
 
       ${lib.concatStringsSep "\n" (map (w: "preload = ${w}") wallpapers)}
           
       ${lib.concatStringsSep "\n" (
-        lib.lists.imap0 (i: m: "wallpaper = ${m.name},${wallpaperAt i}") monitors
+        lib.lists.imap0 (i: m: "wallpaper = ${monitorCriteria m},${wallpaperAt i}") monitors
       )}
     '';
   };

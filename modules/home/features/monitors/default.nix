@@ -1,31 +1,31 @@
 {
-  options,
-  config,
   lib,
-  pkgs,
   ...
 }:
-
-with lib;
-with lib.hdwlinux;
-let
-  cfg = config.hdwlinux.features.monitors;
-in
 {
-  options.hdwlinux.features.monitors = with types; {
-    monitors = mkOption {
+  options.hdwlinux.features.monitors = {
+    monitors = lib.mkOption {
       description = "Options to set the monitor configuration.";
-      type = listOf (submodule {
-        options = {
-          name = mkOption { type = str; };
-          width = mkOption { type = int; };
-          height = mkOption { type = int; };
-          x = mkOption { type = int; };
-          y = mkOption { type = int; };
-          scale = mkOption { type = int; };
-          workspace = mkOption { type = str; };
-        };
-      });
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            port = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+            };
+            description = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+            };
+            width = lib.mkOption { type = lib.types.int; };
+            height = lib.mkOption { type = lib.types.int; };
+            x = lib.mkOption { type = lib.types.int; };
+            y = lib.mkOption { type = lib.types.int; };
+            scale = lib.mkOption { type = lib.types.int; };
+            workspace = lib.mkOption { type = lib.types.str; };
+          };
+        }
+      );
     };
   };
 }
