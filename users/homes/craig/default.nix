@@ -23,7 +23,7 @@ in
 
   home.shellAliases =
     let
-      switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --impure --flake ${flake} ${
+      switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake} ${
         if privateExists then " --override-input secrets ${flake}/../nix-private" else ""
       }";
     in
