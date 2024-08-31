@@ -55,7 +55,9 @@ in
             ++ [ ", preferred, auto, auto" ];
 
           workspace =
-            (map (m: "${m.workspace}, monitor:${criteria m}") config.hdwlinux.features.monitors.monitors)
+            (map (
+              m: "${m.workspace}, monitor:${criteria m}, default:true, persistent:true"
+            ) config.hdwlinux.features.monitors.monitors)
             ++ [
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];
