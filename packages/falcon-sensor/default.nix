@@ -3,10 +3,27 @@
   inputs,
   pkgs,
   stdenv,
+  requireFile,
   ...
 }:
 let
-  src = /opt/CrowdStrike + "/Debian_9_10_11_12.deb";
+  src = requireFile rec {
+    name = "falcon-sensor_14_16_18_20_22.deb";
+    sha256 = "0gak6p8fzvifqy2yz03fi12m1yqs5w3xdn17j2qji3yk08vv61lw";
+    message = ''
+      In order to install the CrowdStrike Falcon Sensor, you must first download the 
+      debian package from here:
+        
+        https://wiki.corp.mongodb.com/display/SEC/CrowdStrike+Sensor+Installation+Guide+for+Linux.
+
+      Once you have downloaded the file, please use the following
+      commands and re-run the installation.
+
+      mv "Ubuntu 14_16_18_20_22 .deb" \$PWD/${name}
+      nix-prefetch-url file://$\PWD/${name}
+    '';
+  };
+
   falcon-sensor = stdenv.mkDerivation rec {
     inherit src;
     buildInputs = [ pkgs.dpkg ];
@@ -14,7 +31,7 @@ let
     sourceRoot = ".";
 
     unpackCmd = ''
-      dpkg-deb -x "$src" .
+      dpkg-deb -x "${src}" .
     '';
 
     installPhase = ''

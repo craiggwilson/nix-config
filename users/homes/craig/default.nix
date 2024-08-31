@@ -11,7 +11,7 @@ let
   privateExists = builtins.pathExists privatePath;
 in
 {
-  imports = [ ./gh.nix ] ++ lib.optional privateExists privatePath;
+  imports = lib.optional privateExists privatePath;
 
   hdwlinux = {
     user = {
