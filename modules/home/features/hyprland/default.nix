@@ -25,7 +25,11 @@ in
       xwayland.enable = true;
       systemd.enable = true;
 
-      plugins = [ pkgs.hyprlandPlugins.hyprexpo ];
+      plugins = [
+        pkgs.hyprlandPlugins.hypr-dynamic-cursors
+        pkgs.hyprlandPlugins.hyprspace
+        pkgs.hyprlandPlugins.hyprtrails
+      ];
 
       settings = lib.mkMerge [
         (lib.mkIf config.hdwlinux.theme.enable {
@@ -130,10 +134,6 @@ in
             workspace_swipe = true;
           };
 
-          # "device:epic-mouse-v1" = {
-          #   sensitivity = -0.5;
-          # };
-
           exec-once = [
             "waybar"
             "hypridle"
@@ -152,23 +152,18 @@ in
             "SUPER, X, exec, rofi -show power-menu"
             "SUPER, P, exec, $colorPicker"
             "SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons"
-            "SUPER ALT , SPACE, exec, rofi -show run -show-icons"
-            "SUPER, TAB, hyprexpo:expo, toggle" # exec, rofi -show window -show-icons"
+            "SUPER ALT, SPACE, exec, rofi -show run -show-icons"
+            "SUPER, TAB, overview:toggle, all"
+            #"SUPER, TAB, hyprexpo:expo, toggle" # exec, rofi -show window -show-icons"
             "SUPER, T, exec, kitty"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
             "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
             ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
             "SUPER, ESCAPE, exec, kitty btop"
 
-            # Move focus with mainMod + arrow keys
-            "SUPER, left, movefocus, l"
-            "SUPER, right, movefocus, r"
-            "SUPER, up, movefocus, u"
-            "SUPER, down, movefocus, d"
-
             # Switch workspaces with mainMod + [0-9]
-            "SUPER CONTROL, left, workspace, -1"
-            "SUPER CONTROL, right, workspace, +1"
+            "SUPER, left, workspace, -1"
+            "SUPER, right, workspace, +1"
             "SUPER, 1, workspace, 1"
             "SUPER, 2, workspace, 2"
             "SUPER, 3, workspace, 3"
@@ -234,16 +229,13 @@ in
           ];
 
           plugins = {
-            hyprexpo = {
-              columns = 3;
-              gap_size = 5;
-              bg_col = "rgb(111111)";
-              workspace_method = "first 1"; # [center/first] [workspace] e.g. first 1 or center m+1
+            dynamic-cursors = {
+              enabled = true;
+              mode = "tilt";
 
-              enable_gesture = true; # laptop touchpad
-              gesture_fingers = 4; # 3 or 4
-              gesture_distance = 300; # how far is the "max"
-              gesture_positive = false; # positive = swipe down. Negative = swipe up.
+              shake = {
+                enabled = true;
+              };
             };
           };
         }

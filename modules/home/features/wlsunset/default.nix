@@ -1,18 +1,18 @@
 { config, lib, ... }:
 
 let
-  cfg = config.hdwlinux.features.redshift;
+  cfg = config.hdwlinux.features.wlsunset;
 in
 {
-  options.hdwlinux.features.redshift = {
+  options.hdwlinux.features.wlsunset = {
     enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = lib.mkIf cfg.enable {
-    services.redshift = {
+    services.wlsunset = {
       enable = true;
-      provider = "geoclue2";
-      tray = true;
+      latitude = "32.7942";
+      longitude = "96.7655";
     };
   };
 }
