@@ -48,7 +48,7 @@
   home-manager = {
     sharedModules = [
       {
-        hdwlinux.features = {
+        hdwlinux = {
           monitors.monitors = [
             {
               port = "eDP-1";
@@ -78,7 +78,8 @@
               scale = 1;
             }
           ];
-          tags = config.hdwlinux.features.tags;
+
+          features.tags = config.hdwlinux.features.tags;
         };
       }
     ];
