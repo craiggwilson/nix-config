@@ -31,7 +31,7 @@
         "personal"
         "programming"
         "printing"
-        "virtualization:docker"
+        "virtualization:podman"
       ];
 
       nfs.mounts = [

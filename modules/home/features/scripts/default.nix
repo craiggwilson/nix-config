@@ -38,12 +38,6 @@ in
               $EDITOR +"''${linenumber}" "$file"
             fi
           '')
-        ]
-      ++ lib.optionals (config.hdwlinux.features.desktop.hyprland.swaylock.enable) [
-        (pkgs.writeShellScriptBin "lockscreen" ''
-          1password --lock
-          swaylock -f
-        '')
-      ];
+        ];
   };
 }

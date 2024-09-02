@@ -177,6 +177,7 @@ in
         bind=SUPER, E, exec, thunar
         bind=SUPER, G, togglefloating,
         bind=SUPER, L, exec, 1password --toggle
+        bind=SUPER SHIFT,L, exec, 1password --lock
         bind=SUPER ALT, L, exec, 1password --quick-access
         bind=SUPER, M, fullscreen, 1
         bind=SUPER, O, togglesplit,
