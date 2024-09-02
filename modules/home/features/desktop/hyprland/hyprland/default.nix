@@ -172,26 +172,27 @@ in
       ];
 
       extraConfig = ''
-        bind=SUPER, A, exec, pkill rofi || rofi -show hyprland-keybinds # Show the hyprland keybindings
-        bind=SUPER, B, exec, firefox # Launch Firefox
-        bind=SUPER, E, exec, thunar
-        bind=SUPER, G, togglefloating,
-        bind=SUPER, L, exec, 1password --toggle
-        bind=SUPER SHIFT,L, exec, 1password --lock
-        bind=SUPER ALT, L, exec, 1password --quick-access
-        bind=SUPER, M, fullscreen, 1
-        bind=SUPER, O, togglesplit,
-        bind=SUPER, P, exec, hyprpicker
-        bind=SUPER, Q, killactive,
-        bind=SUPER, S, togglegroup,
-        bind=SUPER, T, exec, kitty
-        bind=SUPER SHIFT, T, movetoworkspace, special:dropdown
-        bind=SUPER, X, exec, pkill rofi || rofi -show power-menu
-        bind=SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons
-        bind=SUPER, TAB, exec, pkill rofi || rofi -show window
-        bind=SUPER, GRAVE, togglespecialworkspace, dropdown
-        bind=SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy
-        bind=SUPER, ESCAPE, exec, kitty btop
+        bind=SUPER, A, exec, pkill rofi || rofi -show hyprland-keybinds
+        bind=SUPER, B, exec, firefox                                                  # Launch Firefox
+        bind=SUPER, E, exec, thunar                                                   # Launch the file explorer
+        bind=SUPER, G, togglefloating,                                                # Toggle floating for the active window
+        bind=SUPER, L, exec, 1password --toggle                                       # Launch 1Password
+        bind=SUPER SHIFT,L, exec, 1password --lock                                    # Lock 1Password
+        bind=SUPER ALT, L, exec, 1password --quick-access                             # Launch 1Password Quick Access 
+        bind=SUPER, M, fullscreen, 1                                                  # Maximize active window
+        bind=SUPER SHIFT, M, fullscreen, 0                                            # Toggle fullscreen for the active window
+        bind=SUPER, O, togglesplit,                                                   # Change the orientation for the active window
+        bind=SUPER, P, exec, hyprpicker                                               # Choose a color from the screen
+        bind=SUPER, Q, killactive                                                     # Kill the active window
+        bind=SUPER, S, togglegroup,                                                   # Toggle stacking for the active window
+        bind=SUPER, T, exec, kitty                                                    # Launch the terminal
+        bind=SUPER SHIFT, T, movetoworkspace, special:dropdown                        # Move the active window to the dropdown workspace
+        bind=SUPER, X, exec, pkill rofi || rofi -show power-menu                      # Show the power menu
+        bind=SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons            # Show the application launcher
+        bind=SUPER, TAB, exec, pkill rofi || rofi -show window                        # Show the window switcher
+        bind=SUPER, GRAVE, togglespecialworkspace, dropdown                           # Toggle the dropdown workspace
+        bind=SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy  # Show the clipboard history
+        bind=SUPER, ESCAPE, exec, kitty btop                                          # Launch the task manager
 
         bind=SUPER, left, workspace, -1
         bind=SUPER, right, workspace, +1

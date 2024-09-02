@@ -217,7 +217,6 @@ echo -e "\0markup-rows\x1ftrue"
 
 if [ -z "${selection+x}" ]
 then
-    echo -e "\0prompt\x1fPower menu"
     for entry in "${show[@]}"
     do
         echo -e "${messages[$entry]}\0icon\x1f${icons[$entry]}"
