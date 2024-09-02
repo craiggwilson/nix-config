@@ -3,7 +3,7 @@
   ...
 }:
 {
-  options.hdwlinux.monitors = {
+  options.hdwlinux = {
     monitors = lib.mkOption {
       description = "Options to set the monitor configuration.";
       type = lib.types.listOf (

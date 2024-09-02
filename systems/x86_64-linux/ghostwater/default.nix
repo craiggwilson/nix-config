@@ -32,26 +32,16 @@
 
       printing.raeford = true;
     };
-  };
 
-  home-manager = {
-    sharedModules = [
+    monitors = [
       {
-        hdwlinux = {
-          monitors.monitors = [
-            {
-              port = "eDP-1";
-              workspace = "1";
-              width = 3000;
-              height = 2000;
-              x = 0;
-              y = 0;
-              scale = 2;
-            }
-          ];
-
-          features.tags = config.hdwlinux.features.tags;
-        };
+        port = "eDP-1";
+        workspace = "1";
+        width = 3000;
+        height = 2000;
+        x = 0;
+        y = 0;
+        scale = 2;
       }
     ];
   };

@@ -47,43 +47,34 @@
         exitNode = "synology";
       };
     };
-  };
 
-  home-manager = {
-    sharedModules = [
+    monitors = [
       {
-        hdwlinux = {
-          monitors.monitors = [
-            {
-              port = "eDP-1";
-              workspace = "1";
-              width = 1920;
-              height = 1200;
-              x = 0;
-              y = 0;
-              scale = 1;
-            }
-            {
-              description = "Dell Inc. DELL S2721DGF 2WXSR83";
-              workspace = "2";
-              width = 2560;
-              height = 1440;
-              x = 0;
-              y = -1440;
-              scale = 1;
-            }
-            {
-              description = "Dell Inc. DELL S2721DGF DSWSR83";
-              workspace = "3";
-              width = 2560;
-              height = 1440;
-              x = 2560;
-              y = -1440;
-              scale = 1;
-            }
-          ];
-          features.tags = config.hdwlinux.features.tags;
-        };
+        port = "eDP-1";
+        workspace = "1";
+        width = 1920;
+        height = 1200;
+        x = 0;
+        y = 0;
+        scale = 1;
+      }
+      {
+        description = "Dell Inc. DELL S2721DGF 2WXSR83";
+        workspace = "2";
+        width = 2560;
+        height = 1440;
+        x = 0;
+        y = -1440;
+        scale = 1;
+      }
+      {
+        description = "Dell Inc. DELL S2721DGF DSWSR83";
+        workspace = "3";
+        width = 2560;
+        height = 1440;
+        x = 2560;
+        y = -1440;
+        scale = 1;
       }
     ];
   };

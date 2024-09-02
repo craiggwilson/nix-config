@@ -55,13 +55,13 @@ in
             (builtins.map (
               m:
               "${criteria m}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}"
-            ) config.hdwlinux.monitors.monitors)
+            ) config.hdwlinux.monitors)
             ++ [ ", preferred, auto, auto" ];
 
           workspace =
             (map (
               m: "${m.workspace}, monitor:${criteria m}, default:true, persistent:true"
-            ) config.hdwlinux.monitors.monitors)
+            ) config.hdwlinux.monitors)
             ++ [
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];
