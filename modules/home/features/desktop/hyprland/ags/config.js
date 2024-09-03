@@ -1,3 +1,4 @@
+import Service from 'resource:///com/github/Aylur/ags/service.js'
 import Bar from "./apps/bar/bar.js";
 
 const hyprland = await Service.import("hyprland")

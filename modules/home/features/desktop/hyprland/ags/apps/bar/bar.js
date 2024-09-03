@@ -1,22 +1,24 @@
-import BatterySection from "./widgets/battery.js"
-import ClockSection from "./widgets/clock.js"
-import VolumeSection from "./widgets/volume.js"
-import WorkspaceSection from "./widgets/workspaces.js"
+import Battery from "./widgets/battery.js"
+import Clock from "./widgets/clock.js"
+import Microphone from "./widgets/microphone.js"
+import Screen from "./widgets/screen.js"
+import Volume from "./widgets/volume.js"
+import Workspace from "./widgets/workspaces.js"
 
 function Left(monitorID) {
-    return Widget.Box({
-        spacing: 8,
+    return Group({
+        hpack: "start",
         children: [
-            WorkspaceSection(monitorID),
+            Workspace(monitorID),
         ],
     })
 }
 
 function Center() {
-    return Widget.Box({
-        spacing: 8,
+    return Group({
+        hpack: "center",
         children: [
-            ClockSection(),
+            Clock(),
         ],
     })
 }
@@ -24,11 +26,29 @@ function Center() {
 function Right() {
     return Widget.Box({
         hpack: "end",
-        spacing: 8,
         children: [
-            BatterySection(),
-            VolumeSection(),
-        ],
+            Group({
+                hpack: "center",
+                children: [Battery()],
+            }),
+            Group({
+                hpack: "end",
+                children: [
+                    Screen(),
+                    Volume(),
+                    Microphone(),
+                ],
+            })
+        ]
+    })
+}
+
+function Group({ children, hpack }) {
+    return Widget.Box({
+        class_name: "group",
+        hpack,
+        spacing: 8,
+        children,
     })
 }
 

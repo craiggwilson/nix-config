@@ -8,13 +8,13 @@ export default (monitorID) => {
             .map(ws => Widget.Button({
                 on_clicked: () => hyprland.messageAsync(`dispatch workspace ${ws.id}`),
                 child: Widget.Label(`${ws.id}`),
-                class_name: activeId.as(i => `${i === ws.id ? "focused" : ""}`),
+                class_name: activeId.as(i => `${i === ws.id ? "widget workspace focused" : "widget workspace"}`),
             })
         )
     )
 
     return Widget.Box({
-        class_name: "bar-widget workspaces",
+        class_name: "widget workspaces",
         children: workspaces,
     })
 }

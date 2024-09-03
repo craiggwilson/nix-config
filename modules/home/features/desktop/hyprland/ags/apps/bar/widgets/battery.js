@@ -2,12 +2,9 @@ const battery = await Service.import("battery")
 
 const show_percent = Variable(true);
 
-const Icon = () => {
-    const icon = battery.bind("percent").as(p =>
-        `battery-level-${Math.floor(p / 10) * 10}-symbolic`)
-
-    return Widget.Icon({ icon })
-}
+const Icon = () => Widget.Icon({ 
+    icon: battery.bind("icon-name") 
+})
 
 const PercentLabel = () => Widget.Revealer({
     transition: "slide_right",
@@ -20,7 +17,7 @@ const PercentLabel = () => Widget.Revealer({
 
 export default () => {
     return Widget.Button({
-        class_name: "bar-widget battery",
+        class_name: "widget battery",
         visible: battery.bind("available"),
         on_clicked: () => { show_percent.value = !show_percent.value },
         child: Widget.Box({

@@ -4,7 +4,7 @@ export default () => {
     })
 
     return Widget.Label({
-        class_name: "bar-widget clock",
+        class_name: "widget clock",
         label: date.bind(),
     })
 }
