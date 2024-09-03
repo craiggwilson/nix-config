@@ -1,8 +1,6 @@
 const battery = await Service.import("battery")
 
-const show_percent = Variable("", {
-    value: true,   
-})
+const show_percent = Variable(true);
 
 const Icon = () => {
     const icon = battery.bind("percent").as(p =>

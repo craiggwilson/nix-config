@@ -1,5 +1,6 @@
 import BatterySection from "./widgets/battery.js"
 import ClockSection from "./widgets/clock.js"
+import VolumeSection from "./widgets/volume.js"
 import WorkspaceSection from "./widgets/workspaces.js"
 
 function Left(monitorID) {
@@ -26,6 +27,7 @@ function Right() {
         spacing: 8,
         children: [
             BatterySection(),
+            VolumeSection(),
         ],
     })
 }
