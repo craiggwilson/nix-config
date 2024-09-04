@@ -1,13 +1,13 @@
 export class Device extends Service {
     static {
         Service.register(this, {}, {
-            'value': ['float', 'rw'],
+            "value": ["float", "rw"],
         })
     }
 
     #interface = null;
     #value = 0;
-    #max = Number(Utils.exec('brightnessctl max'));
+    #max = Number(Utils.exec("brightnessctl max"));
 
     constructor(iface) {
         super();
@@ -34,12 +34,12 @@ export class Device extends Service {
     }
 
     async #onChange() {
-        this.#value = Number(await Utils.execAsync('brightnessctl get')) / this.#max;
+        this.#value = Number(await Utils.execAsync("brightnessctl get")) / this.#max;
 
-        this.changed('value');
+        this.changed("value");
     }
 
-    connect(event = 'changed', callback) {
+    connect(event = "changed", callback) {
         return super.connect(event, callback);
     }
 }
@@ -49,10 +49,10 @@ export class Brightness extends Service {
         Service.register(
             this,
             {
-                'screen-changed': [],
+                "screen-changed": [],
             },
             {
-                'screen': ['jsobject', 'rw'],
+                "screen": ["jsobject", "rw"],
             },
         );
     }
@@ -66,11 +66,11 @@ export class Brightness extends Service {
     constructor() {
         super();
 
-        const device = Utils.exec("sh -c 'ls -w1 /sys/class/backlight | head -1'");
+        const device = Utils.exec(`sh -c "ls -w1 /sys/class/backlight | head -1"`);
         this.#screen = new Device(device);
-        this.#screen.connect('changed', () => {
-            this.emit('screen-changed');
-            this.emit('changed');
+        this.#screen.connect("changed", () => {
+            this.emit("screen-changed");
+            this.emit("changed");
         })
     }
 }

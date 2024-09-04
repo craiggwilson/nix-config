@@ -1,5 +1,6 @@
 import Battery from "./widgets/battery.js"
 import Clock from "./widgets/clock.js"
+import IdleInhibitor from "./widgets/idle_inhibitor.js"
 import Microphone from "./widgets/microphone.js"
 import Screen from "./widgets/screen.js"
 import Volume from "./widgets/volume.js"
@@ -9,6 +10,7 @@ function Left(monitorID) {
     return Group({
         hpack: "start",
         children: [
+            IdleInhibitor(),
             Workspace(monitorID),
         ],
     })
