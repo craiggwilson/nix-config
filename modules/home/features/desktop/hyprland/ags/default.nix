@@ -16,6 +16,9 @@ in
   };
 
   config = {
-    home.packages = with pkgs; mkIf cfg.enable [ ags ];
+    programs.ags = {
+      enable = cfg.enable;
+      configDir = ./config;
+    };
   };
 }

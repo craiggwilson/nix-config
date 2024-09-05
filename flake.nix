@@ -40,6 +40,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    ags = {
+      url = "github:Aylur/ags";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # musnix optimizes audio for realtime/production.
     musnix.url = "github:musnix/musnix";
 
@@ -115,10 +120,12 @@
         })
       ];
 
-      homes.users."craig@unsouled".modules = with inputs; [ nix-flatpak.homeManagerModules.nix-flatpak ];
-      homes.users."addie@ghostwater".modules = with inputs; [
-        nix-flatpak.homeManagerModules.nix-flatpak
-      ];
+      homes = {
+        modules = with inputs; [
+          ags.homeManagerModules.ags
+          nix-flatpak.homeManagerModules.nix-flatpak
+        ];
+      };
 
       systems = {
         modules = {
