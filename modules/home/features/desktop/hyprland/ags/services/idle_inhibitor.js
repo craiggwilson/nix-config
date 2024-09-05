@@ -1,4 +1,5 @@
 import Gio from "gi://Gio"
+import GioUnix from "gi://GioUnix"
 import GLib from 'gi://GLib';
 
 const inhibitorIface = `
@@ -25,30 +26,29 @@ export class IdleInhibitor extends Service {
     }
 
     #proxy = null;
-    #inhibited_fd = null;
+    #inhibited_fds = null;
 
     constructor() {
         super();
 
-        this.#proxy = new InhibitorProxy(Gio.DBus.system, "org.freedesktop.login1", "/org/freedesktop/login1")
+        this.#proxy = new InhibitorProxy(Gio.DBus.system, "org.freedesktop.login1", "/org/freedesktop/login1", )
     }
 
     get activated() {
-        return this.#inhibited_fd !== null;
+        return this.#inhibited_fds !== null;
     }
 
     set activated(value) {
         if(value) {
-            if (this.#inhibited_fd === null) {
-                const fd = this.#proxy.InhibitSync("sleep:idle", "ags", "user initiated", "block")
-                console.log(fd)
-                this.#inhibited_fd = new Gio.UnixInputStream({ fd, close_fd: true })
-                this.changed("activated")
+            if (this.#inhibited_fds === null) {
+                this.#proxy.InhibitAsync("idle", "com.github.craiggwilson.nix-config", "user initiated", "block", (retvalue, errorObj, fdList) => {
+                    this.#inhibited_fds = fdList
+                    this.changed("activated")
+                })
             }
         } else {
-            if (this.#inhibited_fd !== null) {
-                this.#inhibited_fd.close(null)
-                this.#inhibited_fd = null
+            if (this.#inhibited_fds !== null) {
+                this.#inhibited_fds = null;
                 this.changed("activated")
             }
         }

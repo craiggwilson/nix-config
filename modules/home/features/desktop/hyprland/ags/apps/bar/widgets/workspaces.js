@@ -14,7 +14,7 @@ export default (monitorID) => {
     )
 
     return Widget.Box({
-        class_name: "widget workspaces",
+        class_name: "group workspaces",
         children: workspaces,
     })
 }

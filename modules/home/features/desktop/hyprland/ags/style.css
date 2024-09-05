@@ -15,6 +15,15 @@
 @define-color base0E #CBA6F7;
 @define-color base0F #F2CDCD;
 
+* {
+    border: none;
+    border-radius: 0;
+    font-family: Cartograph CF Nerd Font, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    min-height: 0;
+}
+
 window.bar {
     background-color: @base01;
 }
@@ -31,10 +40,13 @@ window.bar {
     border-radius: 10px;
     margin-left: 0px;
     margin-right: 0px;
-    padding: 0px 5px;
 }
 
 .bar .battery {
+    color: @base08;
+}
+
+.bar .idle-inhibitor {
     color: @base08;
 }
 

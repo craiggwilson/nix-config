@@ -3,14 +3,19 @@ import Clock from "./widgets/clock.js"
 import IdleInhibitor from "./widgets/idle_inhibitor.js"
 import Microphone from "./widgets/microphone.js"
 import Screen from "./widgets/screen.js"
+import SysTray from "./widgets/sys_tray.js"
 import Volume from "./widgets/volume.js"
 import Workspace from "./widgets/workspaces.js"
 
 function Left(monitorID) {
-    return Group({
+    return Widget.Box({
         hpack: "start",
         children: [
-            IdleInhibitor(),
+            Group({
+                children: [
+                    IdleInhibitor(),
+                ],
+            }),
             Workspace(monitorID),
         ],
     })
@@ -29,12 +34,13 @@ function Right() {
     return Widget.Box({
         hpack: "end",
         children: [
+            SysTray(),
             Group({
-                hpack: "center",
-                children: [Battery()],
+                children: [
+                    Battery(),
+                ],
             }),
             Group({
-                hpack: "end",
                 children: [
                     Screen(),
                     Volume(),
@@ -45,7 +51,7 @@ function Right() {
     })
 }
 
-function Group({ children, hpack }) {
+function Group({ children, hpack = "center" }) {
     return Widget.Box({
         class_name: "group",
         hpack,
