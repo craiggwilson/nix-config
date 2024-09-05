@@ -11,13 +11,6 @@
 
   hdwlinux = {
     theme.catppuccin-mocha.enable = true;
-
-    features.yuzu.backups = [
-      {
-        game = "010015100B514000";
-        remote = "${config.home.homeDirectory}/OneDrive/Games/SuperMarioWonder";
-      }
-    ];
   };
 
   # This value determines the NixOS release from which the default
