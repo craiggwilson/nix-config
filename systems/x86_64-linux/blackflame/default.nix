@@ -53,7 +53,7 @@
         port = "eDP-1";
         workspace = "1";
         width = 1920;
-        height = 1200;
+        height = 1080;
         x = 0;
         y = 0;
         scale = 1;
