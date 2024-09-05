@@ -23,7 +23,6 @@
         "desktop:hyprland"
         "fonts"
         "gaming"
-        "personal"
         "programming"
         "printing"
         "virtualization:docker"
