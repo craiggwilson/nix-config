@@ -15,6 +15,7 @@ in
       type = lib.types.enum [
         "full_charge"
         "balanced"
+        "max_lifespan"
       ];
       default = "max_lifespan";
     };
@@ -30,7 +31,7 @@ in
           wantedBy = [ "default.target" ];
           serviceConfig = {
             Type = "simple";
-            ExecStart = "${pkgs.system76}/bin/system76-power charge-thresholds --profile ${cfg.profile}";
+            ExecStart = "${config.boot.kernelPackages.system76-power}/bin/system76-power charge-thresholds --profile ${cfg.profile}";
           };
         };
   };
