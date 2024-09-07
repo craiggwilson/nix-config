@@ -12,6 +12,9 @@
     ../../../users/nixos/craig
   ];
 
+  # personal computer
+  networking.extraHosts = "192.168.10.52 blackflame.raeford.wilsonfamilyhq.com blackflame";
+
   hdwlinux = {
     nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 

@@ -12,6 +12,10 @@ in
 {
   options.hdwlinux.features.networking = {
     enable = lib.hdwlinux.mkEnableOpt [ "networking" ] config.hdwlinux.features.tags;
+    domain = lib.mkOption {
+      type = lib.types.str;
+      default = "raeford.wilsonfamilyhq.com";
+    };
   };
 
   config = lib.mkIf cfg.enable {
