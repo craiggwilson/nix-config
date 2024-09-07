@@ -20,6 +20,8 @@
       "redistributableFirmware"
       "v4l2loopback"
     ];
+
+    audio.soundcardPciId = "00:1f.3";
   };
 
   boot = {
@@ -43,6 +45,8 @@
     };
   };
 
+  musnix.soundcardPciId = "00:1f.3";
+
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
@@ -50,10 +54,6 @@
     thermald.enable = true;
     tlp = {
       enable = true;
-      settings = {
-        START_CHARGE_THRESH_BAT0 = 50;
-        STOP_CHARGE_THRESH_BAT0 = 80;
-      };
     };
     hardware.bolt.enable = true;
   };

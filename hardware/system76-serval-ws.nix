@@ -15,11 +15,13 @@
       "bluetooth"
       "boot:systemd"
       "camera"
-      "fingerprint"
+      #"fingerprint"
       "networking"
       "redistributableFirmware"
       "v4l2loopback"
     ];
+
+    audio.soundcardPciId = "00:1f.3";
   };
 
   boot = {
@@ -29,6 +31,7 @@
         "thunderbolt"
         "nvme"
         "usb_storage"
+        "usbhid"
         "sd_mod"
         "sdhci_pci"
       ];
@@ -56,6 +59,7 @@
   };
 
   hardware = {
+    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     nvidia = {
       modesetting.enable = true;
       package = config.boot.kernelPackages.nvidiaPackages.stable;

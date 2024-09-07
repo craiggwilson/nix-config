@@ -1,24 +1,20 @@
 {
   lib,
-  pkgs,
-  inputs,
   config,
-  options,
   ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.audio;
 in
 {
-  options.hdwlinux.features.audio = with types; {
-    enable = mkEnableOpt [ "audio" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.audio = {
+    enable = lib.hdwlinux.mkEnableOpt [ "audio" ] config.hdwlinux.features.tags;
+    soundcardPciId = lib.hdwlinux.mkStrOpt "" "The soundcard PCI identifier. This is passed to musnix";
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     security.rtkit.enable = true;
-    hardware.pulseaudio.enable = mkForce false;
+    hardware.pulseaudio.enable = lib.mkForce false;
 
     services.pipewire = {
       enable = true;
@@ -34,7 +30,7 @@ in
 
     musnix = {
       enable = true;
-      soundcardPciId = "00:1f.3";
+      soundcardPciId = cfg.soundcardPciId;
     };
   };
 }
