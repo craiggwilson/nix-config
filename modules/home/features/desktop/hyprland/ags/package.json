@@ -1,0 +1,15 @@
+{
+    "name": "ags-config",
+    "version": "0.0.1",
+    "description": "My personal AGS configuration.",
+    "main": "config.js",
+    "author": "craiggwilson",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/craiggwilson/nix-config"
+    },
+    "dependencies": {
+        "@eslint/js": "^9.10.0",
+        "typescript-eslint": "^8.4.0"
+    }
+}

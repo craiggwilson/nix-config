@@ -1,24 +1,21 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.desktop.hyprland.ags;
 in
 {
-  options.hdwlinux.features.desktop.hyprland.ags = with types; {
-    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.desktop.hyprland.ags = {
+    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     programs.ags = {
-      enable = cfg.enable;
-      configDir = ./config;
+      enable = true;
+      configDir = ./src;
     };
   };
 }
