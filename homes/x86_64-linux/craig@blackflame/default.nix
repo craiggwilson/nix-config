@@ -11,6 +11,15 @@
 
   hdwlinux = {
     theme.catppuccin-mocha.enable = true;
+
+    features.lan-mouse = {
+      enable = true;
+      client = {
+        direction = "left";
+        hostname = "unsouled";
+        ips = [ "192.168.10.53" ];
+      };
+    };
   };
 
   # This value determines the NixOS release from which the default
