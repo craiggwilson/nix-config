@@ -1,6 +1,8 @@
 {
   config,
   lib,
+  pkgs,
+  flake,
   ...
 }:
 
@@ -13,9 +15,36 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    home.packages = [
+      (pkgs.writeShellScriptBin "ags-debug" ''
+        ags --config ${flake}/modules/home/feature/desktop/hyprland/ags/src/config-debug.js
+      '')
+    ];
+
     programs.ags = {
       enable = true;
-      configDir = ./src;
     };
+
+    #xdg.configFile."ags".source = ./src;
+    xdg.configFile."ags/config.js".text = ''
+      const main = '/tmp/ags/main.js';
+
+      try {
+          await Utils.execAsync([
+              '${pkgs.bun}/bin/bun', 'build', `${./src/main.ts}`,
+              '--outfile', main,
+              '--external', 'resource://*',
+              '--external', 'gi://*',
+              '--external', 'file://*',
+          ]);
+          await import(`file://$${main}`);
+      } catch (error) {
+          console.error(error);
+          App.quit();
+      }
+
+      export {}
+    '';
+
   };
 }

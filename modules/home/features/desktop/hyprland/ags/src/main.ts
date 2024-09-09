@@ -1,4 +1,4 @@
-import Bar from './apps/bar/bar.ts';
+import Bar from './apps/bar/bar';
 import Gdk from 'gi://Gdk';
 import { idle } from 'resource:///com/github/Aylur/ags/utils.js';
 
