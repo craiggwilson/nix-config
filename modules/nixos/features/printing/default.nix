@@ -24,6 +24,9 @@ in
     services.printing = {
       enable = true;
       webInterface = false;
+      clientConf = ''
+        AllowExpiredCerts Yes
+      '';
     };
 
     hardware.printers.ensurePrinters = lib.optionals cfg.raeford [

@@ -135,7 +135,7 @@ in
           };
 
           exec-once = [
-            "ags"
+            "waybar"
             "hypridle"
             "dunst"
             "nm-applet --indicator"
