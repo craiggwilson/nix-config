@@ -57,9 +57,10 @@ in
         ExecStart = "${pkgs.lan-mouse}/bin/lan-mouse --daemon";
         Restart = "on-failure";
         RestartSec = 3;
+        BindTo = "graphical-session.target";
       };
       Install = {
-        WantedBy = lib.mkForce [ ]; # [ "graphical-session.target" ];
+        WantedBy = [ "graphical-session.target" ];
       };
     };
   };
