@@ -1,41 +1,53 @@
 {
-  options,
   config,
-  pkgs,
   lib,
-  host ? "",
-  format ? "",
-  inputs ? { },
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.printing;
 in
 {
-  options.hdwlinux.features.printing = with types; {
-    enable = mkEnableOpt [ "printing" ] config.hdwlinux.features.tags;
-    raeford = mkBoolOpt false "Wheter or not to enable Raeford printers.";
+  options.hdwlinux.features.printing = {
+    enable = lib.hdwlinux.mkEnableOpt [ "printing" ] config.hdwlinux.features.tags;
+    raeford = lib.hdwlinux.mkBoolOpt false "Wheter or not to enable Raeford printers.";
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     services.printing = {
       enable = true;
       webInterface = false;
-      clientConf = ''
-        AllowExpiredCerts Yes
+      browsing = true;
+      browsedConf = ''
+        BrowseDNSSDSubTypes _cups,_print
+        BrowseLocalProtocols all
+        BrowseRemoteProtocols all
+        CreateIPPPrinterQueues All
+
+        BrowseProtocols all
       '';
     };
 
-    hardware.printers.ensurePrinters = lib.optionals cfg.raeford [
+    services.avahi = {
+      enable = true;
+      nssmdns = true;
+    };
+
+    hardware.printers =
+      let
+        defaultName = "Brother_HL-L2380DW";
+      in
       {
-        name = "Brother_HL-L2380DW";
-        location = "Raeford";
-        deviceUri = "https://printer.raeford.wilsonfamilyhq.com";
-        model = "drv:///sample.drv/generic.ppd";
-      }
-    ];
+        ensureDefaultPrinter = defaultName;
+        ensurePrinters = lib.optionals cfg.raeford [
+          {
+            name = defaultName;
+            description = "Brother HL-L2380DW";
+            location = "Raeford";
+            deviceUri = "ipp://printer.raeford.wilsonfamilyhq.com/ipp";
+            model = "everywhere";
+          }
+        ];
+      };
   };
 }
