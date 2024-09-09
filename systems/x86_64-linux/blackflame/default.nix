@@ -12,9 +12,6 @@
     ../../../users/nixos/craig
   ];
 
-  # work computer
-  networking.extraHosts = "192.168.10.53 unsouled.raeford.wilsonfamilyhq.com unsouled";
-
   hdwlinux = {
     nix = {
       enable = true;
