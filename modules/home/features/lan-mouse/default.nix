@@ -36,7 +36,7 @@ in
     home.packages = [ pkgs.lan-mouse ];
 
     xdg.configFile."lan-mouse/config.toml".text = ''
-      frontend = "cli"
+      frontend = "Cli"
 
       [${cfg.client.direction}]
       ${if cfg.client.hostname != null then "host_name = \"" + cfg.client.hostname + "\"" else ""}
