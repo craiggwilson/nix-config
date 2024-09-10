@@ -21,17 +21,25 @@ in
     };
   };
 
-  home.shellAliases =
+  home.packages =
     let
-      switchCommand = "nix-config add -A . && sudo nixos-rebuild switch --flake ${flake} ${
-        if privateExists then " --override-input secrets ${flake}/../nix-private" else ""
-      }";
+      plainCmd = "nixos-rebuild switch --flake ${flake}";
+      privateCmd = if privateExists then " --override-input secrets ${flake}/../nix-private" else "";
     in
-    {
-      "start" = "xdg-open";
-      "nix-config" = "git -C ${flake}";
-      "nrs" = switchCommand;
-    };
+    [
+      (pkgs.writeShellScriptBin "nix-switch" ''
+        git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd}
+      '')
+      (pkgs.writeShellScriptBin "nix-switch-remote" ''
+        ${plainCmd}#$1${privateCmd} --target-host craig@$2 --use-remote-sudo
+      '')
+    ];
+
+  home.shellAliases = {
+    "start" = "xdg-open";
+    "nix-config" = "git -C ${flake}";
+    "nrs" = "nix-switch";
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
