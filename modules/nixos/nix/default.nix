@@ -53,6 +53,7 @@ in
       nix-index
       nix-prefetch-git
       nix-output-monitor
+      nixVersions.nix_2_23
     ];
 
     environment.variables = {
