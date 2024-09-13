@@ -1,11 +1,13 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 
 let
   cfg = config.hdwlinux.features.printing;
+  ppdName = "Brother_HL-L2380DW.ppd";
 in
 {
   options.hdwlinux.features.printing = {
@@ -26,6 +28,15 @@ in
 
         BrowseProtocols all
       '';
+
+      drivers = lib.singleton (
+        pkgs.linkFarm "drivers" [
+          {
+            name = "share/cups/model/${ppdName}";
+            path = ./Brother_HL-L2380DW.ppd;
+          }
+        ]
+      );
     };
 
     services.avahi = {
@@ -45,7 +56,7 @@ in
             description = "Brother HL-L2380DW";
             location = "Raeford";
             deviceUri = "ipp://printer.raeford.wilsonfamilyhq.com/ipp";
-            model = "everywhere";
+            model = ppdName;
           }
         ];
       };
