@@ -7,7 +7,8 @@
   ...
 }:
 let
-  privatePath = "${inputs.secrets}/craig";
+  user = "craig";
+  privatePath = "${inputs.secrets}/${user}";
   privateExists = builtins.pathExists privatePath;
 in
 {
@@ -31,7 +32,7 @@ in
         git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd}
       '')
       (pkgs.writeShellScriptBin "nix-switch-remote" ''
-        ${plainCmd}#$1${privateCmd} --target-host craig@$2 --use-remote-sudo
+        ${plainCmd}#$1${privateCmd} --target-host ${user}@$2 --use-remote-sudo
       '')
     ];
 
