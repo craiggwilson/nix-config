@@ -23,6 +23,10 @@
             y = lib.mkOption { type = lib.types.int; };
             scale = lib.mkOption { type = lib.types.int; };
             workspace = lib.mkOption { type = lib.types.str; };
+            displaylink = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+            };
           };
         }
       );
