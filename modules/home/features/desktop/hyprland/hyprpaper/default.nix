@@ -8,7 +8,7 @@
 let
   cfg = config.hdwlinux.features.desktop.hyprland.hyprpaper;
   wallpapers = config.hdwlinux.theme.wallpapers;
-  monitors = config.hdwlinux.monitors;
+  monitors = config.hdwlinux.monitors.monitors;
   monitorCriteria = m: if m.description != null then "desc:${m.description}" else m.port;
   wallpaperAt =
     i:

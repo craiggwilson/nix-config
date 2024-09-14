@@ -48,41 +48,71 @@
       };
     };
 
-    monitors = [
-      {
-        port = "eDP-1";
-        workspace = "1";
-        width = 1920;
-        height = 1080;
-        x = 0;
-        y = 0;
-        scale = 1;
-      }
-      {
-        description = "Dell Inc. DELL S2721DGF 2WXSR83";
-        workspace = "2";
-        width = 2560;
-        height = 1440;
-        x = 0;
-        y = -1440;
-        scale = 1;
-      }
-      {
-        description = "Dell Inc. DELL S2721DGF DSWSR83";
-        workspace = "3";
-        width = 2560;
-        height = 1440;
-        x = 2560;
-        y = -1440;
-        scale = 1;
-      }
-    ];
+    monitors = {
+      # profiles = [
+      #   "home_docked"
+      #   "home_docked_closed"
+      #   "undocked"
+      # ];
+      monitors = [
+        {
+          port = "eDP-1";
+          workspace = "1";
+          width = 1920;
+          height = 1080;
+          x = 0;
+          y = 1440;
+          scale = 1.0;
+          profiles = {
+            "home_docked" = true;
+            "home_docked_closed" = false;
+            "undocked" = true;
+          };
+        }
+        {
+          description = "Dell Inc. DELL S2721DGF 2WXSR83";
+          workspace = "2";
+          width = 2560;
+          height = 1440;
+          x = 0;
+          y = 0;
+          scale = 1.0;
+          profiles = {
+            "home_docked" = true;
+            "home_docked_closed" = true;
+          };
+        }
+        {
+          description = "Dell Inc. DELL S2721DGF DSWSR83";
+          workspace = "3";
+          width = 2560;
+          height = 1440;
+          x = 2560;
+          y = 0;
+          scale = 1.0;
+          profiles = {
+            "home_docked" = true;
+            "home_docked_closed" = true;
+          };
+        }
+        {
+          description = "Ancor Communications Inc MB169B+       AIC1643";
+          workspace = "4";
+          width = 1920;
+          height = 1080;
+          x = 1920;
+          y = 1440;
+          scale = 1.0;
+          profiles = {
+            "home_docked" = true;
+            "home_docked_closed" = true;
+          };
+          displaylink = true;
+        }
+      ];
+    };
   };
 
-  # boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile
-  # boot.kernelParams = [
-  #   "resume_offset=533760" # btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
-  # ];
   systemd.sleep.extraConfig = ''
     HibernateDelaySec=60m
     SuspendState=mem # suspend2idle is buggy :(

@@ -29,7 +29,7 @@
         "work"
       ];
 
-      #displaylink.enable = true;
+      displaylink.enable = true;
       fstrim.enable = false;
 
       printing.raeford = true;
