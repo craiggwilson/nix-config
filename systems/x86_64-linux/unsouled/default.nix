@@ -44,9 +44,9 @@
         port = "eDP-1";
         workspace = "1";
         width = 1920;
-        height = 1200;
+        height = 1080;
         x = 0;
-        y = 0;
+        y = 1440;
         scale = 1;
       }
       {
@@ -55,7 +55,7 @@
         width = 2560;
         height = 1440;
         x = 0;
-        y = -1440;
+        y = 0;
         scale = 1;
       }
       {
@@ -64,8 +64,18 @@
         width = 2560;
         height = 1440;
         x = 2560;
-        y = -1440;
+        y = 0;
         scale = 1;
+      }
+      {
+        description = "Ancor Communications Inc MB169B+       AIC1643";
+        workspace = "4";
+        width = 1920;
+        height = 1080;
+        x = 1920;
+        y = 1440;
+        scale = 1;
+        displaylink = true;
       }
     ];
   };
