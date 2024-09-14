@@ -44,7 +44,7 @@ in
 
     home.sessionVariables.GTK_THEME = name;
 
-    dconf.settings = mkIf config.hdwlinux.features.gnome.enable {
+    dconf.settings = mkIf config.hdwlinux.features.desktop.gnome.enable {
       "org/gnome/shell/extensions/user-theme" = {
         name = name;
       };

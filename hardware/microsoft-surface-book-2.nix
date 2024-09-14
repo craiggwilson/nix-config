@@ -1,5 +1,4 @@
 {
-  pkgs,
   lib,
   inputs,
   config,
@@ -8,11 +7,8 @@
 {
 
   imports = [
-    inputs.nixos-hardware.nixosModules.microsoft-surface-common
-    inputs.nixos-hardware.nixosModules.common-cpu-intel
+    inputs.nixos-hardware.nixosModules.microsoft-surface-pro-intel
     inputs.nixos-hardware.nixosModules.common-gpu-nvidia
-    inputs.nixos-hardware.nixosModules.common-pc
-    inputs.nixos-hardware.nixosModules.common-pc-ssd
     inputs.nixos-hardware.nixosModules.common-hidpi
   ];
 
@@ -24,7 +20,6 @@
       "camera"
       "networking"
       "redistributableFirmware"
-      "v4l2loopback"
     ];
   };
 
@@ -57,18 +52,13 @@
       };
       modesetting.enable = true;
       nvidiaPersistenced = false;
+      open = false;
     };
-    opengl = {
+    graphics = {
       enable = true;
-      driSupport32Bit = true;
-      driSupport = true;
+      enable32Bit = true;
     };
   };
-
-  # IPTSD has problems shutting down, in that, it doesn't.
-  # Basically, can't shutdown or reboot.
-  # microsoft-surface.ipts.enable = true; 
-  microsoft-surface.surface-control.enable = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
