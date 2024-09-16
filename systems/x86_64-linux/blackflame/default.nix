@@ -60,7 +60,7 @@
       }
       {
         description = "Dell Inc. DELL S2721DGF 2WXSR83";
-        workspace = "2";
+        workspace = "3";
         width = 2560;
         height = 1440;
         x = 0;
@@ -69,7 +69,7 @@
       }
       {
         description = "Dell Inc. DELL S2721DGF DSWSR83";
-        workspace = "3";
+        workspace = "4";
         width = 2560;
         height = 1440;
         x = 2560;
@@ -78,7 +78,7 @@
       }
       {
         description = "Ancor Communications Inc MB169B+       AIC1643";
-        workspace = "4";
+        workspace = "2";
         width = 1920;
         height = 1080;
         x = 1920;
