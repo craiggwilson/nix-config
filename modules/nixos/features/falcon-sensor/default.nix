@@ -51,7 +51,7 @@ in
     };
 
     boot = {
-      kernelPackages = pkgs.linuxPackages_6_1;
+      kernelPackages = pkgs.linuxPackages_6_6;
       kernelPatches = [
         {
           name = "crowdstrike";

@@ -8,7 +8,7 @@
 }:
 let
   src = requireFile rec {
-    name = "falcon-sensor_14_16_18_20_22.deb";
+    name = "falcon-sensor_9_10_11_12.deb";
     sha256 = "0gak6p8fzvifqy2yz03fi12m1yqs5w3xdn17j2qji3yk08vv61lw";
     message = ''
       In order to install the CrowdStrike Falcon Sensor, you must first download the 
@@ -19,7 +19,7 @@ let
       Once you have downloaded the file, please use the following
       commands and re-run the installation.
 
-      mv "Ubuntu 14_16_18_20_22 .deb" \$PWD/${name}
+      mv "Debian 9_10_11_12.deb" \$PWD/${name}
       nix-prefetch-url file://$\PWD/${name}
     '';
   };
