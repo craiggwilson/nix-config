@@ -20,6 +20,6 @@ in
 
   config = lib.mkIf cfg.enable {
     home.packages = [ pkgs.hdwlinux.evergreen ];
-    home.file.".evergreen.yml".text = lib.mkIf cfg.extraConfig != null cfg.extraConfig;
+    home.file.".evergreen.yml".text = lib.mkIf (cfg.extraConfig != null) cfg.extraConfig;
   };
 }

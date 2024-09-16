@@ -45,7 +45,7 @@
         workspace = "1";
         width = 1920;
         height = 1080;
-        x = 0;
+        x = 5120;
         y = 1440;
         scale = 1;
       }

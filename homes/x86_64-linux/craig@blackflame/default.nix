@@ -15,7 +15,7 @@
     features.lan-mouse = {
       enable = true;
       client = {
-        direction = "left";
+        direction = "right";
         hostname = "unsouled";
         ips = [ "192.168.10.53" ];
       };
