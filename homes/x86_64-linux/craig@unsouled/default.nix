@@ -15,7 +15,7 @@
     features.lan-mouse = {
       enable = true;
       client = {
-        direction = "right";
+        direction = "left";
         hostname = "blackflame";
         ips = [ "192.168.10.52" ];
       };
