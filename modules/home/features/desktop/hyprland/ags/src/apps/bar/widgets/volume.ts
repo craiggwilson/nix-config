@@ -12,8 +12,10 @@ const Icon = () => {
     function getIcon(volume: number, muted: boolean) {
         const level = muted
             ? 0
-            : [101, 67, 34, 1, 0].find((threshold) => threshold <= volume * 100) as number;
-        
+            : ([101, 67, 34, 1, 0].find(
+                  (threshold) => threshold <= volume * 100
+              ) as number);
+
         return `audio-volume-${levels[level]}-symbolic`;
     }
 
@@ -29,7 +31,8 @@ const PercentLabel = () =>
     Widget.Label({
         label: Utils.merge(
             [audio.speaker.bind('volume'), audio.speaker.bind('is_muted')],
-            (v: number, m: boolean) => (m || v <= 0 ? ' Muted' : `${Math.ceil(v * 100)}%`)
+            (v: number, m: boolean) =>
+                m || v <= 0 ? ' Muted' : `${Math.ceil(v * 100)}%`
         ),
     });
 

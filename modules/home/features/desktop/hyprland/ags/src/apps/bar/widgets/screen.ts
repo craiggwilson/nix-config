@@ -8,7 +8,9 @@ const Icon = () => {
     };
 
     function getIcon(volume: number) {
-        const level = [80, 35, 0].find((threshold) => threshold <= volume * 100) as number;
+        const level = [80, 35, 0].find(
+            (threshold) => threshold <= volume * 100
+        ) as number;
 
         return `display-brightness-${levels[level]}-symbolic`;
     }
@@ -22,7 +24,7 @@ const PercentLabel = () =>
     Widget.Label({
         label: brightness.screen
             .bind('value')
-            .as(v => `${Math.ceil(v * 100)}%`),
+            .as((v) => `${Math.ceil(v * 100)}%`),
     });
 
 export default () => {

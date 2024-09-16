@@ -11,7 +11,9 @@ const Icon = () => {
     function getIcon(volume: number, muted: boolean) {
         const level = muted
             ? 0
-            : [67, 34, 1, 0].find((threshold) => threshold <= volume * 100) as number;
+            : ([67, 34, 1, 0].find(
+                  (threshold) => threshold <= volume * 100
+              ) as number);
 
         return `audio-input-microphone-${levels[level]}-symbolic`;
     }
@@ -34,7 +36,8 @@ const PercentLabel = () =>
                 audio.microphone.bind('volume'),
                 audio.microphone.bind('is_muted'),
             ],
-            (v: number, m: boolean) => (m || v <= 0 ? ' Muted' : `${Math.ceil(v * 100)}%`)
+            (v: number, m: boolean) =>
+                m || v <= 0 ? ' Muted' : `${Math.ceil(v * 100)}%`
         ),
     });
 

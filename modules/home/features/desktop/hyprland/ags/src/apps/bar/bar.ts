@@ -1,4 +1,4 @@
-import Widget from 'resource:///com/github/Aylur/ags/widget.js'
+import Widget from 'resource:///com/github/Aylur/ags/widget.js';
 import Battery from './widgets/battery';
 import Clock from './widgets/clock';
 import IdleInhibitor from './widgets/idle_inhibitor';
