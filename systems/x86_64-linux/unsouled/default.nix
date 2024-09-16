@@ -29,7 +29,6 @@
         "work"
       ];
 
-      #displaylink.enable = true;
       fstrim.enable = false;
 
       printing.raeford = true;
@@ -44,7 +43,7 @@
         port = "eDP-1";
         workspace = "1";
         width = 1920;
-        height = 1080;
+        height = 1200;
         x = 5120;
         y = 1440;
         scale = 1;
@@ -67,16 +66,16 @@
         y = 0;
         scale = 1;
       }
-      {
-        description = "Ancor Communications Inc MB169B+       AIC1643";
-        workspace = "4";
-        width = 1920;
-        height = 1080;
-        x = 1920;
-        y = 1440;
-        scale = 1;
-        displaylink = true;
-      }
+      # {
+      #   description = "Ancor Communications Inc MB169B+       AIC1643";
+      #   workspace = "4";
+      #   width = 1920;
+      #   height = 1080;
+      #   x = 1920;
+      #   y = 1440;
+      #   scale = 1;
+      #   displaylink = true;
+      # }
     ];
   };
 
