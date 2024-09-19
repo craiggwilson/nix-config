@@ -24,7 +24,6 @@
 
     features = {
       tags = [
-        "ai"
         "av"
         "cli"
         "gui"
@@ -35,6 +34,7 @@
         "personal"
         "programming"
         "printing"
+        "scanning"
         "virtualization:podman"
       ];
 
