@@ -33,7 +33,8 @@ in
       ++ (lib.optionals config.hdwlinux.features.audio.enable [ "audio" ])
       ++ (lib.optionals config.hdwlinux.features.virtualization.docker.enable [ "docker" ])
       ++ (lib.optionals config.hdwlinux.features.networking.enable [ "networkmanager" ])
-      ++ (lib.optionals config.hdwlinux.features.printing.enable [ "lp" ]);
+      ++ (lib.optionals config.hdwlinux.features.printing.enable [ "lp" ])
+      ++ (lib.optionals config.hdwlinux.features.scanning.enable [ "scanner" ]);
   };
 
   programs._1password-gui.polkitPolicyOwners =
