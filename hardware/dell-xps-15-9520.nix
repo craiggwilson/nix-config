@@ -15,7 +15,7 @@
       "bluetooth"
       "boot:systemd"
       "camera"
-      #"fingerprint"
+      "fingerprint"
       "networking"
       "redistributableFirmware"
       "v4l2loopback"

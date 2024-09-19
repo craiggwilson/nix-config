@@ -34,6 +34,8 @@
         "virtualization:podman"
       ];
 
+      fingerprint.enable = false; # hardware has it, but it doesn't work great.
+
       nfs.mounts = [
         {
           local = "/mnt/games";
