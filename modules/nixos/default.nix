@@ -26,7 +26,10 @@ in
             x = lib.mkOption { type = lib.types.int; };
             y = lib.mkOption { type = lib.types.int; };
             scale = lib.mkOption { type = lib.types.int; };
-            workspace = lib.mkOption { type = lib.types.str; };
+            workspace = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+            };
             displaylink = lib.mkOption {
               type = lib.types.bool;
               default = false;

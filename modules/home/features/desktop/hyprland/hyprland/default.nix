@@ -57,9 +57,9 @@ in
           monitor = (builtins.map monitorFn config.hdwlinux.monitors) ++ [ ", preferred, auto, auto" ];
 
           workspace =
-            (map (
-              m: "${m.workspace}, monitor:${criteriaFn m}, default:true, persistent:true"
-            ) config.hdwlinux.monitors)
+            (map (m: "${m.workspace}, monitor:${criteriaFn m}, default:true, persistent:true") (
+              builtins.filter (m: m.workspace != null) config.hdwlinux.monitors
+            ))
             ++ [
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];
