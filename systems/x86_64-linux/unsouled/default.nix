@@ -22,7 +22,6 @@
         "gui"
         "desktop:hyprland"
         "fonts"
-        "gaming"
         "programming"
         "printing"
         "scanning"
