@@ -28,9 +28,11 @@
         "gaming"
         "personal"
         "printing"
+        "scanning"
       ];
 
       printing.raeford = true;
+      scanning.raeford = true;
     };
 
     monitors = [

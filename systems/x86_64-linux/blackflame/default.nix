@@ -44,6 +44,7 @@
         }
       ];
       printing.raeford = true;
+      scanning.raeford = true;
       tailscale = {
         enable = true;
         exitNode = "synology";
