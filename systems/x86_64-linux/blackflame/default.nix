@@ -12,6 +12,10 @@
     ../../../users/nixos/craig
   ];
 
+  boot = {
+    kernelPackages = pkgs.linuxPackages_6_10;
+  };
+
   hdwlinux = {
     nix = {
       enable = true;
