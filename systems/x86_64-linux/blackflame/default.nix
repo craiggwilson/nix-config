@@ -36,6 +36,7 @@
         "printing"
         "scanning"
         "virtualization:podman"
+        "vnc"
       ];
 
       fingerprint.enable = false; # hardware has it, but it doesn't work great.
