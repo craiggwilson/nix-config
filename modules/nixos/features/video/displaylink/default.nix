@@ -6,11 +6,11 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.displaylink;
+  cfg = config.hdwlinux.features.video.displaylink;
   needsDisplaylink = builtins.any (m: m.displaylink) config.hdwlinux.monitors;
 in
 {
-  options.hdwlinux.features.displaylink = {
+  options.hdwlinux.features.video.displaylink = {
     enable = lib.hdwlinux.mkBoolOpt needsDisplaylink "Enable displaylink feature.";
   };
 

@@ -1,13 +1,10 @@
 {
   pkgs,
   lib,
-  inputs,
   config,
   ...
 }:
 {
-
-  imports = [ inputs.nixos-hardware.nixosModules.dell-xps-15-9520-nvidia ];
 
   hdwlinux.features = {
     tags = [
@@ -56,18 +53,23 @@
 
   services = {
     hardware.bolt.enable = true;
+    services.xserver.videoDrivers = [
+      "nvidia"
+      "modesetting"
+    ];
   };
 
   hardware = {
     cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     nvidia = {
       modesetting.enable = true;
-      powerManagement.enable = false;
       package = config.boot.kernelPackages.nvidiaPackages.stable;
+      nvidiaSettings = true;
       prime = {
         intelBusId = "PCI:00:02:0";
         nvidiaBusId = "PCI:01:00:0";
       };
+      open = false;
     };
     graphics = {
       enable = true;
