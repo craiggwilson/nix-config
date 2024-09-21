@@ -15,7 +15,7 @@
   hdwlinux.features = {
     tags = [
       "audio"
-      #"bluetooth" #seems to cause problems with the wifi driver
+      "bluetooth"
       "boot:systemd"
       "camera"
       "networking"
