@@ -1,9 +1,4 @@
 {
-  lib,
-  pkgs,
-  inputs,
-  config,
-  flake,
   ...
 }:
 {
