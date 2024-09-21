@@ -22,10 +22,10 @@
     features = {
       tags = [
         "cli"
-        "gui"
         "desktop:gnome"
         "fonts"
         "gaming"
+        "gui"
         "personal"
         "printing"
         "scanning"

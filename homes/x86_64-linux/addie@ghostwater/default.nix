@@ -11,13 +11,6 @@
 
   hdwlinux = {
     theme.dracula.enable = true;
-
-    features.tags = [
-      "cli"
-      "desktop:gnome"
-      "gaming"
-      "gui"
-    ];
   };
 
   # This value determines the NixOS release from which the default
