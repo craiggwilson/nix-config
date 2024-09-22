@@ -22,6 +22,11 @@
       "redistributableFirmware"
       "video:nvidia"
     ];
+
+    video.nvidia = {
+      intelBusId = "PCI:00:02:0";
+      nvidiaBusId = "PCI:02:00:0";
+    };
   };
 
   boot = {
@@ -43,11 +48,6 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-
-  hardware.nvidia.prime = {
-    intelBusId = "PCI:00:02:0";
-    nvidiaBusId = "PCI:02:00:0";
-  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

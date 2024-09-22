@@ -28,6 +28,10 @@
     ];
 
     audio.soundcardPciId = "00:1f.3";
+    video.nvidia = {
+      intelBusId = "PCI:00:02:0";
+      nvidiaBusId = "PCI:01:00:0";
+    };
   };
 
   boot = {
@@ -52,11 +56,6 @@
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
-
-  hardware.nvidia.prime = {
-    intelBusId = "PCI:00:02:0";
-    nvidiaBusId = "PCI:01:00:0";
-  };
 
   environment.systemPackages = [
     pkgs.system76-firmware
