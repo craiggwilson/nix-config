@@ -45,14 +45,13 @@
 
   hardware = {
     nvidia = {
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      modesetting.enable = true;
+      nvidiaPersistenced = false;
+      open = false;
       prime = {
         intelBusId = "PCI:00:02:0";
         nvidiaBusId = "PCI:02:00:0";
       };
-      modesetting.enable = true;
-      nvidiaPersistenced = false;
-      open = false;
     };
     graphics = {
       enable = true;

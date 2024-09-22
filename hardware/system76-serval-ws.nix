@@ -2,9 +2,16 @@
   pkgs,
   lib,
   config,
+  inputs,
   ...
 }:
 {
+
+  imports = [
+    inputs.nixos-hardware.nixosModules.common-cpu-intel # also includes intel GPU
+    inputs.nixos-hardware.nixosModules.common-pc-ssd
+    inputs.nixos-hardware.nixosModules.system76
+  ];
 
   hdwlinux.features = {
     tags = [
@@ -53,30 +60,30 @@
 
   services = {
     hardware.bolt.enable = true;
-    services.xserver.videoDrivers = [
-      "nvidia"
+    xserver.videoDrivers = [
+      "nvidia" # not sure why this isn't getting picked up from the nixosHardware
       "modesetting"
     ];
   };
 
   hardware = {
-    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
     nvidia = {
       modesetting.enable = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
       nvidiaSettings = true;
+      open = false;
       prime = {
         intelBusId = "PCI:00:02:0";
         nvidiaBusId = "PCI:01:00:0";
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
       };
-      open = false;
     };
     graphics = {
       enable = true;
       enable32Bit = true;
     };
-
-    system76.enableAll = true;
   };
 
   # This value determines the NixOS release from which the default

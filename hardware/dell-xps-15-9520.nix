@@ -51,18 +51,20 @@
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
   services = {
+    hardware.bolt.enable = true;
     thermald.enable = true;
     tlp = {
       enable = true;
     };
-    hardware.bolt.enable = true;
   };
 
   hardware = {
     nvidia = {
       modesetting.enable = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      nvidiaSettings = true;
+      open = false;
     };
+
     graphics = {
       enable = true;
       enable32Bit = true;

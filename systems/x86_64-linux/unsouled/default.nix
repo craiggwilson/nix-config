@@ -29,8 +29,6 @@
         "work"
       ];
 
-      fstrim.enable = false;
-
       fingerprint.laptop-lid = "3-9";
 
       printing.raeford = true;
