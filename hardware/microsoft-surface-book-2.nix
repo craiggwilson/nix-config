@@ -20,6 +20,7 @@
       "camera"
       "networking"
       "redistributableFirmware"
+      "video:nvidia"
     ];
   };
 
@@ -43,20 +44,9 @@
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
-  hardware = {
-    nvidia = {
-      modesetting.enable = true;
-      nvidiaPersistenced = false;
-      open = false;
-      prime = {
-        intelBusId = "PCI:00:02:0";
-        nvidiaBusId = "PCI:02:00:0";
-      };
-    };
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
+  hardware.nvidia.prime = {
+    intelBusId = "PCI:00:02:0";
+    nvidiaBusId = "PCI:02:00:0";
   };
 
   # This value determines the NixOS release from which the default

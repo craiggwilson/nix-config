@@ -22,7 +22,9 @@
       "fingerprint"
       "networking"
       "redistributableFirmware"
-      "v4l2loopback"
+      "thunderbolt"
+      "video:nvidia"
+      "video:v4l2loopback"
     ];
 
     audio.soundcardPciId = "00:1f.3";
@@ -32,7 +34,6 @@
     initrd = {
       availableKernelModules = [
         "xhci_pci"
-        "thunderbolt"
         "nvme"
         "usb_storage"
         "usbhid"
@@ -52,39 +53,16 @@
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
+  hardware.nvidia.prime = {
+    intelBusId = "PCI:00:02:0";
+    nvidiaBusId = "PCI:01:00:0";
+  };
+
   environment.systemPackages = [
     pkgs.system76-firmware
     pkgs.firmware-manager
     pkgs.system76-keyboard-configurator
   ];
-
-  services = {
-    hardware.bolt.enable = true;
-    xserver.videoDrivers = [
-      "nvidia" # not sure why this isn't getting picked up from the nixosHardware
-      "modesetting"
-    ];
-  };
-
-  hardware = {
-    nvidia = {
-      modesetting.enable = true;
-      nvidiaSettings = true;
-      open = false;
-      prime = {
-        intelBusId = "PCI:00:02:0";
-        nvidiaBusId = "PCI:01:00:0";
-        offload = {
-          enable = true;
-          enableOffloadCmd = true;
-        };
-      };
-    };
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

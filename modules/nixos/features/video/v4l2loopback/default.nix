@@ -9,12 +9,12 @@
 with lib;
 with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.v4l2loopback;
+  cfg = config.hdwlinux.features.video.v4l2loopback;
 in
 {
 
-  options.hdwlinux.features.v4l2loopback = with types; {
-    enable = mkEnableOpt [ "v4l2loopback" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.video.v4l2loopback = with types; {
+    enable = mkEnableOpt [ "video:v4l2loopback" ] config.hdwlinux.features.tags;
   };
 
   config = mkIf cfg.enable {

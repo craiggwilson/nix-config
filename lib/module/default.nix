@@ -10,7 +10,9 @@ rec {
   mkStrOpt = mkOpt types.str;
   mkNullStrOpt = mkOpt (types.nullOr types.str);
 
-  elemsAll = x: xs: builtins.all (e: builtins.elem e xs) x;
+  elemsAll = x: xs: builtins.all (e: elemPrefix e xs) x;
+
+  elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
 
   # not exactly very optimized, but it gets the job done for a small number of elements.
   uniqueBy =

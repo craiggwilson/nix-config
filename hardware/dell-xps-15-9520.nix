@@ -18,7 +18,9 @@
       "fingerprint"
       "networking"
       "redistributableFirmware"
-      "v4l2loopback"
+      "thunderbolt"
+      "video:nvidia"
+      "video:v4l2loopback"
     ];
 
     audio.soundcardPciId = "00:1f.3";
@@ -28,7 +30,6 @@
     initrd = {
       availableKernelModules = [
         "xhci_pci"
-        "thunderbolt"
         "vmd"
         "nvme"
         "usb_storage"
@@ -45,29 +46,13 @@
     };
   };
 
-  musnix.soundcardPciId = "00:1f.3";
-
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
 
   services = {
-    hardware.bolt.enable = true;
     thermald.enable = true;
     tlp = {
       enable = true;
-    };
-  };
-
-  hardware = {
-    nvidia = {
-      modesetting.enable = true;
-      nvidiaSettings = true;
-      open = false;
-    };
-
-    graphics = {
-      enable = true;
-      enable32Bit = true;
     };
   };
 
