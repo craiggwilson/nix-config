@@ -17,22 +17,21 @@
 
     features = {
       tags = [
-        "av"
         "cli"
         "gui"
         "desktop:hyprland"
         "fonts"
         "programming"
         "printing"
+        "raeford"
         "scanning"
+        "video:production"
         "virtualization:docker"
         "work"
       ];
 
       fingerprint.laptop-lid = "3-9";
 
-      printing.raeford = true;
-      scanning.raeford = true;
       tailscale = {
         enable = true;
         exitNode = "synology";

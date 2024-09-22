@@ -1,46 +1,43 @@
 {
-  options,
   config,
   lib,
   pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.reaper;
 in
 {
-  options.hdwlinux.features.reaper = with types; {
-    enable = mkEnableOpt [
-      "av"
+  options.hdwlinux.features.reaper = {
+    enable = lib.hdwlinux.mkEnableOpt [
+      "audio:production"
       "gui"
     ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [
-      reaper
-      qpwgraph
+  config = lib.mkIf cfg.enable {
+    home.packages = [
+      pkgs.reaper
+      pkgs.qpwgraph
 
       # plugins
-      distrho
-      calf
-      eq10q
-      helm
-      lsp-plugins
-      x42-plugins
-      x42-gmsynth
-      dragonfly-reverb
-      guitarix
-      FIL-plugins
-      geonkick
-      sfizz
+      pkgs.distrho
+      pkgs.calf
+      pkgs.eq10q
+      pkgs.helm
+      pkgs.lsp-plugins
+      pkgs.x42-plugins
+      pkgs.x42-gmsynth
+      pkgs.dragonfly-reverb
+      pkgs.guitarix
+      pkgs.FIL-plugins
+      pkgs.geonkick
+      pkgs.sfizz
 
       # windows plugin bridge
-      yabridge
-      yabridgectl
+      pkgs.yabridge
+      pkgs.yabridgectl
     ];
 
     # Setup Yabridge

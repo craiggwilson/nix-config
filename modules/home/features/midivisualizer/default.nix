@@ -14,7 +14,7 @@ in
 {
   options.hdwlinux.features.midivisualizer = with types; {
     enable = mkEnableOpt [
-      "av"
+      "audio:midi"
       "gui"
     ] config.hdwlinux.features.tags;
   };

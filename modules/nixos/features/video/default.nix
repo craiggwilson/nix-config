@@ -10,6 +10,14 @@ in
 {
   options.hdwlinux.features.video = {
     enable = lib.hdwlinux.mkEnableOpt [ "video" ] config.hdwlinux.features.tags;
+    intelBusId = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+    };
+    nvidiaBusId = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+    };
   };
 
   config = lib.mkIf cfg.enable {

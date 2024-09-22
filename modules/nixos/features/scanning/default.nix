@@ -11,7 +11,6 @@ in
 {
   options.hdwlinux.features.scanning = {
     enable = lib.hdwlinux.mkEnableOpt [ "scanning" ] config.hdwlinux.features.tags;
-    raeford = lib.hdwlinux.mkBoolOpt false "Wheter or not to enable Raeford scanning.";
   };
 
   config = lib.mkIf cfg.enable {
@@ -19,7 +18,7 @@ in
     hardware.sane = {
       enable = true;
       extraBackends = [ pkgs.sane-airscan ];
-      brscan4 = lib.mkIf cfg.raeford {
+      brscan4 = lib.mkIf (builtins.elem "raeford" config.hdwlinux.features.tags) {
         enable = true;
         netDevices = {
           raeford = {

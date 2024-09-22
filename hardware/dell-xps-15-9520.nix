@@ -23,7 +23,7 @@
       "video:v4l2loopback"
     ];
 
-    audio.soundcardPciId = "00:1f.3";
+    audio.production.soundcardPciId = "00:1f.3";
   };
 
   boot = {

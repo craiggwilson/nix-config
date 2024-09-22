@@ -28,11 +28,9 @@
         "gui"
         "personal"
         "printing"
+        "raeford"
         "scanning"
       ];
-
-      printing.raeford = true;
-      scanning.raeford = true;
     };
 
     monitors = [

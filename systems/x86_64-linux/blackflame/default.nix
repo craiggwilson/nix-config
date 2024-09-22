@@ -24,7 +24,8 @@
 
     features = {
       tags = [
-        "av"
+        "audio:midi"
+        "audio:production"
         "cli"
         "gui"
         "desktop:hyprland"
@@ -34,7 +35,9 @@
         "personal"
         "programming"
         "printing"
+        "raeford"
         "scanning"
+        "video:production"
         "virtualization:podman"
         "vnc"
       ];
@@ -48,8 +51,6 @@
           auto = true;
         }
       ];
-      printing.raeford = true;
-      scanning.raeford = true;
       tailscale = {
         enable = true;
         exitNode = "synology";

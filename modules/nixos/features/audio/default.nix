@@ -27,10 +27,5 @@ in
       pulse.enable = true;
       wireplumber.enable = true;
     };
-
-    musnix = {
-      enable = true;
-      soundcardPciId = cfg.soundcardPciId;
-    };
   };
 }

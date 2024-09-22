@@ -8,11 +8,11 @@
 let
   cfg = config.hdwlinux.features.printing;
   ppdName = "Brother_HL-L2380DW.ppd";
+  defaultName = "Brother_HL-L2380DW";
 in
 {
   options.hdwlinux.features.printing = {
     enable = lib.hdwlinux.mkEnableOpt [ "printing" ] config.hdwlinux.features.tags;
-    raeford = lib.hdwlinux.mkBoolOpt false "Wheter or not to enable Raeford printers.";
   };
 
   config = lib.mkIf cfg.enable {
@@ -44,21 +44,17 @@ in
       nssmdns4 = true;
     };
 
-    hardware.printers =
-      let
-        defaultName = "Brother_HL-L2380DW";
-      in
-      {
-        ensureDefaultPrinter = defaultName;
-        ensurePrinters = lib.optionals cfg.raeford [
-          {
-            name = defaultName;
-            description = "Brother HL-L2380DW";
-            location = "Raeford";
-            deviceUri = "ipp://printer.raeford.wilsonfamilyhq.com/ipp";
-            model = ppdName;
-          }
-        ];
-      };
+    hardware.printers = lib.mkIf (builtins.elem "raeford" config.hdwlinux.features.tags) {
+      ensureDefaultPrinter = defaultName;
+      ensurePrinters = [
+        {
+          name = defaultName;
+          description = "Brother HL-L2380DW";
+          location = "Raeford";
+          deviceUri = "ipp://printer.raeford.wilsonfamilyhq.com/ipp";
+          model = ppdName;
+        }
+      ];
+    };
   };
 }

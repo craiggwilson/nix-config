@@ -14,7 +14,7 @@ in
 {
   options.hdwlinux.features.obs-studio = with types; {
     enable = mkEnableOpt [
-      "av"
+      "video:production"
       "gui"
     ] config.hdwlinux.features.tags;
   };

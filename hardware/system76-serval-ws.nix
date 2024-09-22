@@ -28,10 +28,8 @@
     ];
 
     audio.soundcardPciId = "00:1f.3";
-    video.nvidia = {
-      intelBusId = "PCI:00:02:0";
-      nvidiaBusId = "PCI:01:00:0";
-    };
+    video.intelBusId = "PCI:00:02:0";
+    video.nvidiaBusId = "PCI:01:00:0";
   };
 
   boot = {
