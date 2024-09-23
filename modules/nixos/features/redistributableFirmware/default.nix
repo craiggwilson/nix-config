@@ -6,16 +6,17 @@
   options,
   ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.redistributableFirmware;
 in
 {
 
-  options.hdwlinux.features.redistributableFirmware = with types; {
-    enable = mkEnableOpt [ "redistributableFirmware" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.redistributableFirmware = {
+    enable = lib.mkOption {
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
-  config = mkIf cfg.enable { hardware.enableRedistributableFirmware = true; };
+  config = lib.mkIf cfg.enable { hardware.enableRedistributableFirmware = true; };
 }

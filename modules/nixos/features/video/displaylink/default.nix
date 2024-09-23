@@ -16,7 +16,6 @@ in
   config = lib.mkIf cfg.enable {
     services.xserver.videoDrivers = [
       "displaylink"
-      "modesetting"
     ];
   };
 }

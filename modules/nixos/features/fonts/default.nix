@@ -1,13 +1,10 @@
 {
-  options,
   config,
   lib,
   pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.fonts;
   nf = (
@@ -21,14 +18,15 @@ let
   );
 in
 {
-  options.hdwlinux.features.fonts = with types; {
-    enable = mkEnableOpt [ "fonts" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.fonts = {
+    enable = lib.hdwlinux.mkEnableOpt [ "fonts" ] config.hdwlinux.features.tags;
   };
 
-  config.fonts = mkIf cfg.enable {
-    packages = with pkgs; [
+  config.fonts = lib.mkIf cfg.enable {
+    packages = [
       nf
-      noto-fonts-emoji
+      pkgs.noto-fonts-emoji
+      pkgs.comic-mono
     ];
 
     fontconfig = {

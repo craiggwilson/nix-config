@@ -17,13 +17,12 @@
       "camera"
       "fingerprint"
       "networking"
-      "redistributableFirmware"
       "thunderbolt"
       "video:nvidia"
       "video:v4l2loopback"
     ];
 
-    audio.production.soundcardPciId = "00:1f.3";
+    audio.soundcardPciId = "00:1f.3";
   };
 
   boot = {

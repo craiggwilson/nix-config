@@ -19,14 +19,11 @@
       "boot:systemd"
       "camera"
       "networking"
-      "redistributableFirmware"
       "video:nvidia"
     ];
 
-    video.nvidia = {
-      intelBusId = "PCI:00:02:0";
-      nvidiaBusId = "PCI:02:00:0";
-    };
+    video.intelBusId = "PCI:00:02:0";
+    video.nvidiaBusId = "PCI:02:00:0";
   };
 
   boot = {

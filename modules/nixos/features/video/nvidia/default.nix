@@ -16,7 +16,6 @@ in
     services = {
       xserver.videoDrivers = [
         "nvidia"
-        "modesetting"
       ];
     };
 

@@ -21,7 +21,6 @@
       "camera"
       "fingerprint"
       "networking"
-      "redistributableFirmware"
       "thunderbolt"
       "video:nvidia"
       "video:v4l2loopback"
