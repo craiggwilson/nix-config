@@ -30,7 +30,7 @@
         "work"
       ];
 
-      fingerprint.laptop-lid = "3-9";
+      fingerprint.enable = false;
 
       tailscale = {
         enable = true;
