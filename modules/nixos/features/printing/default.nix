@@ -19,15 +19,7 @@ in
     services.printing = {
       enable = true;
       webInterface = false;
-      browsing = true;
-      browsedConf = ''
-        BrowseDNSSDSubTypes _cups,_print
-        BrowseLocalProtocols all
-        BrowseRemoteProtocols all
-        CreateIPPPrinterQueues All
-
-        BrowseProtocols all
-      '';
+      browsing = false;
 
       drivers = lib.singleton (
         pkgs.linkFarm "drivers" [
