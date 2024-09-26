@@ -31,11 +31,6 @@ in
       );
     };
 
-    services.avahi = {
-      enable = true;
-      nssmdns4 = true;
-    };
-
     hardware.printers = lib.mkIf (builtins.elem "raeford" config.hdwlinux.features.tags) {
       ensureDefaultPrinter = defaultName;
       ensurePrinters = [
