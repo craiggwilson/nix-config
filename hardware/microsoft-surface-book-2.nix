@@ -18,6 +18,7 @@
       "bluetooth"
       "boot:systemd"
       "camera"
+      "laptop"
       "networking"
       "video:nvidia"
     ];

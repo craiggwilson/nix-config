@@ -16,6 +16,7 @@
       "boot:systemd"
       "camera"
       "fingerprint"
+      "laptop"
       "networking"
       "thunderbolt"
       "video:nvidia"

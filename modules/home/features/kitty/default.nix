@@ -17,10 +17,6 @@ in
 
   config = mkIf cfg.enable {
 
-    home.shellAliases = {
-      "ssh" = "kitty +kitten ssh";
-    };
-
     programs.kitty = {
       enable = true;
       font.name = mkForce "FiraCode Nerd Font Mono";
