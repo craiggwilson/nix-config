@@ -29,6 +29,7 @@
         "cli"
         "gui"
         "desktop:hyprland"
+        "desktop:remote"
         "filesystem:nfs"
         "fonts"
         "gaming"

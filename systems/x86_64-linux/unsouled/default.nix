@@ -20,6 +20,7 @@
         "cli"
         "gui"
         "desktop:hyprland"
+        "desktop:remote"
         "fonts"
         "programming"
         "printing"
