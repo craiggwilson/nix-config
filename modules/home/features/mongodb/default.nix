@@ -10,8 +10,11 @@ let
 in
 {
   options.hdwlinux.features.mongodb = {
-    enable = lib.hdwlinux.mkBoolOpt false "Enable MongoDB";
+    enable = lib.hdwlinux.mkEnableOpt [
+      "programming"
+      "work"
+    ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages = lib.mkIf cfg.enable [ pkgs.mongodb-5_0 ];
+  config.home.packages = lib.mkIf cfg.enable [ pkgs.mongodb-ce ];
 }
