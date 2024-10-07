@@ -64,7 +64,11 @@ in
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];
 
-          env = [ "XCURSOR_SIZE,24" ];
+          env = [
+            "XCURSOR_SIZE,24"
+            # this is specific to card order, so need to abstract this to somewhere...
+            "AQ_DRM_DEVICES,/dev/dri/card1:/dev/dri/card0"
+          ];
 
           general = {
             gaps_in = 5;
