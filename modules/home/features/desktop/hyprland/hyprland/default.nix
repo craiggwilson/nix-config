@@ -29,9 +29,9 @@ in
       systemd.enable = true;
 
       plugins = [
-        pkgs.hyprlandPlugins.hypr-dynamic-cursors
-        pkgs.hyprlandPlugins.hyprspace
-        pkgs.hyprlandPlugins.hyprtrails
+        # pkgs.hyprlandPlugins.hypr-dynamic-cursors
+        # pkgs.hyprlandPlugins.hyprspace
+        # pkgs.hyprlandPlugins.hyprtrails
       ];
 
       settings = lib.mkMerge [
