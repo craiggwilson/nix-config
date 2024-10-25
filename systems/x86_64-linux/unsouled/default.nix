@@ -35,7 +35,6 @@
 
       tailscale = {
         enable = true;
-        exitNode = "synology";
       };
     };
 
