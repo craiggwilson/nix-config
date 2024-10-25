@@ -21,6 +21,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    boot.blacklistedKernelModules = [ "nouveau" ];
+
     hardware.graphics = {
       enable = true;
       enable32Bit = true;

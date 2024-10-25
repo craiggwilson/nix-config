@@ -24,14 +24,17 @@ in
         modesetting.enable = true;
         nvidiaPersistenced = true;
         nvidiaSettings = true;
+        powerManagement.enable = false;
+        powerManagement.finegrained = false;
         open = false;
         prime = {
+          sync.enable = true;
           intelBusId = config.hdwlinux.features.video.intelBusId;
           nvidiaBusId = config.hdwlinux.features.video.nvidiaBusId;
-          offload = {
-            enable = true;
-            enableOffloadCmd = true;
-          };
+          # offload = {
+          #   enable = true;
+          #   enableOffloadCmd = true;
+          # };
         };
       };
     };
