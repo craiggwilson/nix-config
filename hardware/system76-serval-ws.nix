@@ -22,11 +22,25 @@
       "laptop"
       "networking"
       "thunderbolt"
+      "video:nvidia"
       "video:v4l2loopback"
     ];
 
     audio.soundcardPciId = "00:1f.3";
-    video.intelBusId = "PCI:00:02:0";
+
+    video = {
+      integrated = {
+        vendor = "intel";
+        busId = "PCI:00:02:0";
+        path = "/dev/dri/card1";
+      };
+
+      discrete = {
+        vendor = "nvidia";
+        busId = "PCI:01:00:0";
+        path = "/dev/dri/card0";
+      };
+    };
   };
 
   boot = {

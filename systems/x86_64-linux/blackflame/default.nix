@@ -8,7 +8,6 @@
 {
   imports = [
     ../../../hardware/system76-serval-ws.nix
-    ../../../hardware/system76-serval-ws-nvidia.nix
     ./disko.nix
     ../../../users/nixos/craig
   ];

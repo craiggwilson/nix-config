@@ -6,17 +6,15 @@
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.desktop.hyprland;
 in
 {
-  options.hdwlinux.features.desktop.hyprland = with types; {
-    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.desktop.hyprland = {
+    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     programs.hyprland = {
       enable = true;
       xwayland.enable = true;

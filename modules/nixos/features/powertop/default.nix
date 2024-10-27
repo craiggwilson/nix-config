@@ -15,7 +15,5 @@ in
 
   config = {
     environment.systemPackages = lib.mkIf cfg.enable [ pkgs.powertop ];
-
-    powerManagement.powertop.enable = true;
   };
 }

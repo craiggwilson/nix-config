@@ -64,7 +64,14 @@ in
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];
 
-          env = [ "XCURSOR_SIZE,24" ];
+          env =
+            [
+              "XCURSOR_SIZE,24"
+            ]
+            ++ lib.optionals (config.hdwlinux.features.video.integrated != null) [
+              "WLR_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
+              "AQ_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
+            ];
 
           general = {
             gaps_in = 5;
@@ -227,8 +234,8 @@ in
         bindm=SUPER, mouse:272, movewindow
         bindm=SUPER, mouse:273, resizewindow
 
-        bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.monitors)}"
-        bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.monitors)}, disable"
+        # bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.monitors)}"
+        # bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.monitors)}, disable"
 
         bind=, PRINT, submap, screenshot
         submap=screenshot

@@ -23,8 +23,16 @@
       "video:nvidia"
     ];
 
-    video.intelBusId = "PCI:00:02:0";
-    video.nvidiaBusId = "PCI:02:00:0";
+    video = {
+      integrated = {
+        vendor = "intel";
+        busId = "PCI:00:02:0";
+      };
+      discrete = {
+        vendor = "nvidia";
+        busId = "PCI:02:00:0";
+      };
+    };
   };
 
   boot = {

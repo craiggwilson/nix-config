@@ -13,6 +13,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    boot.blacklistedKernelModules = [ "nouveau" ];
+
     services = {
       xserver.videoDrivers = [
         "nvidia"
@@ -29,12 +31,21 @@ in
         open = false;
         prime = {
           sync.enable = true;
-          intelBusId = config.hdwlinux.features.video.intelBusId;
-          nvidiaBusId = config.hdwlinux.features.video.nvidiaBusId;
-          # offload = {
-          #   enable = true;
-          #   enableOffloadCmd = true;
-          # };
+          intelBusId = config.hdwlinux.features.video.integrated.busId;
+          nvidiaBusId = config.hdwlinux.features.video.discrete.busId;
+        };
+      };
+    };
+
+    specialisation = {
+      on-the-go.configuration = {
+        system.nixos.tags = [ "on-the-go" ];
+        hardware.nvidia.prime = {
+          offload = {
+            enable = true;
+            enableOffloadCmd = true;
+          };
+          sync.enable = lib.mkForce false;
         };
       };
     };

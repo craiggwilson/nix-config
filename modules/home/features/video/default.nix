@@ -1,12 +1,9 @@
 {
-  config,
   lib,
   ...
 }:
 
 let
-  cfg = config.hdwlinux.features.video;
-
   cardType = lib.types.submodule {
     options = {
       vendor = lib.mkOption {
@@ -29,8 +26,6 @@ let
 in
 {
   options.hdwlinux.features.video = {
-    enable = lib.hdwlinux.mkEnableOpt [ "video" ] config.hdwlinux.features.tags;
-
     integrated = lib.mkOption {
       description = "The integrated video card settings";
       type = cardType;
@@ -39,23 +34,5 @@ in
       description = "The discrete video card settings";
       type = cardType;
     };
-  };
-
-  config = lib.mkIf cfg.enable {
-    hardware.graphics = {
-      enable = true;
-      enable32Bit = true;
-    };
-
-    services.xserver.videoDrivers = [
-      "modesetting"
-    ];
-
-    home-manager.sharedModules = [
-      {
-        hdwlinux.features.video.integrated = cfg.integrated;
-        hdwlinux.features.video.discrete = cfg.discrete;
-      }
-    ];
   };
 }
