@@ -20,19 +20,17 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
-    systemd.services.system76-battery-thresholds =
-      lib.mkIf config.hardware.system76.power-daemon.enable
-        {
-          enable = true;
-          description = "Sets the System76 battery thresholds on boot";
-          after = [ "default.target" ];
-          wantedBy = [ "default.target" ];
-          serviceConfig = {
-            Type = "simple";
-            ExecStart = "${config.boot.kernelPackages.system76-power}/bin/system76-power charge-thresholds --profile ${cfg.profile}";
-          };
-        };
+  config = lib.mkIf (cfg.enable && config.hardware.system76.power-daemon.enable) {
+    systemd.services.system76-battery-thresholds = {
+      enable = true;
+      description = "Sets the System76 battery thresholds on boot";
+      after = [ "default.target" ];
+      wantedBy = [ "default.target" ];
+      serviceConfig = {
+        Type = "simple";
+        ExecStart = "${config.boot.kernelPackages.system76-power}/bin/system76-power charge-thresholds --profile ${cfg.profile}";
+      };
+    };
 
     services.udev.extraRules = ''
       SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="${config.boot.kernelPackages.system76-power}/bin/system76-power profile battery"
