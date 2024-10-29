@@ -41,6 +41,7 @@ pkgs.mkShell rec {
     # python
     python3.pkgs.python
     python3.pkgs.venvShellHook
+    openblas
 
     # buf
     buf
@@ -55,6 +56,7 @@ pkgs.mkShell rec {
     pkg-config
 
     # other
+    graphviz
     openssl
     amazon-ecr-credential-helper
   ];
