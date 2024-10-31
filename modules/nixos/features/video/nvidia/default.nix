@@ -31,6 +31,7 @@ in
         open = false;
         prime = {
           sync.enable = true;
+          offload.enable = false;
           intelBusId = config.hdwlinux.features.video.integrated.busId;
           nvidiaBusId = config.hdwlinux.features.video.discrete.busId;
         };
@@ -42,7 +43,7 @@ in
         system.nixos.tags = [ "on-the-go" ];
         hardware.nvidia.prime = {
           offload = {
-            enable = true;
+            enable = lib.mkForce true;
             enableOffloadCmd = true;
           };
           sync.enable = lib.mkForce false;

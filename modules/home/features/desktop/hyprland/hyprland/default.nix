@@ -64,14 +64,9 @@ in
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
             ];
 
-          env =
-            [
-              "XCURSOR_SIZE,24"
-            ]
-            ++ lib.optionals (config.hdwlinux.features.video.integrated != null) [
-              "WLR_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
-              "AQ_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
-            ];
+          env = [
+            "XCURSOR_SIZE,24"
+          ];
 
           general = {
             gaps_in = 5;
@@ -270,6 +265,17 @@ in
         bind=, ESCAPE, submap, reset
         submap=reset
       '';
+    };
+
+    specialisation = {
+      on-the-go.configuration = {
+        wayland.windowManager.hyprland.settings.env =
+          lib.optionals (config.hdwlinux.features.video.integrated != null)
+            [
+              "WLR_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
+              "AQ_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
+            ];
+      };
     };
   };
 }
