@@ -13,8 +13,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    boot.blacklistedKernelModules = [ "nouveau" ];
-
     services = {
       xserver.videoDrivers = [
         "nvidia"
