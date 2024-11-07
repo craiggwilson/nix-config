@@ -7,15 +7,15 @@
 }:
 let
   cfg = config.hdwlinux.theme.catppuccin-mocha;
-  accent = "Lavender";
-  flavor = "Mocha";
-  gtkName = "catppuccin-${lib.toLower flavor}-${lib.toLower accent}-standard";
-  cursorThemeName = "catppuccin-${lib.toLower flavor}-dark-cursors";
+  accent = "lavender";
+  flavor = "mocha";
+  gtkName = "catppuccin-${flavor}-${accent}-standard";
+  cursorThemeName = "catppuccin-${flavor}-dark-cursors";
   gtkPkg = pkgs.catppuccin-gtk.override {
-    accents = [ (lib.toLower accent) ];
-    variant = lib.toLower flavor;
+    accents = [ accent ];
+    variant = flavor;
   };
-  kvantumName = "Catppuccin-${flavor}-${accent}";
+  kvantumName = "catppuccin-${flavor}-${accent}";
   kvantumPkg = pkgs.catppuccin-kvantum.override {
     accent = accent;
     variant = flavor;

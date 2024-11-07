@@ -13,7 +13,7 @@
   ];
 
   boot = {
-    kernelPackages = pkgs.linuxPackages_6_10;
+    kernelPackages = pkgs.linuxPackages_latest;
   };
 
   hdwlinux = {

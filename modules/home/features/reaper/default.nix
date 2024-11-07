@@ -22,7 +22,6 @@ in
       pkgs.qpwgraph
 
       # plugins
-      pkgs.distrho
       pkgs.calf
       pkgs.eq10q
       pkgs.helm

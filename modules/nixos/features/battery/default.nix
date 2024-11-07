@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 
@@ -28,13 +29,13 @@ in
       wantedBy = [ "default.target" ];
       serviceConfig = {
         Type = "simple";
-        ExecStart = "${config.boot.kernelPackages.system76-power}/bin/system76-power charge-thresholds --profile ${cfg.profile}";
+        ExecStart = "${pkgs.system76-power}/bin/system76-power charge-thresholds --profile ${cfg.profile}";
       };
     };
 
     services.udev.extraRules = ''
-      SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="${config.boot.kernelPackages.system76-power}/bin/system76-power profile battery"
-      SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="1", RUN+="${config.boot.kernelPackages.system76-power}/bin/system76-power profile performance"
+      SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="0", RUN+="${pkgs.system76-power}/bin/system76-power profile battery"
+      SUBSYSTEM=="power_supply", KERNEL=="AC", ATTR{online}=="1", RUN+="${pkgs.system76-power}/bin/system76-power profile performance"
     '';
   };
 }
