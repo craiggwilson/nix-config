@@ -1,64 +1,87 @@
 {
-  lib,
-  inputs,
   pkgs,
-  stdenv,
   ...
 }:
 
-pkgs.mkShell rec {
-  buildInputs = with pkgs; [
+pkgs.mkShell {
+  buildInputs = [
     # bazel
-    (writeShellScriptBin "bazel" ''
+    (pkgs.writeShellScriptBin "bazel" ''
       if [ -z "''${CONTAINER_ID}" ]; then
         exists=`distrobox list | rg mms-bazel`
 
         if [ -z "$exists" ]; then
-          exec ${distrobox}/bin/distrobox-create -n mms-bazel -ap "awscli2 gcc-c++ libxcrypt-compat"
+          exec ${pkgs.distrobox}/bin/distrobox-create -n mms-bazel -ap "awscli2 gcc-c++ libxcrypt-compat"
         fi
 
-        exec ${distrobox}/bin/distrobox-enter -n mms-bazel -- /usr/bin/bazel "$@"
+        exec ${pkgs.distrobox}/bin/distrobox-enter -n mms-bazel -- /usr/bin/bazel "$@"
       else
         exec /usr/bin/bazel "$@"
       fi
     '')
-    bazel-gazelle
-    bazel-buildtools
+    pkgs.bazel-gazelle
+    pkgs.bazel-buildtools
 
     # go
-    go_1_22
+    pkgs.go_1_22
 
     #java
-    temurin-bin-17
+    pkgs.temurin-bin-17
 
     # task runner
-    just
+    pkgs.just
 
     # node
-    nodejs_18
-    nodejs_18.pkgs.pnpm
+    pkgs.nodejs_18
+    pkgs.nodejs_18.pkgs.pnpm
 
     # python
-    python3.pkgs.python
-    python3.pkgs.venvShellHook
-    openblas
+    pkgs.python3.pkgs.python
+    pkgs.python3.pkgs.venvShellHook
+    pkgs.openblas
 
     # buf
-    buf
+    pkgs.buf
 
-    # from $MMS_HOME/scripts/onboarding/mms_onboarding/build_deps.py
-    cairo
-    giflib
-    libjpeg
-    libpng
-    librsvg
-    pango
-    pkg-config
+    pkgs.cairo
+    pkgs.giflib
+    pkgs.libjpeg
+    pkgs.libpng
+    pkgs.librsvg
+    pkgs.pango
+    pkgs.pkg-config
 
     # other
-    graphviz
-    openssl
-    amazon-ecr-credential-helper
+    pkgs.graphviz
+    pkgs.openssl
+    pkgs.amazon-ecr-credential-helper
+
+    # fern
+    pkgs.hdwlinux.fern
+    pkgs.minikube
+    pkgs.tilt
+    (pkgs.writeShellScriptBin "fern-init" ''
+      minikube start --driver=docker
+
+      minikube addons enable metallb
+      MINIKUBE_IP=$(minikube ip)
+      cat <<EOF | kubectl apply -f -
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        namespace: metallb-system
+        name: config
+      data:
+        config: |
+          address-pools:
+          - name: default
+            protocol: layer2
+            addresses:
+            - $MINIKUBE_IP/32
+      EOF
+
+      kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
+    '')
   ];
 
   venvDir = "./.venv";
@@ -66,4 +89,8 @@ pkgs.mkShell rec {
   BAZEL_TELEMETRY = 0;
   GOPRIVATE = "github.com/10gen";
   JAVA_HOME = "${pkgs.temurin-bin-17.home}";
+
+  shellHook = ''
+    kubectl config use-context minikube
+  '';
 }
