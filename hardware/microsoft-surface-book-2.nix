@@ -2,25 +2,26 @@
   lib,
   inputs,
   config,
+  pkgs,
   ...
 }:
 {
 
   imports = [
     inputs.nixos-hardware.nixosModules.microsoft-surface-pro-intel
-    inputs.nixos-hardware.nixosModules.common-gpu-nvidia
+    #inputs.nixos-hardware.nixosModules.common-gpu-nvidia
     inputs.nixos-hardware.nixosModules.common-hidpi
   ];
 
   hdwlinux.features = {
     tags = [
-      "audio"
+      #"audio"
       "bluetooth"
       "boot:systemd"
       "camera"
       "laptop"
       "networking"
-      "video:nvidia"
+      #"video:nvidia"
     ];
 
     video = {
@@ -36,6 +37,7 @@
   };
 
   boot = {
+    blacklistedKernelModules = [ "snd_hda_intel" ]; # audio is flickering on and off, so disable sound.
     initrd = {
       availableKernelModules = [
         "xhci_pci"
