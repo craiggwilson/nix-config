@@ -72,6 +72,22 @@
     pkgs.system76-keyboard-configurator
   ];
 
+  /*
+    echo '1' > '/sys/module/snd_hda_intel/parameters/power_save';
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:1c.4/power/control';
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:14.2/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:1a.0/power/control
+    echo 'auto' > '/sys/bus/pci/devices/0000:2c:00.0/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:00.0/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:1f.5/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:36:00.0/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:14.3/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:38:00.0/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:37:00.0/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:1f.0/power/control'
+    echo 'auto' > '/sys/bus/pci/devices/0000:00:0a.0/power/control'
+  */
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
