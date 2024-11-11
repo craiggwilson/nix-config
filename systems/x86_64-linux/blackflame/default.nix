@@ -97,15 +97,6 @@
     ];
   };
 
-  # boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile
-  # boot.kernelParams = [
-  #   "resume_offset=533760" # btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
-  # ];
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=60m
-    SuspendState=mem # suspend2idle is buggy :(
-  '';
-
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave

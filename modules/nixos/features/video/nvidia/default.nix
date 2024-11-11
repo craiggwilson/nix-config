@@ -19,12 +19,17 @@ in
       ];
     };
 
+    boot = {
+      blacklistedKernelModules = [ "nouveau" ];
+      kernelParams = [ "nvidia.NVreg_PreserveVideoMemoryAllocations=1" ];
+    };
+
     hardware = {
       nvidia = {
         modesetting.enable = true;
         nvidiaPersistenced = true;
         nvidiaSettings = true;
-        powerManagement.enable = false;
+        powerManagement.enable = true;
         powerManagement.finegrained = false;
         open = false;
         prime = {
