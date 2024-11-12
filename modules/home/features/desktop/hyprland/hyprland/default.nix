@@ -265,8 +265,8 @@ in
         bindm=SUPER, mouse:272, movewindow
         bindm=SUPER, mouse:273, resizewindow
 
-        # bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.monitors)}"
-        # bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.monitors)}, disable"
+        bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.monitors)}"
+        bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.monitors)}, disable"
 
         bind=, PRINT, submap, screenshot
         submap=screenshot
