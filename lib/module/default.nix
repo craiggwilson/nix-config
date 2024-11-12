@@ -1,18 +1,20 @@
 { lib, ... }:
-with lib;
 rec {
   mkOpt =
     type: default: description:
-    mkOption { inherit type default description; };
+    lib.mkOption { inherit type default description; };
 
-  mkBoolOpt = mkOpt types.bool;
+  mkBoolOpt = mkOpt lib.types.bool;
   mkEnableOpt = req: tags: mkBoolOpt (elemsAll req tags) "Enabled.";
-  mkStrOpt = mkOpt types.str;
-  mkNullStrOpt = mkOpt (types.nullOr types.str);
+  mkStrOpt = mkOpt lib.types.str;
+  mkNullStrOpt = mkOpt (lib.types.nullOr lib.types.str);
 
   elemsAll = x: xs: builtins.all (e: elemPrefix e xs) x;
 
   elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
+
+  toTitle =
+    str: "${lib.toUpper (lib.substring 0 1 str)}${lib.substring 1 (lib.stringLength str) str}";
 
   # not exactly very optimized, but it gets the job done for a small number of elements.
   uniqueBy =

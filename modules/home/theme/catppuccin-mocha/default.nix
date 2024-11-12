@@ -79,7 +79,7 @@ in
     };
 
     # VSCode
-    hdwlinux.features.vscode.theme = "Catppuccin ${flavor}";
+    hdwlinux.features.vscode.theme = "Catppuccin ${lib.hdwlinux.toTitle flavor}";
     programs.vscode.extensions = with pkgs.vscode-extensions; [ catppuccin.catppuccin-vsc ];
   };
 }
