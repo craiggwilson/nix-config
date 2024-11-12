@@ -66,7 +66,7 @@ in
               builtins.filter (m: m.workspace != null) config.hdwlinux.monitors
             ))
             ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:kitty,border:0,rounding:false,persistent:false"
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:foot,border:0,rounding:false,persistent:false"
             ];
 
           env = [
@@ -153,14 +153,13 @@ in
             "opacity .95 .85,title:^(.*Code.*)$"
             "opacity .95 .85,class:^(firefox)$"
             "opacity .95 .85,class:^(jetbrains-goland)$"
-            "opacity .95 .85,class:^(kitty)$"
             "opacity .95 .85,class:^(Logseq)$"
             "opacity .95 .85,class:^(Slack)$"
             "float,title:^(Quick Access — 1Password)$"
             "dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
             "stayfocused,title:^(Quick Access — 1Password)$"
-            "workspace special:dropdown,class:^(kitty)$"
+            "workspace special:dropdown,class:^(foot)$"
           ];
 
           plugins = {
@@ -221,14 +220,14 @@ in
         bind=SUPER, P, exec, hyprpicker                                               # Choose a color from the screen
         bind=SUPER, Q, killactive                                                     # Kill the active window
         bind=SUPER, S, togglegroup,                                                   # Toggle stacking for the active window
-        bind=SUPER, T, exec, kitty                                                    # Launch the terminal
+        bind=SUPER, T, exec, foot                                                     # Launch the terminal
         bind=SUPER SHIFT, T, movetoworkspace, special:dropdown                        # Move the active window to the dropdown workspace
         bind=SUPER, X, exec, pkill rofi || rofi -show power-menu                      # Show the power menu
         bind=SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons            # Show the application launcher
         bind=SUPER, TAB, exec, pkill rofi || rofi -show window                        # Show the window switcher
         bind=SUPER, GRAVE, togglespecialworkspace, dropdown                           # Toggle the dropdown workspace
         bind=SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy  # Show the clipboard history
-        bind=SUPER, ESCAPE, exec, kitty btop                                          # Launch the task manager
+        bind=SUPER, ESCAPE, exec, foot btop                                           # Launch the task manager
 
         bind=SUPER, left, workspace, -1
         bind=SUPER, right, workspace, +1
