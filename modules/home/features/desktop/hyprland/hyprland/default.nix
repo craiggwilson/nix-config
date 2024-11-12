@@ -142,7 +142,7 @@ in
           exec-once = [
             "waybar"
             "hypridle"
-            "dunst"
+            "hyprnotify"
             "nm-applet --indicator"
             "1password --silent"
             "wl-paste --type text --watch cliphist store"
