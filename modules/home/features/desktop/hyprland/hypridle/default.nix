@@ -18,20 +18,20 @@ in
 
     xdg.configFile."hypr/hypridle.conf".text = ''
       general {
-        lock_cmd = pidof swaylock || swaylock -f          
+        lock_cmd = pidof hyprlock || hyprlock       
         before_sleep_cmd = loginctl lock-session   
         after_sleep_cmd = hyprctl dispatch dpms on 
       }
 
       listener {
         timeout = 240                          
-        on-timeout = pidof swaylock || brightnessctl -s set 10
+        on-timeout = pidof hyprlock || brightnessctl -s set 10
         on-resume = brightnessctl -r
       }
 
       listener {
         timeout = 240                          
-        on-timeout = if pgrep -x swaylock; then hyprctl dispatch dpms off; fi
+        on-timeout = if pgrep -x hyprlock; then hyprctl dispatch dpms off; fi
         on-resume = hyprctl dispatch dpms on
       }
 
