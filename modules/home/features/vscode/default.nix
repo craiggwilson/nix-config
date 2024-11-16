@@ -29,6 +29,7 @@ in
       extensions = with pkgs.vscode-extensions; [
         #bbenoist.nix
         golang.go
+        ms-python.python
         rust-lang.rust-analyzer
         tamasfe.even-better-toml
         vadimcn.vscode-lldb

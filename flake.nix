@@ -30,6 +30,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # fabric is a GTK shell using python
+    fabric.url = "github:Fabric-Development/fabric";
+
     nixos-cosmic = {
       url = "github:lilyinstarlight/nixos-cosmic";
       inputs.nixpkgs.follows = "nixpkgs";
