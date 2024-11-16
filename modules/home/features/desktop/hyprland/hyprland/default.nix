@@ -29,7 +29,7 @@ in
       systemd.enable = true;
 
       plugins = [
-        pkgs.hyprlandPlugins.hypr-dynamic-cursors
+        #pkgs.hyprlandPlugins.hypr-dynamic-cursors
         pkgs.hyprlandPlugins.hyprfocus
         pkgs.hyprlandPlugins.hyprspace
         pkgs.hyprlandPlugins.hyprtrails
@@ -42,7 +42,7 @@ in
             "col.active_border" = rgb config.hdwlinux.theme.colors.base0E;
             "col.inactive_border" = rgb config.hdwlinux.theme.colors.base03;
           };
-          decoration."col.shadow" = rgba config.hdwlinux.theme.colors.base00 "99";
+          decoration.shadow.color = rgba config.hdwlinux.theme.colors.base00 "99";
           group = {
             "col.border_inactive" = rgb config.hdwlinux.theme.colors.base0D;
             "col.border_active" = rgb config.hdwlinux.theme.colors.base06;
@@ -88,10 +88,13 @@ in
               special = true;
             };
 
+            shadow = {
+              enabled = true;
+              range = 4;
+              render_power = 3;
+            };
+
             dim_special = 0.2;
-            drop_shadow = true;
-            shadow_range = 4;
-            shadow_render_power = 3;
           };
 
           animations = {
