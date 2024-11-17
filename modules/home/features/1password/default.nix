@@ -1,26 +1,27 @@
 {
-  options,
-  config,
   lib,
   pkgs,
+  inputs,
+  config,
+  options,
   ...
 }:
-
 let
-  cfg = config.hdwlinux.features.desktop.hyprland.networkmanagerapplet;
+  cfg = config.hdwlinux.features._1password;
 in
 {
-  options.hdwlinux.features.desktop.hyprland.networkmanagerapplet = {
+
+  options.hdwlinux.features._1password = {
     enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.networkmanagerapplet ];
-
-    systemd.user.services.networkmanagerapplet = {
+    systemd.user.services."1password" = {
       Unit = {
-        ConditionEnvironment = "WAYLAND_DISPLAY";
-        Description = "Network Manager Applet";
+        Description = "Password manager daemon";
+        Documentation = [
+          "https://www.1password.com"
+        ];
         After = [ "graphical-session-pre.target" ];
         PartOf = [ "graphical-session.target" ];
       };
@@ -28,7 +29,7 @@ in
         WantedBy = [ "graphical-session-pre.target" ];
       };
       Service = {
-        ExecStart = "${pkgs.networkmanagerapplet}/bin/nm-applet --indicator";
+        ExecStart = "${pkgs._1password-gui}/bin/1password --silent";
         Restart = "always";
         RestartSec = "10";
       };

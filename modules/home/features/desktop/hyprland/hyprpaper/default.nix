@@ -23,17 +23,15 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = with pkgs; [ hyprpaper ];
+    services.hyprpaper = {
+      enable = true;
+      settings = {
+        splash = false;
+        ipc = "off";
 
-    xdg.configFile."hypr/hyprpaper.conf".text = ''
-      splash = false
-      ipc = off
-
-      ${lib.concatStringsSep "\n" (map (w: "preload = ${w}") wallpapers)}
-          
-      ${lib.concatStringsSep "\n" (
-        lib.lists.imap0 (i: m: "wallpaper = ${monitorCriteria m},${wallpaperAt i}") monitors
-      )}
-    '';
+        preload = map (w: "${w}") wallpapers;
+        wallpaper = lib.lists.imap0 (i: m: "${monitorCriteria m},${wallpaperAt i}") monitors;
+      };
+    };
   };
 }

@@ -6,21 +6,22 @@
   options,
   ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.features.desktop.hyprland.cliphist;
 in
 {
 
-  options.hdwlinux.features.desktop.hyprland.cliphist = with types; {
-    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.features.desktop.hyprland.cliphist = {
+    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config.home.packages =
-    with pkgs;
-    mkIf cfg.enable [
-      cliphist
-      wl-clipboard
+  config = lib.mkIf cfg.enable {
+    home.packages = [
+      pkgs.wl-clipboard
     ];
+
+    services.cliphist = {
+      enable = true;
+    };
+  };
 }

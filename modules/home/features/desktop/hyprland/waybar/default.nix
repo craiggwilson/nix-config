@@ -38,7 +38,7 @@ in
 
     programs.waybar = {
       enable = true;
-      systemd.enable = false;
+      systemd.enable = true;
       settings = [
         {
           layer = "top";

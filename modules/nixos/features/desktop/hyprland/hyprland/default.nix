@@ -7,10 +7,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.desktop.hyprland;
+  cfg = config.hdwlinux.features.desktop.hyprland.hyprland;
 in
 {
-  options.hdwlinux.features.desktop.hyprland = {
+  options.hdwlinux.features.desktop.hyprland.hyprland = {
     enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 

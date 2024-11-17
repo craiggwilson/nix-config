@@ -138,16 +138,6 @@ in
             workspace_swipe = true;
           };
 
-          exec-once = [
-            "waybar"
-            "hypridle"
-            "hyprnotify --no-sound"
-            "nm-applet --indicator"
-            "1password --silent"
-            "wl-paste --type text --watch cliphist store"
-            "wl-paste --type image --watch cliphist store"
-          ];
-
           windowrulev2 = [
             "opacity .95 .85,title:^(.*Code.*)$"
             "opacity .95 .85,class:^(firefox)$"
