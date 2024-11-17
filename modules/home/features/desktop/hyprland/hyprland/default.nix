@@ -56,7 +56,7 @@ in
           };
 
           cursor = {
-            no_hardware_cursors = false;
+            no_hardware_cursors = true;
           };
 
           monitor = (builtins.map monitorFn config.hdwlinux.monitors) ++ [ ", preferred, auto, auto" ];
@@ -68,10 +68,6 @@ in
             ++ [
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:foot,border:0,rounding:false,persistent:false"
             ];
-
-          env = [
-            "XCURSOR_SIZE,24"
-          ];
 
           general = {
             gaps_in = 5;
@@ -145,7 +141,7 @@ in
           exec-once = [
             "waybar"
             "hypridle"
-            "hyprnotify"
+            "hyprnotify --no-sound"
             "nm-applet --indicator"
             "1password --silent"
             "wl-paste --type text --watch cliphist store"

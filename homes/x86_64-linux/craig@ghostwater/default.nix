@@ -5,7 +5,7 @@
   imports = [ ../../../users/homes/craig ];
 
   hdwlinux = {
-    theme.catppuccin-mocha.enable = true;
+    theme.catppuccin.enable = true;
   };
 
   # This value determines the NixOS release from which the default

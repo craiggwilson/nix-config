@@ -10,7 +10,7 @@
   imports = [ ../../../users/homes/craig ];
 
   hdwlinux = {
-    theme.catppuccin-mocha.enable = true;
+    theme.catppuccin.enable = true;
 
     features.lan-mouse = {
       enable = true;
