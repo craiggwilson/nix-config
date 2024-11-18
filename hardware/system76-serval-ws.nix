@@ -17,6 +17,7 @@
       "audio"
       "bluetooth"
       "boot:systemd"
+      "bpftune"
       "camera"
       "fingerprint"
       "laptop"

@@ -63,24 +63,22 @@ pkgs.mkShell {
     (pkgs.writeShellScriptBin "fern-init" ''
       minikube start --driver=docker
 
-      minikube addons enable metallb
-      MINIKUBE_IP=$(minikube ip)
-      cat <<EOF | kubectl apply -f -
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        namespace: metallb-system
-        name: config
-      data:
-        config: |
-          address-pools:
-          - name: default
-            protocol: layer2
-            addresses:
-            - $MINIKUBE_IP/32
-      EOF
-
-      kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/cloud/deploy.yaml
+      # minikube addons enable metallb
+      # MINIKUBE_IP=$(minikube ip)
+      # cat <<EOF | kubectl apply -f -
+      # apiVersion: v1
+      # kind: ConfigMap
+      # metadata:
+      #   namespace: metallb-system
+      #   name: config
+      # data:
+      #   config: |
+      #     address-pools:
+      #     - name: default
+      #       protocol: layer2
+      #       addresses:
+      #       - $MINIKUBE_IP/32
+      # EOF
     '')
   ];
 
