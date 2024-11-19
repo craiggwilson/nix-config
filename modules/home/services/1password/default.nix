@@ -1,18 +1,16 @@
 {
   lib,
   pkgs,
-  inputs,
   config,
-  options,
   ...
 }:
 let
-  cfg = config.hdwlinux.features._1password;
+  cfg = config.hdwlinux.services._1password;
 in
 {
 
-  options.hdwlinux.features._1password = {
-    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.services._1password = {
+    enable = lib.hdwlinux.mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
   };
 
   config = lib.mkIf cfg.enable {
