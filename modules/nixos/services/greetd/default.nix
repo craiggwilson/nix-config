@@ -10,12 +10,12 @@ in
 {
   options.hdwlinux.services.greetd = {
     enable = lib.mkOption {
-      description = "greetd, a minimal and flexible login manager daemon";
+      description = "Whether to enable greetd, a minimal and flexible login manager daemon.";
       type = lib.types.bool;
       default = false;
     };
     user = lib.mkOption {
-      description = "user to login automatically";
+      description = "The user to login automatically.";
       type = lib.types.nullOr lib.types.str;
       default = null;
     };

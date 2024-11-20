@@ -22,6 +22,14 @@
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
     };
 
+    services = {
+      fprintd.enable = false; # hardware has it, but it doesn't work great.
+
+      tailscale = {
+        enable = true;
+      };
+    };
+
     features = {
       tags = [
         "audio:midi"
@@ -43,8 +51,6 @@
         "vnc"
       ];
 
-      fingerprint.enable = false; # hardware has it, but it doesn't work great.
-
       nfs.mounts = [
         {
           local = "/mnt/games";
@@ -52,9 +58,6 @@
           auto = true;
         }
       ];
-      tailscale = {
-        enable = true;
-      };
     };
 
     monitors = [

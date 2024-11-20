@@ -12,35 +12,37 @@
     inputs.nixos-hardware.nixosModules.system76
   ];
 
-  hdwlinux.features = {
-    tags = [
-      "audio"
-      "bluetooth"
-      "boot:systemd"
-      "bpftune"
-      "camera"
-      "fingerprint"
-      "laptop"
-      "networking"
-      "thunderbolt"
-      "video:nvidia"
-      "video:v4l2loopback"
-    ];
+  hdwlinux = {
+    features = {
+      tags = [
+        "audio"
+        "bluetooth"
+        "boot:systemd"
+        "camera"
+        "fingerprint"
+        "laptop"
+        "networking"
+        "thunderbolt"
+        "video:nvidia"
+        "video:v4l2loopback"
+      ];
 
-    audio.soundcardPciId = "00:1f.3";
+      video = {
+        integrated = {
+          vendor = "intel";
+          busId = "PCI:00:02:0";
+          path = "/dev/dri/card1";
+        };
 
-    video = {
-      integrated = {
-        vendor = "intel";
-        busId = "PCI:00:02:0";
-        path = "/dev/dri/card1";
+        discrete = {
+          vendor = "nvidia";
+          busId = "PCI:01:00:0";
+          path = "/dev/dri/card0";
+        };
       };
-
-      discrete = {
-        vendor = "nvidia";
-        busId = "PCI:01:00:0";
-        path = "/dev/dri/card0";
-      };
+    };
+    services = {
+      pipewire.soundcardPciId = "00:1f.3";
     };
   };
 

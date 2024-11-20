@@ -28,7 +28,6 @@ in
 
       firewall = {
         enable = true;
-        checkReversePath = lib.mkIf config.hdwlinux.features.tailscale.enable "loose";
       };
     };
 

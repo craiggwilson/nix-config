@@ -15,6 +15,14 @@
   hdwlinux = {
     nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 
+    services = {
+      fprintd.enable = false;
+
+      tailscale = {
+        enable = true;
+      };
+    };
+
     features = {
       tags = [
         "cli"
@@ -30,12 +38,6 @@
         "virtualization:docker"
         "work"
       ];
-
-      fingerprint.enable = false;
-
-      tailscale = {
-        enable = true;
-      };
     };
 
     monitors = [

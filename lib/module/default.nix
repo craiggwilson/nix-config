@@ -6,6 +6,9 @@ rec {
 
   mkBoolOpt = mkOpt lib.types.bool;
   mkEnableOpt = req: tags: mkBoolOpt (elemsAll req tags) "Enabled.";
+  mkEnableTagsOpt =
+    name: req: tags:
+    mkBoolOpt (elemsAll req tags) "Whether to enable ${name}.";
   mkStrOpt = mkOpt lib.types.str;
   mkNullStrOpt = mkOpt (lib.types.nullOr lib.types.str);
 

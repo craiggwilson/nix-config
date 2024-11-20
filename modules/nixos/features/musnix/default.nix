@@ -15,7 +15,7 @@ in
     musnix = {
       enable = true;
       rtcqs.enable = true;
-      soundcardPciId = config.hdwlinux.features.audio.soundcardPciId;
+      soundcardPciId = config.hdwlinux.services.pipewire.soundcardPciId;
     };
   };
 }
