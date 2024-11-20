@@ -34,16 +34,16 @@ in
 
     extraGroups =
       [ "wheel" ]
+      ++ (lib.optionals config.hdwlinux.programs._1password-cli.enable [ "onepassword-cli" ])
+      ++ (lib.optionals config.hdwlinux.programs._1password-gui.enable [ "onepassword" ])
       ++ (lib.optionals config.hdwlinux.services.pipewire.enable [ "audio" ])
       ++ (lib.optionals config.hdwlinux.services.printing.enable [ "lp" ])
-      ++ (lib.optionals config.hdwlinux.features._1password-cli.enable [ "onepassword-cli" ])
-      ++ (lib.optionals config.hdwlinux.features._1password-gui.enable [ "onepassword" ])
       ++ (lib.optionals config.hdwlinux.features.virtualization.docker.enable [ "docker" ])
       ++ (lib.optionals config.hdwlinux.features.networking.enable [ "networkmanager" ])
       ++ (lib.optionals config.hdwlinux.features.scanning.enable [ "scanner" ]);
   };
 
   programs._1password-gui.polkitPolicyOwners =
-    lib.mkIf config.hdwlinux.features._1password-gui.enable
+    lib.mkIf config.hdwlinux.programs._1password-gui.enable
       [ username ];
 }
