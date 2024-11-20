@@ -15,7 +15,7 @@ in
     musnix = {
       enable = true;
       rtcqs.enable = true;
-      soundcardPciId = config.hdwlinux.audio.soundcardBusId;
+      soundcardPciId = config.hdwlinux.audio.soundcard.busId;
     };
   };
 }

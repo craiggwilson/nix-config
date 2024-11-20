@@ -36,8 +36,8 @@ in
         prime = {
           sync.enable = true;
           offload.enable = false;
-          intelBusId = convertBusId config.hdwlinux.video.integrated.busId;
-          nvidiaBusId = convertBusId config.hdwlinux.video.discrete.busId;
+          intelBusId = convertBusId config.hdwlinux.video.intel.busId;
+          nvidiaBusId = convertBusId config.hdwlinux.video.nvidia.busId;
         };
       };
     };

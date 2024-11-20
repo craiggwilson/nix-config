@@ -6,17 +6,10 @@ let
   busType = lib.types.strMatching "([0-9a-f]{1,3}[\:][0-9a-f]{1,2}[\.][0-9a-f])?";
   cardType = lib.types.submodule {
     options = {
-      vendor = lib.mkOption {
-        description = "The graphics card vendor.";
-        type = lib.types.enum [
-          "intel"
-          "nvidia"
-        ];
-      };
       busId = lib.mkOption {
         description = "The PCI bus id. You can find it using lspci.";
         type = busType;
-        example = "00:1f.3";
+        example = "01:00.0";
       };
       path = lib.mkOption {
         description = "The path to the card.";
@@ -31,10 +24,9 @@ in
       description = "Options to set the audio configuration.";
       type = lib.types.submodule {
         options = {
-          soundcardBusId = lib.mkOption {
-            description = "The PCI bus id. You can find it using lspci.";
-            type = busType;
-            example = "00:1f.3";
+          soundcard = lib.mkOption {
+            description = "The soundcard information.";
+            type = cardType;
           };
         };
       };
@@ -73,12 +65,12 @@ in
       description = "Options to set the video configuration.";
       type = lib.types.submodule {
         options = {
-          discrete = lib.mkOption {
-            description = "The discrete video card information.";
+          intel = lib.mkOption {
+            description = "The integrated video card information.";
             type = cardType;
           };
-          integrated = lib.mkOption {
-            description = "The integrated video card information.";
+          nvidia = lib.mkOption {
+            description = "The discrete video card information.";
             type = cardType;
           };
         };

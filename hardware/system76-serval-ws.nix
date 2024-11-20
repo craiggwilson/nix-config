@@ -13,7 +13,10 @@
   ];
 
   hdwlinux = {
-    audio.soundcardBusId = "00:1f.3";
+    audio.soundcard = {
+      busId = "00:1f.3";
+      path = "/dev/snd/controlC0";
+    };
 
     features = {
       tags = [
@@ -31,14 +34,12 @@
     };
 
     video = {
-      integrated = {
-        vendor = "intel";
+      intel = {
         busId = "00:02.0";
         path = "/dev/dri/card1";
       };
 
-      discrete = {
-        vendor = "nvidia";
+      nvidia = {
         busId = "01:00.0";
         path = "/dev/dri/card0";
       };
