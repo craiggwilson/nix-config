@@ -5,6 +5,7 @@
 }:
 let
   cfg = config.hdwlinux.features.video.nvidia;
+  convertBusId = busId: "PCI:${builtins.replaceStrings [ "." ] [ ":" ] busId}";
 in
 {
 
@@ -35,8 +36,8 @@ in
         prime = {
           sync.enable = true;
           offload.enable = false;
-          intelBusId = config.hdwlinux.features.video.integrated.busId;
-          nvidiaBusId = config.hdwlinux.features.video.discrete.busId;
+          intelBusId = convertBusId config.hdwlinux.video.integrated.busId;
+          nvidiaBusId = convertBusId config.hdwlinux.video.discrete.busId;
         };
       };
     };

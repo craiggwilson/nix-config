@@ -9,7 +9,6 @@ in
 {
   options.hdwlinux.services.pipewire = {
     enable = lib.hdwlinux.mkEnableTagsOpt "pipewire" [ "audio" ] config.hdwlinux.features.tags;
-    soundcardPciId = lib.hdwlinux.mkStrOpt "" "The soundcard PCI identifier.";
   };
 
   config = lib.mkIf cfg.enable {

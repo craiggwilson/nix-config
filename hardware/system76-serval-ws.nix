@@ -13,6 +13,8 @@
   ];
 
   hdwlinux = {
+    audio.soundcardBusId = "00:1f.3";
+
     features = {
       tags = [
         "audio"
@@ -26,23 +28,20 @@
         "video:nvidia"
         "video:v4l2loopback"
       ];
-
-      video = {
-        integrated = {
-          vendor = "intel";
-          busId = "PCI:00:02:0";
-          path = "/dev/dri/card1";
-        };
-
-        discrete = {
-          vendor = "nvidia";
-          busId = "PCI:01:00:0";
-          path = "/dev/dri/card0";
-        };
-      };
     };
-    services = {
-      pipewire.soundcardPciId = "00:1f.3";
+
+    video = {
+      integrated = {
+        vendor = "intel";
+        busId = "00:02.0";
+        path = "/dev/dri/card1";
+      };
+
+      discrete = {
+        vendor = "nvidia";
+        busId = "01:00.0";
+        path = "/dev/dri/card0";
+      };
     };
   };
 

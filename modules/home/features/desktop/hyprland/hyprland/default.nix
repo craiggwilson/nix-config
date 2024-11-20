@@ -294,10 +294,10 @@ in
     specialisation = {
       on-the-go.configuration = {
         wayland.windowManager.hyprland.settings.env =
-          lib.optionals (config.hdwlinux.features.video.integrated != null)
+          lib.optionals (config.hdwlinux.video.integrated != null)
             [
-              "WLR_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
-              "AQ_DRM_DEVICES,${config.hdwlinux.features.video.integrated.path}"
+              "WLR_DRM_DEVICES,${config.hdwlinux.video.integrated.path}"
+              "AQ_DRM_DEVICES,${config.hdwlinux.video.integrated.path}"
             ];
       };
     };

@@ -13,17 +13,18 @@
     inputs.nixos-hardware.nixosModules.common-hidpi
   ];
 
-  hdwlinux.features = {
-    tags = [
-      #"audio"
-      "bluetooth"
-      "boot:systemd"
-      "camera"
-      "laptop"
-      "networking"
-      #"video:nvidia"
-    ];
-
+  hdwlinux = {
+    features = {
+      tags = [
+        #"audio"
+        "bluetooth"
+        "boot:systemd"
+        "camera"
+        "laptop"
+        "networking"
+        #"video:nvidia"
+      ];
+    };
     video = {
       integrated = {
         vendor = "intel";
