@@ -30,13 +30,13 @@
     video = {
       integrated = {
         vendor = "intel";
-        busId = "PCI:00:02:0";
+        busId = "00:02.0";
         path = "/dev/dri/card1";
       };
 
       discrete = {
         vendor = "nvidia";
-        busId = "PCI:01:00:0";
+        busId = "01:00.0";
         path = "/dev/dri/card0";
       };
     };
