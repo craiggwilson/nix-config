@@ -1,5 +1,4 @@
 {
-  options,
   config,
   lib,
   pkgs,
@@ -7,10 +6,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.desktop.hyprland.hyprland;
+  cfg = config.hdwlinux.programs.hyprland;
 in
 {
-  options.hdwlinux.features.desktop.hyprland.hyprland = {
+  options.hdwlinux.programs.hyprland = {
     enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 

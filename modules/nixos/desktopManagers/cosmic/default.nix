@@ -1,22 +1,18 @@
 {
-  options,
   config,
   lib,
-  pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.desktop.cosmic;
+  cfg = config.hdwlinux.desktopManagers.cosmic;
 in
 {
-  options.hdwlinux.features.desktop.cosmic = with types; {
-    enable = mkEnableOpt [ "desktop:cosmic" ] config.hdwlinux.features.tags;
+  options.hdwlinux.desktopManagers.cosmic = {
+    enable = lib.hdwlinux.mkEnableTagsOpt "cosmic" [ "desktop:cosmic" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     services.desktopManager.cosmic.enable = true;
     services.displayManager.cosmic-greeter.enable = true;
 

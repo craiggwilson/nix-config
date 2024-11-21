@@ -1,22 +1,19 @@
 {
-  options,
   config,
   lib,
   pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.desktop.hyprland.thunar;
+  cfg = config.hdwlinux.programs.thunar;
 in
 {
-  options.hdwlinux.features.desktop.hyprland.thunar = with types; {
-    enable = mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.programs.thunar = {
+    enable = lib.hdwlinux.mkEnableTagsOpt "thunar" [ "desktop:hyprland" ] config.hdwlinux.features.tags;
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     programs.thunar = {
       enable = true;
       plugins = with pkgs.xfce; [

@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.desktop.gnome;
+  cfg = config.hdwlinux.desktopManagers.gnome;
 in
 {
-  options.hdwlinux.features.desktop.gnome = {
+  options.hdwlinux.desktopManagers.gnome = {
     enable = lib.hdwlinux.mkEnableOpt [ "desktop:gnome" ] config.hdwlinux.features.tags;
   };
 

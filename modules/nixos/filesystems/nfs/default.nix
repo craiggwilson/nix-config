@@ -1,34 +1,32 @@
 {
-  options,
   config,
   lib,
-  pkgs,
   ...
 }:
-with lib;
-with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.nfs;
+  cfg = config.hdwlinux.filesystems.nfs;
 in
 {
-  options.hdwlinux.features.nfs = with types; {
-    enable = mkEnableOpt [ "filesystem:nfs" ] config.hdwlinux.features.tags;
-    mounts = mkOption {
+  options.hdwlinux.filesystems.nfs = {
+    enable = lib.hdwlinux.mkEnableOpt [ "filesystem:nfs" ] config.hdwlinux.features.tags;
+    mounts = lib.mkOption {
       description = "Options to the set of mounts to make available.";
-      type = listOf (submodule {
-        options = {
-          local = mkOption { type = str; };
-          remote = mkOption { type = str; };
-          auto = mkOption {
-            type = bool;
-            default = false;
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            local = lib.mkOption { type = lib.types.str; };
+            remote = lib.mkOption { type = lib.types.str; };
+            auto = lib.mkOption {
+              type = lib.types.bool;
+              default = false;
+            };
           };
-        };
-      });
+        }
+      );
     };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     boot.supportedFilesystems = [ "nfs" ];
     services.rpcbind.enable = true;
     systemd.mounts = builtins.map (m: {

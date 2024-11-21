@@ -4,10 +4,10 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.features.musnix;
+  cfg = config.hdwlinux.features.audio.production;
 in
 {
-  options.hdwlinux.features.musnix = {
+  options.hdwlinux.features.audio.production = {
     enable = lib.hdwlinux.mkEnableOpt [ "audio:production" ] config.hdwlinux.features.tags;
   };
 

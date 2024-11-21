@@ -30,6 +30,14 @@
       };
     };
 
+    filesystems.nfs.mounts = [
+      {
+        local = "/mnt/games";
+        remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
+        auto = true;
+      }
+    ];
+
     features = {
       tags = [
         "audio:midi"
@@ -49,14 +57,6 @@
         "video:production"
         "virtualization:podman"
         "vnc"
-      ];
-
-      nfs.mounts = [
-        {
-          local = "/mnt/games";
-          remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
-          auto = true;
-        }
       ];
     };
 
