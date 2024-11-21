@@ -52,21 +52,10 @@ in
       nixfmt-rfc-style
       nix-index
       nix-prefetch-git
-      nix-output-monitor
     ];
 
     environment.variables = {
       NIXPKGS_ALLOW_UNFREE = "1";
-    };
-
-    programs.nix-ld.enable = true;
-
-    home-manager = {
-      backupFileExtension = ".bak";
-      verbose = true;
-      extraSpecialArgs = {
-        flake = cfg.flake;
-      };
     };
 
     nixpkgs = {
@@ -77,14 +66,17 @@ in
       };
     };
 
-    programs.nh = {
-      enable = true;
-      flake = cfg.flake;
-    };
+    system = {
+      activationScripts.diff = ''
+        if [[ -e /run/current-system ]]; then
+          ${pkgs.nix}/bin/nix store diff-closures /run/current-system "$systemConfig"
+        fi
+      '';
 
-    system.switch = {
-      enable = false;
-      enableNg = true;
+      switch = {
+        enable = false;
+        enableNg = true;
+      };
     };
 
     nix = {

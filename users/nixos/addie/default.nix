@@ -28,13 +28,13 @@ in
 
     extraGroups =
       [ "wheel" ]
+      ++ (lib.optionals config.hdwlinux.hardware.sane.enable [ "scanner" ])
+      ++ (lib.optionals config.hdwlinux.networking.enable [ "networkmanager" ])
       ++ (lib.optionals config.hdwlinux.programs._1password-cli.enable [ "onepassword-cli" ])
       ++ (lib.optionals config.hdwlinux.programs._1password-gui.enable [ "onepassword" ])
       ++ (lib.optionals config.hdwlinux.services.audio.enable [ "audio" ])
       ++ (lib.optionals config.hdwlinux.services.printing.enable [ "lp" ])
-      ++ (lib.optionals config.hdwlinux.features.virtualization.docker.enable [ "docker" ])
-      ++ (lib.optionals config.hdwlinux.features.networking.enable [ "networkmanager" ])
-      ++ (lib.optionals config.hdwlinux.features.scanning.enable [ "scanner" ]);
+      ++ (lib.optionals config.hdwlinux.virtualization.docker.enable [ "docker" ]);
   };
 
   programs._1password-gui.polkitPolicyOwners =

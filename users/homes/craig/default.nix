@@ -36,17 +36,16 @@ in
     in
     [
       (pkgs.writeShellScriptBin "nix-switch" ''
-        git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd}
+        git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd} |& sudo ${pkgs.nix-output-monitor}/bin/nom 
       '')
       (pkgs.writeShellScriptBin "nix-switch-remote" ''
-        ${plainCmd}#$1${privateCmd} --target-host ${user}@$2 --use-remote-sudo
+        ${plainCmd}#$1${privateCmd} --target-host ${user}@$2 --use-remote-sudo |& ${pkgs.nix-output-monitor}/bin/nom
       '')
     ];
 
   home.shellAliases = {
     "start" = "xdg-open";
     "nix-config" = "git -C ${flake}";
-    "nrs" = "nix-switch";
   };
 
   # This value determines the NixOS release from which the default

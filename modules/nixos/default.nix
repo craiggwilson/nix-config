@@ -80,7 +80,7 @@ in
     };
   };
 
-  config.home-manager.sharedModules = lib.mkIf config.hdwlinux.features.home-manager.enable [
+  config.home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
     {
       hdwlinux.audio = cfg.audio;
       hdwlinux.monitors = cfg.monitors;
