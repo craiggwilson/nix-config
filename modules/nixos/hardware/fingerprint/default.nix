@@ -6,7 +6,7 @@
 }:
 
 let
-  cfg = config.hdwlinux.services.fprintd;
+  cfg = config.hdwlinux.hardware.fingerprint;
   laptop-lid = pkgs.writeShellScript "laptop-lid" ''
     lock=$XDG_STATE_HOME/.fingerprint-reader-disabled
 
@@ -23,7 +23,7 @@ let
   '';
 in
 {
-  options.hdwlinux.services.fprintd = {
+  options.hdwlinux.hardware.fingerprint = {
     enable = lib.hdwlinux.mkEnableOpt [ "fingerprint" ] config.hdwlinux.features.tags;
     laptop-lid = lib.mkOption {
       type = lib.types.nullOr lib.types.str;

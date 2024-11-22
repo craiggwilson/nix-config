@@ -6,12 +6,12 @@
 }:
 
 let
-  cfg = config.hdwlinux.services.printing;
+  cfg = config.hdwlinux.hardware.printers;
   ppdName = "Brother_HL-L2380DW.ppd";
   defaultName = "Brother_HL-L2380DW";
 in
 {
-  options.hdwlinux.services.printing = {
+  options.hdwlinux.hardware.printers = {
     enable = lib.hdwlinux.mkEnableTagsOpt "printing" [ "printing" ] config.hdwlinux.features.tags;
   };
 

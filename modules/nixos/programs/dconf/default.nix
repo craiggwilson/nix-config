@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.programs.dconf = {
-    enable = lib.hdwlinux.mkBoolOpt true "Whether to enable dconf.";
+    enable = lib.mkOption {
+      description = "Whether to enable dconf.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

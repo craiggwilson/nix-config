@@ -4,10 +4,10 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.services.blueman;
+  cfg = config.hdwlinux.hardware.bluetooth;
 in
 {
-  options.hdwlinux.services.blueman = {
+  options.hdwlinux.hardware.bluetooth = {
     enable = lib.hdwlinux.mkEnableTagsOpt "blueman" [ "bluetooth" ] config.hdwlinux.features.tags;
   };
 

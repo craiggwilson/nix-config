@@ -66,6 +66,10 @@ in
       };
     };
 
+    programs.nix-ld = {
+      enable = true;
+    };
+
     system = {
       activationScripts.diff = ''
         if [[ -e /run/current-system ]]; then

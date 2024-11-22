@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.lshw = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "lshw" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable lshw.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

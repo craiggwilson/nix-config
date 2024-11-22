@@ -5,10 +5,10 @@
 }:
 let
   tags = config.hdwlinux.features.tags;
-  cfg = config.hdwlinux.services.thunderbolt;
+  cfg = config.hdwlinux.hardware.thunderbolt;
 in
 {
-  options.hdwlinux.services.thunderbolt = {
+  options.hdwlinux.hardware.thunderbolt = {
     enable = lib.hdwlinux.mkEnableTagsOpt "thunderbolt" [ "thunderbolt" ] tags;
   };
 

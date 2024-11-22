@@ -17,19 +17,6 @@
   };
 
   hdwlinux = {
-    nix = {
-      enable = true;
-      flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
-    };
-
-    services = {
-      fprintd.enable = false; # hardware has it, but it doesn't work great.
-
-      tailscale = {
-        enable = true;
-      };
-    };
-
     filesystems.nfs.mounts = [
       {
         local = "/mnt/games";
@@ -37,6 +24,20 @@
         auto = true;
       }
     ];
+
+    hardware = {
+      fingerprint.enable = false;
+    };
+    nix = {
+      enable = true;
+      flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+    };
+
+    services = {
+      tailscale = {
+        enable = true;
+      };
+    };
 
     features = {
       tags = [

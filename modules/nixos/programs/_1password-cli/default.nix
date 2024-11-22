@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.programs._1password-cli = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "1password-cli" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable the 1password-cli.";
+      type = lib.types.bool;
+      default = config.hdwlinux.security.passwordmanager.enable;
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -10,10 +10,11 @@ let
 in
 {
   options.hdwlinux.programsd.nvtop = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "nvtop" [
-      "cli"
-      "video:nvidia"
-    ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable nvtop.";
+      type = lib.types.bool;
+      default = config.hdwlinux.hardware.nvidia.enable;
+    };
   };
 
   config = lib.mkIf cfg.enable {

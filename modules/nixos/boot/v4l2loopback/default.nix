@@ -9,9 +9,11 @@ in
 {
 
   options.hdwlinux.boot.v4l2loopback = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "v4l2loopback" [
-      "video:v4l2loopback"
-    ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable v4l2loopback.";
+      type = lib.types.bool;
+      default = (builtins.elem "v4l2loopback" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

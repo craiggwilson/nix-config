@@ -13,9 +13,25 @@
   ];
 
   hdwlinux = {
-    audio.soundcard = {
-      busId = "00:1f.3";
-      path = "/dev/snd/controlC0";
+    boot = {
+      systemd.enable = lib.mkDefault true;
+      v4l2loopback.enable = lib.mkDefault true;
+    };
+
+    hardware = {
+      audio = {
+        enable = lib.mkDefault true;
+        soundcard = {
+          busId = "00:1f.3";
+          path = "/dev/snd/controlC0";
+        };
+      };
+      bluetooth.enable = lib.mkDefault true;
+      camera.enable = lib.mkDefault true;
+      fingerprint.enable = lib.mkDefault true;
+      graphics.enable = lib.mkDefault true;
+      nvidia.enable = lib.mkDefault true;
+      thunderbolt.enable = lib.mkDefault true;
     };
 
     features = {
@@ -32,6 +48,8 @@
         "video:v4l2loopback"
       ];
     };
+
+    networking.enable = lib.mkDefault true;
 
     video = {
       intel = {

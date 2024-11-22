@@ -8,7 +8,11 @@ let
 in
 {
   options.hdwlinux.services.tailscale = {
-    enable = lib.mkEnableOption "tailscale";
+    enable = lib.mkOption {
+      description = "Whether to enable tailscale.";
+      type = lib.types.bool;
+      default = false;
+    };
   };
 
   config = lib.mkIf cfg.enable {

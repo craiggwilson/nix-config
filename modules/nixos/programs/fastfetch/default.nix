@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.fastfetch = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "fastfetch" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable fastfetch.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

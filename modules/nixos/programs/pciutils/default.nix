@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.pciutils = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "pciutils" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable pciutils.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

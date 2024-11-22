@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.services.logind = {
-    enable = lib.hdwlinux.mkEnableOpt [ "laptop" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable logind.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.features.usbutils = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "usbutils" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable usbutils.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

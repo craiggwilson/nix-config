@@ -8,9 +8,11 @@ let
 in
 {
   options.hdwlinux.boot.systemd = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "systemd boot" [
-      "boot:systemd"
-    ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable systemd boot.";
+      type = lib.types.bool;
+      default = (builtins.elem "boot:systemd" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

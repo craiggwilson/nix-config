@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.libcamera = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "libcamera" [ "camera" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable libcamera.";
+      type = lib.types.bool;
+      default = config.hdwlinux.hardware.camera.enable;
+    };
   };
 
   config = lib.mkIf cfg.enable {

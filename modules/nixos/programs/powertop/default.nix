@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.powertop = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "powertop" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable powertop.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

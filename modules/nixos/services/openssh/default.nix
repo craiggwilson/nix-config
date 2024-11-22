@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.services.openssh = {
-    enable = lib.hdwlinux.mkBoolOpt true "Enable OpenSSH feature.";
+    enable = lib.mkOption {
+      description = "Whether to enable openssh.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

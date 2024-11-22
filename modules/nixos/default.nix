@@ -5,34 +5,9 @@
 }:
 let
   cfg = config.hdwlinux;
-  busType = lib.types.strMatching "([0-9a-f]{1,3}[\:][0-9a-f]{1,2}[\.][0-9a-f])?";
-  cardType = lib.types.submodule {
-    options = {
-      busId = lib.mkOption {
-        description = "The PCI bus id. You can find it using lspci.";
-        type = busType;
-        example = "01:00.0";
-      };
-      path = lib.mkOption {
-        description = "The path to the card.";
-        type = lib.types.str;
-      };
-    };
-  };
 in
 {
   options.hdwlinux = {
-    audio = lib.mkOption {
-      description = "Options to set the audio configuration.";
-      type = lib.types.submodule {
-        options = {
-          soundcard = lib.mkOption {
-            description = "The soundcard information.";
-            type = cardType;
-          };
-        };
-      };
-    };
     monitors = lib.mkOption {
       description = "Options to set the monitor configuration.";
       type = lib.types.listOf (
@@ -68,12 +43,12 @@ in
       type = lib.types.submodule {
         options = {
           intel = lib.mkOption {
-            description = "The integrated video card information.";
-            type = cardType;
+            description = "The intel video card information.";
+            type = lib.hdwlinux.pcicard;
           };
           nvidia = lib.mkOption {
-            description = "The discrete video card information.";
-            type = cardType;
+            description = "The nvidia video card information.";
+            type = lib.hdwlinux.pcicard;
           };
         };
       };
@@ -82,7 +57,6 @@ in
 
   config.home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
     {
-      hdwlinux.audio = cfg.audio;
       hdwlinux.monitors = cfg.monitors;
       hdwlinux.video = cfg.video;
     }

@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.procps = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "procsps" [ "cli" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable procps.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {
