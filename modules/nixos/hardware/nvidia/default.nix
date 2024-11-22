@@ -10,6 +10,10 @@ in
 {
   options.hdwlinux.hardware.nvidia = {
     enable = lib.hdwlinux.mkEnableOpt [ "video:nvidia" ] config.hdwlinux.features.tags;
+    card = lib.mkOption {
+      description = "The nvidia video card information.";
+      type = lib.hdwlinux.pcicard;
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -30,8 +34,8 @@ in
         prime = {
           sync.enable = true;
           offload.enable = false;
-          intelBusId = convertBusId config.hdwlinux.video.intel.busId;
-          nvidiaBusId = convertBusId config.hdwlinux.video.nvidia.busId;
+          intelBusId = convertBusId config.hdwlinux.hardware.graphics.card.busId;
+          nvidiaBusId = convertBusId cfg.card.busId;
         };
       };
     };
@@ -48,5 +52,11 @@ in
         };
       };
     };
+
+    home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
+      {
+        hdwlinux.video.nvidia = cfg.card;
+      }
+    ];
   };
 }

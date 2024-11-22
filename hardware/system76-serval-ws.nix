@@ -29,10 +29,24 @@
       bluetooth.enable = lib.mkDefault true;
       camera.enable = lib.mkDefault true;
       fingerprint.enable = lib.mkDefault true;
-      graphics.enable = lib.mkDefault true;
-      nvidia.enable = lib.mkDefault true;
+      graphics = {
+        enable = lib.mkDefault true;
+        card = {
+          busId = "00:02.0";
+          path = "/dev/dri/card1";
+        };
+      };
+      nvidia = {
+        enable = lib.mkDefault true;
+        card = {
+          busId = "01:00.0";
+          path = "/dev/dri/card0";
+        };
+      };
       thunderbolt.enable = lib.mkDefault true;
     };
+
+    networking.enable = lib.mkDefault true;
 
     features = {
       tags = [
@@ -47,20 +61,6 @@
         "video:nvidia"
         "video:v4l2loopback"
       ];
-    };
-
-    networking.enable = lib.mkDefault true;
-
-    video = {
-      intel = {
-        busId = "00:02.0";
-        path = "/dev/dri/card1";
-      };
-
-      nvidia = {
-        busId = "01:00.0";
-        path = "/dev/dri/card0";
-      };
     };
   };
 
