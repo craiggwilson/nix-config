@@ -14,9 +14,20 @@
   ];
 
   hdwlinux = {
-    nix = {
-      enable = true;
-      flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+
+    hardware = {
+      monitors = [
+        {
+          port = "eDP-1";
+          workspace = "1";
+          width = 3000;
+          height = 2000;
+          x = 0;
+          y = 0;
+          scale = 2;
+        }
+      ];
     };
 
     features = {
@@ -32,18 +43,6 @@
         "scanning"
       ];
     };
-
-    monitors = [
-      {
-        port = "eDP-1";
-        workspace = "1";
-        width = 3000;
-        height = 2000;
-        x = 0;
-        y = 0;
-        scale = 2;
-      }
-    ];
   };
 
   # This value determines the NixOS release from which the default

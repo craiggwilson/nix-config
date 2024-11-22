@@ -6,7 +6,7 @@
 
 let
   cfg = config.hdwlinux.hardware.displaylink;
-  needsDisplaylink = builtins.any (m: m.displaylink) config.hdwlinux.monitors;
+  needsDisplaylink = builtins.any (m: m.displaylink) config.hdwlinux.hardware.monitors;
 in
 {
   options.hdwlinux.hardware.displaylink = {

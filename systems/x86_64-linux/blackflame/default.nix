@@ -27,7 +27,46 @@
 
     hardware = {
       fingerprint.enable = false;
+      monitors = [
+        {
+          port = "eDP-1";
+          width = 1920;
+          height = 1080;
+          x = 0;
+          y = 1440;
+          scale = 1;
+        }
+        {
+          description = "Dell Inc. DELL S2721DGF 2WXSR83";
+          workspace = "2";
+          width = 2560;
+          height = 1440;
+          x = 0;
+          y = 0;
+          scale = 1;
+        }
+        {
+          description = "Dell Inc. DELL S2721DGF DSWSR83";
+          workspace = "3";
+          width = 2560;
+          height = 1440;
+          x = 2560;
+          y = 0;
+          scale = 1;
+        }
+        {
+          description = "Ancor Communications Inc MB169B+       AIC1643";
+          workspace = "1";
+          width = 1920;
+          height = 1080;
+          x = 1920;
+          y = 1440;
+          scale = 1;
+          displaylink = true;
+        }
+      ];
     };
+
     nix = {
       enable = true;
       flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
@@ -61,44 +100,6 @@
       ];
     };
 
-    monitors = [
-      {
-        port = "eDP-1";
-        width = 1920;
-        height = 1080;
-        x = 0;
-        y = 1440;
-        scale = 1;
-      }
-      {
-        description = "Dell Inc. DELL S2721DGF 2WXSR83";
-        workspace = "2";
-        width = 2560;
-        height = 1440;
-        x = 0;
-        y = 0;
-        scale = 1;
-      }
-      {
-        description = "Dell Inc. DELL S2721DGF DSWSR83";
-        workspace = "3";
-        width = 2560;
-        height = 1440;
-        x = 2560;
-        y = 0;
-        scale = 1;
-      }
-      {
-        description = "Ancor Communications Inc MB169B+       AIC1643";
-        workspace = "1";
-        width = 1920;
-        height = 1080;
-        x = 1920;
-        y = 1440;
-        scale = 1;
-        displaylink = true;
-      }
-    ];
   };
 
   # This value determines the NixOS release from which the default
