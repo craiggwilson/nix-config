@@ -6,11 +6,15 @@
 }:
 
 let
-  cfg = config.hdwlinux.programs.thunar;
+  cfg = config.hdwlinux.desktopManagers.hyprland.thunar;
 in
 {
-  options.hdwlinux.programs.thunar = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "thunar" [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.desktopManagers.hyprland.thunar = {
+    enable = lib.mkOption {
+      description = "Whether to enable thunar.";
+      type = lib.types.bool;
+      default = config.hdwlinux.desktopManagers.hyprland.enable;
+    };
   };
 
   config = lib.mkIf cfg.enable {

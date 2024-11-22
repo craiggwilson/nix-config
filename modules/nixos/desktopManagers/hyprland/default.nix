@@ -6,11 +6,13 @@
 }:
 
 let
-  cfg = config.hdwlinux.programs.hyprland;
+  cfg = config.hdwlinux.desktopManagers.hyprland;
 in
 {
-  options.hdwlinux.programs.hyprland = {
-    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.desktopManagers.hyprland = {
+    enable = lib.hdwlinux.mkEnableTagsOpt "hyprland" [
+      "desktop:hyprland"
+    ] config.hdwlinux.features.tags;
   };
 
   config = lib.mkIf cfg.enable {

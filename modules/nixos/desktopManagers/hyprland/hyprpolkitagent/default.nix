@@ -6,14 +6,19 @@
 }:
 
 let
-  cfg = config.hdwlinux.services.hyprpolkitagent;
+  cfg = config.hdwlinux.desktopManagers.hyprland.hyprpolkitagent;
 in
 {
-  options.hdwlinux.services.hyprpolkitagent = {
-    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+  options.hdwlinux.desktopManagers.hyprland.hyprpolkitagent = {
+    enable = lib.mkOption {
+      description = "Whether to enable hyprpolkitagent.";
+      type = lib.types.bool;
+      default = config.hdwlinux.desktopManagers.hyprland.enable;
+    };
   };
 
   config = lib.mkIf cfg.enable {
+    security.polkit.enable = true;
     systemd.user.services.hyprpolkitagent = {
       description = "hyprland-polkit-agent";
       wantedBy = [ "graphical-session.target" ];

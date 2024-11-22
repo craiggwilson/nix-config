@@ -4,14 +4,17 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.features.dbus;
+  cfg = config.hdwlinux.services.dbus;
 in
 {
-  options.hdwlinux.features.dbus = {
+  options.hdwlinux.services.dbus = {
     enable = lib.hdwlinux.mkBoolOpt true "Enable dbus feature.";
   };
 
   config = lib.mkIf cfg.enable {
-    services.dbus.implementation = "broker";
+    services.dbus = {
+      enable = true;
+      implementation = "broker";
+    };
   };
 }

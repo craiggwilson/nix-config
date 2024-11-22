@@ -6,11 +6,15 @@
 }:
 
 let
-  cfg = config.hdwlinux.services.battery;
+  cfg = config.hdwlinux.services.system76-battery;
 in
 {
-  options.hdwlinux.services.battery = {
-    enable = lib.hdwlinux.mkBoolOpt true config.hdwlinux.features.tags;
+  options.hdwlinux.services.system76-battery = {
+    enable = lib.mkOption {
+      description = "Wheter to enable system76 battery services.";
+      type = lib.types.bool;
+      default = config.hardware.system76.power-daemon.enable;
+    };
     profile = lib.mkOption {
       description = "The profile to use when setting the charge-thresholds on boot.";
       type = lib.types.enum [
@@ -22,7 +26,7 @@ in
     };
   };
 
-  config = lib.mkIf (cfg.enable && config.hardware.system76.power-daemon.enable) {
+  config = lib.mkIf cfg.enable {
     systemd.services.system76-battery-thresholds = {
       enable = true;
       description = "Sets the System76 battery thresholds on boot";

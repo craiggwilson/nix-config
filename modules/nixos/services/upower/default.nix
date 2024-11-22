@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.services.upower = {
-    enable = lib.hdwlinux.mkEnableOpt [ "desktop:hyprland" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable upower";
+      type = lib.types.bool;
+      default = config.hdwlinux.services.dbus.enable;
+    };
   };
 
   config = lib.mkIf cfg.enable {
