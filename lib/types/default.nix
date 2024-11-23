@@ -1,4 +1,41 @@
 { lib, ... }:
+let
+  availableTags = [
+    "audio"
+    "audio:midi"
+    "audio:production"
+    "boot:systemd"
+    "bluetooth"
+    "camera"
+    "cli"
+    "desktop:cosmic"
+    "desktop:gnome"
+    "desktop:hyprland"
+    "desktop:remote"
+    "filesystem:nfs"
+    "fingerprint"
+    "fonts"
+    "gaming"
+    "gui"
+    "laptop"
+    "networking"
+    "networking:tailscale"
+    "personal"
+    "printing"
+    "programming"
+    "raeford"
+    "scanning"
+    "security:passwordmanager"
+    "thunderbolt"
+    "v4l2loopback"
+    "video:nvidia"
+    "video:production"
+    "virtualization:docker"
+    "virtualization:podman"
+    "virtualization:waydroid"
+    "vnc"
+  ];
+in
 {
   pcicard = lib.types.submodule {
     options = {
@@ -13,4 +50,6 @@
       };
     };
   };
+
+  tags = lib.types.listOf (lib.types.enum availableTags);
 }
