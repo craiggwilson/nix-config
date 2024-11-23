@@ -8,11 +8,7 @@ let
 in
 {
   options.hdwlinux.hardware.bluetooth = {
-    enable = lib.mkOption {
-      description = "Whether to enable bluetooth.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "bluetooth" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "bluetooth" "bluetooth";
   };
 
   config = lib.mkIf cfg.enable {

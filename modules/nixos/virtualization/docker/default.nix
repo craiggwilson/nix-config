@@ -9,11 +9,7 @@ let
 in
 {
   options.hdwlinux.virtualization.docker = {
-    enable = lib.mkOption {
-      description = "Whether to enable docker.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "virtualization:docker" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "docker" "virtualization:docker";
   };
 
   config = lib.mkIf cfg.enable {

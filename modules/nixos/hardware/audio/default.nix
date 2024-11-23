@@ -8,11 +8,7 @@ let
 in
 {
   options.hdwlinux.hardware.audio = {
-    enable = lib.mkOption {
-      description = "Whether to enable audio.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "audio" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "audio" "audio";
     soundcard = lib.mkOption {
       description = "The soundcard information.";
       type = lib.hdwlinux.pcicard;

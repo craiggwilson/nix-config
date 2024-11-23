@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.hardware.displaylink = {
-    enable = lib.hdwlinux.mkBoolOpt needsDisplaylink "Whether to enable displaylink.";
+    enable = lib.mkOption {
+      description = "Whether to enable displaylink.";
+      type = lib.types.bool;
+      default = needsDisplaylink;
+    };
   };
 
   config = lib.mkIf cfg.enable {

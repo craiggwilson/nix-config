@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.desktopManagers.gnome = {
-    enable = lib.mkOption {
-      description = "Whether to enable gnome.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "desktop:gnome" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "gnome" "desktop:gnome";
   };
 
   config = lib.mkIf cfg.enable {

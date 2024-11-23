@@ -8,11 +8,7 @@ let
 in
 {
   options.hdwlinux.services.kolide = {
-    enable = lib.mkOption {
-      description = "Whether to enable kolide.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "work" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "kolide" "work";
     enrollmentSecret = lib.mkOption {
       type = lib.types.str;
       description = "The enrollment secret for the sensor";

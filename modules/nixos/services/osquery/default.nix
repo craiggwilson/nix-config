@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.services.osquery = {
-    enable = lib.mkOption {
-      description = "Whether to enable osquery.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "work" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "osquery" "work";
   };
 
   config = lib.mkIf cfg.enable {

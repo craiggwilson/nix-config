@@ -12,11 +12,7 @@ let
 in
 {
   options.hdwlinux.hardware.printers = {
-    enable = lib.mkOption {
-      description = "Whether to enable printers.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "printing" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "printing" "printing";
   };
 
   config = lib.mkIf cfg.enable {

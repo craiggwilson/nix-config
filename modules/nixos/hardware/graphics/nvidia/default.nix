@@ -9,11 +9,7 @@ let
 in
 {
   options.hdwlinux.hardware.graphics.nvidia = {
-    enable = lib.mkOption {
-      description = "Whether to enable bluetooth.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "video:nvidia" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "video" "video:nvidia";
     card = lib.mkOption {
       description = "The nvidia graphics card information.";
       type = lib.hdwlinux.pcicard;

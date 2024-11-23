@@ -9,11 +9,7 @@ let
 in
 {
   options.hdwlinux.hardware.graphics = {
-    enable = lib.mkOption {
-      description = "Whether to enable graphics.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "video" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "video" "video";
     card = lib.mkOption {
       description = "The default graphics card information.";
       type = lib.hdwlinux.pcicard;

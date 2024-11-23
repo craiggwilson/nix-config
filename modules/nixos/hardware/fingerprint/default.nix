@@ -24,11 +24,7 @@ let
 in
 {
   options.hdwlinux.hardware.fingerprint = {
-    enable = lib.mkOption {
-      description = "Whether to enable the fingerprint sensor.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "fingerprint" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "fingerprint" "fingerprint";
     laptop-lid = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;

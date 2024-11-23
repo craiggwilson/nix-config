@@ -8,11 +8,7 @@ let
 in
 {
   options.hdwlinux.networking.tailscale = {
-    enable = lib.mkOption {
-      description = "Whether to enable tailscale.";
-      type = lib.types.bool;
-      default = (lib.hdwlinux.elemPrefix "networking:tailscale" config.hdwlinux.features.tags);
-    };
+    enable = config.lib.hdwlinux.features.mkEnableOption "tailscale" "networking:tailscale";
   };
 
   config = lib.mkIf cfg.enable {
