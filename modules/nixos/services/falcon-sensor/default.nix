@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.services.falcon-sensor = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "falcon-sensor" [ "work" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable falcon-sensor.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "work" config.hdwlinux.features.tags);
+    };
     cid = lib.mkOption { type = lib.types.str; };
   };
 

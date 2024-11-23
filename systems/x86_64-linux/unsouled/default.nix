@@ -65,6 +65,7 @@
 
     features = {
       tags = [
+        "boot:systemd"
         "cli"
         "gui"
         "desktop:hyprland"

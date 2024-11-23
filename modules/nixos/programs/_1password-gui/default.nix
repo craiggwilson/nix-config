@@ -1,8 +1,6 @@
 {
-  options,
   config,
   lib,
-  pkgs,
   ...
 }:
 
@@ -11,7 +9,17 @@ let
 in
 {
   options.hdwlinux.programs._1password-gui = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "1password-gui" [ "gui" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable the 1password-gui.";
+      type = lib.types.bool;
+      default = (
+        lib.hdwlinux.elemsAll [
+          "gaming"
+          "security:passwordmanager"
+        ] config.hdwlinux.features.tags
+      );
+
+    };
   };
 
   config = lib.mkIf cfg.enable {

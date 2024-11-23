@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.services.flatpak = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "flatpak" [ "gui" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable flatpak.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "gui" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

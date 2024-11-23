@@ -10,9 +10,11 @@ let
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "hyprland" [
-      "desktop:hyprland"
-    ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable hyprland.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "desktop:hyprland" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

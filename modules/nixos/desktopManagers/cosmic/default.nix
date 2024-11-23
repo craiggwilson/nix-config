@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.desktopManagers.cosmic = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "cosmic" [ "desktop:cosmic" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable cosmic.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "cosmic" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 
@@ -10,7 +9,11 @@ let
 in
 {
   options.hdwlinux.programs.gamemode = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "gamemode" [ "gaming" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable gaming.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "gaming" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

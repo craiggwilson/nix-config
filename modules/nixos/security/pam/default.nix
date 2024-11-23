@@ -9,7 +9,11 @@ let
 in
 {
   options.hdwlinux.security.pam = {
-    enable = lib.hdwlinux.mkBoolOpt true "Enable pam feature.";
+    enable = lib.mkOption {
+      description = "Whether to enable pam.";
+      type = lib.types.bool;
+      default = true;
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -67,21 +67,13 @@
       ];
     };
 
-    nix = {
-      enable = true;
-      flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
-    };
-
-    services = {
-      tailscale = {
-        enable = true;
-      };
-    };
+    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 
     features = {
       tags = [
         "audio:midi"
         "audio:production"
+        "boot:systemd"
         "cli"
         "gui"
         "desktop:hyprland"
@@ -89,11 +81,14 @@
         "filesystem:nfs"
         "fonts"
         "gaming"
+        "networking:tailscale"
         "personal"
         "programming"
         "printing"
         "raeford"
         "scanning"
+        "security:passwordmanager"
+        "v4l2loopback"
         "video:production"
         "virtualization:podman"
         "vnc"

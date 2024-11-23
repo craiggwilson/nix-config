@@ -11,7 +11,7 @@ in
     enable = lib.mkOption {
       description = "Whether to enable audio.";
       type = lib.types.bool;
-      default = (builtins.elem "audio" config.hdwlinux.features.tags);
+      default = (lib.hdwlinux.elemPrefix "audio" config.hdwlinux.features.tags);
     };
     soundcard = lib.mkOption {
       description = "The soundcard information.";

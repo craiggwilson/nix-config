@@ -11,7 +11,7 @@ in
     enable = lib.mkOption {
       description = "Whether to enable systemd boot.";
       type = lib.types.bool;
-      default = (builtins.elem "boot:systemd" config.hdwlinux.features.tags);
+      default = (lib.hdwlinux.elemPrefix "boot:systemd" config.hdwlinux.features.tags);
     };
   };
 

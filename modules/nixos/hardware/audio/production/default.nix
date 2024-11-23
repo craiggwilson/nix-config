@@ -11,7 +11,7 @@ in
     enable = lib.mkOption {
       description = "Whether to enable audio production.";
       type = lib.types.bool;
-      default = (builtins.elem "audio:production" config.hdwlinux.features.tags);
+      default = (lib.hdwlinux.elemPrefix "audio:production" config.hdwlinux.features.tags);
     };
   };
 

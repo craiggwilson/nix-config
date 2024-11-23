@@ -9,9 +9,11 @@ let
 in
 {
   options.hdwlinux.virtualization.podman = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "podman" [
-      "virtualization:podman"
-    ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable podman.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "virtualization:podman" config.hdwlinux.features.tags);
+    };
   };
 
   config = lib.mkIf cfg.enable {

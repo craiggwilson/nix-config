@@ -32,6 +32,7 @@
 
     features = {
       tags = [
+        "boot:systemd"
         "cli"
         "desktop:gnome"
         "fonts"

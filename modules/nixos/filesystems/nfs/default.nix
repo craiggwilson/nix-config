@@ -8,7 +8,11 @@ let
 in
 {
   options.hdwlinux.filesystems.nfs = {
-    enable = lib.hdwlinux.mkEnableOpt [ "filesystem:nfs" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable falcon-sensor.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "filesystem:nfs" config.hdwlinux.features.tags);
+    };
     mounts = lib.mkOption {
       description = "Options to the set of mounts to make available.";
       type = lib.types.listOf (

@@ -4,14 +4,14 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.services.tailscale;
+  cfg = config.hdwlinux.networking.tailscale;
 in
 {
-  options.hdwlinux.services.tailscale = {
+  options.hdwlinux.networking.tailscale = {
     enable = lib.mkOption {
       description = "Whether to enable tailscale.";
       type = lib.types.bool;
-      default = false;
+      default = (lib.hdwlinux.elemPrefix "networking:tailscale" config.hdwlinux.features.tags);
     };
   };
 

@@ -12,7 +12,7 @@ in
     enable = lib.mkOption {
       description = "Whether to enable v4l2loopback.";
       type = lib.types.bool;
-      default = (builtins.elem "v4l2loopback" config.hdwlinux.features.tags);
+      default = (lib.hdwlinux.elemPrefix "v4l2loopback" config.hdwlinux.features.tags);
     };
   };
 

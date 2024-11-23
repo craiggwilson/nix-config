@@ -4,14 +4,18 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.hardware.nvidia;
+  cfg = config.hdwlinux.hardware.graphics.nvidia;
   convertBusId = busId: "PCI:${builtins.replaceStrings [ "." ] [ ":" ] busId}";
 in
 {
-  options.hdwlinux.hardware.nvidia = {
-    enable = lib.hdwlinux.mkEnableOpt [ "video:nvidia" ] config.hdwlinux.features.tags;
+  options.hdwlinux.hardware.graphics.nvidia = {
+    enable = lib.mkOption {
+      description = "Whether to enable bluetooth.";
+      type = lib.types.bool;
+      default = (lib.hdwlinux.elemPrefix "video:nvidia" config.hdwlinux.features.tags);
+    };
     card = lib.mkOption {
-      description = "The nvidia video card information.";
+      description = "The nvidia graphics card information.";
       type = lib.hdwlinux.pcicard;
     };
   };

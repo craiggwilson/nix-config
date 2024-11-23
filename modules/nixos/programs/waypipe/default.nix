@@ -10,7 +10,11 @@ let
 in
 {
   options.hdwlinux.programs.waypipe = {
-    enable = lib.hdwlinux.mkEnableTagsOpt "waypipe" [ "desktop:remote" ] config.hdwlinux.features.tags;
+    enable = lib.mkOption {
+      description = "Whether to enable waypipe.";
+      type = lib.types.bool;
+      default = false;
+    };
   };
 
   config = lib.mkIf cfg.enable {

@@ -22,7 +22,6 @@ let
 in
 {
   options.hdwlinux.nix = {
-    enable = lib.hdwlinux.mkBoolOpt true "Whether or not to manage nix configuration.";
     package = lib.hdwlinux.mkOpt lib.types.package pkgs.nixVersions.latest "Which nix package to use.";
     flake =
       lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) null
@@ -40,7 +39,7 @@ in
         "Extra substituters to configure.";
   };
 
-  config = lib.mkIf cfg.enable {
+  config = {
     assertions = lib.mapAttrsToList (name: value: {
       assertion = value.key != null;
       message = "hdwlinux.nix.extra-substituters.${name}.key must be set";

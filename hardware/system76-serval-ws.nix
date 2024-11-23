@@ -13,54 +13,37 @@
   ];
 
   hdwlinux = {
-    boot = {
-      systemd.enable = lib.mkDefault true;
-      v4l2loopback.enable = lib.mkDefault true;
-    };
-
-    hardware = {
-      audio = {
-        enable = lib.mkDefault true;
-        soundcard = {
-          busId = "00:1f.3";
-          path = "/dev/snd/controlC0";
-        };
-      };
-      bluetooth.enable = lib.mkDefault true;
-      camera.enable = lib.mkDefault true;
-      fingerprint.enable = lib.mkDefault true;
-      graphics = {
-        enable = lib.mkDefault true;
-        card = {
-          busId = "00:02.0";
-          path = "/dev/dri/card1";
-        };
-      };
-      nvidia = {
-        enable = lib.mkDefault true;
-        card = {
-          busId = "01:00.0";
-          path = "/dev/dri/card0";
-        };
-      };
-      thunderbolt.enable = lib.mkDefault true;
-    };
-
-    networking.enable = lib.mkDefault true;
-
     features = {
       tags = [
         "audio"
         "bluetooth"
-        "boot:systemd"
         "camera"
         "fingerprint"
         "laptop"
         "networking"
         "thunderbolt"
         "video:nvidia"
-        "video:v4l2loopback"
       ];
+    };
+    hardware = {
+      audio = {
+        soundcard = {
+          busId = "00:1f.3";
+          path = "/dev/snd/controlC0";
+        };
+      };
+      graphics = {
+        card = {
+          busId = "00:02.0";
+          path = "/dev/dri/card1";
+        };
+        nvidia = {
+          card = {
+            busId = "01:00.0";
+            path = "/dev/dri/card0";
+          };
+        };
+      };
     };
   };
 

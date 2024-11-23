@@ -13,7 +13,7 @@ in
     enable = lib.mkOption {
       description = "Whether to enable nvtop.";
       type = lib.types.bool;
-      default = config.hdwlinux.hardware.nvidia.enable;
+      default = config.hdwlinux.hardware.graphics.nvidia.enable;
     };
   };
 
