@@ -1,23 +1,21 @@
 {
-  options,
   config,
   lib,
   pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.onedrive;
+  cfg = config.hdwlinux.services.onedrive;
 in
 {
-  options.hdwlinux.features.onedrive = with types; {
-    enable = mkEnableOpt [ "personal" ] config.hdwlinux.features.tags;
+  options.hdwlinux.services.onedrive = {
+    enable = config.lib.hdwlinux.mkEnableOption "onedrive" "personal";
+    #TODO: parameterize sync list
   };
 
-  config = mkIf cfg.enable {
-    home.packages = with pkgs; [ onedrive ];
+  config = lib.mkIf cfg.enable {
+    home.packages = [ pkgs.onedrive ];
 
     xdg.configFile."onedrive/sync_list".text = ''
       /Backups

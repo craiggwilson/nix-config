@@ -1,19 +1,20 @@
 {
-  options,
   config,
   lib,
-  pkgs,
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.flatpak;
+  cfg = config.hdwlinux.services.flatpak;
 in
 {
-  options.hdwlinux.features.flatpak = with types; {
-    enable = mkEnableOpt [ "gui" ] config.hdwlinux.features.tags;
+  options.hdwlinux.services.flatpak = {
+    enable = config.lib.hdwlinux.mkEnableOption "flatpak" "gui";
+    packages = lib.mkOption {
+      description = "The flatpacks to install.";
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -26,7 +27,7 @@ in
           location = "https://dl.flathub.org/repo/flathub.flatpakrepo";
         }
       ];
-      packages = [ "com.github.tchx84.Flatseal" ];
+      packages = [ "com.github.tchx84.Flatseal" ] ++ cfg.packages;
       update.auto = {
         enable = true;
         onCalendar = "weekly";

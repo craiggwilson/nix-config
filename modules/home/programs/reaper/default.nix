@@ -6,14 +6,14 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.reaper;
+  cfg = config.hdwlinux.programs.reaper;
 in
 {
-  options.hdwlinux.features.reaper = {
-    enable = lib.hdwlinux.mkEnableOpt [
+  options.hdwlinux.programs.reaper = {
+    enable = config.lib.hdwlinux.mkEnableAllOption "reaper" [
       "audio:production"
       "gui"
-    ] config.hdwlinux.features.tags;
+    ];
   };
 
   config = lib.mkIf cfg.enable {

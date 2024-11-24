@@ -6,7 +6,7 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.ssh;
+  cfg = config.hdwlinux.security.ssh;
 
   sshConfigFile = pkgs.writeText "ssh_config" ''
     Host *
@@ -22,8 +22,8 @@ let
   '';
 in
 {
-  options.hdwlinux.features.ssh = {
-    enable = lib.hdwlinux.mkEnableOpt [ "cli" ] config.hdwlinux.features.tags;
+  options.hdwlinux.security.ssh = {
+    enable = lib.hdwlinux.mkEnableOption "ssh" true;
     includes = lib.mkOption {
       type = lib.types.listOf lib.types.path;
       default = [ ];
