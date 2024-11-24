@@ -13,7 +13,6 @@ rec {
   mkNullStrOpt = mkOpt (lib.types.nullOr lib.types.str);
 
   elemsAll = x: xs: builtins.all (e: elemPrefix e xs) x;
-
   elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
 
   toTitle =

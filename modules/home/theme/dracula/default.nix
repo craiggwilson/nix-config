@@ -6,8 +6,6 @@
   options,
   ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.theme.dracula;
   name = "Dracula";
@@ -15,15 +13,16 @@ let
 in
 {
 
-  options.hdwlinux.theme.dracula = with types; {
-    enable = mkBoolOpt false "Whether or not to enable the dracula theme.";
+  options.hdwlinux.theme.dracula = {
+    enable = config.lib.hdwlinux.features.mkEnableOption "dracula" "theming:dracula";
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     hdwlinux.theme = {
-      enable = mkDefault true;
+      enable = lib.mkDefault true;
       name = "dracula";
       colors = inputs.themes.dracula;
+      dark = true;
       wallpapers = [ wallpaper ];
     };
 
@@ -36,7 +35,7 @@ in
         package = pkgs.dracula-theme;
       };
 
-      iconTheme = mkDefault {
+      iconTheme = lib.mkDefault {
         name = name;
         package = pkgs.dracula-icon-theme;
       };
@@ -44,7 +43,7 @@ in
 
     home.sessionVariables.GTK_THEME = name;
 
-    dconf.settings = mkIf config.hdwlinux.features.desktop.gnome.enable {
+    dconf.settings = lib.mkIf config.hdwlinux.features.desktop.gnome.enable {
       "org/gnome/shell/extensions/user-theme" = {
         name = name;
       };

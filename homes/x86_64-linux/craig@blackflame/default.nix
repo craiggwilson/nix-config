@@ -10,7 +10,9 @@
   imports = [ ../../../users/homes/craig ];
 
   hdwlinux = {
-    theme.catppuccin.enable = true;
+    features.tags = [
+      "theming:catppuccin"
+    ];
 
     features.lan-mouse = {
       enable = true;

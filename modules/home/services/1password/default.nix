@@ -10,16 +10,10 @@ in
 {
 
   options.hdwlinux.services._1password = {
-    enable = lib.mkOption {
-      description = "Whether to enable the 1password service.";
-      type = lib.types.bool;
-      default = (
-        lib.hdwlinux.elemsAll [
-          "security:passwordmanager"
-          "gui"
-        ] config.hdwlinux.features.tags
-      );
-    };
+    enable = config.lib.hdwlinux.features.mkEnableAllOption "1password" [
+      "gui"
+      "security:passwordmanager"
+    ];
   };
 
   config = lib.mkIf cfg.enable {

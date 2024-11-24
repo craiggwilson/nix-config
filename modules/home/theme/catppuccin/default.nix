@@ -22,9 +22,17 @@ in
 {
 
   options.hdwlinux.theme.catppuccin = {
-    enable = lib.hdwlinux.mkBoolOpt false "Whether or not to enable the catppuccin theme.";
-    flavor = lib.hdwlinux.mkStrOpt "mocha" "The catppuccin flavor.";
-    accent = lib.hdwlinux.mkStrOpt "lavender" "The catppuccin accent";
+    enable = config.lib.hdwlinux.features.mkEnableOption "catppuccin" "theming:catppuccin";
+    flavor = lib.mkOption {
+      description = "The flavor.";
+      type = lib.types.str;
+      default = "mocha";
+    };
+    accent = lib.mkOption {
+      description = "The accent.";
+      type = lib.types.str;
+      default = "lavender";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -32,29 +40,16 @@ in
       enable = lib.mkDefault true;
       name = "catppuccin-${cfg.flavor}";
       colors = inputs.themes.${"catppuccin-" + cfg.flavor};
+      cursor = {
+        package = pkgs.nordzy-cursor-theme;
+        name = "Nordzy-cursors";
+        # package = pkgs.catppuccin-cursors.${cfg.flavor + lib.hdwlinux.toTitle cfg.accent};
+        # name = "catppuccin-${cfg.flavor}-${cfg.accent}-cursors";
+        size = 24;
+      };
+      dark = true;
       wallpapers = [ wallpaper ];
     };
-
-    # Cursor
-    home.pointerCursor = lib.mkIf cfg.enable {
-      package = pkgs.nordzy-cursor-theme;
-      name = "Nordzy-cursors";
-      # package = pkgs.catppuccin-cursors.${cfg.flavor + lib.hdwlinux.toTitle cfg.accent};
-      # name = "catppuccin-${cfg.flavor}-${cfg.accent}-cursors";
-      size = 24;
-      gtk.enable = true;
-      x11.enable = true;
-    };
-
-    home.sessionVariables = {
-      HYPRCURSOR_THEME = config.home.pointerCursor.name;
-      HYPRCURSOR_SIZE = config.home.pointerCursor.size;
-    };
-
-    wayland.windowManager.hyprland.settings.env = [
-      "HYPRCURSOR_THEME,${config.home.pointerCursor.name}"
-      "HYPRCURSOR_SIZE,${toString config.home.pointerCursor.size}"
-    ];
 
     # GTK
     gtk = {
