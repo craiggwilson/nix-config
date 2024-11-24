@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.powertop = {
-    enable = lib.mkOption {
-      description = "Whether to enable powertop.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "powertop" true;
   };
 
   config = lib.mkIf cfg.enable {

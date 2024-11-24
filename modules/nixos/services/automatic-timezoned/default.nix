@@ -10,11 +10,7 @@ in
 {
 
   options.hdwlinux.services.automatic-timezoned = {
-    enable = lib.mkOption {
-      description = "Whether to enable automatic-timezoned.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "automatic-timezoned" true;
   };
 
   config = lib.mkIf cfg.enable {

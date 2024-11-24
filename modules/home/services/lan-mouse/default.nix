@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.features.lan-mouse = {
-    enable = lib.mkOption {
-      description = "Whether to enable lan-mouse.";
-      type = lib.types.bool;
-      default = false;
-    };
+    enable = lib.hdwlinux.mkEnableOption "lan-mouse" false;
     client = lib.mkOption {
       type = lib.types.submodule {
         options = {

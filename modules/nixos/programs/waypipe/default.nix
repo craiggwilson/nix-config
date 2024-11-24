@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.waypipe = {
-    enable = lib.mkOption {
-      description = "Whether to enable waypipe.";
-      type = lib.types.bool;
-      default = false;
-    };
+    enable = lib.hdwlinux.mkEnableOption "usbutils" false;
   };
 
   config = lib.mkIf cfg.enable {

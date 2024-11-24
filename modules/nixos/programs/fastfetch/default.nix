@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.fastfetch = {
-    enable = lib.mkOption {
-      description = "Whether to enable fastfetch.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "fastfetch" true;
   };
 
   config = lib.mkIf cfg.enable {

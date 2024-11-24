@@ -9,11 +9,7 @@ let
 in
 {
   options.hdwlinux.home-manager = {
-    enable = lib.mkOption {
-      description = "Whether to enable home-manager.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "home-manager" true;
   };
 
   config = lib.mkIf cfg.enable {

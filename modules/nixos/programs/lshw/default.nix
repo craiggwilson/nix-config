@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.lshw = {
-    enable = lib.mkOption {
-      description = "Whether to enable lshw.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "lshw" true;
   };
 
   config = lib.mkIf cfg.enable {

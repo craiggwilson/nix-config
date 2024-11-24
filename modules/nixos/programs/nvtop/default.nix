@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.programsd.nvtop = {
-    enable = lib.mkOption {
-      description = "Whether to enable nvtop.";
-      type = lib.types.bool;
-      default = config.hdwlinux.hardware.graphics.nvidia.enable;
-    };
+    enable = lib.hdwlinux.mkEnableOption "nvtop" config.hdwlinux.hardware.graphics.nvidia.enable;
   };
 
   config = lib.mkIf cfg.enable {

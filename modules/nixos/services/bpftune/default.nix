@@ -8,11 +8,7 @@ let
 in
 {
   options.hdwlinux.services.bpftune = {
-    enable = lib.mkOption {
-      description = "Whether to enable bpftune.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "bpftune" true;
   };
 
   config = lib.mkIf cfg.enable {

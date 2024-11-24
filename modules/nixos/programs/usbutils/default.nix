@@ -10,11 +10,7 @@ let
 in
 {
   options.hdwlinux.features.usbutils = {
-    enable = lib.mkOption {
-      description = "Whether to enable usbutils.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "usbutils" true;
   };
 
   config = lib.mkIf cfg.enable {

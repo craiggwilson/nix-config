@@ -8,11 +8,7 @@ let
 in
 {
   options.hdwlinux.services.dbus = {
-    enable = lib.mkOption {
-      description = "Whether to enable dbus.";
-      type = lib.types.bool;
-      default = true;
-    };
+    enable = lib.hdwlinux.mkEnableOption "dbus" true;
   };
 
   config = lib.mkIf cfg.enable {
