@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs._1password-gui = {
-    enable = config.lib.hdwlinux.features.mkEnableAllOption "1password-gui" [
+    enable = config.lib.hdwlinux.mkEnableAllOption "1password-gui" [
       "gui"
       "security:passwordmanager"
     ];

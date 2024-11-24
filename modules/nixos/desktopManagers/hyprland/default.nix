@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "hyprland" "desktop:hyprland";
+    enable = config.lib.hdwlinux.mkEnableOption "hyprland" "desktop:hyprland";
   };
 
   config = lib.mkIf cfg.enable {

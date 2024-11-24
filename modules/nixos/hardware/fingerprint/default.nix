@@ -24,7 +24,7 @@ let
 in
 {
   options.hdwlinux.hardware.fingerprint = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "fingerprint" "fingerprint";
+    enable = config.lib.hdwlinux.mkEnableOption "fingerprint" "fingerprint";
     laptop-lid = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;

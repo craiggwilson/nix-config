@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.desktopManagers.cosmic = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "cosmic" "desktop:cosmic";
+    enable = config.lib.hdwlinux.mkEnableOption "cosmic" "desktop:cosmic";
   };
 
   config = lib.mkIf cfg.enable {

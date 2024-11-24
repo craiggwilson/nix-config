@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.hardware.graphics.nvidia = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "video" "video:nvidia";
+    enable = config.lib.hdwlinux.mkEnableOption "video" "video:nvidia";
     card = lib.mkOption {
       description = "The nvidia graphics card information.";
       type = lib.hdwlinux.pcicard;

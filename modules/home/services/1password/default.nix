@@ -10,7 +10,7 @@ in
 {
 
   options.hdwlinux.services._1password = {
-    enable = config.lib.hdwlinux.features.mkEnableAllOption "1password" [
+    enable = config.lib.hdwlinux.mkEnableAllOption "1password" [
       "gui"
       "security:passwordmanager"
     ];

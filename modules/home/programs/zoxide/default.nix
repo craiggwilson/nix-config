@@ -11,8 +11,10 @@ in
     enable = lib.hdwlinux.mkEnableOption "zoxide" true;
   };
 
-  config.programs.zoxide = lib.mkIf cfg.enable {
-    enable = true;
-    enableBashIntegration = config.hdwlinux.features.bash.enable;
+  config = lib.mkIf cfg.enable {
+    programs.zoxide = {
+      enable = true;
+      enableBashIntegration = config.hdwlinux.features.bash.enable;
+    };
   };
 }

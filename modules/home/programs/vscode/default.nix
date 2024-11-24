@@ -1,5 +1,4 @@
 {
-  options,
   config,
   lib,
   pkgs,
@@ -7,21 +6,23 @@
   ...
 }:
 
-with lib;
-with lib.hdwlinux;
 let
-  cfg = config.hdwlinux.features.vscode;
+  cfg = config.hdwlinux.programs.vscode;
 in
 {
-  options.hdwlinux.features.vscode = with types; {
-    enable = mkEnableOpt [
+  options.hdwlinux.programs.vscode = {
+    enable = config.lib.hdwlinux.mkEnableAllOption "vscode" [
       "gui"
       "programming"
-    ] config.hdwlinux.features.tags;
-    theme = mkStrOpt "hdwlinux" "The theme name to use.";
+    ];
+    theme = lib.mkOption {
+      description = "The theme name to use";
+      type = lib.types.str;
+      default = "hdwlinux";
+    };
   };
 
-  config = mkIf cfg.enable {
+  config = lib.mkIf cfg.enable {
     programs.vscode = {
       enable = true;
       mutableExtensionsDir = true;

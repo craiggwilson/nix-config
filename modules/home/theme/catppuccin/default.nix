@@ -22,7 +22,7 @@ in
 {
 
   options.hdwlinux.theme.catppuccin = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "catppuccin" "theming:catppuccin";
+    enable = config.lib.hdwlinux.mkEnableOption "catppuccin" "theming:catppuccin";
     flavor = lib.mkOption {
       description = "The flavor.";
       type = lib.types.str;
@@ -88,7 +88,7 @@ in
     };
 
     # VSCode
-    hdwlinux.features.vscode.theme = "Catppuccin ${lib.hdwlinux.toTitle cfg.flavor}";
+    hdwlinux.programs.vscode.theme = "Catppuccin ${lib.hdwlinux.toTitle cfg.flavor}";
     programs.vscode.extensions = with pkgs.vscode-extensions; [ catppuccin.catppuccin-vsc ];
   };
 }

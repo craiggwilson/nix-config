@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.hardware.xone = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "xone" "gaming";
+    enable = config.lib.hdwlinux.mkEnableOption "xone" "gaming";
   };
 
   config = lib.mkIf cfg.enable {

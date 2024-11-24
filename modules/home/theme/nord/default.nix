@@ -13,7 +13,7 @@ in
 {
 
   options.hdwlinux.theme.nord = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "nord" "theming:nord";
+    enable = config.lib.hdwlinux.mkEnableOption "nord" "theming:nord";
   };
 
   config = lib.mkIf cfg.enable {

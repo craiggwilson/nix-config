@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.hardware.sane = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "sane" "scanning";
+    enable = config.lib.hdwlinux.mkEnableOption "sane" "scanning";
   };
 
   config = lib.mkIf cfg.enable {

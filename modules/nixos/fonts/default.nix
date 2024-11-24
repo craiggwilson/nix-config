@@ -19,7 +19,7 @@ let
 in
 {
   options.hdwlinux.fonts = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "fonts" "gui";
+    enable = config.lib.hdwlinux.mkEnableOption "fonts" "gui";
   };
 
   config.fonts = lib.mkIf cfg.enable {

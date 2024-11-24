@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.filesystems.nfs = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "nfs" "filesystem:nfs";
+    enable = config.lib.hdwlinux.mkEnableOption "nfs" "filesystem:nfs";
     mounts = lib.mkOption {
       description = "Options to the set of mounts to make available.";
       type = lib.types.listOf (

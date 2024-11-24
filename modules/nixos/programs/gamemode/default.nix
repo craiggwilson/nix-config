@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.gamemode = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "gamemode" "gaming";
+    enable = config.lib.hdwlinux.mkEnableOption "gamemode" "gaming";
   };
 
   config = lib.mkIf cfg.enable {

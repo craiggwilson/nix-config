@@ -14,7 +14,7 @@ in
 {
 
   options.hdwlinux.theme.dracula = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "dracula" "theming:dracula";
+    enable = config.lib.hdwlinux.mkEnableOption "dracula" "theming:dracula";
   };
 
   config = lib.mkIf cfg.enable {
@@ -26,7 +26,7 @@ in
       wallpapers = [ wallpaper ];
     };
 
-    hdwlinux.features.vscode.theme = name;
+    hdwlinux.programs.vscode.theme = name;
     programs.vscode.extensions = with pkgs.vscode-extensions; [ dracula-theme.theme-dracula ];
 
     gtk = {

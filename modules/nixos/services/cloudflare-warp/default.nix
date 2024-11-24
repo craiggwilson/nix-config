@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.services.cloudflare-warp = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "cloudflare-warp" "work";
+    enable = config.lib.hdwlinux.mkEnableOption "cloudflare-warp" "work";
   };
 
   config = lib.mkIf cfg.enable {

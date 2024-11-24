@@ -9,7 +9,7 @@ in
 {
 
   options.hdwlinux.boot.v4l2loopback = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "v4l2loopback" "v4l2loopback";
+    enable = config.lib.hdwlinux.mkEnableOption "v4l2loopback" "v4l2loopback";
   };
 
   config = lib.mkIf cfg.enable {

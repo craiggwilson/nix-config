@@ -74,7 +74,7 @@ in
   };
 
   config = {
-    lib.hdwlinux.features = {
+    lib.hdwlinux = {
       mkEnableOption =
         name: tag:
         lib.mkOption {

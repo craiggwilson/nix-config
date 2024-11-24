@@ -4,6 +4,6 @@
 }:
 {
   options.hdwlinux.hardware.camera = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "camera" "camera";
+    enable = config.lib.hdwlinux.mkEnableOption "camera" "camera";
   };
 }

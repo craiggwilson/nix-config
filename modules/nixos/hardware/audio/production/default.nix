@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.hardware.audio.production = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "audio production" "audio:production";
+    enable = config.lib.hdwlinux.mkEnableOption "audio production" "audio:production";
   };
 
   config = lib.mkIf cfg.enable {

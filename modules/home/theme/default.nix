@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.theme = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "theming" "theming";
+    enable = config.lib.hdwlinux.mkEnableOption "theming" "theming";
     name = lib.mkOption {
       description = "The name of the theme.";
       type = lib.types.str;

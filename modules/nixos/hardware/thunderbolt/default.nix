@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.hardware.thunderbolt = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "thunderbolt" "thunderbolt";
+    enable = config.lib.hdwlinux.mkEnableOption "thunderbolt" "thunderbolt";
   };
 
   config = lib.mkIf cfg.enable {

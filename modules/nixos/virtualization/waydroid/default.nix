@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.virtualization.waydroid = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "waydroid" "virtualization:waydroid";
+    enable = config.lib.hdwlinux.mkEnableOption "waydroid" "virtualization:waydroid";
   };
 
   config = lib.mkIf cfg.enable {

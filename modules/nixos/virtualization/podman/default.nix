@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.virtualization.podman = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "podman" "virtualization:podman";
+    enable = config.lib.hdwlinux.mkEnableOption "podman" "virtualization:podman";
   };
 
   config = lib.mkIf cfg.enable {

@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.networking = {
-    enable = config.lib.hdwlinux.features.mkEnableOption "networking" "networking";
+    enable = config.lib.hdwlinux.mkEnableOption "networking" "networking";
     domain = lib.mkOption {
       type = lib.types.str;
       default = "raeford.wilsonfamilyhq.com";
