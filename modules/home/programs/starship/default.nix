@@ -21,7 +21,7 @@ in
   config = lib.mkIf cfg.enable {
     programs.starship = {
       enable = true;
-      enableBashIntegration = config.hdwlinux.features.bash.enable;
+      enableBashIntegration = config.hdwlinux.programs.bash.enable;
       settings = {
         command_timeout = 5000;
         format = "$nix_shell$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";

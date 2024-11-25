@@ -90,6 +90,14 @@ in
           type = lib.types.bool;
           default = lib.hdwlinux.elemsAll tags cfg.features.tags;
         };
+
+      mkEnableAnyOption =
+        name: tags:
+        lib.mkOption {
+          description = "Whether to enable ${name}";
+          type = lib.types.bool;
+          default = lib.hdwlinux.elemsAll tags cfg.features.tags;
+        };
     };
   };
 }

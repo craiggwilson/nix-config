@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 
@@ -27,6 +28,11 @@ in
         if [ ! -z "''${file}" ]; then
           $EDITOR +"''${linenumber}" "$file"
         fi
+      '')
+      (pkgs.writeShellScriptBin "devshell" ''
+        name="$1";
+        shift;
+        ${pkgs.nix}/bin/nix develop ${flake}#$name $@;
       '')
     ];
   };

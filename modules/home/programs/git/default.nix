@@ -22,13 +22,11 @@ in
       enable = true;
       aliases = {
         amend = "commit --amend --no-edit";
-        "branch-name" = "branch --show-current";
+        branch-name = "branch --show-current";
         co = "checkout";
         conflicts = "diff --name-only --diff-filter=U";
         difft = "difftool -t difft";
-        "pr-create" = "!gh pr create --web --fill";
-        "pr-view" = "!gh pr view --web";
-        "main-branch" = "!git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4";
+        main-branch = "!git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4";
         recent = "for-each-ref --count=12 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
         #st = "status";
         #sync = "!f() { export current_branch=`git branch-name` && git co $(git main-branch) && git pull upstream $(git main-branch) && git push origin $(git main-branch) && git co $current_branch && unset $current_branch; };f";

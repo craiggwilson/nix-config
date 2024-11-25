@@ -4,15 +4,15 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.programs.zoxide;
+  cfg = config.hdwlinux.programs.fzf;
 in
 {
-  options.hdwlinux.programs.zoxide = {
-    enable = lib.hdwlinux.mkEnableOption "zoxide" true;
+  options.hdwlinux.programs.fzf = {
+    enable = lib.hdwlinux.mkEnableOption "fzf" true;
   };
 
   config = lib.mkIf cfg.enable {
-    programs.zoxide = {
+    programs.fzf = {
       enable = true;
       enableBashIntegration = config.hdwlinux.programs.bash.enable;
     };

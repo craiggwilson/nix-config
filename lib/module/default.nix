@@ -21,6 +21,7 @@ rec {
     };
 
   elemsAll = x: xs: builtins.all (e: elemPrefix e xs) x;
+  elemsAny = x: xs: builtins.any (e: elemPrefix e xs) x;
   elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
 
   toTitle =
