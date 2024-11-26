@@ -59,11 +59,13 @@ in
             no_hardware_cursors = true;
           };
 
-          monitor = (builtins.map monitorFn config.hdwlinux.monitors) ++ [ ", preferred, auto, auto" ];
+          monitor = (builtins.map monitorFn config.hdwlinux.hardware.monitors) ++ [
+            ", preferred, auto, auto"
+          ];
 
           workspace =
             (map (m: "${m.workspace}, monitor:${criteriaFn m}, default:true, persistent:true") (
-              builtins.filter (m: m.workspace != null) config.hdwlinux.monitors
+              builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
             ))
             ++ [
               "special:dropdown,gapsin:5,gapsout:30,on-created-empty:foot,border:0,rounding:false,persistent:false"
@@ -253,8 +255,8 @@ in
         bindm=SUPER, mouse:272, movewindow
         bindm=SUPER, mouse:273, resizewindow
 
-        bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.monitors)}"
-        bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.monitors)}, disable"
+        bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.hardware.monitors)}"
+        bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.hardware.monitors)}, disable"
 
         bind=, PRINT, submap, screenshot
         submap=screenshot

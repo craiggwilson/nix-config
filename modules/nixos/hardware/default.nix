@@ -44,7 +44,7 @@ in
   config = {
     home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
       {
-        hdwlinux.monitors = cfg.monitors;
+        hdwlinux.hardware.monitors = cfg.monitors;
       }
     ];
   };
