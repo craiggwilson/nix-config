@@ -38,34 +38,11 @@ let
     "virtualization:podman"
     "virtualization:waydroid"
     "vnc"
+    "work"
   ];
 
 in
 {
-  # enable =
-  #   let
-  #     from = lib.mkOptionType rec {
-  #       name = "enable";
-  #       description = "tag or list of tags: [" + (lib.strings.concatStringsSep " " availableTags) + "]";
-  #       descriptionClass = "conjunction";
-  #       check =
-  #         v:
-  #         if builtins.isString v then
-  #           lib.hdwlinux.matchTag v availableTags
-  #         else
-  #           lib.hdwlinux.matchTags v availableTags;
-  #       merge = lib.options.mergeEqualOption;
-  #       functor = (lib.options.defaultFunctor name) // {
-  #         payload = availableTags;
-  #         binOp = a: b: lib.lists.unique (a ++ b);
-  #       };
-  #     };
-  #     coerce =
-  #       v: tags:
-  #       if builtins.isString v then lib.hdwlinux.matchTag v tags else lib.hdwlinux.matchTags v tags;
-  #   in
-  #   tags: lib.types.coercedTo from (v: coerce v tags) lib.types.bool;
-
   types = {
     allTags = lib.types.listOf (lib.types.enum allTags);
 
@@ -82,5 +59,27 @@ in
         };
       };
     };
+
+    tags =
+      let
+        from = lib.mkOptionType {
+          name = "tags";
+          description = "tag or list of tags: [" + (lib.strings.concatStringsSep " " allTags) + "]";
+          descriptionClass = "noun";
+          check =
+            v:
+            if builtins.isString v then
+              lib.hdwlinux.matchTag v allTags
+            else if builtins.isList v then
+              lib.hdwlinux.matchTags v allTags
+            else
+              false;
+          merge = lib.options.mergeEqualOption;
+        };
+        coerce =
+          v: tags:
+          if builtins.isString v then lib.hdwlinux.matchTag v tags else lib.hdwlinux.matchTags v tags;
+      in
+      tags: lib.types.coercedTo from (v: coerce v tags) lib.types.bool;
   };
 }
