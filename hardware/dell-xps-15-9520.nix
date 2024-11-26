@@ -34,14 +34,12 @@
     tags = [
       "audio"
       "bluetooth"
-      "boot:systemd"
       "camera"
       "fingerprint"
       "laptop"
       "networking"
       "nvidia"
       "thunderbolt"
-      "v4l2loopback"
     ];
   };
 

@@ -1,8 +1,4 @@
 {
-  inputs,
-  config,
-  lib,
-  pkgs,
   ...
 }:
 {
@@ -13,23 +9,25 @@
   ];
 
   hdwlinux = {
+    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+
     tags = [
       "boot:systemd"
-      "cli"
-      "gui"
       "desktop:hyprland"
       "desktop:remote"
       "fonts"
+      "gui"
+      "networking:tailscale"
+      "security:passwordmanager"
       "programming"
       "printing"
       "raeford"
       "scanning"
+      "v4l2loopback"
       "video:production"
       "virtualization:docker"
       "work"
     ];
-
-    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 
     hardware = {
       fingerprint.enable = false;
@@ -72,13 +70,6 @@
         }
       ];
     };
-
-    services = {
-      tailscale = {
-        enable = true;
-      };
-    };
-
   };
 
   boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile

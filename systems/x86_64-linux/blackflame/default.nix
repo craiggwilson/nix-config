@@ -1,7 +1,4 @@
 {
-  inputs,
-  config,
-  lib,
   pkgs,
   ...
 }:
@@ -17,17 +14,18 @@
   };
 
   hdwlinux = {
+    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+
     tags = [
       "audio:midi"
       "audio:production"
       "boot:systemd"
-      "cli"
-      "gui"
       "desktop:hyprland"
       "desktop:remote"
       "filesystem:nfs"
       "fonts"
       "gaming"
+      "gui"
       "networking:tailscale"
       "personal"
       "programming"
@@ -90,8 +88,6 @@
         }
       ];
     };
-
-    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
   };
 
   # This value determines the NixOS release from which the default

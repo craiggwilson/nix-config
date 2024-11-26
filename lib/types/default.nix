@@ -7,7 +7,6 @@ let
     "boot:systemd"
     "bluetooth"
     "camera"
-    "cli"
     "desktop:cosmic"
     "desktop:gnome"
     "desktop:hyprland"
