@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.aws-cli = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "aws-cli" [
+    enable = config.lib.hdwlinux.mkEnableOption "aws-cli" [
       "programming"
       "work"
     ];

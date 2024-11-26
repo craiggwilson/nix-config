@@ -11,7 +11,7 @@ let
 in
 {
   options.hdwlinux.programs.vscode = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "vscode" [
+    enable = config.lib.hdwlinux.mkEnableOption "vscode" [
       "gui"
       "programming"
     ];

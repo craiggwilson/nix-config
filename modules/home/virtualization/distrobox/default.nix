@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.virtualization.distrobox = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "distrobox" [
+    enable = config.lib.hdwlinux.mkEnableOption "distrobox" [
       "work"
       "programming"
     ];

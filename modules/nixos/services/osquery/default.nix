@@ -5,7 +5,6 @@
 }:
 
 let
-  tags = config.hdwlinux.features.tags;
   cfg = config.hdwlinux.services.osquery;
 in
 {

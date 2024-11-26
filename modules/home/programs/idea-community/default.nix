@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.idea-community = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "idea-community" [
+    enable = config.lib.hdwlinux.mkEnableOption "idea-community" [
       "gui"
       "programming"
       "work"

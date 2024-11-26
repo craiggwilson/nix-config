@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.calibre = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "calibre" [
+    enable = config.lib.hdwlinux.mkEnableOption "calibre" [
       "gui"
       "personal"
     ];

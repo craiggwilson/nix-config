@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.programs.yazi = {
-    enable = lib.hdwlinux.mkEnableOption "yazi" true;
+    enable = config.lib.hdwlinux.mkEnableOption "yazi" true;
   };
 
   config = lib.mkIf cfg.enable {

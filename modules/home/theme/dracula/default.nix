@@ -3,7 +3,6 @@
   pkgs,
   inputs,
   config,
-  options,
   ...
 }:
 let
@@ -43,7 +42,7 @@ in
 
     home.sessionVariables.GTK_THEME = name;
 
-    dconf.settings = lib.mkIf config.hdwlinux.features.desktop.gnome.enable {
+    dconf.settings = lib.mkIf config.hdwlinux.desktopManagers.gnome.enable {
       "org/gnome/shell/extensions/user-theme" = {
         name = name;
       };

@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.obs-studio = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "obs-studio" [
+    enable = config.lib.hdwlinux.mkEnableOption "obs-studio" [
       "gui"
       "video:production"
     ];

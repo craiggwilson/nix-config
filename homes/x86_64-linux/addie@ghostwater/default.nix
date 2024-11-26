@@ -10,7 +10,7 @@
   imports = [ ../../../users/homes/addie ];
 
   hdwlinux = {
-    theme.dracula.enable = true;
+    tags = [ "theming:dracula" ];
   };
 
   # This value determines the NixOS release from which the default

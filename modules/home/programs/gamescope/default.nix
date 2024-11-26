@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.gamescope = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "gamescope" [
+    enable = config.lib.hdwlinux.mkEnableOption "gamescope" [
       "gui"
       "gaming"
     ];

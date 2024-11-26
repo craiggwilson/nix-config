@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.protonup-qt = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "protonup-qt" [
+    enable = config.lib.hdwlinux.mkEnableOption "protonup-qt" [
       "gui"
       "gaming"
     ];

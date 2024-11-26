@@ -14,6 +14,19 @@
   ];
 
   hdwlinux = {
+    tags = [
+      "boot:systemd"
+      "cli"
+      "desktop:gnome"
+      "fonts"
+      "gaming"
+      "gui"
+      "personal"
+      "printing"
+      "raeford"
+      "scanning"
+    ];
+
     nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 
     hardware = {
@@ -30,20 +43,6 @@
       ];
     };
 
-    features = {
-      tags = [
-        "boot:systemd"
-        "cli"
-        "desktop:gnome"
-        "fonts"
-        "gaming"
-        "gui"
-        "personal"
-        "printing"
-        "raeford"
-        "scanning"
-      ];
-    };
   };
 
   # This value determines the NixOS release from which the default

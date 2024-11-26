@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.atlas-cli = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "atlas-cli" [
+    enable = config.lib.hdwlinux.mkEnableOption "atlas-cli" [
       "programming"
       "work"
     ];

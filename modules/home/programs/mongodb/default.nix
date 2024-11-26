@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.mongodb = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "mongodb" [
+    enable = config.lib.hdwlinux.mkEnableOption "mongodb" [
       "programming"
       "work"
     ];

@@ -61,5 +61,22 @@ in
       };
       x11.enable = true;
     };
+
+    gtk = {
+      enable = true;
+
+      gtk3 = lib.mkIf config.hdwlinux.theme.enable {
+        extraConfig = {
+          gtk-application-prefer-dark-theme = config.hdwlinux.theme.dark;
+        };
+        extraCss = lib.mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
+      };
+      gtk4 = lib.mkIf config.hdwlinux.theme.enable {
+        extraConfig = {
+          gtk-application-prefer-dark-theme = config.hdwlinux.theme.dark;
+        };
+        extraCss = lib.mkIf (config.gtk.theme == null) config.hdwlinux.theme.colors.adwaitaGtkCss;
+      };
+    };
   };
 }

@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.xdg;
+  cfg = config.hdwlinux.xdg;
 in
 {
-  options.hdwlinux.features.xdg = {
+  options.hdwlinux.xdg = {
     enable = lib.hdwlinux.mkEnableOption "xdg" true;
   };
 

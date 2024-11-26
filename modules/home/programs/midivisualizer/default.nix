@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.midivisualizer = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "midivisualizer" [
+    enable = config.lib.hdwlinux.mkEnableOption "midivisualizer" [
       "audio:midi"
       "gui"
     ];

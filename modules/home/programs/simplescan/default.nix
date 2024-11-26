@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.simplescan = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "simplescan" [
+    enable = config.lib.hdwlinux.mkEnableOption "simplescan" [
       "gui"
       "scanning"
     ];

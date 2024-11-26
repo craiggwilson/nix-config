@@ -17,6 +17,30 @@
   };
 
   hdwlinux = {
+    tags = [
+      "audio:midi"
+      "audio:production"
+      "boot:systemd"
+      "cli"
+      "gui"
+      "desktop:hyprland"
+      "desktop:remote"
+      "filesystem:nfs"
+      "fonts"
+      "gaming"
+      "networking:tailscale"
+      "personal"
+      "programming"
+      "printing"
+      "raeford"
+      "scanning"
+      "security:passwordmanager"
+      "v4l2loopback"
+      "video:production"
+      "virtualization:podman"
+      "vnc"
+    ];
+
     filesystems.nfs.mounts = [
       {
         local = "/mnt/games";
@@ -68,33 +92,6 @@
     };
 
     nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
-
-    features = {
-      tags = [
-        "audio:midi"
-        "audio:production"
-        "boot:systemd"
-        "cli"
-        "gui"
-        "desktop:hyprland"
-        "desktop:remote"
-        "filesystem:nfs"
-        "fonts"
-        "gaming"
-        "networking:tailscale"
-        "personal"
-        "programming"
-        "printing"
-        "raeford"
-        "scanning"
-        "security:passwordmanager"
-        "v4l2loopback"
-        "video:production"
-        "virtualization:podman"
-        "vnc"
-      ];
-    };
-
   };
 
   # This value determines the NixOS release from which the default

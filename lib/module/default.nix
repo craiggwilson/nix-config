@@ -24,6 +24,19 @@ rec {
   elemsAny = x: xs: builtins.any (e: elemPrefix e xs) x;
   elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
 
+  matchTag = match: tags: elemPrefix match tags;
+  matchTags =
+    match: tags:
+    builtins.all (
+      e:
+      if builtins.isString e then
+        matchTag e tags
+      else if builtins.isList e then
+        elemsAny e tags
+      else
+        throw "match must be a string or a list of strings"
+    ) match;
+
   toTitle =
     str: "${lib.toUpper (lib.substring 0 1 str)}${lib.substring 1 (lib.stringLength str) str}";
 

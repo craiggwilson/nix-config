@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.whatsapp = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "whatsapp" [
+    enable = config.lib.hdwlinux.mkEnableOption "whatsapp" [
       "gui"
       "personal"
     ];

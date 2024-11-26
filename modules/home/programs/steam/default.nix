@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.steam = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "steam" [
+    enable = config.lib.hdwlinux.mkEnableOption "steam" [
       "gui"
       "gaming"
     ];

@@ -13,18 +13,17 @@
   ];
 
   hdwlinux = {
-    features = {
-      tags = [
-        "audio"
-        "bluetooth"
-        "camera"
-        "fingerprint"
-        "laptop"
-        "networking"
-        "thunderbolt"
-        "video:nvidia"
-      ];
-    };
+    tags = [
+      "audio"
+      "bluetooth"
+      "camera"
+      "fingerprint"
+      "laptop"
+      "networking"
+      "nvidia"
+      "thunderbolt"
+    ];
+
     hardware = {
       audio = {
         soundcard = {

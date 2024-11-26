@@ -31,7 +31,7 @@ in
       );
     };
 
-    hardware.printers = lib.mkIf (builtins.elem "raeford" config.hdwlinux.features.tags) {
+    hardware.printers = lib.mkIf (lib.hdwlinux.matchTag "raeford" config.hdwlinux.tags) {
       ensureDefaultPrinter = defaultName;
       ensurePrinters = [
         {

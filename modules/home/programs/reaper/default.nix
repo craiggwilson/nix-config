@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.reaper = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "reaper" [
+    enable = config.lib.hdwlinux.mkEnableOption "reaper" [
       "audio:production"
       "gui"
     ];

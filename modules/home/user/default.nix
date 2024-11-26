@@ -1,14 +1,9 @@
 {
   lib,
   pkgs,
-  inputs,
   config,
-  flake,
-  options,
   ...
 }:
-with lib;
-with lib.hdwlinux;
 let
   cfg = config.hdwlinux.user;
 
@@ -30,7 +25,7 @@ let
         let
           group = builtins.map (key: nodeToPkg "${name}-${key}" node."${key}") (builtins.attrNames node);
           roots = builtins.map (g: g.root) group;
-          root = pkgs.writeShellScriptBin name "${concatStringsSep "\n" (
+          root = pkgs.writeShellScriptBin name "${lib.strings.concatStringsSep "\n" (
             builtins.map (r: "${lib.getExe r}") roots
           )}";
           packages = builtins.concatMap (g: [ g.root ] ++ g.packages) group;
@@ -45,29 +40,41 @@ let
 
 in
 {
-  options.hdwlinux.user = with types; {
-    name = mkStrOpt config.snowfallorg.user.name "The name to use for the user account.";
-    fullName = mkOption {
-      type = str;
+  options.hdwlinux.user = {
+    name = lib.mkOption {
+      description = "The name to use for the user account.";
+      type = lib.types.str;
+      default = config.snowfallorg.user.name;
+    };
+    fullName = lib.mkOption {
+      type = lib.types.str;
       description = "The full name of the user.";
     };
-    email = mkOption {
-      type = str;
+    email = lib.mkOption {
+      type = lib.types.str;
       description = "The email of the user.";
     };
-    publicKey = mkOption {
-      type = str;
+    publicKey = lib.mkOption {
+      type = lib.types.str;
       description = "The public key for the user.";
     };
-    homeDirectory = mkOpt (nullOr str) "/home/${cfg.name}" "The user's home directory.";
+    homeDirectory = lib.mkOption {
+      description = "The user's home directory.";
+      type = lib.types.nullOr lib.types.str;
+      default = "/home/${cfg.name}";
+    };
 
-    updates = mkOpt (attrsOf anything) { } "Update scripts";
+    updates = lib.mkOption {
+      description = "Update scripts";
+      type = lib.types.attrsOf lib.types.anything;
+      default = { };
+    };
   };
 
   config = {
     home = {
-      username = mkDefault cfg.name;
-      homeDirectory = mkDefault cfg.home;
+      username = lib.mkDefault cfg.name;
+      homeDirectory = lib.mkDefault cfg.home;
 
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
 

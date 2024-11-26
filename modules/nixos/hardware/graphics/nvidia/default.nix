@@ -9,10 +9,10 @@ let
 in
 {
   options.hdwlinux.hardware.graphics.nvidia = {
-    enable = config.lib.hdwlinux.mkEnableOption "video" "video:nvidia";
+    enable = config.lib.hdwlinux.mkEnableOption "nvidia" "nvidia";
     card = lib.mkOption {
       description = "The nvidia graphics card information.";
-      type = lib.hdwlinux.pcicard;
+      type = lib.hdwlinux.types.pcicard;
     };
   };
 
@@ -40,22 +40,9 @@ in
       };
     };
 
-    specialisation = {
-      on-the-go.configuration = {
-        system.nixos.tags = [ "on-the-go" ];
-        hardware.nvidia.prime = {
-          offload = {
-            enable = lib.mkForce true;
-            enableOffloadCmd = true;
-          };
-          sync.enable = lib.mkForce false;
-        };
-      };
-    };
-
     home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
       {
-        hdwlinux.video.nvidia = cfg.card;
+        hdwlinux.hardware.graphics.nvidia.card = cfg.card;
       }
     ];
   };

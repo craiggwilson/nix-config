@@ -8,22 +8,20 @@ let
 in
 {
   options.hdwlinux = {
-    audio = lib.mkOption {
-      description = "Options to set the audio configuration.";
-      type = lib.types.submodule {
-        options = {
-          soundcard = lib.mkOption {
-            description = "The soundcard information.";
-            type = lib.hdwlinux.pcicard;
-          };
-        };
+    hardware = {
+      audio.soundcard = lib.mkOption {
+        description = "The soundcard information.";
+        type = lib.hdwlinux.types.pcicard;
       };
-    };
-    features = {
-      tags = lib.mkOption {
-        description = "Tags used to identify feature enablement.";
-        type = lib.hdwlinux.tags;
-        default = [ ];
+      graphics = {
+        card = lib.mkOption {
+          description = "The intel video card information.";
+          type = lib.hdwlinux.types.pcicard;
+        };
+        nvidia.card = lib.mkOption {
+          description = "The nvidia graphics card information.";
+          type = lib.hdwlinux.types.pcicard;
+        };
       };
     };
     monitors = lib.mkOption {
@@ -56,48 +54,48 @@ in
         }
       );
     };
-    video = lib.mkOption {
-      description = "Options to set the video configuration.";
-      type = lib.types.submodule {
-        options = {
-          intel = lib.mkOption {
-            description = "The intel video card information.";
-            type = lib.hdwlinux.pcicard;
-          };
-          nvidia = lib.mkOption {
-            description = "The nvidia video card information.";
-            type = lib.hdwlinux.pcicard;
-          };
-        };
-      };
+    tags = lib.mkOption {
+      description = "Tags used to identify feature enablement.";
+      type = lib.hdwlinux.types.allTags;
+      default = [ ];
     };
   };
 
   config = {
     lib.hdwlinux = {
       mkEnableOption =
-        name: tag:
+        name: default:
         lib.mkOption {
           description = "Whether to enable ${name}";
           type = lib.types.bool;
-          default = lib.hdwlinux.elemPrefix tag cfg.features.tags;
-        };
-
-      mkEnableAllOption =
-        name: tags:
-        lib.mkOption {
-          description = "Whether to enable ${name}";
-          type = lib.types.bool;
-          default = lib.hdwlinux.elemsAll tags cfg.features.tags;
-        };
-
-      mkEnableAnyOption =
-        name: tags:
-        lib.mkOption {
-          description = "Whether to enable ${name}";
-          type = lib.types.bool;
-          default = lib.hdwlinux.elemsAll tags cfg.features.tags;
+          default =
+            if builtins.isBool default then
+              default
+            else if builtins.isString default then
+              lib.hdwlinux.elemPrefix default cfg.tags
+            else if builtins.isList default then
+              lib.hdwlinux.matchTags default cfg.tags
+            else
+              throw "Only bool, string, or list of strings are supported";
         };
     };
+
+    # lib.hdwlinux = {
+    #   mkEnableOption2 =
+    #     name: default:
+    #     lib.mkOption {
+    #       description = "Whether to enable ${name}";
+    #       type = lib.hdwlinux.enable cfg.tags;
+    #       default = default;
+    #       #     if builtins.isBool arg then
+    #       #       arg
+    #       #     else if builtins.isString arg then
+    #       #       lib.hdwlinux.elemPrefix arg cfg.tags
+    #       #     else if builtins.isList arg then
+    #       #       lib.hdwlinux.matchTags arg cfg.tags
+    #       #     else
+    #       #       throw "Only bool, string, or list of strings are supported";
+    #     };
+    # };
   };
 }

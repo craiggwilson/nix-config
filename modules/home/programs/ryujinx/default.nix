@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.ryujinx = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "ryujinx" [
+    enable = config.lib.hdwlinux.mkEnableOption "ryujinx" [
       "gaming"
       "gui"
     ];

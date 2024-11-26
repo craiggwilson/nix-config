@@ -10,36 +10,39 @@
   imports = [ inputs.nixos-hardware.nixosModules.dell-xps-15-9520-nvidia ];
 
   hdwlinux = {
-    audio.soundcard = {
-      busId = "00:1f.3";
-    };
-
-    features = {
-      tags = [
-        "audio"
-        "bluetooth"
-        "boot:systemd"
-        "camera"
-        "fingerprint"
-        "laptop"
-        "networking"
-        "thunderbolt"
-        "video:nvidia"
-        "video:v4l2loopback"
-      ];
-    };
-
-    video = {
-      intel = {
-        busId = "00:02.0";
-        path = "/dev/dri/card1";
+    hardware = {
+      audio = {
+        soundcard = {
+          busId = "00:1f.3";
+          path = "/dev/snd/controlC0";
+        };
       };
-
-      nvidia = {
-        busId = "01:00.0";
-        path = "/dev/dri/card0";
+      graphics = {
+        card = {
+          busId = "00:02.0";
+          path = "/dev/dri/card1";
+        };
+        nvidia = {
+          card = {
+            busId = "01:00.0";
+            path = "/dev/dri/card0";
+          };
+        };
       };
     };
+
+    tags = [
+      "audio"
+      "bluetooth"
+      "boot:systemd"
+      "camera"
+      "fingerprint"
+      "laptop"
+      "networking"
+      "nvidia"
+      "thunderbolt"
+      "v4l2loopback"
+    ];
   };
 
   boot = {

@@ -14,25 +14,28 @@
   ];
 
   hdwlinux = {
-    features = {
-      tags = [
-        #"audio"
-        "bluetooth"
-        "boot:systemd"
-        "camera"
-        "laptop"
-        "networking"
-        #"video:nvidia"
-      ];
-    };
-    video = {
-      intel = {
-        busId = "00:02.0";
-      };
-      nvidia = {
-        busId = "02:00.0";
+    hardware = {
+      graphics = {
+        card = {
+          busId = "00:02.0";
+        };
+        nvidia = {
+          card = {
+            busId = "02:00.0";
+          };
+        };
       };
     };
+
+    tags = [
+      #"audio"
+      "bluetooth"
+      "boot:systemd"
+      "camera"
+      "laptop"
+      "networking"
+      #"nvidia"
+    ];
   };
 
   boot = {

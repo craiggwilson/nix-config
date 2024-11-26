@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.azure-cli = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "azure-cli" [
+    enable = config.lib.hdwlinux.mkEnableOption "azure-cli" [
       "programming"
       "work"
     ];

@@ -10,16 +10,7 @@
   imports = [ ../../../users/homes/craig ];
 
   hdwlinux = {
-    theme.catppuccin.enable = true;
-
-    features.lan-mouse = {
-      enable = true;
-      client = {
-        direction = "left";
-        hostname = "blackflame";
-        ips = [ "192.168.10.52" ];
-      };
-    };
+    tags = [ "theming:catppuccin" ];
   };
 
   # This value determines the NixOS release from which the default

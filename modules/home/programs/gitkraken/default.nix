@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.gitkraken = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "gitkraken" [
+    enable = config.lib.hdwlinux.mkEnableOption "gitkraken" [
       "gui"
       "programming"
     ];

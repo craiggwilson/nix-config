@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.lan-mouse;
+  cfg = config.hdwlinux.services.lan-mouse;
 in
 {
-  options.hdwlinux.features.lan-mouse = {
+  options.hdwlinux.services.lan-mouse = {
     enable = lib.hdwlinux.mkEnableOption "lan-mouse" false;
     client = lib.mkOption {
       type = lib.types.submodule {

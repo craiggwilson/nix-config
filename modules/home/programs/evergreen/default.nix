@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.evergreen = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "evergreen" [
+    enable = config.lib.hdwlinux.mkEnableOption "evergreen" [
       "programming"
       "work"
     ];

@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.musescore = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "musescore" [
+    enable = config.lib.hdwlinux.mkEnableOption "musescore" [
       "gui"
       "personal"
     ];

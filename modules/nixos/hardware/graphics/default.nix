@@ -9,10 +9,10 @@ let
 in
 {
   options.hdwlinux.hardware.graphics = {
-    enable = config.lib.hdwlinux.mkEnableOption "video" "video";
+    enable = config.lib.hdwlinux.mkEnableOption "graphics" "graphics";
     card = lib.mkOption {
       description = "The default graphics card information.";
-      type = lib.hdwlinux.pcicard;
+      type = lib.hdwlinux.types.pcicard;
     };
   };
 
@@ -24,7 +24,7 @@ in
 
     home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
       {
-        hdwlinux.video.intel = cfg.card;
+        hdwlinux.hardware.graphics.card = cfg.card;
       }
     ];
   };

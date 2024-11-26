@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.chromium = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "chromium" [
+    enable = config.lib.hdwlinux.mkEnableOption "chromium" [
       "gui"
       "gaming"
     ];

@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.slack = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "slack" [
+    enable = config.lib.hdwlinux.mkEnableOption "slack" [
       "gui"
       "work"
     ];

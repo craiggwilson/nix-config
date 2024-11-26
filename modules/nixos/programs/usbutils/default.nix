@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.features.usbutils;
+  cfg = config.hdwlinux.programs.usbutils;
 in
 {
-  options.hdwlinux.features.usbutils = {
+  options.hdwlinux.programs.usbutils = {
     enable = lib.hdwlinux.mkEnableOption "usbutils" true;
   };
 

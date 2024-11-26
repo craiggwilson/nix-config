@@ -17,7 +17,7 @@ in
     hardware.sane = {
       enable = true;
       extraBackends = [ pkgs.sane-airscan ];
-      brscan4 = lib.mkIf (builtins.elem "raeford" config.hdwlinux.features.tags) {
+      brscan4 = lib.mkIf (lib.hdwlinux.matchTag "raeford" config.hdwlinux.tags) {
         enable = true;
         netDevices = {
           raeford = {

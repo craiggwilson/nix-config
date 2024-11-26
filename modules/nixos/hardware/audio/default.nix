@@ -11,7 +11,7 @@ in
     enable = config.lib.hdwlinux.mkEnableOption "audio" "audio";
     soundcard = lib.mkOption {
       description = "The soundcard information.";
-      type = lib.hdwlinux.pcicard;
+      type = lib.hdwlinux.types.pcicard;
     };
   };
 
@@ -33,7 +33,7 @@ in
 
     home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
       {
-        hdwlinux.audio = cfg.audio;
+        hdwlinux.hardware.audio.soundcard = cfg.soundcard;
       }
     ];
   };

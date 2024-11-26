@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.bottles = {
-    enable = config.lib.hdwlinux.mkEnableAllOption "bottles" [
+    enable = config.lib.hdwlinux.mkEnableOption "bottles" [
       "gaming"
       "gui"
     ];
