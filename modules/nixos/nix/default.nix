@@ -22,21 +22,37 @@ let
 in
 {
   options.hdwlinux.nix = {
-    package = lib.hdwlinux.mkOpt lib.types.package pkgs.nixVersions.latest "Which nix package to use.";
-    flake =
-      lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) null
-        "The git repository directory that holds the flake.";
-
-    default-substituter = {
-      url = lib.hdwlinux.mkOpt lib.types.str "https://cache.nixos.org" "The url for the substituter.";
-      key =
-        lib.hdwlinux.mkOpt lib.types.str "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          "The trusted public key for the substituter.";
+    package = lib.mkOption {
+      description = "Which nix package to use.";
+      type = lib.types.package;
+      default = pkgs.nixVersions.latest;
     };
 
-    extra-substituters =
-      lib.hdwlinux.mkOpt (lib.types.attrsOf substituters-submodule) { }
-        "Extra substituters to configure.";
+    flake = lib.mkOption {
+      description = "The git repository directory that holds the flake.";
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+    };
+
+    default-substituter = {
+      url = lib.mkOption {
+        description = "The url for the substituter.";
+        type = lib.types.str;
+        default = "https://cache.nixos.org";
+      };
+
+      key = lib.mkOption {
+        description = "The trusted public key for the substituter.";
+        type = lib.types.str;
+        default = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=";
+      };
+    };
+
+    extra-substituters = lib.mkOption {
+      description = "Extra substituters to configure.";
+      type = lib.types.attrsOf substituters-submodule;
+      default = { };
+    };
   };
 
   config = {

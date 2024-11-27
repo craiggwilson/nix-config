@@ -18,13 +18,17 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    security.polkit.enable = true;
     systemd.user.services.hyprpolkitagent = {
-      description = "hyprland-polkit-agent";
-      wantedBy = [ "graphical-session.target" ];
-      wants = [ "graphical-session.target" ];
-      after = [ "graphical-session.target" ];
-      serviceConfig = {
+      Unit = {
+        ConditionEnvironment = "WAYLAND_DISPLAY";
+        Description = "hyprland-polkit-agent";
+        After = [ "graphical-session-pre.target" ];
+        PartOf = [ "graphical-session.target" ];
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+      Service = {
         Type = "simple";
         ExecStart = "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent";
         Restart = "on-failure";

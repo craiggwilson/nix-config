@@ -200,7 +200,7 @@ in
       extraConfig = ''
         bind=SUPER, A, exec, pkill rofi || rofi -show hyprland-keybinds
         bind=SUPER, B, exec, firefox                                                  # Launch Firefox
-        bind=SUPER, E, exec, thunar                                                   # Launch the file explorer
+        bind=SUPER, E, exec, nautilus                                                 # Launch the file explorer
         bind=SUPER, G, togglefloating,                                                # Toggle floating for the active window
         bind=SUPER, L, exec, 1password --toggle                                       # Launch 1Password
         bind=SUPER SHIFT,L, exec, 1password --lock                                    # Lock 1Password

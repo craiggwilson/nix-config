@@ -12,6 +12,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    hdwlinux.apps.terminal = {
+      package = config.programs.foot.package;
+      desktopName = "foot.desktop";
+    };
+
     programs.foot = {
       enable = true;
       settings = {

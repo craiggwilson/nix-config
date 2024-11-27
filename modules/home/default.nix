@@ -8,6 +8,12 @@ let
 in
 {
   options.hdwlinux = {
+    apps = lib.mkOption {
+      description = "List of categorical apps to reference generically.";
+      type = lib.types.attrsOf lib.hdwlinux.types.app;
+      default = { };
+    };
+
     hardware = {
       audio.soundcard = lib.mkOption {
         description = "The soundcard information.";

@@ -13,6 +13,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    hdwlinux.apps.webBrowser = {
+      package = config.programs.firefox.package;
+      desktopName = "firefox.desktop";
+    };
+
     programs.firefox = {
       enable = true;
       profiles."default" = {
@@ -83,14 +88,6 @@ in
           user-agent-string-switcher
         ];
       };
-    };
-
-    xdg.mimeApps.defaultApplications = {
-      "application/pdf" = "firefox.desktop";
-      "text/html" = [ "firefox.desktop" ];
-      "text/xml" = [ "firefox.desktop" ];
-      "x-scheme-handler/http" = [ "firefox.desktop" ];
-      "x-scheme-handler/https" = [ "firefox.desktop" ];
     };
   };
 }

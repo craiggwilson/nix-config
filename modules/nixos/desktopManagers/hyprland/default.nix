@@ -19,6 +19,10 @@ in
       xwayland.enable = true;
     };
 
+    environment.sessionVariables = {
+      GSK_RENDERER = "gl";
+    };
+
     xdg.portal = {
       enable = true;
       config.Hyprland = {

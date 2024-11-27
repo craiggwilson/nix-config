@@ -45,6 +45,30 @@ in
   types = {
     allTags = lib.types.listOf (lib.types.enum allTags);
 
+    app = lib.types.submodule {
+      options = {
+        package = lib.mkOption {
+          description = "The path to the app's executable.";
+          type = lib.types.package;
+        };
+        program = lib.mkOption {
+          description = "The program name to invoke. If left null, will use the mainProgram from the package.";
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+        };
+        args = lib.mkOption {
+          description = "Extra args.";
+          type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+          default = { };
+        };
+        desktopName = lib.mkOption {
+          description = "The name of the .desktop file to use for file associations.";
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+        };
+      };
+    };
+
     pcicard = lib.types.submodule {
       options = {
         busId = lib.mkOption {

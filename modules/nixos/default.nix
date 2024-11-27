@@ -5,9 +5,16 @@
 }:
 let
   cfg = config.hdwlinux;
+
 in
 {
   options.hdwlinux = {
+    apps = lib.mkOption {
+      description = "List of categorical apps to reference generically.";
+      type = lib.types.attrsOf lib.hdwlinux.types.app;
+      default = { };
+    };
+
     tags = lib.mkOption {
       description = "Tags used to enable components in the system.";
       type = lib.hdwlinux.types.allTags;
@@ -25,6 +32,13 @@ in
         };
     };
 
-    home-manager.sharedModules = [ { hdwlinux.tags = cfg.tags; } ];
+    home-manager.sharedModules = [
+      {
+        hdwlinux = {
+          apps = cfg.apps;
+          tags = cfg.tags;
+        };
+      }
+    ];
   };
 }
