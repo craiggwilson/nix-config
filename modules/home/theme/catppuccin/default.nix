@@ -61,8 +61,8 @@ in
       iconTheme = lib.mkDefault {
         name = "Papirus-Dark";
         package = pkgs.catppuccin-papirus-folders.override {
-          accent = lib.toLower cfg.accent;
-          flavor = lib.toLower cfg.flavor;
+          accent = cfg.accent;
+          flavor = cfg.flavor;
         };
       };
     };
@@ -73,18 +73,14 @@ in
     qt = {
       enable = true;
       platformTheme.name = "qtct";
-      style = {
-        name = "kvantum";
-      };
+      style.name = "kvantum";
     };
 
     xdg.configFile = {
-      "Kvantum/${kvantumName}/${kvantumName}/${kvantumName}.kvconfig".source = "${kvantumPkg}/share/Kvantum/${kvantumName}/${kvantumName}.kvconfig";
-      "Kvantum/${kvantumName}/${kvantumName}/${kvantumName}.svg".source = "${kvantumPkg}/share/Kvantum/${kvantumName}/${kvantumName}.svg";
-      "Kvantum/kvantum.kvconfig".text = ''
-        [General]
-        theme=${kvantumName}
-      '';
+      "Kvantum/${kvantumName}".source = "${kvantumPkg}/share/Kvantum/${kvantumName}";
+      "Kvantum/kvantum.kvconfig".source = (pkgs.formats.ini { }).generate "kvantum.kvconfig" {
+        General.theme = kvantumName;
+      };
     };
 
     # VSCode
