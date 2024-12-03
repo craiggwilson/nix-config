@@ -1,10 +1,11 @@
 import { App } from "astal/gtk3"
 import style from "./style.css"
-import Bar from "./widget/Bar"
+import Bar from "./apps/bar/Bar"
+import Hyprland from "gi://AstalHyprland"
 
 App.start({
     css: style,
     main() {
-        App.get_monitors().map(Bar)
+        Hyprland.get_default().monitors.map(Bar)
     },
 })
