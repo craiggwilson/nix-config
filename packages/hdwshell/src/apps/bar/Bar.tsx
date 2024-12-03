@@ -22,20 +22,16 @@ function BatteryLevel() {
 function BrightnessLevel() {
     const brightness = Brightness.get_default()
 
-    return <box className="widget microphone">
-        <button className="widget microphone"
-            onScroll={(_, event) => { switch(event.direction) {
-                case Gdk.ScrollDirection.UP: print("up"); brightness.screen += .05; break;
-                case Gdk.ScrollDirection.DOWN: print("down"); brightness.screen -= .05; break;
-                case Gdk.ScrollDirection.SMOOTH: 
-                    const delta = event.delta_y > 0 ? .05 : -.05
-                    brightness.screen = Math.min(1, Math.max(0, brightness.screen + delta))
-            }}}>
-            <box>
-                <label label={bind(brightness, "screen").as(v => Math.ceil(v * 100) + "%")} />
-            </box>
-        </button>
-    </box>
+    return <button className="widget screen-brightness"
+        onScroll={(_, event) => { switch(event.direction) {
+            case Gdk.ScrollDirection.UP: print("up"); brightness.screen += .05; break;
+            case Gdk.ScrollDirection.DOWN: print("down"); brightness.screen -= .05; break;
+            case Gdk.ScrollDirection.SMOOTH: 
+                const delta = event.delta_y > 0 ? .05 : -.05
+                brightness.screen = Math.min(1, Math.max(0, brightness.screen + delta))
+        }}}>
+        <label label={bind(brightness, "screen").as(v => Math.ceil(v * 100) + "%")} />
+    </button>
 }
 
 function Clock({ format = " %I:%M   %m/%d" }) {
@@ -53,25 +49,23 @@ function Microphone() {
     const microphone = Wp.get_default()?.audio.defaultMicrophone!
     const volume = Variable.derive([bind(microphone, "volume"), bind(microphone, "mute")])
 
-    return <box className="widget microphone">
-        <button className="widget microphone"
-            onClick={(_, event) => { switch(event.button) {
-                case Astal.MouseButton.PRIMARY: microphone.mute = !microphone.mute; break;
-                case Astal.MouseButton.SECONDARY: execAsync(`pavucontrol -t 4`); break;
-            }}}
-            onScroll={(_, event) => { switch(event.direction) {
-                case Gdk.ScrollDirection.UP: print("up"); microphone.volume += .05; break;
-                case Gdk.ScrollDirection.DOWN: print("down"); microphone.volume -= .05; break;
-                case Gdk.ScrollDirection.SMOOTH: 
-                    const delta = event.delta_y > 0 ? .05 : -.05
-                    microphone.volume = Math.min(1, Math.max(0, microphone.volume + delta))
-            }}}>
-            <box>
-                <icon icon={bind(microphone, "volumeIcon")} />
-                <label label={bind(volume).as(v => v[1] ? "Muted" : Math.ceil(v[0] * 100) + "%")} />
-            </box>
-        </button>
-    </box>
+    return <button className="widget microphone"
+        onClick={(_, event) => { switch(event.button) {
+            case Astal.MouseButton.PRIMARY: microphone.mute = !microphone.mute; break;
+            case Astal.MouseButton.SECONDARY: execAsync(`pavucontrol -t 4`); break;
+        }}}
+        onScroll={(_, event) => { switch(event.direction) {
+            case Gdk.ScrollDirection.UP: print("up"); microphone.volume += .05; break;
+            case Gdk.ScrollDirection.DOWN: print("down"); microphone.volume -= .05; break;
+            case Gdk.ScrollDirection.SMOOTH: 
+                const delta = event.delta_y > 0 ? .05 : -.05
+                microphone.volume = Math.min(1, Math.max(0, microphone.volume + delta))
+        }}}>
+        <box>
+            <icon icon={bind(microphone, "volumeIcon")} />
+            <label label={bind(volume).as(v => v[1] ? "Muted" : Math.ceil(v[0] * 100) + "%")} />
+        </box>
+    </button>
 }
 
 
@@ -79,25 +73,23 @@ function Speaker() {
     const speaker = Wp.get_default()?.audio.defaultSpeaker!
     const volume = Variable.derive([bind(speaker, "volume"), bind(speaker, "mute")])
 
-    return <box className="widget volume">
-        <button className="widget volume"
-            onClick={(_, event) => { switch(event.button) {
-                case Astal.MouseButton.PRIMARY: speaker.mute = !speaker.mute; break;
-                case Astal.MouseButton.SECONDARY: execAsync(`pavucontrol -t 3`); break;
-            }}}
-            onScroll={(_, event) => { switch(event.direction) {
-                case Gdk.ScrollDirection.UP: print("up"); speaker.volume += .05; break;
-                case Gdk.ScrollDirection.DOWN: print("down"); speaker.volume -= .05; break;
-                case Gdk.ScrollDirection.SMOOTH: 
-                    const delta = event.delta_y > 0 ? .05 : -.05
-                    speaker.volume = Math.min(1, Math.max(0, speaker.volume + delta))
-            }}}>
-            <box>
-                <icon icon={bind(speaker, "volumeIcon")} />
-                <label label={bind(volume).as(v => v[1] ? "Muted" : Math.ceil(v[0] * 100) + "%")} />
-            </box>
-        </button>
-    </box>
+    return <button className="widget volume"
+        onClick={(_, event) => { switch(event.button) {
+            case Astal.MouseButton.PRIMARY: speaker.mute = !speaker.mute; break;
+            case Astal.MouseButton.SECONDARY: execAsync(`pavucontrol -t 3`); break;
+        }}}
+        onScroll={(_, event) => { switch(event.direction) {
+            case Gdk.ScrollDirection.UP: print("up"); speaker.volume += .05; break;
+            case Gdk.ScrollDirection.DOWN: print("down"); speaker.volume -= .05; break;
+            case Gdk.ScrollDirection.SMOOTH: 
+                const delta = event.delta_y > 0 ? .05 : -.05
+                speaker.volume = Math.min(1, Math.max(0, speaker.volume + delta))
+        }}}>
+        <box>
+            <icon icon={bind(speaker, "volumeIcon")} />
+            <label label={bind(volume).as(v => v[1] ? "Muted" : Math.ceil(v[0] * 100) + "%")} />
+        </box>
+    </button>
 }
 
 function SysTray() {
@@ -154,10 +146,10 @@ export default function Bar(monitor: Hyprland.Monitor) {
         <centerbox>
             <box halign={Gtk.Align.START}>
                 <button className="widget idle-inhibitor">
-                    <label className="widget" label=" " />
+                    <label label=" " />
                 </button> 
                 <Workspaces monitor={monitor} />
-                </box>
+            </box>
             <box halign={Gtk.Align.CENTER}>
                 <Clock />
             </box>

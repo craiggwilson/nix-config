@@ -1,5 +1,5 @@
 import { App } from "astal/gtk3"
-import style from "./style.css"
+import style from "./style.scss"
 import Bar from "./apps/bar/Bar"
 import Hyprland from "gi://AstalHyprland"
 
