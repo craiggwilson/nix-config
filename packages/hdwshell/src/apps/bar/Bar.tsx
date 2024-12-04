@@ -7,6 +7,7 @@ import Network from "gi://AstalNetwork"
 import Tray from "gi://AstalTray"
 import Wp from "gi://AstalWp"
 
+
 function BatteryLevel() {
     const bat = Battery.get_default()
 
@@ -24,8 +25,8 @@ function BrightnessLevel() {
 
     return <button className="widget screen-brightness"
         onScroll={(_, event) => { switch(event.direction) {
-            case Gdk.ScrollDirection.UP: print("up"); brightness.screen += .05; break;
-            case Gdk.ScrollDirection.DOWN: print("down"); brightness.screen -= .05; break;
+            case Gdk.ScrollDirection.UP: brightness.screen += .05; break;
+            case Gdk.ScrollDirection.DOWN: brightness.screen -= .05; break;
             case Gdk.ScrollDirection.SMOOTH: 
                 const delta = event.delta_y > 0 ? .05 : -.05
                 brightness.screen = Math.min(1, Math.max(0, brightness.screen + delta))
@@ -45,6 +46,23 @@ function Clock({ format = " %I:%M   %m/%d" }) {
         label={time()} />
 }
 
+function IdleInhibitor() {
+    return <button className="widget idle-inhibitor">
+        <label label=" " />
+    </button> 
+
+    // const window = App.get_window("bar")! as Astal.Window
+    //
+    // return <button className="widget battery"
+    //     onClick={(_, event) => { switch(event.button) {
+    //         case Astal.MouseButton.PRIMARY: window.inhibit = !window.inhibit
+    //     }}}>
+    //     <box>
+    //         <label label={bind(window, "inhibit").as(toString)}/>
+    //     </box>
+    // </button>
+}
+
 function Microphone() {
     const microphone = Wp.get_default()?.audio.defaultMicrophone!
     const volume = Variable.derive([bind(microphone, "volume"), bind(microphone, "mute")])
@@ -55,8 +73,8 @@ function Microphone() {
             case Astal.MouseButton.SECONDARY: execAsync(`pavucontrol -t 4`); break;
         }}}
         onScroll={(_, event) => { switch(event.direction) {
-            case Gdk.ScrollDirection.UP: print("up"); microphone.volume += .05; break;
-            case Gdk.ScrollDirection.DOWN: print("down"); microphone.volume -= .05; break;
+            case Gdk.ScrollDirection.UP: microphone.volume += .05; break;
+            case Gdk.ScrollDirection.DOWN: microphone.volume -= .05; break;
             case Gdk.ScrollDirection.SMOOTH: 
                 const delta = event.delta_y > 0 ? .05 : -.05
                 microphone.volume = Math.min(1, Math.max(0, microphone.volume + delta))
@@ -79,8 +97,8 @@ function Speaker() {
             case Astal.MouseButton.SECONDARY: execAsync(`pavucontrol -t 3`); break;
         }}}
         onScroll={(_, event) => { switch(event.direction) {
-            case Gdk.ScrollDirection.UP: print("up"); speaker.volume += .05; break;
-            case Gdk.ScrollDirection.DOWN: print("down"); speaker.volume -= .05; break;
+            case Gdk.ScrollDirection.UP: speaker.volume += .05; break;
+            case Gdk.ScrollDirection.DOWN: speaker.volume -= .05; break;
             case Gdk.ScrollDirection.SMOOTH: 
                 const delta = event.delta_y > 0 ? .05 : -.05
                 speaker.volume = Math.min(1, Math.max(0, speaker.volume + delta))
@@ -137,6 +155,7 @@ function Workspaces({monitor} : {monitor: Hyprland.Monitor}) {
 export default function Bar(monitor: Hyprland.Monitor) {
     return <window
         className="bar"
+        name="bar"
         gdkmonitor={Gdk.Display.get_default()?.get_monitor_at_point(monitor.x, monitor.y)}
         exclusivity={Astal.Exclusivity.EXCLUSIVE}
         anchor={Astal.WindowAnchor.TOP
@@ -145,9 +164,7 @@ export default function Bar(monitor: Hyprland.Monitor) {
         application={App}>
         <centerbox>
             <box halign={Gtk.Align.START}>
-                <button className="widget idle-inhibitor">
-                    <label label=" " />
-                </button> 
+                <IdleInhibitor />
                 <Workspaces monitor={monitor} />
             </box>
             <box halign={Gtk.Align.CENTER}>
