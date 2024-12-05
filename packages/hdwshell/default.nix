@@ -18,7 +18,7 @@ stdenvNoCC.mkDerivation rec {
     astal3
     io
     # any other package
-    brightnessctl
+    pkgs.brightnessctl
   ];
 
   installPhase = ''

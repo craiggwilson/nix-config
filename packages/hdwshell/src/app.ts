@@ -1,21 +1,28 @@
-import { App, Gtk } from "astal/gtk3"
+import { App, Gtk, Astal } from "astal/gtk3"
+import { Variable } from "astal"
 import style from "./style.scss"
 import Bar from "./apps/bar/Bar"
 import Hyprland from "gi://AstalHyprland"
 
 function main() {
+
     const hypr = Hyprland.get_default()
-    const bars = new Map<Number, Gtk.Widget>()
+    const bars = new Map<Number, Astal.Window>()
 
-    for (const m of hypr.monitors) {
-        bars.set(m.id, Bar(m))
-    }
-
-    hypr.connect("monitor-added", (_, m) => {
-        bars.set(m.id, Bar(m))
+    const inhibitor = Variable(false)
+    inhibitor.subscribe(v => {
+        bars.forEach(b => b.inhibit = v)
     })
 
-    hypr.connect("monitor-removed", (_, m) => {
+    for (const m of hypr.monitors) {
+        bars.set(m.id, Bar(m, inhibitor))
+    }
+
+    hypr.connect("monitor-added", (_: unknown, m: Hyprland.Monitor) => {
+        bars.set(m.id, Bar(m, inhibitor))
+    })
+
+    hypr.connect("monitor-removed", (_: unknown, m: Hyprland.Monitor) => {
         bars.get(m.id)?.destroy()
         bars.delete(m.id)
     })

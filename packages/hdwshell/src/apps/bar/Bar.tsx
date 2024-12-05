@@ -50,21 +50,11 @@ function Clock({ format = " %I:%M   %m/%d" }) {
         label={time()} />
 }
 
-function IdleInhibitor() {
-    return <button className="widget idle-inhibitor">
-        <label label=" " />
+function IdleInhibitor({inhibitor}: {inhibitor: Variable<boolean>}) {
+    return <button className="widget idle-inhibitor"
+                onClick={() => inhibitor.set(!inhibitor.get())}>
+        <label label={bind(inhibitor).as(v => v ? " " : " ") } />
     </button> 
-
-    // const window = App.get_window("bar")! as Astal.Window
-    //
-    // return <button className="widget battery"
-    //     onClick={(_, event) => { switch(event.button) {
-    //         case Astal.MouseButton.PRIMARY: window.inhibit = !window.inhibit
-    //     }}}>
-    //     <box>
-    //         <label label={bind(window, "inhibit").as(toString)}/>
-    //     </box>
-    // </button>
 }
 
 function Microphone() {
@@ -156,7 +146,7 @@ function Workspaces({monitor} : {monitor: Hyprland.Monitor}) {
     </box>
 }
 
-export default function Bar(monitor: Hyprland.Monitor) {
+export default function Bar(monitor: Hyprland.Monitor, inhibitor: Variable<boolean>): Astal.Window {
     return <window
         className="bar"
         name="bar"
@@ -168,7 +158,7 @@ export default function Bar(monitor: Hyprland.Monitor) {
         application={App}>
         <centerbox>
             <box halign={Gtk.Align.START}>
-                <IdleInhibitor />
+                <IdleInhibitor inhibitor={inhibitor}/>
                 <Workspaces monitor={monitor} />
             </box>
             <box halign={Gtk.Align.CENTER}>
@@ -184,5 +174,5 @@ export default function Bar(monitor: Hyprland.Monitor) {
                 </box>
             </box>
         </centerbox>
-    </window>
+    </window> as Astal.Window
 }
