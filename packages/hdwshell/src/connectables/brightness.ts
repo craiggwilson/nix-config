@@ -3,69 +3,92 @@ import { monitorFile, readFileAsync } from "astal/file"
 import { exec, execAsync } from "astal/process"
 
 const get = (args: string) => Number(exec(`brightnessctl ${args}`))
-const screen = exec(`bash -c "ls -w1 /sys/class/backlight | head -1"`)
-const kbd = exec(`bash -c "ls -w1 /sys/class/leds | head -1"`)
+
+@register({ GTypeName: "BrightnessDevice" })
+export class Device extends GObject.Object {
+    
+    private _clazz: string
+    private _name: string
+    private _max: number
+    private _percent: number
+
+    constructor(name: string, clazz: string) {
+        super()
+
+        this._name = name
+        this._clazz = clazz
+
+        this._max = get(`--device ${name} max`)
+        this._percent = get(`--device ${name} get`) / this._max
+
+        monitorFile(`/sys/class/${this._clazz}/${this._name}/brightness`, async f => {
+            const v = await readFileAsync(f)
+            this._percent = Number(v) / this._max
+            this.notify("percent")
+        })
+    }
+
+    @property(String)
+    get clazz() { return this._clazz }
+
+    @property(String)
+    get icon() { 
+        return "weather-clear-symbolic"
+    }
+
+    @property(Number)
+    get max() { return this._max }
+
+    @property(String)
+    get name() { return this._name }
+
+    @property(Number)
+    get percent() { return this._percent }
+    set percent(value) {
+        if (value < 0) {
+            value = 0
+        }
+
+        if (value > 1) {
+            value = 1
+        }
+
+        execAsync(`brightnessctl --device ${this._name} set ${value * 100}% --quiet`).then(() => {
+            this._percent = value
+            this.notify("percent")
+        })
+    }
+}
 
 @register({ GTypeName: "Brightness" })
 export default class Brightness extends GObject.Object {
-    static instance: Brightness
+    static _instance: Brightness
     static get_default() {
-        if (!this.instance)
-            this.instance = new Brightness()
+        if (!this._instance) {
+            this._instance = new Brightness()
+        }
 
-        return this.instance
+        return this._instance
     }
 
-    private _kbdMax = get(`--device ${kbd} max`)
-    private _kbd = get(`--device ${kbd} get`)
-    private _screenMax = get("max")
-    private _screen = get("get") / (get("max") || 1)
+    private _devices: Device[]
 
-    @property(Number)
-    get kbd() { return this._kbd }
-
-    set kbd(value) {
-        if (value < 0 || value > this._kbdMax)
-            return
-
-        execAsync(`brightnessctl -d ${kbd} s ${value} -q`).then(() => {
-            this._kbd = value
-            this.notify("kbd")
-        })
-    }
-
-    @property(Number)
-    get screen() { return this._screen }
-
-    set screen(percent) {
-        if (percent < 0)
-            percent = 0
-
-        if (percent > 1)
-            percent = 1
-
-        execAsync(`brightnessctl set ${Math.floor(percent * 100)}% -q`).then(() => {
-            this._screen = percent
-            this.notify("screen")
-        })
-    }
+    @property()
+    get devices(): Device[] { return this._devices }
 
     constructor() {
         super()
 
-        const screenPath = `/sys/class/backlight/${screen}/brightness`
-        const kbdPath = `/sys/class/leds/${kbd}/brightness`
+        const lines = exec(`brightnessctl --list --machine-readable`)
+        this._devices = lines.split(/\r?\n/).map(this.parseDevice)
+    }
 
-        monitorFile(screenPath, async f => {
-            const v = await readFileAsync(f)
-            this._screen = Number(v) / this._screenMax
-            this.notify("screen")
-        })
+    public get_device_by_class(clazz: string): Device[] {
+        return this._devices.filter(d => d.clazz == clazz)
+    }
 
-        monitorFile(kbdPath, async f => {
-            const v = await readFileAsync(f)
-            this._kbd = Number(v) / this._kbdMax
-            this.notify("kbd")
-        })
+    private parseDevice(line: string): Device {
+        const parts = line.split(",")
+        return new Device(parts[0], parts[1])
     }
 }

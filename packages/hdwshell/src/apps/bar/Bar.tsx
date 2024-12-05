@@ -22,16 +22,20 @@ function BatteryLevel() {
 
 function BrightnessLevel() {
     const brightness = Brightness.get_default()
+    const screen = brightness.get_device_by_class("backlight")[0]
 
     return <button className="widget screen-brightness"
         onScroll={(_, event) => { switch(event.direction) {
-            case Gdk.ScrollDirection.UP: brightness.screen += .05; break;
-            case Gdk.ScrollDirection.DOWN: brightness.screen -= .05; break;
+            case Gdk.ScrollDirection.UP: screen.percent += .05; break;
+            case Gdk.ScrollDirection.DOWN: screen.percent -= .05; break;
             case Gdk.ScrollDirection.SMOOTH: 
                 const delta = event.delta_y > 0 ? .05 : -.05
-                brightness.screen = Math.min(1, Math.max(0, brightness.screen + delta))
+                screen.percent = Math.min(1, Math.max(0, screen.percent + delta))
         }}}>
-        <label label={bind(brightness, "screen").as(v => Math.ceil(v * 100) + "%")} />
+        <box>
+            <icon icon={bind(screen, "icon")} />
+            <label label={bind(screen, "percent").as(v => Math.ceil(v * 100) + "%")} />
+        </box>
     </button>
 }
 
