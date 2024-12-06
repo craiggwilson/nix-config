@@ -18,13 +18,13 @@ function main() {
         bars.set(m.id, Bar(m, inhibitor))
     }
 
-    hypr.connect("monitor-added", (_: unknown, m: Hyprland.Monitor) => {
+    hypr.connect("monitor-added", (_, m) => {
         bars.set(m.id, Bar(m, inhibitor))
     })
 
-    hypr.connect("monitor-removed", (_: unknown, m: Hyprland.Monitor) => {
-        bars.get(m.id)?.destroy()
-        bars.delete(m.id)
+    hypr.connect("monitor-removed", (_, id) => {
+        bars.get(id)?.destroy()
+        bars.delete(id)
     })
 }
 
