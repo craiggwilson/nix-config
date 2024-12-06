@@ -14,6 +14,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.hdwlinux.matcha ];
+    home.packages = [
+      pkgs.hdwlinux.matcha
+    ];
   };
 }

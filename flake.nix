@@ -127,6 +127,7 @@
       homes = {
         modules = with inputs; [
           nix-flatpak.homeManagerModules.nix-flatpak
+          ags.homeManagerModules.ags
         ];
       };
 
