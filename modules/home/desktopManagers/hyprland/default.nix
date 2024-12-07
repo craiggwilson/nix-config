@@ -18,6 +18,15 @@ in
 {
   options.hdwlinux.desktopManagers.hyprland = {
     enable = config.lib.hdwlinux.mkEnableOption "hyprland" "desktop:hyprland";
+    layout = lib.mkOption {
+      description = "The layout manager to use.";
+      type = lib.types.enum [
+        "dwindle"
+        "master"
+        "scroller"
+      ];
+      default = "scroller";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -28,12 +37,16 @@ in
       xwayland.enable = true;
       systemd.enable = true;
 
-      plugins = [
-        #pkgs.hyprlandPlugins.hypr-dynamic-cursors
-        pkgs.hyprlandPlugins.hyprfocus
-        pkgs.hyprlandPlugins.hyprspace
-        pkgs.hyprlandPlugins.hyprtrails
-      ];
+      plugins =
+        [
+          pkgs.hyprlandPlugins.hypr-dynamic-cursors
+          pkgs.hyprlandPlugins.hyprfocus
+          pkgs.hyprlandPlugins.hyprspace
+          pkgs.hyprlandPlugins.hyprtrails
+        ]
+        ++ lib.optionals (cfg.layout == "scroller") [
+          pkgs.hyprlandPlugins.hyprscroller
+        ];
 
       settings = lib.mkMerge [
         (lib.mkIf config.hdwlinux.theme.enable {
@@ -75,6 +88,7 @@ in
             gaps_in = 5;
             gaps_out = 20;
             border_size = 2;
+            layout = cfg.layout;
           };
 
           decoration = {
@@ -220,8 +234,10 @@ in
         bind=SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy  # Show the clipboard history
         bind=SUPER, ESCAPE, exec, foot btop                                           # Launch the task manager
 
-        bind=SUPER, left, workspace, -1
-        bind=SUPER, right, workspace, +1
+        bind=SUPER CTRL, left, workspace, -1
+        bind=SUPER CTRL, right, workspace, +1
+        bind=SUPER, left, movefocus, left
+        bind=SUPER, right, movefocus, right
         bind=SUPER, 1, workspace, 1
         bind=SUPER, 2, workspace, 2
         bind=SUPER, 3, workspace, 3
@@ -245,6 +261,9 @@ in
         bind=SUPER SHIFT, 8, movetoworkspace, 8
         bind=SUPER SHIFT, 9, movetoworkspace, 9
         bind=SUPER SHIFT, 0, movetoworkspace, 10
+
+        bind=SUPER SHIFT CTRL, left, resizeactive, -20% 0
+        bind=SUPER SHIFT CTRL, right, resizeactive, 20% 0
 
         bind=, xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
         binde=, xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1
