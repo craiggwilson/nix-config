@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.desktopManagers.hyprland.waybar = {
-    enable = lib.hdwlinux.mkEnableOption "waybar" config.hdwlinux.desktopManagers.hyprland.enable;
+    enable = lib.hdwlinux.mkEnableOption "waybar" false; # config.hdwlinux.desktopManagers.hyprland.enable;
   };
 
   config = lib.mkIf cfg.enable {

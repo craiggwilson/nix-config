@@ -24,6 +24,7 @@ in
           "docs"
         ]
       );
+      systemd.enable = true;
     };
   };
 }

@@ -45,8 +45,11 @@ window {
         border-radius: 10px;
         margin: 3px 10px;
 
-        icon {
-            margin-right: 3px;
+        icon:first-child {
+            margin-right: 5px;
+        }
+        icon:last-child {
+            margin-left: 5px;
         }
     }
 

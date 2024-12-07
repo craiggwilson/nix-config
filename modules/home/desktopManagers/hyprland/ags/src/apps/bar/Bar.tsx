@@ -1,4 +1,4 @@
-import { App, Astal, Gtk, Gdk } from "astal/gtk3"
+import { App, Astal, Gtk, Gdk, astalify } from "astal/gtk3"
 import { bind, execAsync, GLib, Variable } from "astal"
 import Battery from "gi://AstalBattery"
 import Brightness from "../../connectables/brightness"
@@ -7,17 +7,32 @@ import Network from "gi://AstalNetwork"
 import Tray from "gi://AstalTray"
 import Wp from "gi://AstalWp"
 
-
 function BatteryLevel() {
     const bat = Battery.get_default()
+    const show_percent = Variable(true)
 
-    return <box className="widget battery"
+    const formatTime = (seconds: number): string => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        return `${hours} h ${minutes} min`
+    };
+
+    const remainingTime = Variable.derive(
+        [bind(bat, 'charging'), bind(bat, 'timeToFull'), bind(bat, 'timeToEmpty')],
+        (isCharging, timeToFull, timeToEmpty) => {
+        return isCharging ? formatTime(timeToFull) : formatTime(timeToEmpty)
+    });
+    
+    return <button class-name="widget battery"
+        on-click={() => show_percent.set(!show_percent.get())}
         visible={bind(bat, "isPresent")}>
-        <icon icon={bind(bat, "batteryIconName")} />
-        <label label={bind(bat, "percentage").as(p =>
-            `${Math.floor(p * 100)}%`
-        )} />
-    </box>
+        <box>
+            <label visible={bind(show_percent).as(v => !v)} label={bind(remainingTime)}/>
+            <icon icon={bind(bat, "batteryIconName")} />
+            <label visible={bind(show_percent)} label={bind(bat, "percentage").as(p =>`${Math.floor(p * 100)}%`)} />
+        </box>
+    </button>
 }
 
 function BrightnessLevel() {
@@ -33,7 +48,7 @@ function BrightnessLevel() {
                 screen.percent = Math.min(1, Math.max(0, screen.percent + delta))
         }}}>
         <box>
-            <icon icon={bind(screen, "icon")} />
+            <icon valign={Gtk.Align.START} icon={bind(screen, "icon")} />
             <label label={bind(screen, "percent").as(v => Math.ceil(v * 100) + "%")} />
         </box>
     </button>
