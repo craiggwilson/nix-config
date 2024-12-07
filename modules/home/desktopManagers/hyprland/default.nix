@@ -25,7 +25,7 @@ in
         "master"
         "scroller"
       ];
-      default = "scroller";
+      default = "dwindle";
     };
   };
 
@@ -39,7 +39,6 @@ in
 
       plugins =
         [
-          pkgs.hyprlandPlugins.hypr-dynamic-cursors
           pkgs.hyprlandPlugins.hyprfocus
           pkgs.hyprlandPlugins.hyprspace
           pkgs.hyprlandPlugins.hyprtrails
@@ -168,14 +167,7 @@ in
           ];
 
           plugins = {
-            dynamic-cursors = {
-              enabled = true;
-              mode = "tilt";
 
-              shake = {
-                enabled = true;
-              };
-            };
             hyprfocus = {
               enabled = "yes";
               animate_floating = "yes";
@@ -207,6 +199,11 @@ in
                 out_speed = 2;
               };
             };
+
+            scroller = {
+              column_default_width = "seveneighths";
+            };
+
           };
         }
       ];
@@ -245,7 +242,7 @@ in
         bind=SUPER, 5, workspace, 5
         bind=SUPER, 6, workspace, 6
         bind=SUPER, 7, workspace, 7
-        bind=SUPER, 8, workspace, 8w
+        bind=SUPER, 8, workspace, 8
         bind=SUPER, 9, workspace, 9
         bind=SUPER, 0, workspace, 10
 
@@ -262,8 +259,8 @@ in
         bind=SUPER SHIFT, 9, movetoworkspace, 9
         bind=SUPER SHIFT, 0, movetoworkspace, 10
 
-        bind=SUPER SHIFT CTRL, left, resizeactive, -20% 0
-        bind=SUPER SHIFT CTRL, right, resizeactive, 20% 0
+        bind=SUPER SHIFT CTRL, left, resizeactive, -100 0
+        bind=SUPER SHIFT CTRL, right, resizeactive, 100 0
 
         bind=, xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
         binde=, xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1
@@ -273,6 +270,8 @@ in
 
         bindm=SUPER, mouse:272, movewindow
         bindm=SUPER, mouse:273, resizewindow
+        bindm = SUPER, ALT_L, movewindow
+        bindm = SUPER, Control_L, resizewindow
 
         bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.hardware.monitors)}"
         bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.hardware.monitors)}, disable"
