@@ -33,7 +33,10 @@ in
     ];
 
     extraGroups =
-      [ "wheel" ]
+      [
+        "wheel"
+        "inputs"
+      ]
       ++ (lib.optionals config.hdwlinux.hardware.audio.enable [ "audio" ])
       ++ (lib.optionals config.hdwlinux.hardware.printers.enable [ "lp" ])
       ++ (lib.optionals config.hdwlinux.hardware.sane.enable [ "scanner" ])
