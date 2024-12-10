@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.desktopManagers.hyprland.dunst = {
-    enable = lib.hdwlinux.mkEnableOption "dunst" config.hdwlinux.desktopManagers.hyprland.enable;
+    enable = lib.hdwlinux.mkEnableOption "dunst" false; # config.hdwlinux.desktopManagers.hyprland.enable;
   };
 
   config = lib.mkIf cfg.enable {
