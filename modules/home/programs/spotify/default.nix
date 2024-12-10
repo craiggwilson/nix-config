@@ -10,7 +10,10 @@ let
 in
 {
   options.hdwlinux.programs.spotify = {
-    enable = config.lib.hdwlinux.mkEnableOption "spotify" "gui";
+    enable = config.lib.hdwlinux.mkEnableOption "spotify" [
+      "audio"
+      "gui"
+    ];
   };
 
   config = lib.mkIf cfg.enable {
