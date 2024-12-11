@@ -8,7 +8,7 @@
 }
 
 window {
-    background-color: @base01;
+    background-color: alpha(@base01, .6);
 }
 
 tooltip {
@@ -28,7 +28,7 @@ label.module {
 }
 
 label.module:hover {
-    background-color: lighter(@base00);
+    background-color: alpha(darker(@base07), .1);
     border-radius: 10px;
 }
 
@@ -37,7 +37,7 @@ button {
 }
 
 button:hover {
-    background-color: lighter(@base00);
+    background-color: alpha(darker(@base07), .1);
     border-radius: 10px;
 }
 
