@@ -102,7 +102,7 @@
       formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
 
       overlays = with inputs; [
-        nur.overlay
+        nur.overlays.default
         rust-overlay.overlays.default
         (final: prev: {
           old-zoom = import nixpkgs-old-zoom {

@@ -24,7 +24,9 @@ in
 
   config.fonts = lib.mkIf cfg.enable {
     packages = [
-      nf
+      pkgs.nerd-fonts.droid-sans-mono
+      pkgs.nerd-fonts.dejavu-sans-mono
+      pkgs.nerd-fonts.fira-code
       pkgs.noto-fonts-emoji
       pkgs.comic-mono
     ];

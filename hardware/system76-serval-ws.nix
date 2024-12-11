@@ -59,7 +59,7 @@
       kernelModules = [ ];
     };
     kernelModules = [ "kvm-intel" ];
-    kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+    kernelPackages = lib.mkDefault pkgs.linuxPackages_6_11;
     kernelParams = [ ];
     kernel.sysctl = {
       "fs.inotify.max_user_watches" = "1048576";
