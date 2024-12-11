@@ -41,7 +41,6 @@ in
         [
           pkgs.hyprlandPlugins.hyprfocus
           pkgs.hyprlandPlugins.hyprspace
-          pkgs.hyprlandPlugins.hyprtrails
         ]
         ++ lib.optionals (cfg.layout == "scroller") [
           pkgs.hyprlandPlugins.hyprscroller
@@ -59,11 +58,6 @@ in
             "col.border_inactive" = rgb config.hdwlinux.theme.colors.base0D;
             "col.border_active" = rgb config.hdwlinux.theme.colors.base06;
             "col.border_locked_active" = rgb config.hdwlinux.theme.colors.base06;
-          };
-          plugins = {
-            hyprtrails = {
-              color = rgba config.hdwlinux.theme.colors.base09 "99";
-            };
           };
         })
         {
