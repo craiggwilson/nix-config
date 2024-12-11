@@ -71,6 +71,7 @@ in
               "battery"
               "cpu"
               "memory"
+              "temperature"
             ];
           };
 
@@ -214,6 +215,10 @@ in
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
             scroll-step = 5;
+          };
+
+          temperature = {
+            format = " {temperatureF}°F";
           };
 
           tray = {
