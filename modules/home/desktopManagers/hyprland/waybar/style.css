@@ -41,12 +41,12 @@ button:hover {
     border-radius: 10px;
 }
 
-#stats {
-    color: @base08;
-}
-
 #backlight {
     color: @base0B;
+}
+
+#cava {
+    color: @base0D;
 }
 
 #clock {
@@ -57,12 +57,12 @@ button:hover {
     color: @base08;
 }
 
-#network {
+#mpris {
     color: @base07;
 }
 
-#custom-power {
-    color: @base04;
+#network {
+    color: @base07;
 }
 
 #pulseaudio {
@@ -71,6 +71,10 @@ button:hover {
 
 #pulseaudio.microphone {
     color: @base0E;
+}
+
+#stats {
+    color: @base08;
 }
 
 #workspaces button {

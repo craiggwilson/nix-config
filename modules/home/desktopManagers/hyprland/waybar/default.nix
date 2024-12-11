@@ -36,7 +36,6 @@ in
       enable = true;
       systemd = {
         enable = true;
-        target = "hyprland-session.target";
       };
       style = ./style.css;
       settings = [
@@ -51,15 +50,25 @@ in
           modules-left = [
             "idle_inhibitor"
             "hyprland/workspaces"
+            "mpris"
           ];
           modules-center = [ "clock" ];
           modules-right = [
             "tray"
             "network"
             "group/stats"
-            "group/dials"
-            "custom/power"
+            "backlight"
+            "group/sound"
           ];
+
+          "group/sound" = {
+            orientation = "inherit";
+            modules = [
+              "cava"
+              "pulseaudio"
+              "pulseaudio#microphone"
+            ];
+          };
 
           "group/stats" = {
             orientation = "inherit";
@@ -72,15 +81,6 @@ in
               "cpu"
               "memory"
               "temperature"
-            ];
-          };
-
-          "group/dials" = {
-            orientation = "inherit";
-            modules = [
-              "backlight"
-              "pulseaudio"
-              "pulseaudio#microphone"
             ];
           };
 
@@ -113,6 +113,25 @@ in
             ];
           };
 
+          cava = {
+            method = "pipewire";
+            bars = 12;
+            bar_delimiter = 0;
+            sleep_timer = 5;
+            hide_on_silence = true;
+            waves = true;
+            format-icons = [
+              "▁"
+              "▂"
+              "▃"
+              "▄"
+              "▅"
+              "▆"
+              "▇"
+              "█"
+            ];
+          };
+
           clock = {
             format = " {:%I:%M   %m/%d}";
             tooltip-format = ''
@@ -134,13 +153,6 @@ in
               "󰪤"
               "󰪥"
             ];
-          };
-
-          "custom/power" = {
-            format = "";
-            tooltip = true;
-            tooltip-format = "power off";
-            on-click = "pkill rofi || rofi -show power-menu";
           };
 
           idle_inhibitor = {
@@ -165,6 +177,16 @@ in
               "󰪤"
               "󰪥"
             ];
+          };
+
+          mpris = {
+            format = "{status_icon} {artist}: {title}";
+            tooltip-format = "{album}";
+            status-icons = {
+              playing = "🎵";
+              paused = "⏸";
+            };
+            interval = 5;
           };
 
           network = {
@@ -196,7 +218,6 @@ in
               headset = "";
               phone = "";
               portable = "";
-
               car = "";
               default = [
                 ""

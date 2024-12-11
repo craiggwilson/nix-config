@@ -10,10 +10,10 @@ let
 in
 {
   options.hdwlinux.programs.playerctl = {
-    enable = config.lib.hdwlinux.mkEnableOption "spotify" "audio";
+    enable = config.lib.hdwlinux.mkEnableOption "playerctl" "audio";
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.pavucontrol ];
+    home.packages = [ pkgs.playerctl ];
   };
 }
