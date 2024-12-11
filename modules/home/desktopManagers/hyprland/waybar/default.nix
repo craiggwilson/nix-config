@@ -55,18 +55,44 @@ in
           modules-center = [ "clock" ];
           modules-right = [
             "tray"
-            "battery"
-            "backlight"
-            "pulseaudio"
-            "pulseaudio#microphone"
+            "network"
+            "group/stats"
+            "group/dials"
+            "custom/power"
           ];
+
+          "group/stats" = {
+            orientation = "inherit";
+            drawer = {
+              transition-duration = 500;
+              transition-left-to-right = false;
+            };
+            modules = [
+              "battery"
+              "cpu"
+              "memory"
+            ];
+          };
+
+          "group/dials" = {
+            orientation = "inherit";
+            modules = [
+              "backlight"
+              "pulseaudio"
+              "pulseaudio#microphone"
+            ];
+          };
+
           backlight = {
             format = "{icon} {percent}%";
             format-icons = [
               ""
               ""
             ];
+            on-scroll-down = "brightnessctl set 5%-";
+            on-scroll-up = "brightnessctl set 5%+";
           };
+
           battery = {
             states = {
               good = 95;
@@ -93,12 +119,65 @@ in
               <tt><small>{calendar}</small></tt>'';
           };
 
+          cpu = {
+            interval = 5;
+            format = "{icon} CPU: {usage}%";
+            format-icons = [
+              "󰝦"
+              "󰪞"
+              "󰪟"
+              "󰪠"
+              "󰪡"
+              "󰪢"
+              "󰪣"
+              "󰪤"
+              "󰪥"
+            ];
+          };
+
+          "custom/power" = {
+            format = "";
+            tooltip = true;
+            tooltip-format = "power off";
+            on-click = "pkill rofi || rofi -show power-menu";
+          };
+
           idle_inhibitor = {
             format = "{icon}";
             format-icons = {
               activated = "";
               deactivated = "";
             };
+          };
+
+          memory = {
+            interval = 5;
+            format = "{icon} MEM: {percentage}%";
+            format-icons = [
+              "󰝦"
+              "󰪞"
+              "󰪟"
+              "󰪠"
+              "󰪡"
+              "󰪢"
+              "󰪣"
+              "󰪤"
+              "󰪥"
+            ];
+          };
+
+          network = {
+            format-wifi = "{icon} {essid}";
+            format-icons = [
+              "󰤟"
+              "󰤢"
+              "󰤥"
+            ];
+            format-ethernet = "󰈀";
+            format-disconnected = "Disconnected";
+            tooltip-format = "{ifname} {ipaddr}/{cidr}";
+            max-length = 50;
+            on-click = "${lib.hdwlinux.getAppExe' config.hdwlinux.apps.terminal} nmtui";
           };
 
           pulseaudio = {

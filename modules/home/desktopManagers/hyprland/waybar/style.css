@@ -1,118 +1,84 @@
-@import url("colors.css");
+@import url("colors.css"); 
 
 * {
-    border: none;
-    border-radius: 0;
+    all: unset;
     font-family: Cartograph CF Nerd Font, monospace;
     font-weight: bold;
     font-size: 14px;
-    min-height: 0;
 }
 
-window#waybar {
-    background: @base01;
+window {
+    background-color: @base01;
 }
 
 tooltip {
-    background: @base01;
+    background-color: @base01;
     border-radius: 10px;
     border-width: 2px;
     border-style: solid;
     border-color: @base01;
 }
 
-#backlight,
-#battery,
-#clock,
-#custom-caffeine,
-#idle_inhibitor,
-#pulseaudio,
-#network,
-#tray,
-#window,
-#workspaces {
-    background: @base00;
-    padding: 0px 10px;
-    margin: 3px 0px;
-    border: 1px solid @base01;
+window > box > box > * {
+    border-radius: 10px;
 }
 
-#battery {
-    color: @base08;
+label.module {
+    padding: 0px 12px;
+}
+
+label.module:hover {
+    background-color: lighter(@base00);
     border-radius: 10px;
-    margin-right: 10px;
+}
+
+button {
+    min-width: 50px;
+}
+
+button:hover {
+    background-color: lighter(@base00);
+    border-radius: 10px;
+}
+
+#stats {
+    color: @base08;
 }
 
 #backlight {
     color: @base0B;
-    border-radius: 10px 0px 0px 10px;
-    border-right: 0px;
-    margin-left: 5px;
 }
 
 #clock {
-    border-radius: 10px;
-    margin-left: 5px;
+    color: @base07;
 }
 
 #idle_inhibitor {
     color: @base08;
-    border-radius: 10px;
-    margin-left: 10px;
+}
+
+#network {
+    color: @base07;
+}
+
+#custom-power {
+    color: @base04;
 }
 
 #pulseaudio {
     color: @base0D;
-    border-left: 0px;
-    border-right: 0px;
 }
 
 #pulseaudio.microphone {
     color: @base0E;
-    border-radius: 0px 10px 10px 0px;
-    border-left: 0px;
-    margin-right: 5px;
-}
-
-#tray {
-    border-radius: 10px;
-    margin-right: 10px;
-}
-
-#window {
-    border-radius: 10px;
-    margin-left: 60px;
-    margin-right: 60px;
-}
-
-#workspaces {
-    border-radius: 10px;
-    margin-left: 10px;
-    padding-right: 0px;
-    padding-left: 5px;
 }
 
 #workspaces button {
     color: @base02;
-    padding: 5px;
-    margin-right: 5px;
 }
 
-#workspaces button.active {
-    color: @base0E;
-}
-
-#workspaces button.focused {
-    color: @base0E;
-    border-radius: 10px;
-}
-
+#workspaces button.active, 
+#workspaces button.focused, 
 #workspaces button.urgent {
     color: @base0E;
-    border-radius: 10px;
-}
-
-#workspaces button:hover {
-    color: @base0E;
-    border-radius: 10px;
 }

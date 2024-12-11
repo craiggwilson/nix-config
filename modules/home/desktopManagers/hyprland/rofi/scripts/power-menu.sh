@@ -4,21 +4,19 @@ set -e
 set -u
 
 # All supported choices
-all=(lockscreen suspend logout reboot shutdown)
+all=(lockscreen logout reboot shutdown)
 
 # By default, show all (i.e., just copy the array)
 show=("${all[@]}")
 
 declare -A texts
 texts[lockscreen]="lock screen"
-texts[suspend]="suspend"
 texts[logout]="log out"
 texts[reboot]="reboot"
 texts[shutdown]="shut down"
 
 declare -A icons
 icons[lockscreen]="\Uf033e"
-icons[suspend]="\Uf04b2"
 icons[logout]="\Uf0343"
 icons[reboot]="\Uf0709"
 icons[shutdown]="\Uf0425"
@@ -26,8 +24,6 @@ icons[cancel]="\Uf0156"
 
 declare -A actions
 actions[lockscreen]="loginctl lock-session"
-actions[suspend]="systemctl hybrid-sleep"
-actions[logout]="hyprctl dispatch exit"
 actions[logout]="loginctl terminate-session $XDG_SESSION_ID"
 actions[reboot]="systemctl reboot"
 actions[shutdown]="systemctl poweroff"
