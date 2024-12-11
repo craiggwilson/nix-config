@@ -17,7 +17,7 @@ let
     accent = cfg.accent;
     variant = cfg.flavor;
   };
-  wallpaper = ./assets/cat-waves.png;
+  wallpaper = ./assets/fishing_stars.jpg;
 in
 {
 
