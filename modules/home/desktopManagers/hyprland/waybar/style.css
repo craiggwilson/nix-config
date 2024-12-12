@@ -8,7 +8,7 @@
 }
 
 window {
-    background-color: alpha(@base01, .6);
+    background-color: alpha(@base01, .4);
 }
 
 tooltip {
@@ -28,7 +28,7 @@ label.module {
 }
 
 label.module:hover {
-    background-color: alpha(darker(@base07), .1);
+    background-color: alpha(@base00, .4);
     border-radius: 10px;
 }
 
@@ -37,8 +37,12 @@ button {
 }
 
 button:hover {
-    background-color: alpha(darker(@base07), .1);
+    background-color: alpha(@base00, .4);
     border-radius: 10px;
+}
+
+#stats {
+    color: @base08;
 }
 
 #backlight {
@@ -65,16 +69,16 @@ button:hover {
     color: @base07;
 }
 
+#custom-power {
+    color: @base04;
+}
+
 #pulseaudio {
     color: @base0D;
 }
 
 #pulseaudio.microphone {
     color: @base0E;
-}
-
-#stats {
-    color: @base08;
 }
 
 #workspaces button {

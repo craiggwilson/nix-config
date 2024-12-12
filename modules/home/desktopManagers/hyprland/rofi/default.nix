@@ -30,7 +30,8 @@ in
         "display-window" = "";
         "drun-display-format" = "{name}";
         "window-format" = "{w} · {c} · {t}";
-        "modes" = "window,drun,power-menu:${./scripts/power-menu.sh},hyprland-keybinds:${./scripts/hyprland-keybinds.sh}";
+        "modes" =
+          "window,drun,power-menu:${./scripts/power-menu.sh},hyprland-keybinds:${./scripts/hyprland-keybinds.sh}";
       };
     };
 

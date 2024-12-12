@@ -152,6 +152,16 @@ in
             workspace_swipe = true;
           };
 
+          layerrule = [
+            "blur,waybar"
+            "ignorezero,waybar"
+            "blur,notifications"
+            "ignorezero,notifications"
+            "blur,rofi"
+            "ignorezero,rofi"
+            "dimaround,rofi"
+          ];
+
           windowrulev2 = [
             "opacity .95 .85,title:^(.*Code.*)$"
             "opacity .95 .85,class:^(firefox)$"

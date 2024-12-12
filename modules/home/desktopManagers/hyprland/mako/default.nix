@@ -17,13 +17,14 @@ in
       {
         enable = true;
         defaultTimeout = 5000;
-        ignoreTimeout = true;
+        ignoreTimeout = false;
         borderRadius = 5;
+        borderSize = 1;
       }
       (lib.mkIf config.hdwlinux.theme.enable {
-        backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00;
+        backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00 + "80";
         borderColor = config.hdwlinux.theme.colors.withHashtag.base07;
-        progressColor = config.hdwlinux.theme.colors.withHashtag.base02;
+        progressColor = config.hdwlinux.theme.colors.withHashtag.base02 + "80";
         textColor = config.hdwlinux.theme.colors.withHashtag.base05;
         extraConfig = ''
           [urgency=high]
