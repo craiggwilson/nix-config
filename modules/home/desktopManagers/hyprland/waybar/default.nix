@@ -32,6 +32,8 @@ in
       @define-color base0F ${config.hdwlinux.theme.colors.withHashtag.base0F};
     '';
 
+    systemd.user.services.waybar.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
+
     programs.waybar = {
       enable = true;
       systemd = {

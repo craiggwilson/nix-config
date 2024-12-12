@@ -12,6 +12,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    systemd.user.services.xembed-sni-proxy.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
+
     services.xembed-sni-proxy = {
       enable = true;
     };

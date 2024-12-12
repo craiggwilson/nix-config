@@ -18,6 +18,9 @@ in
       pkgs.wl-clipboard
     ];
 
+    systemd.user.services.cliphist.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
+    systemd.user.services.cliphist-images.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
+
     services.cliphist = {
       enable = true;
     };
