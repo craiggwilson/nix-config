@@ -233,7 +233,7 @@ in
         bind=SUPER, S, togglegroup,                                                   # Toggle stacking for the active window
         bind=SUPER, T, exec, foot                                                     # Launch the terminal
         bind=SUPER SHIFT, T, movetoworkspace, special:dropdown                        # Move the active window to the dropdown workspace
-        bind=SUPER, X, exec, pkill rofi || rofi -show power-menu                      # Show the power menu
+        bind=SUPER, X, exec, powermenu                                                # Show the power menu
         bind=SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons            # Show the application launcher
         bind=SUPER, TAB, exec, pkill rofi || rofi -show window                        # Show the window switcher
         bind=SUPER, GRAVE, togglespecialworkspace, dropdown                           # Toggle the dropdown workspace
