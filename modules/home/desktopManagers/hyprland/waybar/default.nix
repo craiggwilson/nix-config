@@ -202,7 +202,7 @@ in
             format-disconnected = "Disconnected";
             tooltip-format = "{ifname} {ipaddr}/{cidr}";
             max-length = 50;
-            on-click = "${lib.hdwlinux.getAppExe' config.hdwlinux.apps.terminal} nmtui";
+            on-click = "networkmenu";
           };
 
           pulseaudio = {
