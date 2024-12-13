@@ -218,7 +218,6 @@ in
       ];
 
       extraConfig = ''
-        bind=SUPER, A, exec, pkill rofi || rofi -show hyprland-keybinds
         bind=SUPER, B, exec, firefox                                                  # Launch Firefox
         bind=SUPER, E, exec, nautilus                                                 # Launch the file explorer
         bind=SUPER, G, togglefloating,                                                # Toggle floating for the active window
@@ -234,7 +233,7 @@ in
         bind=SUPER, T, exec, foot                                                     # Launch the terminal
         bind=SUPER SHIFT, T, movetoworkspace, special:dropdown                        # Move the active window to the dropdown workspace
         bind=SUPER, X, exec, powermenu                                                # Show the power menu
-        bind=SUPER, SPACE, exec, pkill rofi || rofi -show drun -show-icons            # Show the application launcher
+        bind=SUPER, SPACE, exec, appmenu                                              # Show the application launcher
         bind=SUPER, TAB, exec, pkill rofi || rofi -show window                        # Show the window switcher
         bind=SUPER, GRAVE, togglespecialworkspace, dropdown                           # Toggle the dropdown workspace
         bind=SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy  # Show the clipboard history
