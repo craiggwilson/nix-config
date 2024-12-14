@@ -1,11 +1,32 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 
 let
   cfg = config.hdwlinux.desktopManagers.hyprland.waybar;
+
+  notifications = pkgs.writeShellScriptBin "notifications" ''
+    DND=`makoctl mode | grep 'do-not-disturb'`
+    COUNT=`makoctl list | jq -e '.data[] | length'`
+
+    if [[ "$DND" == 'do-not-disturb' ]]; then
+        if [[ "$COUNT" == "0" ]]; then
+            echo '{"text": "󰂛 ", "tooltip": "enabled", "class": "disabled"}'
+        else
+            echo '{"text": "󰂛 ", "tooltip": "enabled", "class": ["disabled", "some"]}'
+        fi
+    else 
+        COUNT=`makoctl list | jq -e '.data[] | length'`
+        if [[ "$COUNT" == "0" ]]; then
+            echo '{"text": "󰂚 ", "tooltip": "enabled", "class": "enabled"}'
+        else
+            echo '{"text": "󱅫 ", "tooltip": "enabled", "class": ["enabled", "some"]}'
+        fi
+    fi
+  '';
 in
 {
   options.hdwlinux.desktopManagers.hyprland.waybar = {
@@ -61,6 +82,7 @@ in
             "group/stats"
             "backlight"
             "group/sound"
+            "custom/notifications"
           ];
 
           "group/network" = {
@@ -167,6 +189,14 @@ in
               "󰪤"
               "󰪥"
             ];
+          };
+
+          "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.mako.enable {
+            exec = "${notifications}/bin/notifications";
+            return-type = "json";
+            format = "{}";
+            on-click = "${config.services.mako.package}/bin/makoctl mode -t do-not-disturb";
+            interval = 1;
           };
 
           idle_inhibitor = {

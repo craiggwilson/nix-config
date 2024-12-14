@@ -20,6 +20,14 @@ in
         ignoreTimeout = false;
         borderRadius = 5;
         borderSize = 1;
+        extraConfig = ''
+          [mode=idle]
+          default-timeout=0
+          ignore-timeout=1
+
+          [mode=do-not-disturb]
+          invisible=1
+        '';
       }
       (lib.mkIf config.hdwlinux.theme.enable {
         backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00 + "80";
@@ -31,6 +39,14 @@ in
           border-color=${config.hdwlinux.theme.colors.withHashtag.base09}
         '';
       })
+    ];
+
+    services.hypridle.settings.listener = [
+      {
+        timeout = 60;
+        on-timeout = "${config.services.mako.package}/bin/makoctl mode -a idle";
+        on-resume = "${config.services.mako.package}/bin/makoctl mode -r idle";
+      }
     ];
   };
 }

@@ -57,6 +57,14 @@ button:hover {
     color: @base07;
 }
 
+#custom-notifications {
+    color: alpha(@base06, .5);
+}
+
+#custom-notifications.some {
+    color: @base06;
+}
+
 #idle_inhibitor {
     color: @base08;
 }
