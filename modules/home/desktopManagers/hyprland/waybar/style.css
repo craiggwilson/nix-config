@@ -28,7 +28,7 @@ label.module {
 }
 
 label.module:hover {
-    background-color: alpha(@base00, .4);
+    background-color: alpha(@base07, .1);
     border-radius: 10px;
 }
 
@@ -37,7 +37,7 @@ button {
 }
 
 button:hover {
-    background-color: alpha(@base00, .4);
+    background-color: alpha(@base07, .1);
     border-radius: 10px;
 }
 
@@ -82,7 +82,7 @@ button:hover {
 }
 
 #workspaces button {
-    color: @base02;
+    color: @base04;
 }
 
 #workspaces button.active, 
