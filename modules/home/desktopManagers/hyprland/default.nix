@@ -238,6 +238,7 @@ in
         bind=SUPER, GRAVE, togglespecialworkspace, dropdown                           # Toggle the dropdown workspace
         bind=SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy  # Show the clipboard history
         bind=SUPER, ESCAPE, exec, foot btop                                           # Launch the task manager
+        bind=, PRINT, exec, screenshotmenu                                            # Launch the screenshot menu
 
         bind=SUPER CTRL, left, workspace, -1
         bind=SUPER CTRL, right, workspace, +1
@@ -283,39 +284,6 @@ in
 
         bindl=,switch:off:Lid Switch,exec,hyprctl keyword monitor "${monitorFn (builtins.head config.hdwlinux.hardware.monitors)}"
         bindl=,switch:on:Lid Switch,exec,hyprctl keyword monitor "${criteriaFn (builtins.head config.hdwlinux.hardware.monitors)}, disable"
-
-        bind=, PRINT, submap, screenshot
-        submap=screenshot
-        bind=, a, exec, grimblast copy area
-        bind=, a, submap, reset
-        bind=CONTROL, a, exec, grimblast edit area
-        bind=CONTROL, a, submap, reset
-        bind=CONTROL SHIFT, a, exec, grimblast copysave area "~/Pictures/Screenshots/$(date +'%s_grim_area.png')"
-        bind=CONTROL SHIFT, a, submap, reset
-
-        bind=, m, exec, grimblast copy output
-        bind=, m, submap, reset
-        bind=CONTROL, m, exec, grimblast edit output
-        bind=CONTROL, m, submap, reset
-        bind=CONTROL SHIFT, m, exec, grimblast copysave output "~/Pictures/Screenshots/$(date +'%s_grim_monitor.png')"
-        bind=CONTROL SHIFT, m, submap, reset
-
-        bind=, s, exec, grimblast copy screen
-        bind=, s, submap, reset
-        bind=CONTROL, s, exec, grimblast edit screen
-        bind=CONTROL, s, submap, reset
-        bind=CONTROL SHIFT, s, exec, grimblast copysave screen "~/Pictures/Screenshots/$(date +'%s_grim_screen.png')"
-        bind=CONTROL SHIFT, s, submap, reset
-
-        bind=, w, exec, grimblast copy active
-        bind=, w, submap, reset
-        bind=CONTROL, w, exec, grimblast edit active
-        bind=CONTROL, w, submap, reset
-        bind=CONTROL SHIFT, w, exec, grimblast copysave active "~/Pictures/Screenshots/$(date +'%s_grim_window.png')"
-        bind=CONTROL SHIFT, w, submap, reset
-
-        bind=, ESCAPE, submap, reset
-        submap=reset
       '';
     };
   };

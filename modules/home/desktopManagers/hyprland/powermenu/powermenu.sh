@@ -19,7 +19,7 @@ no='󰜺'
 rofi_cmd() {
 	pkill rofi || rofi -dmenu \
 		-p "$host" \
-		-mesg "Uptime: $uptime" \
+		-theme-str "textbox-prompt-colon { str: \"Uptime: $uptime\";}" \
 		-theme powermenu.rasi
 }
 
