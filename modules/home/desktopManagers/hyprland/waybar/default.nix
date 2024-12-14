@@ -57,11 +57,23 @@ in
           modules-center = [ "clock" ];
           modules-right = [
             "tray"
-            "network"
+            "group/network"
             "group/stats"
             "backlight"
             "group/sound"
           ];
+
+          "group/network" = {
+            orientation = "inherit";
+            drawer = {
+              transition-duration = 500;
+              transition-left-to-right = false;
+            };
+            modules = [
+              "network"
+              "network#speed"
+            ];
+          };
 
           "group/sound" = {
             orientation = "inherit";
@@ -188,7 +200,8 @@ in
               playing = "🎵";
               paused = "⏸";
             };
-            interval = 5;
+            artist-len = 20;
+            title-len = 50;
           };
 
           network = {
@@ -201,8 +214,12 @@ in
             format-ethernet = "󰈀";
             format-disconnected = "Disconnected";
             tooltip-format = "{ifname} {ipaddr}/{cidr}";
-            max-length = 50;
             on-click = "networkmenu";
+          };
+
+          "network#speed" = {
+            format = " {bandwidthUpBits}  {bandwidthDownBits}";
+            interval = 1;
           };
 
           pulseaudio = {
