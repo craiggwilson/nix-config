@@ -75,7 +75,10 @@ in
             "hyprland/workspaces"
             "mpris"
           ];
-          modules-center = [ "clock" ];
+          modules-center = [
+            "clock"
+            "systemd-failed-units"
+          ];
           modules-right = [
             "tray"
             "group/network"

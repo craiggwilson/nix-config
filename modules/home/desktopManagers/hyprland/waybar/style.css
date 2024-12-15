@@ -42,7 +42,7 @@ button:hover {
 }
 
 #stats {
-    color: @base08;
+    color: @base0C;
 }
 
 #backlight {
@@ -62,11 +62,11 @@ button:hover {
 }
 
 #custom-notifications.some {
-    color: @base06;
+    color: @base0A;
 }
 
 #idle_inhibitor {
-    color: @base08;
+    color: alpha(@base06, .5);
 }
 
 #mpris {
@@ -87,6 +87,10 @@ button:hover {
 
 #pulseaudio.microphone {
     color: @base0E;
+}
+
+#systemd-failed-units {
+    color: @base08;
 }
 
 #workspaces button {
