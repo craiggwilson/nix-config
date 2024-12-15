@@ -65,7 +65,6 @@ in
 
           cursor = {
             no_hardware_cursors = true;
-            no_warps = true;
           };
 
           monitor = (builtins.map monitorFn config.hdwlinux.hardware.monitors) ++ [
