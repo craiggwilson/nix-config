@@ -1,0 +1,79 @@
+@import url("colors.css"); 
+
+#syshud {
+	background: transparent;
+}
+
+#syshud .box_layout {
+	background: alpha(@base00, .4);
+	border-radius: 25px;
+	border: 0px;
+	color: @base07;
+	margin: 10px;
+}
+
+#syshud scale {
+	margin: 0px;
+	padding: 0px;
+}
+#syshud label {
+	color: @base07;
+}
+
+/* Horizontal layout */
+#syshud scale.horizontal {
+	padding: 0px;
+	min-height: 5px;
+}
+#syshud scale.horizontal trough {
+	border-radius: 3px;
+	min-height: 5px;
+	padding: 0px;
+}
+#syshud scale.horizontal highlight {
+    background-color: @base07;
+	border-radius: 3px;
+	min-height: 5px;
+	margin: 0px;
+}
+#syshud scale.horizontal slider {
+    background-color: transparent;
+	margin: 0px;
+	min-height: 5px;
+	box-shadow: none;
+	padding: 0px;
+}
+
+/* Vertical layout */
+#syshud scale.vertical {
+	padding: 0px;
+	min-width: 5px;
+}
+#syshud scale.vertical trough {
+	border-radius: 3px;
+	min-width: 5px;
+	padding: 0px;
+}
+#syshud scale.vertical highlight {
+    background-color: @base07;
+	border-radius: 3px;
+	min-width: 5px;
+	margin: 0px;
+}
+#syshud scale.vertical slider {
+    background-color: transparent;
+	margin: 0px;
+	min-width: 5px;
+	box-shadow: none;
+	padding: 0px;
+}
+
+/* Levels */
+#syshud .muted {
+}
+#syshud .low {
+}
+#syshud .medium {
+}
+#syshud .high {
+}
