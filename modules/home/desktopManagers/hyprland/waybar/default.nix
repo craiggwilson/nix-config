@@ -14,16 +14,16 @@ let
 
     if [[ "$DND" == 'do-not-disturb' ]]; then
         if [[ "$COUNT" == "0" ]]; then
-            echo '{"text": "󰂛 ", "tooltip": "disabled", "class": "disabled"}'
+            echo '{"text": "󰂛", "tooltip": "disabled", "class": "disabled"}'
         else
-            echo '{"text": "󰂛 ", "tooltip": "disabled", "class": ["disabled", "some"]}'
+            echo '{"text": "󰂛", "tooltip": "disabled", "class": ["disabled", "some"]}'
         fi
     else 
         COUNT=`makoctl list | jq -e '.data[] | length'`
         if [[ "$COUNT" == "0" ]]; then
-            echo '{"text": "󰂚 ", "tooltip": "enabled", "class": "enabled"}'
+            echo '{"text": "󰂚", "tooltip": "enabled", "class": "enabled"}'
         else
-            echo '{"text": "󱅫 ", "tooltip": "enabled", "class": ["enabled", "some"]}'
+            echo '{"text": "󱅫", "tooltip": "enabled", "class": ["enabled", "some"]}'
         fi
     fi
   '';
