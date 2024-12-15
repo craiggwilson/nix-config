@@ -15,6 +15,9 @@ in
   config = lib.mkIf cfg.enable {
     programs.bat = {
       enable = true;
+      config = {
+        theme = "base16";
+      };
     };
   };
 }
