@@ -65,6 +65,7 @@ in
 
           cursor = {
             no_hardware_cursors = true;
+            no_warps = true;
           };
 
           monitor = (builtins.map monitorFn config.hdwlinux.hardware.monitors) ++ [
@@ -195,6 +196,7 @@ in
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
             "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
             "SUPER, ESCAPE, exec, foot btop"
+            "SUPER, EQUAL, exec, woomer"
             ", PRINT, exec, screenshotmenu"
 
             "SUPER CTRL, left, workspace, -1"
