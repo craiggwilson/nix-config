@@ -157,6 +157,8 @@ in
             "blur,rofi"
             "ignorezero,rofi"
             "dimaround,rofi"
+            "blur,syshud"
+            "ignorezero,syshud"
           ];
 
           windowrulev2 = [
