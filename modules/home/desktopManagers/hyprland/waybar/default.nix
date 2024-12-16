@@ -126,8 +126,9 @@ in
           backlight = {
             format = "{icon} {percent}%";
             format-icons = [
-              ""
-              ""
+              "󰃞"
+              "󰃟"
+              "󰃠"
             ];
             on-scroll-down = "brightnessctl set 5%-";
             on-scroll-up = "brightnessctl set 5%+";
@@ -260,6 +261,7 @@ in
             tooltip = false;
             format-muted = " Muted";
             on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+            on-click-middle = "easyeffects";
             on-click-right = "pavucontrol -t 3";
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
@@ -284,6 +286,7 @@ in
             format-source = " {volume}%";
             format-source-muted = " Muted";
             on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+            on-click-middle = "easyeffects";
             on-click-right = "pavucontrol -t 4";
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
