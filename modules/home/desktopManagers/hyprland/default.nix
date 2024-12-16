@@ -162,11 +162,13 @@ in
           ];
 
           windowrulev2 = [
-            "opacity .95 .85,title:^(.*Code.*)$"
+            "opacity .95 .85,class:^(code)$"
             "opacity .95 .85,class:^(firefox)$"
-            "opacity .95 .85,class:^(jetbrains-goland)$"
-            "opacity .95 .85,class:^(Logseq)$"
+            "opacity .95 .85,class:^(jetbrains)$"
+            "opacity .95 .85,class:^(org.gnome.Nautilus)$"
             "opacity .95 .85,class:^(Slack)$"
+            "opacity .95 .85,class:^(spotify)$"
+            "opacity .95 .85,class:^(steam)$"
             "float,title:^(Quick Access — 1Password)$"
             "dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
