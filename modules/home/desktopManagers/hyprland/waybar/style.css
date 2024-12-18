@@ -19,10 +19,6 @@ tooltip {
     border-color: @base01;
 }
 
-window > box > box > * {
-    border-radius: 10px;
-}
-
 label.module {
     padding: 0px 12px;
 }
@@ -33,7 +29,8 @@ label.module:hover {
 }
 
 button {
-    min-width: 50px;
+    margin: 0px;
+    padding: 0px 12px;
 }
 
 button:hover {
