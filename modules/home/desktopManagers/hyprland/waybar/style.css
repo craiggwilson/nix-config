@@ -5,10 +5,15 @@
     font-family: FiraCode Nerd Font Propo, DroidSansM Nerd Font Propo, monospace;
     font-weight: bold;
     font-size: 14px;
+    margin: 0px;
+    padding: 0px;
 }
 
 window {
-    background-color: alpha(@base01, .4);
+    background-color: @base01;
+    border: 0px solid @base07;
+    border-radius: 0px 0px 10px 10px;
+    color: @base07;
 }
 
 tooltip {
@@ -20,82 +25,117 @@ tooltip {
 }
 
 label.module {
-    padding: 0px 12px;
+    background-color: transparent;
+    padding: 3px 12px 0px 12px;
 }
 
 label.module:hover {
-    background-color: alpha(@base07, .1);
-    border-radius: 10px;
+    border-top: 3px solid transparent;
+    padding-top: 0px;
 }
 
 button {
-    margin: 0px;
     padding: 0px 12px;
+    padding-top: 3px;
 }
 
-button:hover {
-    background-color: alpha(@base07, .1);
-    border-radius: 10px;
+button:hover, button.active, button.focused, button.urgent {
+    padding-top: 0px;
+    border-top: 3px solid transparent;
 }
 
-#stats {
-    color: @base0C;
+#backlight:hover {
+    border-top-color: @base09;
+    color: @base09;
 }
 
-#backlight {
-    color: @base0B;
-}
-
-#cava {
+#cava:hover {
+    border-top-color: @base0D;
     color: @base0D;
 }
 
-#clock {
+#clock:hover {
+    border-top-color: @base07;
     color: @base07;
-}
-
-#custom-notifications {
-    color: alpha(@base06, .5);
 }
 
 #custom-notifications.some {
+    border-top-color: @base0A;
     color: @base0A;
 }
 
-#idle_inhibitor {
-    color: alpha(@base06, .5);
+#custom-notifications:hover {
+    border-top-color: @base0A;
+    color: @base0A;
 }
 
-#mpris {
-    color: @base07;
-}
-
-#network {
-    color: @base07;
-}
-
-#custom-power {
-    color: @base04;
-}
-
-#pulseaudio {
-    color: @base0D;
-}
-
-#pulseaudio.microphone {
-    color: @base0E;
-}
-
-#systemd-failed-units {
+#idle_inhibitor:hover {
+    border-top-color: @base08;
     color: @base08;
 }
 
-#workspaces button {
+#mpris:hover {
+    border-top-color: @base07;
+    color: @base07;
+}
+
+#network:hover {
+    border-top: 3px solid @base0A;
+    color: @base0A;
+}
+
+#network:hover .module {
+    border-top-width: 0px;
+    padding-top: 0px;
+}
+
+#custom-power:hover {
+    border-top-color: @base04;
     color: @base04;
+}
+
+#pulseaudio:hover {
+    border-top-color: @base0D;
+    color: @base0D;
+}
+
+#pulseaudio.microphone:hover {
+    border-top-color: @base0E;
+    color: @base0E;
+}
+
+#stats:hover {
+    border-top: 3px solid @base0C;
+    color: @base0C;
+}
+
+#stats:hover .module {
+    border-top-width: 0px;
+    padding-top: 0px;
+}
+
+#systemd-failed-units {
+    border-top-color: @base08;
+    color: @base08;
+}
+
+#tray {
+    margin: 0px 20px;
+}
+
+#tray:hover {
+    border-top-color: @base08;
+    color: @base08;
+}
+
+#workspaces button:hover {
+    border-top-color: alpha(@base0E, .8);
+    color: alpha(@base0E, .8);
 }
 
 #workspaces button.active, 
 #workspaces button.focused, 
 #workspaces button.urgent {
+    border-top-color: @base0E;
     color: @base0E;
 }

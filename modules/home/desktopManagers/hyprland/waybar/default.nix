@@ -64,8 +64,8 @@ in
       settings = [
         {
           layer = "top";
+          margin = "4 8";
           position = "top";
-          mod = "dock";
           exclusive = true;
           passthrough = false;
           gtk-layer-shell = true;

@@ -5,7 +5,7 @@
 }
 
 #syshud .box_layout {
-	background: alpha(@base00, .4);
+	background: @base01;
 	border-radius: 25px;
 	border: 0px;
 	color: @base07;

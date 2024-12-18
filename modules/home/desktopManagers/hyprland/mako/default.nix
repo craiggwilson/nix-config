@@ -30,9 +30,9 @@ in
         '';
       }
       (lib.mkIf config.hdwlinux.theme.enable {
-        backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00 + "80";
-        borderColor = config.hdwlinux.theme.colors.withHashtag.base07;
-        progressColor = config.hdwlinux.theme.colors.withHashtag.base02 + "80";
+        backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00;
+        borderColor = config.hdwlinux.theme.colors.withHashtag.base00;
+        progressColor = config.hdwlinux.theme.colors.withHashtag.base02;
         textColor = config.hdwlinux.theme.colors.withHashtag.base05;
         extraConfig = ''
           [urgency=high]
