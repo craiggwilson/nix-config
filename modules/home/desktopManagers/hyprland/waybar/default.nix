@@ -200,6 +200,7 @@ in
             return-type = "json";
             format = "{}";
             on-click = "${config.services.mako.package}/bin/makoctl mode -t do-not-disturb";
+            on-click-right = "${config.services.mako.package}/bin/makoctl dismiss --all";
             interval = 1;
           };
 
