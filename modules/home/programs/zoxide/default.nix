@@ -15,6 +15,7 @@ in
     programs.zoxide = {
       enable = true;
       enableBashIntegration = config.hdwlinux.programs.bash.enable;
+      enableZshIntegration = config.hdwlinux.programs.zsh.enable;
     };
   };
 }

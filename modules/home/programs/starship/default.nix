@@ -22,6 +22,7 @@ in
     programs.starship = {
       enable = true;
       enableBashIntegration = config.hdwlinux.programs.bash.enable;
+      enableZshIntegration = config.hdwlinux.programs.zsh.enable;
       settings = {
         command_timeout = 5000;
         format = "$nix_shell$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
@@ -58,6 +59,7 @@ in
           style = "cyan";
           bash_indicator = "";
           powershell_indicator = "";
+          zsh_indicator = "";
         };
 
         username = {
