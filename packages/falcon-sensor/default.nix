@@ -49,7 +49,7 @@ let
   };
 
   falcon-env =
-    pkgs.buildFHSUserEnv {
+    pkgs.buildFHSEnv {
       name = "fs-bash";
       targetPkgs = pkgs: [
         pkgs.libnl

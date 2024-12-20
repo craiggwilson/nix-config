@@ -38,9 +38,9 @@ in
       systemd.enable = true;
 
       plugins = [
-        pkgs.hyprlandPlugins.hyprfocus
-        pkgs.hyprlandPlugins.hyprspace
-        pkgs.hyprlandPlugins.hyprscroller
+        #pkgs.hyprlandPlugins.hyprfocus
+        #pkgs.hyprlandPlugins.hyprspace
+        #pkgs.hyprlandPlugins.hyprscroller
       ];
 
       settings = lib.mkMerge [
