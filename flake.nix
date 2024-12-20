@@ -18,12 +18,9 @@
     nixos-generators.url = "github:nix-community/nixos-generators";
     nixos-generators.inputs.nixpkgs.follows = "nixpkgs";
 
-    ags = {
-      url = "github:aylur/ags";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    astal = {
-      url = "github:aylur/astal";
+    # disko handles partitioning and applying disk configurations
+    disko = {
+      url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -33,17 +30,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # disko handles partitioning and applying disk configurations
-    disko = {
-      url = "github:nix-community/disko";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nixos-cosmic = {
-      url = "github:lilyinstarlight/nixos-cosmic";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    # kolide is a device management application for work.
     kolide-launcher = {
       url = "github:/kolide/nix-agent/main";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -54,6 +41,12 @@
 
     # nix-flatpak provides declaritive flatpak installation.
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.1.0";
+
+    # cosmic is a DE from system76.
+    nixos-cosmic = {
+      url = "github:lilyinstarlight/nixos-cosmic";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
@@ -67,6 +60,12 @@
     # snowfall-lib provides structure to the flake
     snowfall-lib = {
       url = "github:snowfallorg/lib";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # theming for spotify.
+    spicetify-nix = {
+      url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -127,7 +126,7 @@
       homes = {
         modules = with inputs; [
           nix-flatpak.homeManagerModules.nix-flatpak
-          ags.homeManagerModules.ags
+          spicetify-nix.homeManagerModules.default
         ];
       };
 

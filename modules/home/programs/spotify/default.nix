@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 
@@ -17,6 +18,19 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.spotify ];
+    programs.spicetify =
+      let
+        spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.system};
+      in
+      {
+        enable = true;
+        theme = spicePkgs.themes.catppuccin;
+        colorScheme = "mocha";
+
+        enabledExtensions = with spicePkgs.extensions; [
+          adblock
+          shuffle # shuffle+ (special characters are sanitized out of extension names)
+        ];
+      };
   };
 }
