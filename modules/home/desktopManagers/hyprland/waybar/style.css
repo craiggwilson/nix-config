@@ -73,17 +73,12 @@ tooltip {
     color: @base07;
 }
 
-#custom-notifications.some {
+#custom-notifications.some, #custom-notifications:hover {
     border-top-color: @base0A;
     color: @base0A;
 }
 
-#custom-notifications:hover {
-    border-top-color: @base0A;
-    color: @base0A;
-}
-
-#idle_inhibitor:hover {
+#idle_inhibitor.activated, #idle_inhibitor:hover {
     border-top-color: @base08;
     color: @base08;
 }
