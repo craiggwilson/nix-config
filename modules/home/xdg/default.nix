@@ -40,23 +40,36 @@ in
         let
           documentViewer = desktopName "documentViewer";
           fileManager = desktopName "fileManager";
+          imageViewer = desktopName "imageViewer";
           webBrowser = desktopName "webBrowser";
         in
         {
           enable = true;
-          defaultApplications =
-            lib.mkIf (hasApp "documentViewer") {
+          defaultApplications = lib.mkMerge [
+            (lib.mkIf (hasApp "documentViewer") {
               "application/pdf" = documentViewer;
-            }
-            // lib.mkIf (hasApp "fileManager") {
+            })
+            (lib.mkIf (hasApp "fileManager") {
               "inode/directory" = fileManager;
-            }
-            // lib.mkIf (hasApp "webBrowser") {
+            })
+            (lib.mkIf (hasApp "imageViewer") {
+              "image/avif" = imageViewer;
+              "image/bmp" = imageViewer;
+              "image/gif" = imageViewer;
+              "image/jpg" = imageViewer;
+              "image/jpeg" = imageViewer;
+              "image/png" = imageViewer;
+              "image/tiff" = imageViewer;
+              "image/webp" = imageViewer;
+              "image/vnd.microsoft.icon" = imageViewer;
+            })
+            (lib.mkIf (hasApp "webBrowser") {
               "text/html" = [ webBrowser ];
               "text/xml" = [ webBrowser ];
               "x-scheme-handler/http" = [ webBrowser ];
               "x-scheme-handler/https" = [ webBrowser ];
-            };
+            })
+          ];
 
           associations.added = lib.mkIf (hasApp "documentViewer") {
             "application/vnd.comicbook-rar" = documentViewer;
