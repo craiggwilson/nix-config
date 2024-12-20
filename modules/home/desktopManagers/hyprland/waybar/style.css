@@ -16,12 +16,14 @@ window {
     color: @base07;
 }
 
-tooltip {
-    background-color: @base01;
-    border-radius: 10px;
-    border-width: 2px;
-    border-style: solid;
-    border-color: @base01;
+button {
+    padding: 0px 12px;
+    padding-top: 3px;
+}
+
+button:hover, button.active, button.focused, button.urgent {
+    padding-top: 0px;
+    border-top: 3px solid transparent;
 }
 
 label.module {
@@ -34,14 +36,26 @@ label.module:hover {
     padding-top: 0px;
 }
 
-button {
-    padding: 0px 12px;
-    padding-top: 3px;
+menu {
+    border-radius: 10px;
+    padding: 10px;
 }
 
-button:hover, button.active, button.focused, button.urgent {
-    padding-top: 0px;
-    border-top: 3px solid transparent;
+menu menuitem {
+    padding: 5px;
+    border-left: 3px solid transparent;
+}
+
+menu menuitem:hover {
+    border-left: 3px solid @base07;
+}
+
+tooltip {
+    background-color: @base01;
+    border-radius: 10px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: @base01;
 }
 
 #backlight:hover {

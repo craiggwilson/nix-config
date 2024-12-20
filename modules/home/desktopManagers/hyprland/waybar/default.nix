@@ -70,6 +70,7 @@ in
           passthrough = false;
           gtk-layer-shell = true;
           height = 35;
+          reload_style_on_change = true;
           modules-left = [
             "idle_inhibitor"
             "hyprland/workspaces"
