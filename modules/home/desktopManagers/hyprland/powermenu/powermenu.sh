@@ -10,6 +10,7 @@ host=`hostname`
 # Options
 shutdown='󰐥'
 reboot='󰜉'
+suspend='󰒲'
 lock='󰌾'
 logout='󰍃'
 yes=''
@@ -44,7 +45,7 @@ confirm_exit() {
 
 # Pass variables to rofi dmenu
 run_rofi() {
-	echo -e "$lock\n$logout\n$reboot\n$shutdown" | rofi_cmd
+	echo -e "$lock\n$logout\n$suspend\n$reboot\n$shutdown" | rofi_cmd
 }
 
 # Execute Command
@@ -55,6 +56,8 @@ run_cmd() {
 			systemctl poweroff
 		elif [[ $1 == '--reboot' ]]; then
 			systemctl reboot
+		elif [[ $1 == '--suspend' ]]; then
+			systemctl suspend
 		elif [[ $1 == '--logout' ]]; then
             loginctl terminate-session $XDG_SESSION_ID
 		fi
@@ -71,6 +74,9 @@ case ${chosen} in
         ;;
     $reboot)
 		run_cmd --reboot
+        ;;
+    $suspend)
+		run_cmd --suspend
         ;;
     $lock)
 		loginctl lock-session
