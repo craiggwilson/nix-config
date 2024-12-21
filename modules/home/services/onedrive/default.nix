@@ -11,19 +11,16 @@ in
 {
   options.hdwlinux.services.onedrive = {
     enable = config.lib.hdwlinux.mkEnableOption "onedrive" "personal";
-    #TODO: parameterize sync list
+    syncList = lib.mkOption {
+      description = "List of folders to sync.";
+      type = lib.types.listOf lib.types.str;
+    };
   };
 
   config = lib.mkIf cfg.enable {
     home.packages = [ pkgs.onedrive ];
 
-    xdg.configFile."onedrive/sync_list".text = ''
-      /Backups
-      /Documents
-      /Games
-      /MongoDB
-      /Songs
-    '';
+    xdg.configFile."onedrive/sync_list".text = lib.strings.concatLines cfg.syncList;
 
     systemd.user.services.onedrive = {
       Unit = {

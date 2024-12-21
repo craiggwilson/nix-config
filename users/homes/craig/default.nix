@@ -27,6 +27,16 @@ in
           ForwardX11 yes
       '')
     ];
+
+    services.onedrive = {
+      syncList = [
+        "/Backups"
+        "/Documents"
+        "/Games"
+        "/MongoDB"
+        "/Songs"
+      ];
+    };
   };
 
   home.packages =
