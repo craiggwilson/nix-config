@@ -3,6 +3,7 @@
   lib,
   pkgs,
   flake,
+  host,
   ...
 }:
 
@@ -64,21 +65,44 @@ in
         "explorer.confirmDelete" = false;
         "lldb.suppressUpdateNotifications" = true;
         "nix.enableLanguageServer" = true;
-        "nix.formatterPath" = "${pkgs.nixfmt-rfc-style}/bin/nixfmt";
+        "nix.formatterPath" = [
+          "nix"
+          "fmt"
+          "--"
+          "--"
+        ];
+        "nix.hiddenLanguageServerErrors" = [
+          "textDocument/definition"
+          "textDocument/formatting"
+        ];
         "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
         "nix.serverSettings" = {
           "nixd" = {
+            "nixpkgs" = {
+              "expr" = ''import (builtins.getFlake "${flake}").inputs.nixpkgs { }'';
+            };
+
             "formatting" = {
-              "command" = "${pkgs.nixfmt-rfc-style}/bin/nixfmt";
+              "command" = [
+                "nix"
+                "fmt"
+                "--"
+                "--"
+              ];
             };
             "options" = {
               "enable" = true;
               "nixos" = {
-                "expr" = "${flake}#nixosConfigurations.unsouled.options"; # TODO: make this dynamic
+                "expr" = ''(builtins.getFlake "${flake}").nixosConfigurations.${host}.options'';
               };
               "home-manager" = {
-                "expr" = ''${flake}#homeConfigurations."craig@unsouled".options''; # TODO: make this dynamic
+                "expr" =
+                  ''(builtins.getFlake "${flake}").homeConfigurations."${config.hdwlinux.user.name}@${host}".options'';
               };
+            };
+            "diagnostic" = {
+              "suppress" = [
+              ];
             };
           };
         };
