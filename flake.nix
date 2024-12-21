@@ -138,6 +138,7 @@
             nixos-cosmic.nixosModules.default
             musnix.nixosModules.musnix
             kolide-launcher.nixosModules.kolide-launcher
+            ./users/nixos/craig
           ];
         };
       };

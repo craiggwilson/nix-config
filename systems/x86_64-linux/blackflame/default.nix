@@ -6,7 +6,6 @@
   imports = [
     ../../../hardware/system76-serval-ws.nix
     ./disko.nix
-    ../../../users/nixos/craig
   ];
 
   hdwlinux = {
