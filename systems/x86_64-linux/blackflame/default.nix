@@ -1,5 +1,4 @@
 {
-  pkgs,
   ...
 }:
 {
@@ -9,8 +8,6 @@
   ];
 
   hdwlinux = {
-    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
-
     tags = [
       "audio:midi"
       "audio:production"
@@ -32,14 +29,6 @@
       "video:production"
       "virtualization:podman"
       "vnc"
-    ];
-
-    filesystems.nfs.mounts = [
-      {
-        local = "/mnt/games";
-        remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
-        auto = true;
-      }
     ];
 
     hardware = {

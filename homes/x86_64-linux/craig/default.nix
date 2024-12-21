@@ -2,7 +2,6 @@
   lib,
   pkgs,
   inputs,
-  config,
   flake,
   ...
 }:
@@ -12,7 +11,7 @@ let
   privateExists = builtins.pathExists privatePath;
 in
 {
-  imports = lib.optional privateExists privatePath;
+  imports = lib.optionals privateExists [ privatePath ];
 
   hdwlinux = {
     tags = [ "theming:catppuccin" ];

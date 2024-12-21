@@ -123,24 +123,18 @@
         })
       ];
 
-      homes = {
-        modules = with inputs; [
-          nix-flatpak.homeManagerModules.nix-flatpak
-          spicetify-nix.homeManagerModules.default
-        ];
-      };
+      homes.modules = with inputs; [
+        nix-flatpak.homeManagerModules.nix-flatpak
+        spicetify-nix.homeManagerModules.default
+      ];
 
-      systems = {
-        modules = {
-          nixos = with inputs; [
-            disko.nixosModules.disko
-            home-manager.nixosModules.home-manager
-            nixos-cosmic.nixosModules.default
-            musnix.nixosModules.musnix
-            kolide-launcher.nixosModules.kolide-launcher
-            ./users/nixos/craig
-          ];
-        };
-      };
+      systems.modules.nixos = with inputs; [
+        disko.nixosModules.disko
+        home-manager.nixosModules.home-manager
+        nixos-cosmic.nixosModules.default
+        musnix.nixosModules.musnix
+        kolide-launcher.nixosModules.kolide-launcher
+        ./users/nixos/craig
+      ];
     };
 }

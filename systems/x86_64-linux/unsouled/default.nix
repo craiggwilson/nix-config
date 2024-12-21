@@ -8,8 +8,6 @@
   ];
 
   hdwlinux = {
-    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
-
     tags = [
       "boot:systemd"
       "desktop:hyprland"

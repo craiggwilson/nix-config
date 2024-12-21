@@ -2,7 +2,6 @@
   inputs,
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -11,9 +10,19 @@ let
   privateExists = builtins.pathExists privatePath;
 in
 {
-  imports = [
+  imports = lib.optionals privateExists [ privatePath ];
 
-  ] ++ lib.optional privateExists privatePath;
+  hdwlinux = {
+    nix.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+
+    filesystems.nfs.mounts = lib.optionals (lib.hdwlinux.matchTag "gaming" config.hdwlinux.tags) [
+      {
+        local = "/mnt/games";
+        remote = "synology.raeford.wilsonfamilyhq.com:/volume2/games";
+        auto = true;
+      }
+    ];
+  };
 
   nix.settings = {
     trusted-users = [ username ];
