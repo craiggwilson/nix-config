@@ -15,6 +15,8 @@ in
   imports = lib.optional privateExists privatePath;
 
   hdwlinux = {
+    tags = [ "theming:catppuccin" ];
+
     user = {
       fullName = "Craig Wilson";
       email = "craiggwilson@gmail.com";
