@@ -28,21 +28,41 @@ in
         difft = "difftool -t difft";
         main-branch = "!git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4";
         recent = "for-each-ref --count=12 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
-        #st = "status";
-        #sync = "!f() { export current_branch=`git branch-name` && git co $(git main-branch) && git pull upstream $(git main-branch) && git push origin $(git main-branch) && git co $current_branch && unset $current_branch; };f";
       } // cfg.aliases;
       attributes = [ "*.sh eol=lf" ];
       extraConfig = {
         commit.gpgsign = true;
-        gpg.format = "ssh";
-        gpg.ssh.allowedSignersFile = "${config.xdg.configHome}/git/allowed_signers";
-        mergetool.hideResolved = true;
+        core.pager = "delta";
+        delta = {
+          dark = true;
+          navigate = true;
+        };
+        gpg = {
+          format = "ssh";
+          ssh.allowedSignersFile = "${config.xdg.configHome}/git/allowed_signers";
+        };
+        interactive.diffFilter = "delta --color-only";
+        merge = {
+          conflictstyle = "zdiff3";
+          tool = "meld";
+        };
+        mergetool = {
+          hideResolved = true;
+          keepBackup = false;
+        };
+        "mergetool \"meld\"" = {
+          path = "${pkgs.meld}/bin/meld";
+          cmd = "${pkgs.meld}/bin/meld --diff $BASE $LOCAL $REMOTE --output $MERGED";
+          trustExitCode = false;
+        };
         pull.rebase = true;
         push.default = "current";
         rerere.enabled = true;
         submodule.recurse = true;
-        url."git@github.com:".insteadOf = "https://github.com/";
-        url."ssh://git@github.com/".insteadOf = "https://github.com/";
+        url = {
+          "git@github.com:".insteadOf = "https://github.com/";
+          "ssh://git@github.com/".insteadOf = "https://github.com/";
+        };
         user.signingkey = "~/.ssh/id_rsa.pub";
       };
       ignores = [
@@ -65,6 +85,7 @@ in
     '';
 
     home.packages = [
+      pkgs.delta
       (pkgs.writeShellScriptBin "git-find" ''
         result=`${pkgs.git}/bin/git log -G"$1" --oneline | \
             ${pkgs.fzf}/bin/fzf --ansi \
