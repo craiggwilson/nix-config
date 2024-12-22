@@ -196,7 +196,7 @@ in
             "SUPER, TAB, exec, pkill rofi || rofi -show window"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
             "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-            "SUPER, ESCAPE, exec, foot btop"
+            "SUPER, ESCAPE, exec, missioncenter"
             "SUPER, EQUAL, exec, woomer"
             ", PRINT, exec, screenshotmenu"
 
