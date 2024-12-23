@@ -15,6 +15,7 @@ let
     "fingerprint"
     "fonts"
     "gaming"
+    "llm"
     "nvidia"
     "gui"
     "laptop"
@@ -38,6 +39,7 @@ let
     "virtualization:waydroid"
     "vnc"
     "work"
+    "yubikey"
   ];
 
 in

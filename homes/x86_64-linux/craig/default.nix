@@ -14,7 +14,10 @@ in
   imports = lib.optionals privateExists [ privatePath ];
 
   hdwlinux = {
-    tags = [ "theming:catppuccin" ];
+    tags = [
+      "theming:catppuccin"
+      "yubikey"
+    ];
 
     user = {
       fullName = "Craig Wilson";
