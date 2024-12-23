@@ -10,10 +10,19 @@ let
 in
 {
   options.hdwlinux.programs.meld = {
-    enable = lib.hdwlinux.mkEnableOption "meld" true;
+    enable = config.lib.hdwlinux.mkEnableOption "meld" [ "gui" ];
   };
 
   config = lib.mkIf cfg.enable {
     home.packages = [ pkgs.meld ];
+
+    programs.git.extraConfig = lib.mkIf config.hdwlinux.programs.git.enable {
+      merge.tool = "${pkgs.meld}/bin/meld";
+      "mergetool \"meld\"" = {
+        path = "${pkgs.meld}/bin/meld";
+        cmd = "${pkgs.meld}/bin/meld --diff $BASE $LOCAL $REMOTE --output $MERGED";
+        trustExitCode = false;
+      };
+    };
   };
 }

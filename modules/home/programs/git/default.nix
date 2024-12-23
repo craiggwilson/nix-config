@@ -31,34 +31,51 @@ in
       } // cfg.aliases;
       attributes = [ "*.sh eol=lf" ];
       extraConfig = {
-        commit.gpgsign = true;
-        core.pager = "delta";
-        delta = {
-          dark = true;
-          navigate = true;
+        blame.ignoreRevsFile = ".git-blame-ignore-revs";
+        branch.sort = "-committerdate";
+        commit = {
+          gpgsign = true;
+          verbose = true;
+        };
+        diff = {
+          algorithm = "histogram";
+          colorMoved = "default";
+          colorMovedWS = "allow-indentation-change";
+          context = 10;
+        };
+        fetch = {
+          fsckobjects = true;
+          prune = true;
+          prunetags = true;
         };
         gpg = {
           format = "ssh";
           ssh.allowedSignersFile = "${config.xdg.configHome}/git/allowed_signers";
         };
-        interactive.diffFilter = "delta --color-only";
+        help.autocorrect = 10;
+        init.defaultBranch = "main";
         merge = {
           conflictstyle = "zdiff3";
-          tool = "meld";
+          keepBackup = false;
         };
         mergetool = {
           hideResolved = true;
-          keepBackup = false;
-        };
-        "mergetool \"meld\"" = {
-          path = "${pkgs.meld}/bin/meld";
-          cmd = "${pkgs.meld}/bin/meld --diff $BASE $LOCAL $REMOTE --output $MERGED";
-          trustExitCode = false;
         };
         pull.rebase = true;
-        push.default = "current";
+        push = {
+          autoSetupRemote = true;
+          followtags = true;
+        };
+        rebase = {
+          autosquash = true;
+          autostash = true;
+          updateRefs = true;
+        };
+        receive.fsckobjects = true;
         rerere.enabled = true;
         submodule.recurse = true;
+        tag.sort = "taggerdate";
+        transfer.fsckobjects = true;
         url = {
           "git@github.com:".insteadOf = "https://github.com/";
           "ssh://git@github.com/".insteadOf = "https://github.com/";
@@ -85,7 +102,6 @@ in
     '';
 
     home.packages = [
-      pkgs.delta
       (pkgs.writeShellScriptBin "git-find" ''
         result=`${pkgs.git}/bin/git log -G"$1" --oneline | \
             ${pkgs.fzf}/bin/fzf --ansi \
