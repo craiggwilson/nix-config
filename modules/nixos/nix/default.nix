@@ -13,9 +13,11 @@ let
     { ... }:
     {
       options = {
-        key =
-          lib.hdwlinux.mkOpt (lib.types.nullOr lib.types.str) lib.types.null
-            "The trusted public key for this substituter.";
+        key = lib.mkOption {
+          description = "The trusted public key for this substituter.";
+          type = (lib.types.nullOr lib.types.str);
+          default = lib.types.null;
+        };
       };
     }
   );
