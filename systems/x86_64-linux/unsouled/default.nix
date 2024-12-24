@@ -14,7 +14,6 @@
       "desktop:remote"
       "fonts"
       "gui"
-      "llm"
       "networking:tailscale"
       "security:passwordmanager"
       "programming"

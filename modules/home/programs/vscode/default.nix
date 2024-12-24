@@ -29,7 +29,6 @@ in
       mutableExtensionsDir = true;
 
       extensions = with pkgs.vscode-extensions; [
-        #bbenoist.nix
         golang.go
         rust-lang.rust-analyzer
         tamasfe.even-better-toml
