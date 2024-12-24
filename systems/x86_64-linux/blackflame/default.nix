@@ -12,6 +12,7 @@
       "audio:midi"
       "audio:production"
       "boot:systemd"
+      "cuda"
       "desktop:hyprland"
       "desktop:remote"
       "filesystem:nfs"
