@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 let
@@ -16,37 +17,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    programs.zed-editor = {
-      enable = true;
-      extraPackages = [
-        pkgs.rust-bin.stable.latest.default
-        pkgs.nixd
-      ];
-      extensions = [
-        "catppuccin"
-        "golangci-lint"
-        "gosum"
-        "html"
-        "nix"
-      ];
-      userSettings = {
-        telemetry = {
-          metrics = false;
-          diagnostics = false;
-        };
-        theme = {
-          mode = "dark";
-          light = "Catppuccin Frappé";
-          dark = "Catppuccin Mocha";
-        };
-        assistant = {
-          default_model = {
-            provider = "ollama";
-            model = "codellama:7b-code";
-          };
-          version = "2";
-        };
-      };
-    };
+    home.packages = [ pkgs.zed-editor ];
+
+    xdg.configFile."zed/settings.json".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/programs/zed-editor/settings.json";
   };
 }
