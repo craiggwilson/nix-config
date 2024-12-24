@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,6 +18,10 @@ in
   config = lib.mkIf cfg.enable {
     programs.zed-editor = {
       enable = true;
+      extraPackages = [
+        pkgs.rust-bin.stable.latest.default
+        pkgs.nixd
+      ];
       extensions = [
         "catppuccin"
         "golangci-lint"
@@ -33,6 +38,13 @@ in
           mode = "dark";
           light = "Catppuccin Frappé";
           dark = "Catppuccin Mocha";
+        };
+        assistant = {
+          default_model = {
+            provider = "ollama";
+            model = "codellama:7b-code";
+          };
+          version = "2";
         };
       };
     };
