@@ -43,8 +43,6 @@ in
       cursor = {
         package = pkgs.nordzy-cursor-theme;
         name = "Nordzy-cursors";
-        # package = pkgs.catppuccin-cursors.${cfg.flavor + lib.hdwlinux.toTitle cfg.accent};
-        # name = "catppuccin-${cfg.flavor}-${cfg.accent}-cursors";
         size = 24;
       };
       dark = true;

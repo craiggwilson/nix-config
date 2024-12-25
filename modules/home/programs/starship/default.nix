@@ -27,13 +27,17 @@ in
         command_timeout = 5000;
         format = "$nix_shell$shell$username$hostname$directory$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
 
+        profiles = {
+          transient = "$time $character";
+        };
+
         character = {
-          success_symbol = "[❯](#ff9400)";
-          error_symbol = "[❯](#ff4b00)";
+          success_symbol = "[❯](${config.hdwlinux.theme.colors.withHashtag.base09})";
+          error_symbol = "[❯](${config.hdwlinux.theme.colors.withHashtag.base08})";
         };
 
         directory = {
-          style = "cyan";
+          style = config.hdwlinux.theme.colors.withHashtag.base0C;
           truncation_symbol = "…/";
           truncate_to_repo = true;
           truncation_length = 3;
@@ -42,12 +46,12 @@ in
         fill.symbol = " ";
 
         git_branch = {
-          style = "#666666";
+          style = config.hdwlinux.theme.colors.withHashtag.base04;
           symbol = "";
           format = "[$symbol$branch(:$remote_branch)]($style)";
         };
 
-        git_status.style = "#666666";
+        git_status.style = config.hdwlinux.theme.colors.withHashtag.base04;
 
         nix_shell = {
           symbol = "❄️ ";
@@ -56,15 +60,21 @@ in
 
         shell = {
           disabled = false;
-          style = "cyan";
+          style = config.hdwlinux.theme.colors.withHashtag.base0C;
           bash_indicator = "";
           powershell_indicator = "";
           zsh_indicator = "";
         };
 
+        time = {
+          disabled = false;
+          style = config.hdwlinux.theme.colors.withHashtag.base0D;
+          format = "[$time]($style) ";
+        };
+
         username = {
           show_always = false;
-          style_user = "#666666";
+          style_user = config.hdwlinux.theme.colors.withHashtag.base05;
           format = "[$user]($style) ";
         };
       } // cfg.extraSettings;

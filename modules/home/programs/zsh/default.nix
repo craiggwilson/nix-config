@@ -18,6 +18,23 @@ in
       enableCompletion = true;
       enableVteIntegration = true;
       autosuggestion.enable = true;
+      history.size = 10000;
+      history.ignoreAllDups = true;
+      history.path = "$HOME/.zsh_history";
+      history.ignorePatterns = [
+        "cd *"
+        "cp *"
+        "exit"
+        "ls *"
+        "mv *"
+        "pkill *"
+        "rm *"
+      ];
+      initExtra = ''
+        bindkey "^[[1;5C" forward-word
+        bindkey "^[[1;5D" backward-word
+        source ${./transient-prompt.zsh}
+      '';
       syntaxHighlighting = {
         enable = true;
         styles = lib.mkIf config.hdwlinux.theme.enable {
@@ -69,23 +86,6 @@ in
           cursor = "fg=${config.hdwlinux.theme.colors.withHashtag.base05}";
         };
       };
-
-      history.size = 10000;
-      history.ignoreAllDups = true;
-      history.path = "$HOME/.zsh_history";
-      history.ignorePatterns = [
-        "cd *"
-        "cp *"
-        "exit"
-        "ls *"
-        "mv *"
-        "pkill *"
-        "rm *"
-      ];
-      initExtra = ''
-        bindkey "^[[1;5C" forward-word
-        bindkey "^[[1;5D" backward-word
-      '';
     };
   };
 }
