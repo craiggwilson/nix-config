@@ -59,7 +59,7 @@ in
       userSettings = {
         "explorer.confirmDragAndDrop" = false;
         "editor.inlineSuggest.enabled" = true;
-        "editor.fontFamily" = "Comic Mono";
+        "editor.fontFamily" = "FiraCode Nerd Font Mono";
         "editor.fontLigatures" = true;
         "explorer.confirmDelete" = false;
         "lldb.suppressUpdateNotifications" = true;

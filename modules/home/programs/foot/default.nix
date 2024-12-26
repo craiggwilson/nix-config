@@ -21,7 +21,7 @@ in
       enable = true;
       settings = {
         main = {
-          font = "Comic Mono:size=12,FiraCode Nerd Font Mono:size=11,monospace:size=11";
+          font = "FiraCode Nerd Font Mono:size=11,monospace:size=11";
         };
 
         key-bindings = {
