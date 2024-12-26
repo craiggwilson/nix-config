@@ -7,15 +7,6 @@
 
 let
   cfg = config.hdwlinux.fonts;
-  nf = (
-    pkgs.nerdfonts.override {
-      fonts = [
-        "FiraCode"
-        "DroidSansMono"
-        "DejaVuSansMono"
-      ];
-    }
-  );
 in
 {
   options.hdwlinux.fonts = {
