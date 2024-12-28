@@ -76,7 +76,7 @@ in
               builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
             ))
             ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:foot,border:0,rounding:false,persistent:false"
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:ghostty,border:0,rounding:false,persistent:false"
             ];
 
           general = {
@@ -173,7 +173,7 @@ in
             "dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
             "stayfocused,title:^(Quick Access — 1Password)$"
-            "workspace special:dropdown,class:^(foot)$"
+            "workspace special:dropdown,class:^(ghostty)$"
           ];
 
           bind = [
@@ -189,7 +189,7 @@ in
             "SUPER, P, exec, hyprpicker"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
-            "SUPER, T, exec, foot"
+            "SUPER, T, exec, ghostty"
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
             "SUPER, X, exec, powermenu"
             "SUPER, SPACE, exec, appmenu"

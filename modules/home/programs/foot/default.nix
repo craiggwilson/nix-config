@@ -8,7 +8,7 @@ let
 in
 {
   options.hdwlinux.programs.foot = {
-    enable = config.lib.hdwlinux.mkEnableOption "foot" "gui";
+    enable = config.lib.hdwlinux.mkEnableOption "foot" false; # "gui";
   };
 
   config = lib.mkIf cfg.enable {
