@@ -202,8 +202,10 @@ in
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"
-            "SUPER, left, movefocus, left"
-            "SUPER, right, movefocus, right"
+            "SUPER, left, movefocus, l"
+            "SUPER, right, movefocus, r"
+            "SUPER, up, movefocus, u"
+            "SUPER, down, movefocus, d"
             "SUPER, 1, workspace, 1"
             "SUPER, 2, workspace, 2"
             "SUPER, 3, workspace, 3"
