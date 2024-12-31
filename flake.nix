@@ -68,9 +68,6 @@
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # themes provides simple coloring and templates.
-    themes.url = "github:RGBCube/ThemeNix";
   };
 
   outputs =
