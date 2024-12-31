@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.mission-center = {
-    enable = lib.hdwlinux.mkEnableOption "mission-center" true;
+    enable = config.lib.hdwlinux.mkEnableOption "mission-center" "gui";
   };
 
   config = lib.mkIf cfg.enable {

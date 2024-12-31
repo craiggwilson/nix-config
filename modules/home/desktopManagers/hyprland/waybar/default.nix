@@ -256,6 +256,7 @@ in
           "network#speed" = {
             format = " {bandwidthUpBits}  {bandwidthDownBits}";
             interval = 1;
+            on-click = "foot bandwhich";
           };
 
           pulseaudio = {

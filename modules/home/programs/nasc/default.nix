@@ -14,7 +14,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.nasc ];
+    home.packages = [ pkgs.stable.nasc ];
 
     home.shellAliases = {
       nasc = "com.github.parnold_x.nasc";
