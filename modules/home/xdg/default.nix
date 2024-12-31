@@ -38,6 +38,7 @@ in
       };
       mimeApps =
         let
+          archiver = desktopName "archiver";
           documentViewer = desktopName "documentViewer";
           fileManager = desktopName "fileManager";
           imageViewer = desktopName "imageViewer";
@@ -46,6 +47,13 @@ in
         {
           enable = true;
           defaultApplications = lib.mkMerge [
+            (lib.mkIf (hasApp "archiver") {
+              "application/vnd.rar" = archiver;
+              "application/x-rar-compressed" = archiver;
+              "application/zip" = archiver;
+              "application/x-zip-compressed" = archiver;
+              "multipart/x-zip" = archiver;
+            })
             (lib.mkIf (hasApp "documentViewer") {
               "application/pdf" = documentViewer;
             })
