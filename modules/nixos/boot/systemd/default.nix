@@ -1,6 +1,7 @@
 {
   lib,
   config,
+  pkgs,
   ...
 }:
 let
@@ -13,6 +14,32 @@ in
 
   config = lib.mkIf cfg.enable {
     boot = {
+      consoleLogLevel = 3;
+
+      initrd = {
+        systemd = {
+          enable = true;
+          strip = true;
+        };
+        verbose = false;
+      };
+
+      kernelParams = [
+        "acpi_backlight=native"
+        "boot.shell_on_fail"
+        "fbcon=nodefer"
+        "logo.nologo"
+        "splash"
+
+        # Silent boot options
+        "quiet"
+        "loglevel=3"
+        "rd.systemd.show_status=auto"
+        "rd.udev.log_level=3"
+        "systemd.show_status=auto"
+        "udev.log_level=3"
+      ];
+
       loader = {
         efi = {
           canTouchEfiVariables = true;
@@ -25,7 +52,16 @@ in
         };
       };
 
-      initrd.systemd.enable = true;
+      plymouth = {
+        enable = true;
+        logo = ./nixos.png;
+        theme = "catppuccin-mocha";
+        themePackages = [
+          (pkgs.catppuccin-plymouth.override {
+            variant = "mocha";
+          })
+        ];
+      };
     };
   };
 }
