@@ -27,6 +27,17 @@ let
         fi
     fi
   '';
+
+  recording = pkgs.writeShellScriptBin "recording" ''
+    while true; do 
+      if pgrep -x "wl-screenrec" > /dev/null; then
+        echo "󰑊"
+      else 
+        echo ""
+      fi
+      sleep 2; 
+    done
+  '';
 in
 {
   options.hdwlinux.desktopManagers.hyprland.waybar = {
@@ -87,6 +98,7 @@ in
             "backlight"
             "group/sound"
             "custom/notifications"
+            "custom/recording"
           ];
 
           "group/network" = {
@@ -196,15 +208,6 @@ in
             ];
           };
 
-          "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.mako.enable {
-            exec = "${notifications}/bin/notifications";
-            return-type = "json";
-            format = "{}";
-            on-click = "${config.services.mako.package}/bin/makoctl mode -t do-not-disturb";
-            on-click-right = "${config.services.mako.package}/bin/makoctl dismiss --all";
-            interval = 1;
-          };
-
           idle_inhibitor = {
             format = "{icon}";
             format-icons = {
@@ -259,6 +262,15 @@ in
             on-click = "foot bandwhich";
           };
 
+          "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.mako.enable {
+            exec = "${notifications}/bin/notifications";
+            return-type = "json";
+            format = "{}";
+            on-click = "${config.services.mako.package}/bin/makoctl mode -t do-not-disturb";
+            on-click-right = "${config.services.mako.package}/bin/makoctl dismiss --all";
+            interval = 1;
+          };
+
           pulseaudio = {
             format = "{icon} {volume}%";
             tooltip = false;
@@ -294,6 +306,14 @@ in
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
             scroll-step = 5;
+          };
+
+          "custom/recording" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.screenrecordmenu.enable {
+            exec = "${recording}/bin/recording";
+            hide-empty-text = true;
+            format = "{}";
+            on-click = "pkill wl-screenrec";
+            restart-interval = 1;
           };
 
           temperature = {

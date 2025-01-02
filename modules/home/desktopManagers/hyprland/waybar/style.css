@@ -73,11 +73,6 @@ tooltip {
     color: @base07;
 }
 
-#custom-notifications.some, #custom-notifications:hover {
-    border-top-color: @base0A;
-    color: @base0A;
-}
-
 #idle_inhibitor.activated, #idle_inhibitor:hover {
     border-top-color: @base08;
     color: @base08;
@@ -98,6 +93,11 @@ tooltip {
     padding-top: 0px;
 }
 
+#custom-notifications.some, #custom-notifications:hover {
+    border-top-color: @base0A;
+    color: @base0A;
+}
+
 #custom-power:hover {
     border-top-color: @base04;
     color: @base04;
@@ -111,6 +111,11 @@ tooltip {
 #pulseaudio.microphone:hover {
     border-top-color: @base0E;
     color: @base0E;
+}
+
+#custom-recording {
+    border-top-color: @base08;
+    color: @base08;
 }
 
 #stats:hover {

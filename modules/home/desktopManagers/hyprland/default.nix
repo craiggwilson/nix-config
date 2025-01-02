@@ -199,6 +199,7 @@ in
             "SUPER, ESCAPE, exec, missioncenter"
             "SUPER, EQUAL, exec, woomer"
             ", PRINT, exec, screenshotmenu"
+            "ALT, PRINT, exec, screenrecordmenu"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"
