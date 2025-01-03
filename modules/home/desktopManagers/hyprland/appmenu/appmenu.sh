@@ -2,4 +2,5 @@
 
 pkill rofi || rofi \
     -show drun \
-    -theme appmenu.rasi
+    -theme appmenu.rasi \
+    -run-command 'uwsm app -- {cmd}'

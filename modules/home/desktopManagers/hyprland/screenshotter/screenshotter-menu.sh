@@ -18,12 +18,12 @@ rofi_cmd() {
 }
 
 # Pass variables to rofi dmenu
-run_rofi() {
+show_menu() {
 	echo -e "$shotdesktop\n$shotwindow\n$shotregion" | rofi_cmd
 }
 
 # Actions
-chosen="$(run_rofi)"
+chosen="$(show_menu)"
 case ${chosen} in
     "$shotdesktop")
 		hyprshot -m output --clipboard-only

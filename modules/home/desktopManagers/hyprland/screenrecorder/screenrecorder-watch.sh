@@ -1,5 +1,5 @@
 while true; do 
-    if screenrecorder-is-running; then
+    if screenrecorder-is-recording; then
         echo '󰑊'
     else 
         echo ''

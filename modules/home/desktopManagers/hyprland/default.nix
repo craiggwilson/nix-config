@@ -14,6 +14,8 @@ let
   monitorFn =
     m:
     "${criteriaFn m}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}";
+
+  exec = cmd: "uwsm app -- ${cmd}";
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
@@ -76,7 +78,7 @@ in
               builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
             ))
             ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:foot,border:0,rounding:false,persistent:false"
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:${exec "foot"},border:0,rounding:false,persistent:false"
             ];
 
           general = {
@@ -177,29 +179,29 @@ in
           ];
 
           bind = [
-            "SUPER, B, exec, firefox"
-            "SUPER, E, exec, nautilus"
+            "SUPER, B, exec, ${exec "firefox"}"
+            "SUPER, E, exec, ${exec "nautilus"}"
             "SUPER, G, togglefloating,"
-            "SUPER, L, exec, 1password --toggle"
-            "SUPER SHIFT,L, exec, 1password --lock"
-            "SUPER ALT, L, exec, 1password --quick-access"
+            "SUPER, L, exec, ${exec "1password --toggle"}"
+            "SUPER SHIFT,L, exec, ${exec "1password --lock"}"
+            "SUPER ALT, L, exec, ${exec "1password --quick-access"}"
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
-            "SUPER, P, exec, hyprpicker"
+            "SUPER, P, exec, ${exec "hyprpicker"}"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
-            "SUPER, T, exec, foot"
+            "SUPER, T, exec, ${exec "foot"}"
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
-            "SUPER, X, exec, powermenu"
-            "SUPER, SPACE, exec, appmenu"
-            "SUPER, TAB, exec, pkill rofi || rofi -show window"
+            "SUPER, X, exec, ${exec "powermenu"}"
+            "SUPER, SPACE, exec, ${exec "appmenu"}"
+            "SUPER, TAB, exec, ${exec "pkill rofi || rofi -show window"}"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
-            "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-            "SUPER, ESCAPE, exec, missioncenter"
-            "SUPER, EQUAL, exec, woomer"
-            ", PRINT, exec, screenshotter-menu"
-            "ALT, PRINT, exec, screenrecorder-menu"
+            "SUPER, V, exec, ${exec "cliphist list | rofi -dmenu | cliphist decode | wl-copy"}"
+            "SUPER, ESCAPE, exec, ${exec "missioncenter"}"
+            "SUPER, EQUAL, exec, ${exec "woomer"}"
+            ", PRINT, exec, ${exec "screenshotter-menu"}"
+            "ALT, PRINT, exec, ${exec "screenrecorder-menu"}"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"
@@ -234,14 +236,14 @@ in
             "SUPER SHIFT CTRL, left, resizeactive, -100 0"
             "SUPER SHIFT CTRL, right, resizeactive, 100 0"
 
-            ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+            ", xf86audiomute, exec, ${exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"}"
           ];
 
           binde = [
-            ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
-            ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-            ", xf86monbrightnessup, exec, brightnessctl set 10%+"
-            ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
+            ", xf86audioraisevolume, exec, ${exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"}"
+            ", xf86audiolowervolume, exec, ${exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"}"
+            ", xf86monbrightnessup, exec, ${exec "brightnessctl set 10%+"}"
+            ", xf86monbrightnessdown, exec, ${exec "brightnessctl set 10%-"}"
           ];
 
           bindm = [

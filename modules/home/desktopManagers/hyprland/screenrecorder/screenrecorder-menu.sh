@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 host=$(hostname)
-filename="$XDG_VIDEOS_DIR/$(date +'screenrecord_%Y%m%d%H%M%S.mp4')"
+filename="$HOME/Videos/$(date +'screenrecord_%Y%m%d%H%M%S.mp4')"
 thumbnail='/tmp/screenrec_thumbnail.png'
 prompt='Screenrecord'
 
