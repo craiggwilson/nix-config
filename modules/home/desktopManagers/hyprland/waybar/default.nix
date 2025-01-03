@@ -27,17 +27,6 @@ let
         fi
     fi
   '';
-
-  recording = pkgs.writeShellScriptBin "recording" ''
-    while true; do 
-      if pgrep -x "wl-screenrec" > /dev/null; then
-        echo "󰑊"
-      else 
-        echo ""
-      fi
-      sleep 2; 
-    done
-  '';
 in
 {
   options.hdwlinux.desktopManagers.hyprland.waybar = {
@@ -308,11 +297,11 @@ in
             scroll-step = 5;
           };
 
-          "custom/recording" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.screenrecordmenu.enable {
-            exec = "${recording}/bin/recording";
+          "custom/recording" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.screenrecorder.enable {
+            exec = "screenrecorder-watch";
             hide-empty-text = true;
             format = "{}";
-            on-click = "pkill wl-screenrec";
+            on-click = "screenrecorder-stop";
             restart-interval = 1;
           };
 

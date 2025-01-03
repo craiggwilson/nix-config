@@ -198,8 +198,8 @@ in
             "SUPER, V, exec, cliphist list | rofi -dmenu | cliphist decode | wl-copy"
             "SUPER, ESCAPE, exec, missioncenter"
             "SUPER, EQUAL, exec, woomer"
-            ", PRINT, exec, screenshotmenu"
-            "ALT, PRINT, exec, screenrecordmenu"
+            ", PRINT, exec, screenshotter-menu"
+            "ALT, PRINT, exec, screenrecorder-menu"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"

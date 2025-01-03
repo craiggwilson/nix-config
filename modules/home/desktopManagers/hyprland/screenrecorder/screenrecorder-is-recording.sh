@@ -1,0 +1,1 @@
+pgrep -x "wl-screenrec" > /dev/null

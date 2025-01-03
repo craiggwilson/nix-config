@@ -1,0 +1,1 @@
+pkill --signal SIGINT "wl-screenrec"

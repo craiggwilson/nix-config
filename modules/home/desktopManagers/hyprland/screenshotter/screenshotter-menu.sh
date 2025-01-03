@@ -1,23 +1,20 @@
 #!/usr/bin/env bash
 
-host=`hostname`
+host=$(hostname)
 prompt='Screenshot'
-list_col='1'
-list_row='3'
-win_width='400px'
 
 # Options
-shotdesktop=""
-shotwindow=""
-shotregion=""
+shotdesktop=''
+shotwindow=''
+shotregion=''
 
 # Rofi CMD
 rofi_cmd() {
 	rofi -dmenu \
-		-p $host \
+		-p "$host" \
 		-mesg "$prompt" \
 		-markup-rows \
-		-theme screenshotmenu.rasi
+		-theme screenshotter-menu.rasi
 }
 
 # Pass variables to rofi dmenu
@@ -28,13 +25,13 @@ run_rofi() {
 # Actions
 chosen="$(run_rofi)"
 case ${chosen} in
-    $shotdesktop)
+    "$shotdesktop")
 		hyprshot -m output --clipboard-only
         ;;
-    $shotwindow)
+    "$shotwindow")
 		hyprshot -m window --clipboard-only 
         ;;
-    $shotregion)
+    "$shotregion")
 		hyprshot -m region --clipboard-only
         ;;
 esac
