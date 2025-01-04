@@ -14,8 +14,6 @@ let
   monitorFn =
     m:
     "${criteriaFn m}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}";
-
-  exec = cmd: "launcher-exec ${cmd}";
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
@@ -78,7 +76,7 @@ in
               builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
             ))
             ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:${exec "foot"},border:0,rounding:false,persistent:false"
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:launchctl exec foot,border:0,rounding:false,persistent:false"
             ];
 
           general = {
@@ -179,29 +177,29 @@ in
           ];
 
           bind = [
-            "SUPER, B, exec, launcher-exec firefox"
-            "SUPER, E, exec, launcher-exec nautilus"
+            "SUPER, B, exec, launchctl exec firefox"
+            "SUPER, E, exec, launchctl exec nautilus"
             "SUPER, G, togglefloating,"
-            "SUPER, L, exec, launcher-exec 1password --toggle"
+            "SUPER, L, exec, launchctl exec 1password --toggle"
             "SUPER SHIFT,L, exec, 1password --lock"
-            "SUPER ALT, L, exec, launcher-exec 1password --quick-access"
+            "SUPER ALT, L, exec, launchctl exec 1password --quick-access"
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
-            "SUPER, P, exec, launcher-exec hyprpicker"
+            "SUPER, P, exec, launchctl exec hyprpicker"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
-            "SUPER, T, exec, launcher-exec foot"
+            "SUPER, T, exec, launchctl exec foot"
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
-            "SUPER, X, exec, launcher-exec powermenu"
-            "SUPER, SPACE, exec, launcher-exec launcher-menu"
-            "SUPER, TAB, exec, launcher-exec pkill rofi || rofi -show window"
+            "SUPER, X, exec, launchctl exec powermenu"
+            "SUPER, SPACE, exec, launchctl exec launchctl show-menu"
+            "SUPER, TAB, exec, launchctl exec pkill rofi || rofi -show window"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
-            "SUPER, V, exec, launcher-exec cliphist list | rofi -dmenu | cliphist decode | wl-copy"
-            "SUPER, ESCAPE, exec, launcher-exec missioncenter"
-            "SUPER, EQUAL, exec, launcher-exec woomer"
-            ", PRINT, exec, launcher-exec screenshot-menu"
-            "ALT, PRINT, exec, launcher-exec screenrecorder-menu"
+            "SUPER, V, exec, launchctl exec cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+            "SUPER, ESCAPE, exec, launchctl exec missioncenter"
+            "SUPER, EQUAL, exec, launchctl exec woomer"
+            ", PRINT, exec, launchctl exec screenshot-menu"
+            "ALT, PRINT, exec, launchctl exec screenrecorder-menu"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"

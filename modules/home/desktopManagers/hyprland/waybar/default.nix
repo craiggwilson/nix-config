@@ -221,13 +221,13 @@ in
             format-ethernet = "󰈀";
             format-disconnected = "Disconnected";
             tooltip-format = "{ifname} {ipaddr}/{cidr}";
-            on-click = "launcher-exec networkmenu";
+            on-click = "launchctl exec networkmenu";
           };
 
           "network#speed" = {
             format = " {bandwidthUpBits}  {bandwidthDownBits}";
             interval = 1;
-            on-click = "launcher-exec foot bandwhich";
+            on-click = "launchctl exec foot bandwhich";
           };
 
           "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.notifier.enable {
@@ -244,8 +244,8 @@ in
             tooltip = false;
             format-muted = " Muted";
             on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
-            on-click-middle = "launcher-exec easyeffects";
-            on-click-right = "launcher-exec pavucontrol -t 3";
+            on-click-middle = "launchctl exec easyeffects";
+            on-click-right = "launchctl exec pavucontrol -t 3";
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
             scroll-step = 5;
@@ -269,8 +269,8 @@ in
             format-source = " {volume}%";
             format-source-muted = " Muted";
             on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
-            on-click-middle = "launcher-exec easyeffects";
-            on-click-right = "launcher-exec pavucontrol -t 4";
+            on-click-middle = "launchctl exec easyeffects";
+            on-click-right = "launchctl exec pavucontrol -t 4";
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
             scroll-step = 5;

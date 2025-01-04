@@ -15,22 +15,19 @@ in
 
   config = lib.mkIf cfg.enable {
     home.packages = [
-      (pkgs.writeShellApplication {
-        name = "launcher-exec";
-        runtimeInputs = [
-          pkgs.uwsm
-        ];
-        text = builtins.readFile ./launcher-exec.sh;
-      })
-      (pkgs.writeShellApplication {
-        name = "launcher-menu";
+      (pkgs.hdwlinux.writeSwitchedShellApplication {
+        name = "launchctl";
         runtimeInputs = [
           config.programs.rofi.package
           pkgs.procps
+          pkgs.uwsm
         ];
-        text = builtins.replaceStrings [ "launcher-menu.rasi" ] [ "${./launcher-menu.rasi}" ] (
-          builtins.readFile ./launcher-menu.sh
-        );
+        cases = {
+          exec = "uwsm app -- \"$@\"";
+          show-menu = builtins.replaceStrings [ "launchctl-menu.rasi" ] [ "${./launchctl-menu.rasi}" ] (
+            builtins.readFile ./launchctl-menu.sh
+          );
+        };
       })
     ];
   };
