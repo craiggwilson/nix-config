@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 
@@ -231,12 +230,12 @@ in
             on-click = "launcher-exec foot bandwhich";
           };
 
-          "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.mako.enable {
-            exec = "notifier-watch";
+          "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.notifier.enable {
+            exec = "notifyctl watch";
             return-type = "json";
             format = "{}";
-            on-click = "notifier-toggle-do-not-disturb";
-            on-click-right = "notifier-dismiss-all";
+            on-click = "notifyctl toggle-tag do-not-disturb";
+            on-click-right = "notifyctl dismiss-all";
             restart-interval = 1;
           };
 

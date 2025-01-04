@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 while true; do 
     DND=$(makoctl mode | rg 'do-not-disturb' || true)
     COUNT=$(makoctl list | jq -e '.data[] | length')
