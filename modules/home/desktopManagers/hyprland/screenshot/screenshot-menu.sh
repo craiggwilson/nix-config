@@ -14,7 +14,7 @@ rofi_cmd() {
 		-p "$host" \
 		-mesg "$prompt" \
 		-markup-rows \
-		-theme screenshotter-menu.rasi
+		-theme screenshot-menu.rasi
 }
 
 # Pass variables to rofi dmenu

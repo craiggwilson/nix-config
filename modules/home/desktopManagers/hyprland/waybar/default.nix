@@ -7,26 +7,6 @@
 
 let
   cfg = config.hdwlinux.desktopManagers.hyprland.waybar;
-
-  notifications = pkgs.writeShellScriptBin "notifications" ''
-    DND=`makoctl mode | grep 'do-not-disturb'`
-    COUNT=`makoctl list | jq -e '.data[] | length'`
-
-    if [[ "$DND" == 'do-not-disturb' ]]; then
-        if [[ "$COUNT" == "0" ]]; then
-            echo '{"text": "󰂛", "tooltip": "disabled", "class": "disabled"}'
-        else
-            echo '{"text": "󰂛", "tooltip": "disabled", "class": ["disabled", "some"]}'
-        fi
-    else 
-        COUNT=`makoctl list | jq -e '.data[] | length'`
-        if [[ "$COUNT" == "0" ]]; then
-            echo '{"text": "󰂚", "tooltip": "enabled", "class": "enabled"}'
-        else
-            echo '{"text": "󱅫", "tooltip": "enabled", "class": ["enabled", "some"]}'
-        fi
-    fi
-  '';
 in
 {
   options.hdwlinux.desktopManagers.hyprland.waybar = {
@@ -242,22 +222,22 @@ in
             format-ethernet = "󰈀";
             format-disconnected = "Disconnected";
             tooltip-format = "{ifname} {ipaddr}/{cidr}";
-            on-click = "networkmenu";
+            on-click = "launcher-exec networkmenu";
           };
 
           "network#speed" = {
             format = " {bandwidthUpBits}  {bandwidthDownBits}";
             interval = 1;
-            on-click = "foot bandwhich";
+            on-click = "launcher-exec foot bandwhich";
           };
 
           "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.mako.enable {
-            exec = "${notifications}/bin/notifications";
+            exec = "notifier-watch";
             return-type = "json";
             format = "{}";
-            on-click = "${config.services.mako.package}/bin/makoctl mode -t do-not-disturb";
-            on-click-right = "${config.services.mako.package}/bin/makoctl dismiss --all";
-            interval = 1;
+            on-click = "notifier-toggle-do-not-disturb";
+            on-click-right = "notifier-dismiss-all";
+            restart-interval = 1;
           };
 
           pulseaudio = {
@@ -265,8 +245,8 @@ in
             tooltip = false;
             format-muted = " Muted";
             on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
-            on-click-middle = "easyeffects";
-            on-click-right = "pavucontrol -t 3";
+            on-click-middle = "launcher-exec easyeffects";
+            on-click-right = "launcher-exec pavucontrol -t 3";
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
             scroll-step = 5;
@@ -290,8 +270,8 @@ in
             format-source = " {volume}%";
             format-source-muted = " Muted";
             on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
-            on-click-middle = "easyeffects";
-            on-click-right = "pavucontrol -t 4";
+            on-click-middle = "launcher-exec easyeffects";
+            on-click-right = "launcher-exec pavucontrol -t 4";
             on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
             on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
             scroll-step = 5;

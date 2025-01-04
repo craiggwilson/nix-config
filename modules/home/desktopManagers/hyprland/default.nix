@@ -15,7 +15,7 @@ let
     m:
     "${criteriaFn m}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}";
 
-  exec = cmd: "uwsm app -- ${cmd}";
+  exec = cmd: "launcher-exec ${cmd}";
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
@@ -179,29 +179,29 @@ in
           ];
 
           bind = [
-            "SUPER, B, exec, ${exec "firefox"}"
-            "SUPER, E, exec, ${exec "nautilus"}"
+            "SUPER, B, exec, launcher-exec firefox"
+            "SUPER, E, exec, launcher-exec nautilus"
             "SUPER, G, togglefloating,"
-            "SUPER, L, exec, ${exec "1password --toggle"}"
-            "SUPER SHIFT,L, exec, ${exec "1password --lock"}"
-            "SUPER ALT, L, exec, ${exec "1password --quick-access"}"
+            "SUPER, L, exec, launcher-exec 1password --toggle"
+            "SUPER SHIFT,L, exec, 1password --lock"
+            "SUPER ALT, L, exec, launcher-exec 1password --quick-access"
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
-            "SUPER, P, exec, ${exec "hyprpicker"}"
+            "SUPER, P, exec, launcher-exec hyprpicker"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
-            "SUPER, T, exec, ${exec "foot"}"
+            "SUPER, T, exec, launcher-exec foot"
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
-            "SUPER, X, exec, ${exec "powermenu"}"
-            "SUPER, SPACE, exec, ${exec "appmenu"}"
-            "SUPER, TAB, exec, ${exec "pkill rofi || rofi -show window"}"
+            "SUPER, X, exec, launcher-exec powermenu"
+            "SUPER, SPACE, exec, launcher-exec launcher-menu"
+            "SUPER, TAB, exec, launcher-exec pkill rofi || rofi -show window"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
-            "SUPER, V, exec, ${exec "cliphist list | rofi -dmenu | cliphist decode | wl-copy"}"
-            "SUPER, ESCAPE, exec, ${exec "missioncenter"}"
-            "SUPER, EQUAL, exec, ${exec "woomer"}"
-            ", PRINT, exec, ${exec "screenshotter-menu"}"
-            "ALT, PRINT, exec, ${exec "screenrecorder-menu"}"
+            "SUPER, V, exec, launcher-exec cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+            "SUPER, ESCAPE, exec, launcher-exec missioncenter"
+            "SUPER, EQUAL, exec, launcher-exec woomer"
+            ", PRINT, exec, launcher-exec screenshot-menu"
+            "ALT, PRINT, exec, launcher-exec screenrecorder-menu"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"
@@ -236,14 +236,14 @@ in
             "SUPER SHIFT CTRL, left, resizeactive, -100 0"
             "SUPER SHIFT CTRL, right, resizeactive, 100 0"
 
-            ", xf86audiomute, exec, ${exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"}"
+            ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
           ];
 
           binde = [
-            ", xf86audioraisevolume, exec, ${exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"}"
-            ", xf86audiolowervolume, exec, ${exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"}"
-            ", xf86monbrightnessup, exec, ${exec "brightnessctl set 10%+"}"
-            ", xf86monbrightnessdown, exec, ${exec "brightnessctl set 10%-"}"
+            ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
+            ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+            ", xf86monbrightnessup, exec, brightnessctl set 10%+"
+            ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
           ];
 
           bindm = [
@@ -254,8 +254,8 @@ in
           ];
 
           bindl = [
-            ",switch:off:Lid Switch,exec,hyprctl keyword monitor \"${monitorFn (builtins.head config.hdwlinux.hardware.monitors)}\""
-            ",switch:on:Lid Switch,exec,hyprctl keyword monitor \"${criteriaFn (builtins.head config.hdwlinux.hardware.monitors)}, disable\""
+            ",switch:off:Lid Switch, exec, hyprctl keyword monitor \"${monitorFn (builtins.head config.hdwlinux.hardware.monitors)}\""
+            ",switch:on:Lid Switch, exec, hyprctl keyword monitor \"${criteriaFn (builtins.head config.hdwlinux.hardware.monitors)}, disable\""
           ];
 
           plugins = {
