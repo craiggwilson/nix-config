@@ -193,7 +193,7 @@ in
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
             "SUPER, X, exec, appctl exec powermenu"
             "SUPER, SPACE, exec, appctl exec appctl show-menu"
-            "SUPER, TAB, exec, appctl exec pkill rofi || rofi -show window"
+            "SUPER, TAB, exec, appctl exec appctl show-windows"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
             "SUPER, V, exec, appctl exec clipboardctl show-menu"
             "SUPER, ESCAPE, exec, appctl exec missioncenter"

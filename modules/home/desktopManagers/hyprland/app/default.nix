@@ -24,17 +24,13 @@ in
         ];
         subcommands = {
           exec = "uwsm app -- \"$@\"";
-          # launch = {
-          #   browser = "appctl exec firefox \"$@\"";
-          #   filemanager = "appctl exec nautilus \"$@\"";
-          #   terminal = "appctl exec foot \"$@\"";
-          # };
           show-menu = ''
             pkill rofi || rofi \
               -show drun \
               -theme ${./app-menu.rasi} \
               -run-command 'appctl exec {cmd}'
           '';
+          show-windows = "pkill rofi || rofi -show window";
         };
       })
     ];
