@@ -195,7 +195,7 @@ in
             "SUPER, SPACE, exec, launchctl exec launchctl show-menu"
             "SUPER, TAB, exec, launchctl exec pkill rofi || rofi -show window"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
-            "SUPER, V, exec, launchctl exec cliphist list | rofi -dmenu | cliphist decode | wl-copy"
+            "SUPER, V, exec, launchctl exec clipboardctl show-menu"
             "SUPER, ESCAPE, exec, launchctl exec missioncenter"
             "SUPER, EQUAL, exec, launchctl exec woomer"
             ", PRINT, exec, launchctl exec screenctl capture show-menu"

@@ -23,7 +23,7 @@ in
           pkgs.jq
           pkgs.ripgrep
         ];
-        cases = {
+        subcommands = {
           add-tag = "makoctl mode -a \"$1\"";
           dismiss-all = "makoctl dismiss --all";
           remove-tag = "makoctl mode -r \"$1\"";

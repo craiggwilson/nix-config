@@ -21,7 +21,7 @@ in
           pkgs.pavucontrol
           pkgs.wireplumber
         ];
-        cases = {
+        subcommands = {
           input = {
             mute = {
               off = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ 0";

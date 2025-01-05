@@ -24,19 +24,19 @@ let
   '';
 
   writeSwitch =
-    cases:
+    subcommands:
     let
-      validCases = lib.strings.concatStringsSep ", " (lib.mapAttrsToList (k: _: k) cases);
+      subcommandNames = lib.strings.concatStringsSep ", " (lib.mapAttrsToList (k: _: k) subcommands);
     in
     ''
       if [[ $# -lt 1 ]]; then
-        echo "expected one of ${validCases}"
+        echo "expected one of ${subcommandNames}"
         exit 1
       fi
       case "$1" in
-        ${lib.strings.concatLines (lib.mapAttrsToList (k: v: writeSwitchEntry k v) cases)}
+        ${lib.strings.concatLines (lib.mapAttrsToList (k: v: writeSwitchEntry k v) subcommands)}
         * )
-          echo "$1 is not a valid subcommand; expected on of ${validCases}"
+          echo "$1 is not a valid subcommand; expected on of ${subcommandNames}"
           exit 1
         ;;
       esac
@@ -59,11 +59,11 @@ in
       {
         name,
         runtimeInputs ? [ ],
-        cases,
+        subcommands,
       }:
       prev.writeShellApplication {
         inherit name runtimeInputs;
-        text = writeSwitch cases;
+        text = writeSwitch subcommands;
       };
   };
 }

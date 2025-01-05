@@ -22,7 +22,7 @@ in
           pkgs.procps
           pkgs.uwsm
         ];
-        cases = {
+        subcommands = {
           exec = "uwsm app -- \"$@\"";
           show-menu = builtins.replaceStrings [ "launchctl-menu.rasi" ] [ "${./launchctl-menu.rasi}" ] (
             builtins.readFile ./launchctl-menu.sh

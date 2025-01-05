@@ -34,7 +34,7 @@ in
           pkgs.slurp
           pkgs.wl-screenrec
         ];
-        cases = {
+        subcommands = {
           backlight = {
             get = "brightnessctl get";
             lower = "brightnessctl set 5%-";
