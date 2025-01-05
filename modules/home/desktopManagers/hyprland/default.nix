@@ -198,8 +198,8 @@ in
             "SUPER, V, exec, launchctl exec cliphist list | rofi -dmenu | cliphist decode | wl-copy"
             "SUPER, ESCAPE, exec, launchctl exec missioncenter"
             "SUPER, EQUAL, exec, launchctl exec woomer"
-            ", PRINT, exec, launchctl exec screenshot-menu"
-            "ALT, PRINT, exec, launchctl exec screenrecorder-menu"
+            ", PRINT, exec, launchctl exec screenctl capture show-menu"
+            "ALT, PRINT, exec, launchctl exec screenctl record show-menu"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"
@@ -240,8 +240,8 @@ in
           binde = [
             ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
             ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
-            ", xf86monbrightnessup, exec, brightnessctl set 10%+"
-            ", xf86monbrightnessdown, exec, brightnessctl set 10%-"
+            ", xf86monbrightnessup, exec, screenctl backlight raise"
+            ", xf86monbrightnessdown, exec, screenctl backlight lower"
           ];
 
           bindm = [

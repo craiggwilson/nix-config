@@ -28,8 +28,8 @@ in
         listener = [
           {
             timeout = 240;
-            on-timeout = "pidof hyprlock || brightnessctl -s set 10";
-            on-resume = "brightnessctl -r";
+            on-timeout = "pidof hyprlock || screenctl backlight set 10";
+            on-resume = "screenctl backlight restore";
           }
           {
             timeout = 240;

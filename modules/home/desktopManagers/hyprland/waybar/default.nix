@@ -111,8 +111,8 @@ in
               "󰃟"
               "󰃠"
             ];
-            on-scroll-down = "brightnessctl set 5%-";
-            on-scroll-up = "brightnessctl set 5%+";
+            on-scroll-down = "screenctl backlight lower";
+            on-scroll-up = "screenctl backlight raise";
           };
 
           battery = {
@@ -276,11 +276,11 @@ in
             scroll-step = 5;
           };
 
-          "custom/recording" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.screenrecorder.enable {
-            exec = "screenrecorder-watch";
+          "custom/recording" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.screen.enable {
+            exec = "screenctl record watch";
             hide-empty-text = true;
             format = "{}";
-            on-click = "screenrecorder-stop";
+            on-click = "screenctl record stop";
             restart-interval = 1;
           };
 
