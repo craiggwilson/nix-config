@@ -234,12 +234,12 @@ in
             "SUPER SHIFT CTRL, left, resizeactive, -100 0"
             "SUPER SHIFT CTRL, right, resizeactive, 100 0"
 
-            ", xf86audiomute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
+            ", xf86audiomute, exec, audioctl output mute toggle"
           ];
 
           binde = [
-            ", xf86audioraisevolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1"
-            ", xf86audiolowervolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
+            ", xf86audioraisevolume, exec, audioctl output volume raise"
+            ", xf86audiolowervolume, exec, audioctl output volume lower"
             ", xf86monbrightnessup, exec, screenctl backlight raise"
             ", xf86monbrightnessdown, exec, screenctl backlight lower"
           ];

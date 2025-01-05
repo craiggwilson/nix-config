@@ -226,11 +226,12 @@ in
 
           "network#speed" = {
             format = " {bandwidthUpBits}  {bandwidthDownBits}";
+            tooltip-format = " {bandwidthUpBytes}  {bandwidthDownBytes}";
             interval = 1;
             on-click = "launchctl exec foot bandwhich";
           };
 
-          "custom/notifications" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.notifier.enable {
+          "custom/notifications" = {
             exec = "notifyctl watch";
             return-type = "json";
             format = "{}";
@@ -243,11 +244,11 @@ in
             format = "{icon} {volume}%";
             tooltip = false;
             format-muted = " Muted";
-            on-click = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+            on-click = "audioctl output mute toggle";
             on-click-middle = "launchctl exec easyeffects";
-            on-click-right = "launchctl exec pavucontrol -t 3";
-            on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
-            on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
+            on-click-right = "launchctl exec audioctl output show-menu";
+            on-scroll-up = "audioctl output volume raise";
+            on-scroll-down = "audioctl output volume lower";
             scroll-step = 5;
             format-icons = {
               headphone = "";
@@ -268,15 +269,15 @@ in
             format = "{format_source}";
             format-source = " {volume}%";
             format-source-muted = " Muted";
-            on-click = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+            on-click = "audioctl input mute toggle";
             on-click-middle = "launchctl exec easyeffects";
-            on-click-right = "launchctl exec pavucontrol -t 4";
-            on-scroll-up = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
-            on-scroll-down = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
+            on-click-right = "launchctl exec audioctl input show-menu";
+            on-scroll-up = "audioctl input volume raise";
+            on-scroll-down = "audioctl input volume lower";
             scroll-step = 5;
           };
 
-          "custom/recording" = lib.mkIf config.hdwlinux.desktopManagers.hyprland.screen.enable {
+          "custom/recording" = {
             exec = "screenctl record watch";
             hide-empty-text = true;
             format = "{}";
