@@ -221,14 +221,14 @@ in
             format-ethernet = "󰈀";
             format-disconnected = "Disconnected";
             tooltip-format = "{ifname} {ipaddr}/{cidr}";
-            on-click = "launchctl exec networkmenu";
+            on-click = "appctl exec networkmenu";
           };
 
           "network#speed" = {
             format = " {bandwidthUpBits}  {bandwidthDownBits}";
             tooltip-format = " {bandwidthUpBytes}  {bandwidthDownBytes}";
             interval = 1;
-            on-click = "launchctl exec foot bandwhich";
+            on-click = "appctl exec foot bandwhich";
           };
 
           "custom/notifications" = {
@@ -245,8 +245,8 @@ in
             tooltip = false;
             format-muted = " Muted";
             on-click = "audioctl output mute toggle";
-            on-click-middle = "launchctl exec easyeffects";
-            on-click-right = "launchctl exec audioctl output show-menu";
+            on-click-middle = "appctl exec easyeffects";
+            on-click-right = "appctl exec audioctl output show-menu";
             on-scroll-up = "audioctl output volume raise";
             on-scroll-down = "audioctl output volume lower";
             scroll-step = 5;
@@ -270,8 +270,8 @@ in
             format-source = " {volume}%";
             format-source-muted = " Muted";
             on-click = "audioctl input mute toggle";
-            on-click-middle = "launchctl exec easyeffects";
-            on-click-right = "launchctl exec audioctl input show-menu";
+            on-click-middle = "appctl exec easyeffects";
+            on-click-right = "appctl exec audioctl input show-menu";
             on-scroll-up = "audioctl input volume raise";
             on-scroll-down = "audioctl input volume lower";
             scroll-step = 5;

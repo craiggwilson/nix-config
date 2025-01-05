@@ -76,7 +76,7 @@ in
               builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
             ))
             ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:launchctl exec foot,border:0,rounding:false,persistent:false"
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:appctl exec foot,border:0,rounding:false,persistent:false"
             ];
 
           general = {
@@ -177,29 +177,29 @@ in
           ];
 
           bind = [
-            "SUPER, B, exec, launchctl exec firefox"
-            "SUPER, E, exec, launchctl exec nautilus"
+            "SUPER, B, exec, appctl exec firefox"
+            "SUPER, E, exec, appctl exec nautilus"
             "SUPER, G, togglefloating,"
-            "SUPER, L, exec, launchctl exec 1password --toggle"
+            "SUPER, L, exec, appctl exec 1password --toggle"
             "SUPER SHIFT,L, exec, 1password --lock"
-            "SUPER ALT, L, exec, launchctl exec 1password --quick-access"
+            "SUPER ALT, L, exec, appctl exec 1password --quick-access"
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
-            "SUPER, P, exec, launchctl exec hyprpicker"
+            "SUPER, P, exec, appctl exec hyprpicker"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
-            "SUPER, T, exec, launchctl exec foot"
+            "SUPER, T, exec, appctl exec foot"
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
-            "SUPER, X, exec, launchctl exec powermenu"
-            "SUPER, SPACE, exec, launchctl exec launchctl show-menu"
-            "SUPER, TAB, exec, launchctl exec pkill rofi || rofi -show window"
+            "SUPER, X, exec, appctl exec powermenu"
+            "SUPER, SPACE, exec, appctl exec appctl show-menu"
+            "SUPER, TAB, exec, appctl exec pkill rofi || rofi -show window"
             "SUPER, GRAVE, togglespecialworkspace, dropdown"
-            "SUPER, V, exec, launchctl exec clipboardctl show-menu"
-            "SUPER, ESCAPE, exec, launchctl exec missioncenter"
-            "SUPER, EQUAL, exec, launchctl exec woomer"
-            ", PRINT, exec, launchctl exec screenctl capture show-menu"
-            "ALT, PRINT, exec, launchctl exec screenctl record show-menu"
+            "SUPER, V, exec, appctl exec clipboardctl show-menu"
+            "SUPER, ESCAPE, exec, appctl exec missioncenter"
+            "SUPER, EQUAL, exec, appctl exec woomer"
+            ", PRINT, exec, appctl exec screenctl capture show-menu"
+            "ALT, PRINT, exec, appctl exec screenctl record show-menu"
 
             "SUPER CTRL, left, workspace, -1"
             "SUPER CTRL, right, workspace, +1"
