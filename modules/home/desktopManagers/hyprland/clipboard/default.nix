@@ -16,7 +16,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [
       pkgs.wl-clipboard
-      (pkgs.hdwlinux.writeSwitchedShellApplication {
+      (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "clipboardctl";
         runtimeInputs = [
           config.programs.rofi.package

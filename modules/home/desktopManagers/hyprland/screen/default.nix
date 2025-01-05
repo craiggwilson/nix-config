@@ -24,7 +24,7 @@ in
 
   config = lib.mkIf cfg.enable {
     home.packages = [
-      (pkgs.hdwlinux.writeSwitchedShellApplication {
+      (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "screenctl";
         runtimeInputs = [
           pkgs.brightnessctl

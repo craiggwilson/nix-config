@@ -16,7 +16,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [
       pkgs.libnotify
-      (pkgs.hdwlinux.writeSwitchedShellApplication {
+      (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "notifyctl";
         runtimeInputs = [
           config.services.mako.package

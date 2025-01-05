@@ -15,7 +15,7 @@ in
 
   config = lib.mkIf cfg.enable {
     home.packages = [
-      (pkgs.hdwlinux.writeSwitchedShellApplication {
+      (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "launchctl";
         runtimeInputs = [
           config.programs.rofi.package

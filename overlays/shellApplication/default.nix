@@ -44,18 +44,7 @@ let
 in
 {
   hdwlinux = prev.hdwlinux // {
-    writeDelegateShellApplication =
-      name:
-      prev.writeShellApplication {
-        inherit name;
-        text = ''
-          sub="$1"; shift
-          # shellcheck source=/dev/null
-          . ${name}-"$sub" "$@"
-        '';
-      };
-
-    writeSwitchedShellApplication =
+    writeShellApplicationWithSubcommands =
       {
         name,
         runtimeInputs ? [ ],
