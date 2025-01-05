@@ -9,10 +9,10 @@ rec {
     let
       path = if app.program != null then lib.getExe' app.package app.program else lib.getExe app.package;
       args =
-        if argGroup == "default" && !builtins.hasAttr "default" app.args then
+        if argGroup == "default" && !builtins.hasAttr "default" app.argGroups then
           ""
         else
-          " " + (lib.strings.concatStringsSep " " app.args.${argGroup});
+          " " + (lib.strings.concatStringsSep " " app.argGroups.${argGroup});
     in
     "${path}${args}";
 

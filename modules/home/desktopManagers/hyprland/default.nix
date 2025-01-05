@@ -76,7 +76,7 @@ in
               builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
             ))
             ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:appctl exec foot,border:0,rounding:false,persistent:false"
+              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:appctl exec-known terminal,border:0,rounding:false,persistent:false"
             ];
 
           general = {
@@ -177,19 +177,18 @@ in
           ];
 
           bind = [
-            "SUPER, B, exec, appctl exec firefox"
-            "SUPER, E, exec, appctl exec nautilus"
+            "SUPER, B, exec, appctl exec-known webBrowser"
+            "SUPER, E, exec, appctl exec-known fileManager"
             "SUPER, G, togglefloating,"
-            "SUPER, L, exec, appctl exec 1password --toggle"
-            "SUPER SHIFT,L, exec, 1password --lock"
-            "SUPER ALT, L, exec, appctl exec 1password --quick-access"
+            "SUPER, L, exec, appctl exec-known passwordManager toggle"
+            "SUPER SHIFT,L, exec, appctl exec-known passwordManager lock"
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
             "SUPER, P, exec, appctl exec hyprpicker"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
-            "SUPER, T, exec, appctl exec foot"
+            "SUPER, T, exec, appctl exec-known terminal"
             "SUPER SHIFT, T, movetoworkspace, special:dropdown"
             "SUPER, X, exec, appctl exec powermenu"
             "SUPER, SPACE, exec, appctl exec appctl show-menu"

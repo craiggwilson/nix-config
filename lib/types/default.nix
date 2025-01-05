@@ -59,8 +59,8 @@ in
           type = lib.types.nullOr lib.types.str;
           default = null;
         };
-        args = lib.mkOption {
-          description = "Extra args.";
+        argGroups = lib.mkOption {
+          description = "Pre-packaged args.";
           type = lib.types.attrsOf (lib.types.listOf lib.types.str);
           default = { };
         };

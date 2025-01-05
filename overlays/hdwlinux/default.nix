@@ -26,18 +26,25 @@ let
   writeSwitch =
     subcommands:
     let
-      subcommandNames = lib.strings.concatStringsSep ", " (lib.mapAttrsToList (k: _: k) subcommands);
-    in
-    ''
-      if [[ $# -lt 1 ]]; then
-        echo "expected one of ${subcommandNames}"
-        exit 1
-      fi
-      case "$1" in
-        ${lib.strings.concatLines (lib.mapAttrsToList (k: v: writeSwitchEntry k v) subcommands)}
-        * )
-          echo "$1 is not a valid subcommand; expected on of ${subcommandNames}"
+      subcommands' = lib.filterAttrs (n: _: n != "*") subcommands;
+      subcommandNames = lib.mapAttrsToList (k: _: k) subcommands';
+      subcommandNamesStr = lib.strings.concatStringsSep ", " subcommandNames;
+      defaultCommand = if builtins.hasAttr "*" subcommands then
+          writeSwitchValue subcommands."*"
+        else ''
+          if [[ $# -lt 1 ]]; then
+            echo "expected one of ${subcommandNamesStr}"
+          else 
+            echo "$1 is not a valid subcommand; expected one of ${subcommandNamesStr}"
+          fi
           exit 1
+        '';
+    in
+    if builtins.length subcommandNames == 0 then defaultCommand else ''
+      case "''\${1-__default__}" in
+        ${lib.strings.concatLines (lib.mapAttrsToList (k: v: writeSwitchEntry k v) subcommands')}
+        * )
+          ${defaultCommand}
         ;;
       esac
     '';

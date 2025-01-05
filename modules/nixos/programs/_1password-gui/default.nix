@@ -19,7 +19,7 @@ in
   config = lib.mkIf cfg.enable {
     hdwlinux.apps.passwordManager = {
       package = config.programs._1password-gui.package;
-      args = {
+      argGroups = {
         toggle = [ "--toggle" ];
         lock = [ "--lock" ];
         quickaccess = [ "--quick-access" ];

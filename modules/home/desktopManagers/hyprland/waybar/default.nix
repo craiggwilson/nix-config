@@ -228,7 +228,7 @@ in
             format = " {bandwidthUpBits}  {bandwidthDownBits}";
             tooltip-format = " {bandwidthUpBytes}  {bandwidthDownBytes}";
             interval = 1;
-            on-click = "appctl exec foot bandwhich";
+            on-click = "appctl exec-known terminal bandwhich";
           };
 
           "custom/notifications" = {

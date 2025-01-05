@@ -36,6 +36,7 @@ in
         ];
         subcommands = {
           backlight = {
+            "*" = "brightnessctl";
             get = "brightnessctl get";
             lower = "brightnessctl set 5%-";
             raise = "brightnessctl set 5%+";
