@@ -8,18 +8,20 @@
 let
   cfg = config.hdwlinux.desktopManagers.hyprland.app;
   execKnown = app: argGroup: "uwsm app -- ${lib.hdwlinux.getAppExe app argGroup} \"$@\"";
-  known = lib.mapAttrs (name: app: 
+  known = lib.mapAttrs (
+    name: app:
     let
-      argGroups = if builtins.hasAttr "default" app.argGroups then
+      argGroups =
+        if builtins.hasAttr "default" app.argGroups then
           app.argGroups
-        else 
+        else
           app.argGroups // { "default" = null; };
     in
-    lib.mapAttrs' (argGroup: _: lib.nameValuePair (if argGroup == "default" then "*" else argGroup) (execKnown app argGroup)) argGroups
-    ) 
-    config.hdwlinux.apps;
-
-    #lib.nameValuePair (if argGroup == "default" then "*" else argGroup)
+    lib.mapAttrs' (
+      argGroup: _:
+      lib.nameValuePair (if argGroup == "default" then "*" else argGroup) (execKnown app argGroup)
+    ) argGroups
+  ) config.hdwlinux.apps;
 in
 {
   options.hdwlinux.desktopManagers.hyprland.app = {

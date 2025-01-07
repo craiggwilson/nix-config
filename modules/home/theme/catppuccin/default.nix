@@ -38,7 +38,6 @@ in
     hdwlinux.theme = {
       enable = lib.mkDefault true;
       name = "catppuccin-${cfg.flavor}";
-      # colors = inputs.themes.${"catppuccin-" + cfg.flavor};
       colors = lib.hdwlinux.theme.fromAttrs {
         base00 = "1e1e2e"; # base
         base01 = "181825"; # mantle

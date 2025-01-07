@@ -29,25 +29,30 @@ let
       subcommands' = lib.filterAttrs (n: _: n != "*") subcommands;
       subcommandNames = lib.mapAttrsToList (k: _: k) subcommands';
       subcommandNamesStr = lib.strings.concatStringsSep ", " subcommandNames;
-      defaultCommand = if builtins.hasAttr "*" subcommands then
+      defaultCommand =
+        if builtins.hasAttr "*" subcommands then
           writeSwitchValue subcommands."*"
-        else ''
-          if [[ $# -lt 1 ]]; then
-            echo "expected one of ${subcommandNamesStr}"
-          else 
-            echo "$1 is not a valid subcommand; expected one of ${subcommandNamesStr}"
-          fi
-          exit 1
-        '';
+        else
+          ''
+            if [[ $# -lt 1 ]]; then
+              echo "expected one of ${subcommandNamesStr}"
+            else 
+              echo "$1 is not a valid subcommand; expected one of ${subcommandNamesStr}"
+            fi
+            exit 1
+          '';
     in
-    if builtins.length subcommandNames == 0 then defaultCommand else ''
-      case "''\${1-__default__}" in
-        ${lib.strings.concatLines (lib.mapAttrsToList (k: v: writeSwitchEntry k v) subcommands')}
-        * )
-          ${defaultCommand}
-        ;;
-      esac
-    '';
+    if builtins.length subcommandNames == 0 then
+      defaultCommand
+    else
+      ''
+        case "''\${1-__default__}" in
+          ${lib.strings.concatLines (lib.mapAttrsToList (k: v: writeSwitchEntry k v) subcommands')}
+          * )
+            ${defaultCommand}
+          ;;
+        esac
+      '';
 in
 {
   hdwlinux = prev.hdwlinux // {
