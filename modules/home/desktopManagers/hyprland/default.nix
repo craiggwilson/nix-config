@@ -185,7 +185,6 @@ in
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
-            "SUPER, P, exec, appctl exec hyprpicker"
             "SUPER, Q, killactive"
             "SUPER, S, togglegroup,"
             "SUPER, T, exec, appctl exec-known terminal"
