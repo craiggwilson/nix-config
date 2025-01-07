@@ -285,6 +285,10 @@ in
             restart-interval = 1;
           };
 
+          systemd-failed-units = {
+            on-click = "appctl exec-known terminal systemctl list-units --state=failed && systemctl --user list-units --state=failed";
+          };
+
           temperature = {
             format = " {temperatureF}°F";
           };
