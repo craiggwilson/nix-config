@@ -104,6 +104,7 @@ in
     systemd.services.nix-daemon = {
       environment.TMPDIR = "/var/tmp";
     };
+    users.users.root.hashedPassword = "*";
 
     nix = {
       package = cfg.package;
