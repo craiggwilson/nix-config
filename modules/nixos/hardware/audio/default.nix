@@ -17,7 +17,6 @@ in
 
   config = lib.mkIf cfg.enable {
     security.rtkit.enable = true;
-    hardware.pulseaudio.enable = lib.mkForce false;
 
     services.pipewire = {
       enable = true;
@@ -30,6 +29,8 @@ in
       pulse.enable = true;
       wireplumber.enable = true;
     };
+
+    services.pulseaudio.enable = lib.mkForce false;
 
     home-manager.sharedModules = lib.mkIf config.hdwlinux.home-manager.enable [
       {
