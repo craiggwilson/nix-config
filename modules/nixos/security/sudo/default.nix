@@ -9,10 +9,11 @@ let
 in
 {
   options.hdwlinux.security.sudo = {
-    enable = config.lib.hdwlinux.mkEnableOption "sudo" "personal";
+    enablePasswordlessSudo = config.lib.hdwlinux.mkEnableOption "sudo" "personal";
   };
 
-  config = lib.mkIf cfg.enable {
-    security.sudo.wheelNeedsPassword = false;
+  config = {
+    security.sudo.execWheelOnly = true;
+    security.sudo.wheelNeedsPassword = !cfg.enablePasswordlessSudo;
   };
 }
