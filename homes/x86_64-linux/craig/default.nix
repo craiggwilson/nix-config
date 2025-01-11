@@ -43,23 +43,8 @@ in
     };
   };
 
-  home.packages =
-    let
-      plainCmd = "nixos-rebuild switch --flake ${flake}";
-      privateCmd = if privateExists then " --override-input secrets ${flake}/../nix-private" else "";
-    in
-    [
-      (pkgs.writeShellScriptBin "nix-switch" ''
-        git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd} |& sudo ${pkgs.nix-output-monitor}/bin/nom 
-      '')
-      (pkgs.writeShellScriptBin "nix-switch-remote" ''
-        ${plainCmd}#$1${privateCmd} --target-host ${user}@$2 --use-remote-sudo |& ${pkgs.nix-output-monitor}/bin/nom
-      '')
-    ];
-
   home.shellAliases = {
     "start" = "xdg-open";
-    "nix-config" = "git -C ${flake}";
   };
 
   # This value determines the NixOS release from which the default

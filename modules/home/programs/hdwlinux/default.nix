@@ -25,12 +25,31 @@ in
       (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "hdwlinux";
         runtimeInputs = [
+          pkgs.nix
           pkgs.nix-output-monitor
+          pkgs.nvd
         ];
         subcommands = {
+          config = "git -C ${flake} \"$@\"";
+          flake = {
+            update = "nix flake update --flake ${flake} \"$@\"";
+            "*" = "echo ${flake}";
+          };
           generations = {
-            list = "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system";
             delete-older-than = "nix-collect-garbage --delete-older-than \"$@\"";
+            diff = {
+              newest = ''nvd diff "$(find /nix/var/nix/profiles/system-*-link | tail -2)"'';
+              "*" = ''nvd diff "/nix/var/nix/profiles/system-$1-link" "/nix/var/nix/profiles/system-$2-link"'';
+            };
+            diff-closures = {
+              newest = ''nix store diff-closures "$(find /nix/var/nix/profiles/system-*-link | tail -2)"'';
+              "*" =
+                ''nix store diff-closures "/nix/var/nix/profiles/system-$1-link" "/nix/var/nix/profiles/system-$2-link"'';
+            };
+            list = "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system";
+          };
+          packages = {
+            list = "nvd list";
           };
           switch = {
             remote = ''
@@ -41,7 +60,6 @@ in
             '';
             "*" = ''git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd} "$@" |& sudo nom'';
           };
-          update = "nix flake update --flake ${flake} \"$@\"";
         };
       })
     ];
