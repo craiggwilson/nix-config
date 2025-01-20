@@ -17,6 +17,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.musescore ];
+    home.packages = [
+      pkgs.musescore
+      pkgs.muse-sounds-manager
+    ];
   };
 }

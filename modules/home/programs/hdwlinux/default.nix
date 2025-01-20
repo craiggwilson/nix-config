@@ -12,7 +12,6 @@ let
   user = config.snowfallorg.user.name;
   privatePath = "${inputs.secrets}/${user}";
   privateExists = builtins.pathExists privatePath;
-  plainCmd = "nixos-rebuild switch --flake ${flake}";
   privateCmd = if privateExists then " --override-input secrets ${flake}/../nix-private" else "";
 in
 {
@@ -30,6 +29,14 @@ in
           pkgs.nvd
         ];
         subcommands = {
+          build = {
+            remote = ''
+              hostname="$1"
+              shift
+              git -C ${flake} add -A . && sudo nixos-rebuild build --flake "${flake}#$hostname"${privateCmd} "$@"
+            '';
+            "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild build --flake ${flake}${privateCmd} "$@"'';
+          };
           config = "git -C ${flake} \"$@\"";
           flake = {
             update = "nix flake update --flake ${flake} \"$@\"";
@@ -56,9 +63,10 @@ in
               hostname="$1"
               addr="$2"
               shift 2
-              git -C ${flake} add -A . && "${plainCmd}#$hostname${privateCmd}" --target-host "${user}@$addr" --use-remote-sudo "$@" |& nom
+              git -C ${flake} add -A . && nixos-rebuild switch --flake "${flake}#$hostname"${privateCmd} --target-host "${user}@$addr" --use-remote-sudo "$@" |& nom
             '';
-            "*" = ''git -C ${flake} add -A . && sudo ${plainCmd}${privateCmd} "$@" |& sudo nom'';
+            "*" =
+              ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake}${privateCmd} "$@" |& nom'';
           };
         };
       })
