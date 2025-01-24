@@ -42,6 +42,9 @@ in
             update = "nix flake update --flake ${flake} \"$@\"";
             "*" = "echo ${flake}";
           };
+          firmware = {
+            update = "sudo system76-firmware-cli schedule";
+          };
           generations = {
             delete-older-than = "nix-collect-garbage --delete-older-than \"$@\"";
             diff = {
@@ -67,6 +70,9 @@ in
             '';
             "*" =
               ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake}${privateCmd} "$@" |& nom'';
+          };
+          why-depends = {
+            "*" = "nix why-depends /run/current-system \"nixpkgs#$1\"";
           };
         };
       })

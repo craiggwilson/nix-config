@@ -16,6 +16,7 @@ let
     "fingerprint"
     "fonts"
     "gaming"
+    "gaming:streaming"
     "gui"
     "laptop"
     "llm"

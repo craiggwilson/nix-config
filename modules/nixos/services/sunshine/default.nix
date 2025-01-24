@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.services.sunshine = {
-    enable = config.lib.hdwlinux.mkEnableOption "sunshine" "gaming";
+    enable = config.lib.hdwlinux.mkEnableOption "sunshine" "gaming:streaming";
   };
 
   config = lib.mkIf cfg.enable {

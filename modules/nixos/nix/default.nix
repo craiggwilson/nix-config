@@ -67,7 +67,6 @@ in
       cacert
       deploy-rs
       nixfmt-rfc-style
-      nix-index
       nix-prefetch-git
     ];
 
