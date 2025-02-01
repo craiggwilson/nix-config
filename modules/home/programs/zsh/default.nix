@@ -31,8 +31,14 @@ in
         "rm *"
       ];
       initExtra = ''
-        bindkey "^[[1;5C" forward-word
-        bindkey "^[[1;5D" backward-word
+        bindkey "^[[1;5C"    forward-word
+        bindkey "^[[1;5D"    backward-word
+        bindkey  "^[[1;6C"  end-of-line
+        bindkey  "^[[1;6D"   beginning-of-line
+
+        bindkey  "^[[F"      end-of-line
+        bindkey  "^[[H"      beginning-of-line
+
         source ${./transient-prompt.zsh}
       '';
       syntaxHighlighting = {
