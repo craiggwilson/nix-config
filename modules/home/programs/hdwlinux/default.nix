@@ -38,12 +38,12 @@ in
             "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild build --flake ${flake}${privateCmd} "$@"'';
           };
           config = "git -C ${flake} \"$@\"";
+          firmware = {
+            update = "sudo system76-firmware-cli schedule";
+          };
           flake = {
             update = "nix flake update --flake ${flake} \"$@\"";
             "*" = "echo ${flake}";
-          };
-          firmware = {
-            update = "sudo system76-firmware-cli schedule";
           };
           generations = {
             delete-older-than = "nix-collect-garbage --delete-older-than \"$@\"";
@@ -60,6 +60,9 @@ in
           };
           packages = {
             list = "nvd list";
+          };
+          shell = {
+            "*" = "nix-shell --command \"$SHELL\" -p \"$@\"";
           };
           switch = {
             remote = ''
