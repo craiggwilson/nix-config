@@ -30,6 +30,8 @@ in
         keybind = [
           "ctrl+v=paste_from_clipboard"
           "performable:ctrl+c=copy_to_clipboard"
+          "ctrl+shift+left=csi:1;6D"
+          "ctrl+shift+right=csi:1;6C"
         ];
       };
 
