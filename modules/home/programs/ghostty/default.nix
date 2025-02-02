@@ -12,10 +12,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # hdwlinux.apps.terminal = {
-    #   package = config.programs.ghostty.package;
-    #   desktopName = "ghostty.desktop";
-    # };
+    hdwlinux.apps.terminal = {
+      package = config.programs.ghostty.package;
+      desktopName = "ghostty.desktop";
+    };
 
     programs.ghostty = {
       enable = true;

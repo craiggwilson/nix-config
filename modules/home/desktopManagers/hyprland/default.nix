@@ -163,6 +163,7 @@ in
 
           windowrulev2 = [
             "opacity .95 .85,class:^(code)$"
+            "opacity .95 .85,class:^(com.mitchellh.ghostty)$"
             "opacity .95 .85,class:^(firefox)$"
             "opacity .95 .85,class:^(jetbrains)$"
             "opacity .95 .85,class:^(org.gnome.Nautilus)$"
@@ -173,7 +174,7 @@ in
             "dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
             "stayfocused,title:^(Quick Access — 1Password)$"
-            "workspace special:dropdown,class:^(foot)$"
+            "workspace special:dropdown,class:^(com.mitchellh.ghostty)$"
           ];
 
           bind = [
