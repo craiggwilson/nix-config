@@ -29,16 +29,6 @@ in
           $EDITOR +"''${linenumber}" "$file"
         fi
       '')
-      (pkgs.writeShellScriptBin "devshell" ''
-        name="$1";
-        shift;
-        ${pkgs.nix}/bin/nix develop ${flake}#$name $@;
-      '')
-      (pkgs.writeShellScriptBin "nix-run" ''
-        name="$1";
-        shift;
-        ${pkgs.nix}/bin/nix run nixpkgs#$name -- $@;
-      '')
     ];
   };
 }
