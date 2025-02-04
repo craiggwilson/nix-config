@@ -11,10 +11,11 @@ let
 in
 {
   options.hdwlinux.programs.zoom-us = {
-    enable = config.lib.hdwlinux.mkEnableOption "zoom-us" [
-      "gui"
-      "work"
-    ];
+    enable = config.lib.hdwlinux.mkEnableOption "zoom-us" false;
+    # [
+    #   "gui"
+    #   "work"
+    # ];
   };
 
   config = lib.mkIf cfg.enable {
