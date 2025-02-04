@@ -18,6 +18,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.old-zoom.zoom-us ];
+    home.packages = [ pkgs.zoom-us ];
   };
 }
