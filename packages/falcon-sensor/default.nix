@@ -1,6 +1,5 @@
 {
   lib,
-  inputs,
   pkgs,
   stdenv,
   requireFile,
@@ -35,8 +34,10 @@ let
     '';
 
     installPhase = ''
+      runHook preInstall
       cp -r ./ $out/
       realpath $out
+      runHook postInstall
     '';
 
     meta = with lib; {
@@ -44,7 +45,6 @@ let
       homepage = "https://www.crowdstrike.com/";
       license = licenses.unfree;
       platforms = platforms.linux;
-      maintainers = with maintainers; [ ravloony ];
     };
   };
 
@@ -73,7 +73,7 @@ let
 
   wrapCommand =
     command:
-    pkgs.writeScriptBin "${command}" ''
+    pkgs.writeScriptBin command ''
       #! ${pkgs.bash}/bin/sh
 
       "${falcon-env}/bin/fs-bash" -c "${falcon-env}/opt/CrowdStrike/${command} $*"
