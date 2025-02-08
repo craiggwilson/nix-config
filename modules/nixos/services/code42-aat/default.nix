@@ -33,12 +33,16 @@ let
 
   code42-aat = (
     pkgs.writeScriptBin "code42-aat" ''
+      #! ${pkgs.bash}/bin/sh
+
       "${fhsEnv}/bin/code42-aat-bash" -c "code42-aat $*"
     ''
   );
 
   code42-aat-cli = (
     pkgs.writeScriptBin "code42-aat-cli" ''
+      #! ${pkgs.bash}/bin/sh
+
       "${fhsEnv}/bin/code42-aat-bash" -c "code42-aat-cli $*"
     ''
   );
