@@ -14,24 +14,25 @@ let
 
       # need to replicate the buildInputs from the unwrapped package because
       # code42-aat downloads a new binary at runtime, so patchElf doesn't work.
-      pkgs.dpkg
       pkgs.curl
       pkgs.dpkg
       pkgs.libuuid
     ];
     includeClosures = true;
-  };
-
-  code42-aat = (
-    pkgs.writeScriptBin "code42-aat" ''
+    privateTmp = true;
+    profile = ''
+      export LD_LIBRARY_PATH="/var/opt/code42-aat/lib:/var/opt/code42-aat/lib/common:/opt/code42/lib:$LD_LIBRARY_PATH" 
       cat > /tmp/code42.deployment.properties<< EOF
       DEPLOYMENT_URL=${cfg.deployment.url}
       DEPLOYMENT_POLICY_TOKEN=${cfg.deployment.policy-token}
       DEPLOYMENT_SECRET=${cfg.deployment.secret}
       PROVIDED_USERNAME=${cfg.username}
       EOF
+    '';
+  };
 
-      export LD_LIBRARY_PATH="/var/opt/code42-aat/lib:/opt/code42/lib:$LD_LIBRARY_PATH" 
+  code42-aat = (
+    pkgs.writeScriptBin "code42-aat" ''
       "${fhsEnv}/bin/code42-aat-bash" -c "code42-aat $*"
     ''
   );
@@ -75,18 +76,8 @@ in
       description = "Code42-AAT";
       serviceConfig = {
         #WorkingDirectory = "/opt/code42-aat/";
-        # ExecStartPre =
-        #   (pkgs.writeShellScriptBin "init-code42-aat" ''
-        #     cat > /tmp/code42.deployment.properties<< EOF
-        #     DEPLOYMENT_URL=${cfg.deployment.url}
-        #     DEPLOYMENT_POLICY_TOKEN=${cfg.deployment.policy-token}
-        #     DEPLOYMENT_SECRET=${cfg.deployment.secret}
-        #     PROVIDED_USERNAME=${cfg.username}
-        #     EOF
-        #   '')
-        #   + "/bin/init-code42-aat";
         ExecStart = "${code42-aat}/bin/code42-aat";
-        Restart = "always";
+        Restart = "on-failure";
         RestartSec = 10;
         SyslogIdentifier = "code42-aat";
         KillMode = "process";
