@@ -37,18 +37,27 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hdwlinux.user.updates.ssh = {
-      config = lib.hdwlinux.file.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/config" ''
-        rm -f $out
-        ${lib.concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.includes)}
-        cat ${sshConfigFile} >> $out
-        chmod 600 $out
-      '';
-      known-hosts = lib.hdwlinux.file.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/known_hosts" ''
-        rm -f $out
-        ${lib.concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.knownHosts)}
-        chmod 600 $out
-      '';
+
+    programs.ssh = {
+      enable = true;
+      addKeysToAgent = "yes";
+      compression = true;
+      includes = map (i: "${i}") cfg.includes;
+      userKnownHostsFile = "~/.ssh/known_hosts " + (lib.concatStringsSep " " cfg.knownHosts);
     };
+
+    # hdwlinux.user.updates.ssh = {
+    #   config = lib.hdwlinux.file.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/config" ''
+    #     rm -f $out
+    #     ${lib.concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.includes)}
+    #     cat ${sshConfigFile} >> $out
+    #     chmod 600 $out
+    #   '';
+    #   known-hosts = lib.hdwlinux.file.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/known_hosts" ''
+    #     rm -f $out
+    #     ${lib.concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.knownHosts)}
+    #     chmod 600 $out
+    #   '';
+    # };
   };
 }
