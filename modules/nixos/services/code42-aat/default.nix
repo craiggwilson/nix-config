@@ -79,9 +79,8 @@ in
       enable = true;
       description = "Code42-AAT";
       serviceConfig = {
-        #WorkingDirectory = "/opt/code42-aat/";
         ExecStart = "${code42-aat}/bin/code42-aat";
-        Restart = "on-failure";
+        Restart = "always";
         RestartSec = 10;
         SyslogIdentifier = "code42-aat";
         KillMode = "process";
