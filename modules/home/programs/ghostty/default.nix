@@ -15,6 +15,9 @@ in
     hdwlinux.apps.terminal = {
       package = config.programs.ghostty.package;
       desktopName = "ghostty.desktop";
+      argGroups = {
+        launch = [ "-e" ];
+      };
     };
 
     programs.ghostty = {

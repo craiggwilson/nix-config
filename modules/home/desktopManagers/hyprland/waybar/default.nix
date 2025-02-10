@@ -286,7 +286,7 @@ in
           };
 
           systemd-failed-units = {
-            on-click = "appctl exec-known terminal systemctl list-units --state=failed && systemctl --user list-units --state=failed";
+            on-click = "appctl exec-known terminal launch systemctl --failed && systemctl --user --failed";
           };
 
           temperature = {
