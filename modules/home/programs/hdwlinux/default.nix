@@ -55,7 +55,7 @@ in
               "*" =
                 ''nix store diff-closures "/nix/var/nix/profiles/system-$1-link" "/nix/var/nix/profiles/system-$2-link"'';
             };
-            list = "sudo nix-env --list-generations --profile /nix/var/nix/profiles/system";
+            list = "nixos-rebuild list-generations \"$@\"";
           };
           packages = {
             list = "nvd list";
