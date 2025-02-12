@@ -31,7 +31,7 @@ let
 
   # flags is the command line flags to be provided to osqueryd and osqueryi.
   flags = lib.concatStringsSep " " (
-    lib.mapAttrsToList (name: value: "--${name} \"${value}\"") cfg.flags-cli
+    lib.mapAttrsToList (name: value: "--${name}=${value}") cfg.flags-cli
   );
 
   osqueryi = pkgs.runCommand "osqueryi" { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
