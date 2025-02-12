@@ -1,8 +1,8 @@
 {
   config,
-  pkgs,
-  lib,
   inputs,
+  lib,
+  pkgs,
   ...
 }:
 
@@ -92,6 +92,23 @@ in
           ${pkgs.nix}/bin/nix store diff-closures /run/current-system "$systemConfig"
         fi
       '';
+
+      autoUpgrade = lib.mkIf (lib.hdwlinux.matchTag "work" config.hdwlinux.tags) {
+        enable = true;
+        flake = cfg.flake;
+        allowReboot = false;
+        dates = "Fri *-*-* 02:00:00";
+        flags =
+          let
+            privateExists = builtins.pathExists "${inputs.secrets}/nixos";
+            secretsFlag = if privateExists then "--override-input secrets ${cfg.flake}/../nix-private" else "";
+          in
+          [
+            secretsFlag
+            "-L"
+            "--commit-lock-file"
+          ];
+      };
 
       switch = {
         enable = false;
