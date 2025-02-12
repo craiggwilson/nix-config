@@ -32,7 +32,6 @@ in
         golang.go
         rust-lang.rust-analyzer
         tamasfe.even-better-toml
-        #vadimcn.vscode-lldb
         jnoortheen.nix-ide
         zxh404.vscode-proto3
         (

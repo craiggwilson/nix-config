@@ -148,6 +148,7 @@ in
         allowed-users = [ "root" ];
         keep-outputs = true;
         keep-derivations = true;
+        download-buffer-size = 1073741824; # 1 GiB
         substituters = [
           cfg.default-substituter.url
         ] ++ (lib.mapAttrsToList (name: value: name) cfg.extra-substituters);
