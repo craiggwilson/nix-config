@@ -43,7 +43,13 @@ in
             shift;
             nix develop "${flake}#$name" "$@";
           '';
-          flake = "echo ${flake}";
+          firmware = {
+            update = "sudo system76-firmware-cli schedule";
+          };
+          flake = {
+            update = "nix flake update --flake ${flake} \"$@\"";
+            "*" = "echo ${flake}";
+          };
           generations = {
             delete-older-than = "nix-collect-garbage --delete-older-than \"$@\"";
             diff = {
@@ -65,6 +71,7 @@ in
               nix run "nixpkgs#$name" -- "$@";
             '';
             shell = "nix-shell --command \"$SHELL\" -p \"$@\"";
+            why-depends = "nix why-depends /run/current-system \"nixpkgs#$1\"";
           };
           switch = {
             remote = ''
@@ -76,13 +83,7 @@ in
             "*" =
               ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake}${privateCmd} "$@" |& nom'';
           };
-          update = {
-            firmware = "sudo system76-firmware-cli schedule";
-            flake = "nix flake update --flake ${flake} \"$@\"";
-          };
-          why-depends = {
-            "*" = "nix why-depends /run/current-system \"nixpkgs#$1\"";
-          };
+
         };
       })
     ];
