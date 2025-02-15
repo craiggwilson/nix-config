@@ -36,7 +36,7 @@ let
           ''
             if [[ $# -lt 1 ]]; then
               echo "expected one of ${subcommandNamesStr}"
-            else 
+            else
               echo "$1 is not a valid subcommand; expected one of ${subcommandNamesStr}"
             fi
             exit 1

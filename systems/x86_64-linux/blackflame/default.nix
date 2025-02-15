@@ -1,5 +1,4 @@
 {
-  pkgs,
   ...
 }:
 {
@@ -9,6 +8,10 @@
   ];
 
   hdwlinux = {
+    services.system76-battery = {
+      profile = "full_charge";
+    };
+
     tags = [
       "audio:midi"
       "audio:production"

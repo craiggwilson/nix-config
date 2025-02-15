@@ -27,8 +27,13 @@ in
           pkgs.nix
           pkgs.nix-output-monitor
           pkgs.nvd
+          pkgs.system76-power
         ];
         subcommands = {
+          battery = {
+            set-profile = "system76-power charge-thresholds --profile \"$@\"";
+            "*" = "system76-power charge-thresholds";
+          };
           build = {
             remote = ''
               hostname="$1"
