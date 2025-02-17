@@ -9,7 +9,7 @@
 
   hdwlinux = {
     services.system76-battery = {
-      profile = "full_charge";
+      profile = "balanced";
     };
 
     tags = [

@@ -88,7 +88,23 @@ in
             "*" =
               ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake}${privateCmd} "$@" |& nom'';
           };
-
+          wifi = {
+            connect = "nmcli connection up \"$@\"";
+            disconnect = ''
+              active="$(nmcli -t -f active,ssid dev wifi | rg '^yes' | cut -d: -f2)"
+              nmcli connection down "$active"
+            '';
+            off = "nmcli radio wifi off";
+            on = "nmcli radio wifi on";
+            "*" = ''
+              status="$(nmcli radio wifi)"
+              if [[ "$status" == 'disabled' ]]; then
+                echo "disabled"
+              else
+                nmcli connection show
+              fi
+            '';
+          };
         };
       })
     ];
