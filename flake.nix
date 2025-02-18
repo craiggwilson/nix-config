@@ -103,12 +103,6 @@
             config.allowUnfree = true;
           };
         })
-        (final: prev: {
-          unstable = import nixpkgs {
-            system = prev.system;
-            config.allowUnfree = true;
-          };
-        })
       ];
 
       homes.modules = with inputs; [
