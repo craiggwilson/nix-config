@@ -10,7 +10,7 @@
 let
   cfg = config.hdwlinux.programs.hdwlinux;
   user = config.snowfallorg.user.name;
-  privatePath = "${inputs.secrets}/${user}";
+  privatePath = "${inputs.secrets}/home/${user}";
   privateExists = builtins.pathExists privatePath;
   privateCmd = if privateExists then " --override-input secrets ${flake}/../nix-private" else "";
 in

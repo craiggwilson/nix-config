@@ -2,12 +2,11 @@
   lib,
   pkgs,
   inputs,
-  flake,
   ...
 }:
 let
   user = "craig";
-  privatePath = "${inputs.secrets}/${user}";
+  privatePath = "${inputs.secrets}/home/${user}";
   privateExists = builtins.pathExists privatePath;
 in
 {
