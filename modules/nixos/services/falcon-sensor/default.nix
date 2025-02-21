@@ -47,18 +47,5 @@ in
       };
       wantedBy = [ "multi-user.target" ];
     };
-
-    boot = {
-      kernelPackages = pkgs.linuxPackages_6_6;
-      kernelPatches = [
-        {
-          name = "crowdstrike";
-          patch = null;
-          extraConfig = ''
-            DEBUG_INFO_BTF y
-          '';
-        }
-      ];
-    };
   };
 }
