@@ -5,6 +5,7 @@
 
 final: prev:
 let
+  concatMapAttrs = f: attrs: lib.concatStrings (lib.mapAttrsToList f attrs);
   writeSwitchValue =
     value:
     if builtins.isAttrs value then
@@ -65,6 +66,80 @@ in
       prev.writeShellApplication {
         inherit name runtimeInputs;
         text = writeSwitch subcommands;
+      };
+
+    writeJustApplication =
+      {
+        name,
+        runtimeInputs ? [ ],
+        modules,
+      }:
+      prev.stdenvNoCC.mkDerivation {
+        inherit name;
+        enableParallelBuilding = true;
+        preferLocalBuild = true;
+        allowSubstitutes = false;
+        executable = true;
+        #passAsFile = [ ];
+        meta = {
+          mainProgram = name;
+        };
+        buildCommand =
+          let
+            writeModules =
+              modules:
+              concatMapAttrs (name: value: ''
+                ${writeModuleOrRecipes "${name}.just" value}
+              '') modules;
+
+            writeModuleOrRecipes =
+              filename: value:
+              if builtins.isAttrs value then writeModule filename value else writeRecipes filename value;
+
+            writeModule =
+              filename: modules:
+              let
+                modules' = lib.filterAttrs (n: _: n != "*") modules;
+                text = if builtins.hasAttr "*" modules then modules."*" else "";
+              in
+              ''
+                cat > "$out/share/${filename}" <<EOF
+                ${concatMapAttrs (name: _: ''
+                  mod ${name}
+                '') modules'}
+                ${text}
+                EOF
+                ${writeModules modules'}
+              '';
+
+            writeRecipes = filename: text: ''
+              cat > "$out/share/${filename}" <<EOF
+              ${text}
+              EOF
+            '';
+          in
+          ''
+            mkdir -p "$out/bin"
+            mkdir -p "$out/share"
+
+            # Write the just files.
+            ${writeModuleOrRecipes "justfile" modules}
+
+            # Write the main program.
+            cat > "$out/bin/${name}" <<EOF
+            #!${prev.stdenvNoCC.shell}
+
+            ${lib.optionalString (runtimeInputs != [ ]) ''
+              export PATH="${lib.makeBinPath runtimeInputs}:$PATH"
+            ''}
+
+            just -f "$out/share/justfile" "\$@"
+            EOF
+
+            chmod +x "$out/bin/${name}"
+
+            eval "$checkPhase"
+          '';
       };
   };
 }
