@@ -16,10 +16,19 @@ in
       enable = true;
 
       settings = {
+        git = {
+          subprocess = true;
+        };
+
+        ui = {
+          default-command = [ "log" ];
+        };
+
         user = {
           email = config.hdwlinux.user.email;
           name = config.hdwlinux.user.fullName;
         };
+
       };
     };
   };
