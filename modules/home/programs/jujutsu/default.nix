@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -17,11 +18,49 @@ in
 
       settings = {
         git = {
+          sign-on-push = true;
           subprocess = true;
+        };
+
+        merge-tools.difft = {
+          program = "${pkgs.difftastic}/bin/difft";
+          diff-args = [
+            "--color=always"
+            "$left"
+            "$right"
+          ];
+        };
+
+        merge-tools.meld = {
+          program = "${pkgs.meld}/bin/meld";
+          edit-args = [
+            "--newtab"
+            "$left"
+            "$right"
+          ];
+          merge-args = [
+            "$left"
+            "$base"
+            "$right"
+            "-o"
+            "$output"
+            "--auto-merge"
+          ];
+        };
+
+        signing = {
+          behavior = "own";
+          backend = "ssh";
+          key = "~/.ssh/id_rsa";
         };
 
         ui = {
           default-command = [ "log" ];
+          diff-editor = "meld-3";
+          diff.format = "git";
+          diff.tool = "difft";
+          merge-editor = "meld";
+          pager = "${pkgs.delta}/bin/delta";
         };
 
         user = {
