@@ -38,9 +38,7 @@ in
       systemd.enable = true;
 
       plugins = [
-        #pkgs.hyprlandPlugins.hyprfocus
-        #pkgs.hyprlandPlugins.hyprspace
-        #pkgs.hyprlandPlugins.hyprscroller
+        pkgs.hyprlandPlugins.hyprscroller
       ];
 
       settings = lib.mkMerge [
@@ -182,7 +180,7 @@ in
             "SUPER, E, exec, appctl exec-known fileManager"
             "SUPER, G, togglefloating,"
             "SUPER, L, exec, appctl exec-known passwordManager toggle"
-            "SUPER SHIFT,L, exec, appctl exec-known passwordManager lock"
+            "SUPER SHIFT, L, exec, appctl exec-known passwordManager lock"
             "SUPER, M, fullscreen, 1"
             "SUPER SHIFT, M, fullscreen, 0"
             "SUPER, O, togglesplit,"
@@ -256,38 +254,6 @@ in
           ];
 
           plugins = {
-            hyprfocus = {
-              enabled = "yes";
-              animate_floating = "yes";
-              animate_workspacechange = "yes";
-              focus_animation = "shrink";
-              # Beziers for focus animations
-              bezier = [
-                "bezIn, 0.5,0.0,1.0,0.5"
-                "bezOut, 0.0,0.5,0.5,1.0"
-                "overshot, 0.05, 0.9, 0.1, 1.05"
-                "smoothOut, 0.36, 0, 0.66, -0.56"
-                "smoothIn, 0.25, 1, 0.5, 1"
-                "realsmooth, 0.28,0.29,.69,1.08"
-              ];
-
-              flash = {
-                flash_opacity = 0.95;
-                in_bezier = "realsmooth";
-                in_speed = 0.5;
-                out_bezier = "realsmooth";
-                out_speed = 3;
-              };
-
-              shrink = {
-                shrink_percentage = 0.95;
-                in_bezier = "realsmooth";
-                in_speed = 1;
-                out_bezier = "realsmooth";
-                out_speed = 2;
-              };
-            };
-
             scroller = {
               column_default_width = "seveneighths";
             };
