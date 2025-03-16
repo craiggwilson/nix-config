@@ -23,6 +23,8 @@ in
       "nvidia"
     ];
 
+    boot.blacklistedKernelModules = [ "nouveau" ];
+
     hardware = {
       nvidia = {
         modesetting.enable = true;
