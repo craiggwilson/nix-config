@@ -18,6 +18,7 @@ in
 
       settings = {
         git = {
+          colocate = true;
           sign-on-push = true;
           subprocess = true;
         };
@@ -48,10 +49,29 @@ in
           ];
         };
 
+        merge-tools.mergiraf = {
+          program = "${pkgs.mergiraf}/bin/mergiraf";
+          merge-args = [
+            "merge"
+            "$base"
+            "$left"
+            "$right"
+            "-o"
+            "$output"
+            "--fast"
+          ];
+          merge-conflict-exit-codes = [ 1 ];
+          conflict-marker-style = "git";
+        };
+
         signing = {
           behavior = "own";
           backend = "ssh";
           key = "~/.ssh/id_rsa";
+        };
+
+        snapshot = {
+          auto-update-stale = true;
         };
 
         ui = {
