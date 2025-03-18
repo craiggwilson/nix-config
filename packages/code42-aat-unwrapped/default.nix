@@ -6,7 +6,7 @@
   ...
 }:
 let
-  weird-version = "1.12.3-5";
+  weird-version = "1.12.13-23";
   version = lib.replaceStrings [ "-" ] [ "." ] weird-version;
 in
 stdenv.mkDerivation rec {
@@ -14,7 +14,7 @@ stdenv.mkDerivation rec {
   name = "code42-aat";
   src = pkgs.fetchurl {
     url = "https://download-incydr.code42.com/installs/agent/aat/com/code42/agent/agent-launcher-ubuntu24_04/${version}/code42-aat_${weird-version}%2Bubuntu2404_amd64.deb";
-    sha256 = "sha256-SgGblRt1tfNlzpyGN6uFGb3Kl8z5iY7gDzUmldlDnIQ=";
+    sha256 = "sha256-CpnpgNP3NE5ZREjhOxPnsfZiFs+KYQk7Iyo1ABZNk9M=";
   };
   sourceRoot = "opt/code42-aat";
 

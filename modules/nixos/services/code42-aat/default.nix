@@ -21,7 +21,7 @@ let
     includeClosures = true;
     privateTmp = true;
     profile = ''
-      export LD_LIBRARY_PATH="/var/opt/code42-aat/lib:/var/opt/code42-aat/lib/common:/opt/code42/lib:$LD_LIBRARY_PATH" 
+      export LD_LIBRARY_PATH="/var/opt/code42-aat/lib:/var/opt/code42-aat/lib/common:/opt/code42/lib:/usr/lib:$LD_LIBRARY_PATH" 
       cat > /tmp/code42.deployment.properties<< EOF
       DEPLOYMENT_URL=${cfg.deployment.url}
       DEPLOYMENT_POLICY_TOKEN=${cfg.deployment.policy-token}
