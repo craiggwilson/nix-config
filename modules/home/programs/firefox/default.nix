@@ -79,7 +79,7 @@ in
           #main-window[titlepreface*="XXX"] #tabbrowser-tabs { z-index: 0 !important; }
         '';
 
-        extensions = with pkgs.nur.repos.rycee.firefox-addons; [
+        extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
           multi-account-containers
           musescore-downloader
           onepassword-password-manager
