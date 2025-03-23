@@ -70,7 +70,7 @@ in
         size = 24;
       };
       dark = true;
-      wallpapers = [ wallpaper ];
+      wallpaper = wallpaper;
     };
 
     # GTK

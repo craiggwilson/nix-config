@@ -28,44 +28,75 @@
 
     hardware = {
       fingerprint.enable = false;
-      monitors = [
-        {
-          port = "eDP-1";
-          width = 1920;
-          height = 1200;
-          x = 5120;
-          y = 1440;
-          scale = 1;
-        }
-        {
-          description = "Dell Inc. DELL S2721DGF 2WXSR83";
-          workspace = "2";
-          width = 2560;
-          height = 1440;
-          x = 0;
-          y = 0;
-          scale = 1;
-        }
-        {
-          description = "Dell Inc. DELL S2721DGF DSWSR83";
-          workspace = "3";
-          width = 2560;
-          height = 1440;
-          x = 2560;
-          y = 0;
-          scale = 1;
-        }
-        {
-          description = "Ancor Communications Inc MB169B+       AIC1643";
-          workspace = "1";
-          width = 1920;
-          height = 1080;
-          x = 1920;
-          y = 1440;
-          scale = 1;
+      monitors = {
+        laptop = {
+          vendor = "LG Display";
+          model = "0x06B3";
+          mode = "1920x1200@59.95Hz";
+          scale = 1.0;
+        };
+        office-mounted-left = {
+          vendor = "Dell Inc.";
+          model = "DELL S2721DGF";
+          serial = "DSWSR83";
+          mode = "2560x1440@59.951Hz";
+          scale = 1.0;
+        };
+        office-mounted-right = {
+          vendor = "Dell Inc.";
+          model = "DELL S2721DGF";
+          serial = "DSWSR83";
+          mode = "2560x1440@59.951Hz";
+          scale = 1.0;
+        };
+        portable = {
+          vendor = "Ancor Communications Inc";
+          model = "MB169B+      ";
+          serial = "AIC1643";
+          mode = "1920x1080@60.01Hz";
+          scale = 1.0;
           displaylink = true;
-        }
-      ];
+        };
+      };
+    };
+    outputProfiles = {
+      laptop = {
+        outputs = [
+          {
+            monitor = "laptop";
+            enable = true;
+            position = "0,0";
+          }
+        ];
+      };
+      docked = {
+        outputs = [
+          {
+            monitor = "office-mounted-left";
+            enable = true;
+            position = "0,0";
+            workspaces = [ "2" ];
+          }
+          {
+            monitor = "office-mounted-right";
+            enable = true;
+            position = "2560,0";
+            workspaces = [ "3" ];
+          }
+          {
+            monitor = "portable";
+            enable = true;
+            position = "1920,1440";
+            workspaces = [ "1" ];
+          }
+          {
+            monitor = "laptop";
+            enable = true;
+            position = "5120,1440";
+            workspaces = [ "0" ];
+          }
+        ];
+      };
     };
   };
 

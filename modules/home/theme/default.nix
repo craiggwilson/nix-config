@@ -44,9 +44,9 @@ in
       description = "Whether the theme is dark.";
       type = lib.types.bool;
     };
-    wallpapers = lib.mkOption {
-      description = "The wallpapers for the system.";
-      type = lib.types.listOf lib.types.path;
+    wallpaper = lib.mkOption {
+      description = "The wallpaper for the system.";
+      type = lib.types.path;
     };
   };
 

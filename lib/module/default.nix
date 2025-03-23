@@ -4,6 +4,10 @@ let
   elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
 in
 rec {
+  flatMap =
+    e: m: list:
+    lib.lists.flatten (builtins.map (x: builtins.map (y: (m x y)) (e x)) list);
+
   getAppExe =
     app: argGroup:
     let
@@ -40,6 +44,11 @@ rec {
       else
         throw "match must be a string or a list of strings"
     ) match;
+
+  monitorDescription =
+    monitor:
+    "${monitor.vendor} ${monitor.model}"
+    + (if monitor.serial != null then " ${monitor.serial}" else "");
 
   toTitle =
     str: "${lib.toUpper (lib.substring 0 1 str)}${lib.substring 1 (lib.stringLength str) str}";

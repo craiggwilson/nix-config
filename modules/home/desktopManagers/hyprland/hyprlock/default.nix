@@ -25,7 +25,7 @@ in
 
       background {
         monitor =
-        path = ${builtins.elemAt config.hdwlinux.theme.wallpapers 0}
+        path = ${config.hdwlinux.theme.wallpaper}
         blur_passes = 0
         color = ${rgb config.hdwlinux.theme.colors.base00}
       }

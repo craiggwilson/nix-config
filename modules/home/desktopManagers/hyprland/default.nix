@@ -9,11 +9,6 @@ let
   cfg = config.hdwlinux.desktopManagers.hyprland;
   rgb = color: "rgb(${color})";
   rgba = color: alpha: "rgba(${color}${alpha})";
-
-  criteriaFn = m: if m.description != null then "desc:${m.description}" else m.port;
-  monitorFn =
-    m:
-    "${criteriaFn m}, ${toString m.width}x${toString m.height}, ${toString m.x}x${toString m.y}, ${toString m.scale}";
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
@@ -56,6 +51,10 @@ in
           };
         })
         {
+          workspace = [
+            "special:dropdown,gapsin:5,gapsout:30,on-created-empty:appctl exec-known terminal,border:0,rounding:false,persistent:false"
+          ];
+
           misc = {
             disable_hyprland_logo = true;
             disable_splash_rendering = true;
@@ -64,18 +63,6 @@ in
           cursor = {
             no_hardware_cursors = true;
           };
-
-          monitor = (builtins.map monitorFn config.hdwlinux.hardware.monitors) ++ [
-            ", preferred, auto, auto"
-          ];
-
-          workspace =
-            (map (m: "${m.workspace}, monitor:${criteriaFn m}, default:true, persistent:true") (
-              builtins.filter (m: m.workspace != null) config.hdwlinux.hardware.monitors
-            ))
-            ++ [
-              "special:dropdown,gapsin:5,gapsout:30,on-created-empty:appctl exec-known terminal,border:0,rounding:false,persistent:false"
-            ];
 
           general = {
             gaps_in = 5;
@@ -246,11 +233,6 @@ in
             "SUPER, mouse:273, resizewindow"
             "SUPER, ALT_L, movewindow"
             "SUPER, Control_L, resizewindow"
-          ];
-
-          bindl = [
-            ",switch:off:Lid Switch, exec, hyprctl keyword monitor \"${monitorFn (builtins.head config.hdwlinux.hardware.monitors)}\""
-            ",switch:on:Lid Switch, exec, hyprctl keyword monitor \"${criteriaFn (builtins.head config.hdwlinux.hardware.monitors)}, disable\""
           ];
 
           plugins = {

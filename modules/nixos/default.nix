@@ -15,6 +15,11 @@ in
       default = { };
     };
 
+    outputProfiles = lib.mkOption {
+      description = "Options to set the output profiles.";
+      type = lib.types.attrsOf lib.hdwlinux.types.outputProfile;
+    };
+
     tags = lib.mkOption {
       description = "Tags used to enable components in the system.";
       type = lib.hdwlinux.types.allTags;
@@ -36,6 +41,7 @@ in
       {
         hdwlinux = {
           apps = cfg.apps;
+          outputProfiles = cfg.outputProfiles;
           tags = cfg.tags;
         };
       }

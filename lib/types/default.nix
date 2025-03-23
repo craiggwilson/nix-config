@@ -73,6 +73,59 @@ in
       };
     };
 
+    monitor = lib.types.submodule {
+      options = {
+        model = lib.mkOption { type = lib.types.str; };
+        serial = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+        };
+        vendor = lib.mkOption { type = lib.types.str; };
+        mode = lib.mkOption { type = lib.types.str; };
+        scale = lib.mkOption { type = lib.types.float; };
+        adaptive_sync = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+        };
+        displaylink = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+        };
+      };
+    };
+
+    outputProfile = lib.types.submodule {
+      options = {
+        execs = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+        };
+
+        outputs = lib.mkOption {
+          type = lib.types.listOf (
+            lib.types.submodule {
+              options = {
+                monitor = lib.mkOption { type = lib.types.str; };
+                enable = lib.mkOption {
+                  type = lib.types.bool;
+                  default = true;
+                };
+                position = lib.mkOption { type = lib.types.str; };
+                transform = lib.mkOption {
+                  type = lib.types.str;
+                  default = "normal";
+                };
+                workspaces = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  default = [ ];
+                };
+              };
+            }
+          );
+        };
+      };
+    };
+
     pcicard = lib.types.submodule {
       options = {
         busId = lib.mkOption {
