@@ -9,29 +9,10 @@ let
 
   tomlFormat = pkgs.formats.toml { };
 
-  hyprlandExecs =
-    profile:
-    let
-      w2m = lib.hdwlinux.flatMap (output: output.workspaces) (output: workspace: {
-        workspace = workspace;
-        monitor = lib.hdwlinux.monitorDescription config.hdwlinux.hardware.monitors.${output.monitor};
-      }) profile.outputs;
-
-    in
-    if config.hdwlinux.desktopManagers.hyprland.enable then
-      builtins.map (
-        output: "hyprctl dispatch moveworkspacetomonitor \"${output.workspace}\" \"${output.monitor}\""
-      ) w2m
-    else
-      [ ];
-
   mapProfiles = {
     profile = lib.mapAttrsToList (name: profile: {
       name = name;
-      exec =
-        [ "notify-send shikane \"$SHIKANE_PROFILE_NAME profile applied.\"" ]
-        ++ (hyprlandExecs profile)
-        ++ profile.execs;
+      exec = profile.execs ++ [ "notify-send shikane \"$SHIKANE_PROFILE_NAME profile applied.\"" ];
       output = mapProfileOutputs profile.outputs;
     }) config.hdwlinux.outputProfiles;
   };
@@ -45,6 +26,15 @@ let
       in
       {
         enable = output.enable;
+        exec =
+          output.execs
+          ++ (lib.lists.flatten (
+            builtins.map (workspace: [
+              "hyprctl dispatch workspace \"${workspace}\""
+              "hyprctl keyword workspace \"${workspace}\", monitor:$SHIKANE_OUTPUT_NAME,persistent:true"
+              "hyprctl dispatch moveworkspacetomonitor \"${workspace}\" \"$SHIKANE_OUTPUT_NAME\""
+            ]) output.workspaces
+          ));
         search = [
           "v=${monitor.vendor}"
           "m=${monitor.model}"

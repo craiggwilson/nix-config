@@ -110,6 +110,10 @@ in
                   type = lib.types.bool;
                   default = true;
                 };
+                execs = lib.mkOption {
+                  type = lib.types.listOf lib.types.str;
+                  default = [ ];
+                };
                 position = lib.mkOption { type = lib.types.str; };
                 transform = lib.mkOption {
                   type = lib.types.str;

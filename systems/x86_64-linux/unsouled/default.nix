@@ -38,7 +38,7 @@
         office-mounted-left = {
           vendor = "Dell Inc.";
           model = "DELL S2721DGF";
-          serial = "DSWSR83";
+          serial = "2WXSR83";
           mode = "2560x1440@59.951Hz";
           scale = 1.0;
         };
@@ -93,7 +93,7 @@
             monitor = "laptop";
             enable = true;
             position = "5120,1440";
-            workspaces = [ "0" ];
+            workspaces = [ "10" ];
           }
         ];
       };
