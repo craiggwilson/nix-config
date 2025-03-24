@@ -69,7 +69,33 @@
           }
         ];
       };
-      docked = {
+      docked-closed = {
+        outputs = [
+          {
+            monitor = "office-mounted-left";
+            enable = true;
+            position = "0,0";
+            workspaces = [ "2" ];
+          }
+          {
+            monitor = "office-mounted-right";
+            enable = true;
+            position = "2560,0";
+            workspaces = [ "3" ];
+          }
+          {
+            monitor = "portable";
+            enable = true;
+            position = "1920,1440";
+            workspaces = [ "1" ];
+          }
+          {
+            monitor = "laptop";
+            enable = false;
+          }
+        ];
+      };
+      docked-open = {
         outputs = [
           {
             monitor = "office-mounted-left";

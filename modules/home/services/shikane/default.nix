@@ -26,15 +26,6 @@ let
       in
       {
         enable = output.enable;
-        exec =
-          output.execs
-          ++ (lib.lists.flatten (
-            builtins.map (workspace: [
-              "hyprctl dispatch workspace \"${workspace}\""
-              "hyprctl keyword workspace \"${workspace}\", monitor:$SHIKANE_OUTPUT_NAME,persistent:true"
-              "hyprctl dispatch moveworkspacetomonitor \"${workspace}\" \"$SHIKANE_OUTPUT_NAME\""
-            ]) output.workspaces
-          ));
         search = [
           "v=${monitor.vendor}"
           "m=${monitor.model}"
@@ -42,9 +33,25 @@ let
         mode = monitor.mode;
         scale = monitor.scale;
         adaptive_sync = monitor.adaptive_sync;
-        position = output.position;
-        transform = output.transform;
       }
+      // (
+        if output.enable then
+          {
+            exec =
+              output.execs
+              ++ (lib.lists.flatten (
+                builtins.map (workspace: [
+                  "hyprctl dispatch workspace \"${workspace}\""
+                  "hyprctl keyword workspace \"${workspace}\", monitor:$SHIKANE_OUTPUT_NAME,persistent:true"
+                  "hyprctl dispatch moveworkspacetomonitor \"${workspace}\" \"$SHIKANE_OUTPUT_NAME\""
+                ]) output.workspaces
+              ));
+            position = output.position;
+            transform = output.transform;
+          }
+        else
+          { }
+      )
     ) outputs;
 in
 {
