@@ -66,6 +66,7 @@ in
   profile = ''
     export venvDir="./.venv"
 
+    #export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
     export BAZEL_TELEMETRY=0
     export GOPRIVATE="github.com/10gen"
     export JAVA_HOME="${javapkg.home}";
