@@ -9,6 +9,11 @@ let
   cfg = config.hdwlinux.desktopManagers.hyprland;
   rgb = color: "rgb(${color})";
   rgba = color: alpha: "rgba(${color}${alpha})";
+
+  laptopMonitor = config.hdwlinux.hardware.monitors.laptop;
+
+  criteria = lib.hdwlinux.monitorDefition laptopMonitor;
+  monitor = "${criteria}, ${laptopMonitor.mode}, auto, ${toString laptopMonitor.scale}";
 in
 {
   options.hdwlinux.desktopManagers.hyprland = {
@@ -233,6 +238,11 @@ in
             "SUPER, mouse:273, resizewindow"
             "SUPER, ALT_L, movewindow"
             "SUPER, Control_L, resizewindow"
+          ];
+
+          bindl = [
+            ",switch:off:Lid Switch, exec, hyprctl keyword monitor \"${monitor}\""
+            ",switch:on:Lid Switch, exec, hyprctl keyword monitor \"${criteria}, disable\""
           ];
 
           plugins = {
