@@ -30,9 +30,6 @@ let
           "v=${monitor.vendor}"
           "m=${monitor.model}"
         ] ++ (if monitor.serial != null then [ "s=${monitor.serial}" ] else [ ]);
-        mode = monitor.mode;
-        scale = monitor.scale;
-        adaptive_sync = monitor.adaptive_sync;
       }
       // (
         if output.enable then
@@ -46,7 +43,10 @@ let
                   "hyprctl dispatch moveworkspacetomonitor \"${workspace}\" \"$SHIKANE_OUTPUT_NAME\""
                 ]) output.workspaces
               ));
+            adaptive_sync = monitor.adaptive_sync;
+            mode = monitor.mode;
             position = output.position;
+            scale = monitor.scale;
             transform = output.transform;
           }
         else
