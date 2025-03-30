@@ -5,7 +5,7 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.services.shikane;
+  cfg = config.hdwlinux.desktopManagers.hyprland.shikane;
 
   tomlFormat = pkgs.formats.toml { };
 
@@ -55,8 +55,8 @@ let
     ) outputs;
 in
 {
-  options.hdwlinux.services.shikane = {
-    enable = config.lib.hdwlinux.mkEnableOption "shikane" "gui";
+  options.hdwlinux.desktopManagers.hyprland.shikane = {
+    enable = config.lib.hdwlinux.mkEnableOption "shikane" config.hdwlinux.desktopManagers.hyprland.enable;
   };
 
   config = lib.mkIf cfg.enable {
