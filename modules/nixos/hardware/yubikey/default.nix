@@ -14,7 +14,7 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages =
+    environment.systemPackages =
       [
         pkgs.yubikey-manager
       ]
