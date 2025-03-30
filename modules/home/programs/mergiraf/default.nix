@@ -50,5 +50,20 @@ in
         "*.py merge=mergiraf"
       ];
     };
+
+    programs.jujutsu.settings.merge-tools.mergiraf = lib.mkIf config.hdwlinux.programs.jujutsu.enable {
+      program = "${pkgs.mergiraf}/bin/mergiraf";
+      merge-args = [
+        "merge"
+        "$base"
+        "$left"
+        "$right"
+        "-o"
+        "$output"
+        "--fast"
+      ];
+      merge-conflict-exit-codes = [ 1 ];
+      conflict-marker-style = "git";
+    };
   };
 }

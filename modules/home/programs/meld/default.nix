@@ -24,5 +24,29 @@ in
         trustExitCode = false;
       };
     };
+
+    programs.jujutsu.settings = lib.mkIf config.hdwlinux.programs.jujutsu.enable {
+      merge-tools.meld = {
+        program = "${pkgs.meld}/bin/meld";
+        edit-args = [
+          "--newtab"
+          "$left"
+          "$right"
+        ];
+        merge-args = [
+          "$left"
+          "$base"
+          "$right"
+          "-o"
+          "$output"
+          "--auto-merge"
+        ];
+      };
+
+      ui = {
+        diff-editor = "meld-3";
+        merge-editor = "meld";
+      };
+    };
   };
 }

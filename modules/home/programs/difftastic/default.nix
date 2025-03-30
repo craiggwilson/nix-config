@@ -27,5 +27,20 @@ in
       };
       pager.difftool = true;
     };
+
+    programs.jujutsu.settings = lib.mkIf config.hdwlinux.programs.jujutsu.enable {
+      merge-tools.difft = {
+        program = "${pkgs.difftastic}/bin/difft";
+        diff-args = [
+          "--color=always"
+          "$left"
+          "$right"
+        ];
+      };
+
+      ui = {
+        diff.tool = "difft";
+      };
+    };
   };
 }

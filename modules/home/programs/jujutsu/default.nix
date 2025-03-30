@@ -23,47 +23,6 @@ in
           subprocess = true;
         };
 
-        merge-tools.difft = {
-          program = "${pkgs.difftastic}/bin/difft";
-          diff-args = [
-            "--color=always"
-            "$left"
-            "$right"
-          ];
-        };
-
-        merge-tools.meld = {
-          program = "${pkgs.meld}/bin/meld";
-          edit-args = [
-            "--newtab"
-            "$left"
-            "$right"
-          ];
-          merge-args = [
-            "$left"
-            "$base"
-            "$right"
-            "-o"
-            "$output"
-            "--auto-merge"
-          ];
-        };
-
-        merge-tools.mergiraf = {
-          program = "${pkgs.mergiraf}/bin/mergiraf";
-          merge-args = [
-            "merge"
-            "$base"
-            "$left"
-            "$right"
-            "-o"
-            "$output"
-            "--fast"
-          ];
-          merge-conflict-exit-codes = [ 1 ];
-          conflict-marker-style = "git";
-        };
-
         signing = {
           behavior = "own";
           backend = "ssh";
@@ -76,18 +35,13 @@ in
 
         ui = {
           default-command = [ "log" ];
-          diff-editor = "meld-3";
           diff.format = "git";
-          diff.tool = "difft";
-          merge-editor = "meld";
-          pager = "${pkgs.delta}/bin/delta";
         };
 
         user = {
           email = config.hdwlinux.user.email;
           name = config.hdwlinux.user.fullName;
         };
-
       };
     };
   };

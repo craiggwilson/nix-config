@@ -25,5 +25,11 @@ in
       };
       interactive.diffFilter = "delta --color-only";
     };
+
+    programs.jujutsu.settings = lib.mkIf config.hdwlinux.programs.jujutsu.enable {
+      ui = {
+        pager = "${pkgs.delta}/bin/delta";
+      };
+    };
   };
 }
