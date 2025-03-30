@@ -23,7 +23,6 @@
       "fonts"
       "gaming"
       "gui"
-      "llm"
       "networking:tailscale"
       "personal"
       "programming"

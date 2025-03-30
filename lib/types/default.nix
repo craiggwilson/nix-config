@@ -19,7 +19,6 @@ let
     "gaming:streaming"
     "gui"
     "laptop"
-    "llm"
     "networking"
     "networking:tailscale"
     "nvidia"
