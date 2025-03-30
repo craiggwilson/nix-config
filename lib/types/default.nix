@@ -8,8 +8,6 @@ let
     "bluetooth"
     "camera"
     "cuda"
-    "desktop:cosmic"
-    "desktop:gnome"
     "desktop:hyprland"
     "desktop:remote"
     "filesystem:nfs"

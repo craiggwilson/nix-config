@@ -12,7 +12,7 @@ let
 
   laptopMonitor = config.hdwlinux.hardware.monitors.laptop;
 
-  criteria = lib.hdwlinux.monitorDefition laptopMonitor;
+  criteria = lib.hdwlinux.monitorDescription laptopMonitor;
   monitor = "${criteria}, ${laptopMonitor.mode}, auto, ${toString laptopMonitor.scale}";
 in
 {

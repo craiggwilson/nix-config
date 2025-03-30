@@ -39,12 +39,6 @@
     # nix-flatpak provides declaritive flatpak installation.
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.1.0";
 
-    # cosmic is a DE from system76.
-    nixos-cosmic = {
-      url = "github:lilyinstarlight/nixos-cosmic";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
@@ -113,7 +107,6 @@
       systems.modules.nixos = with inputs; [
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
-        nixos-cosmic.nixosModules.default
         musnix.nixosModules.musnix
         kolide-launcher.nixosModules.kolide-launcher
         ./nixos/craig
