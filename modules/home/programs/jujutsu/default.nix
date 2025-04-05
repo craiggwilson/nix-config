@@ -17,6 +17,11 @@ in
       enable = true;
 
       settings = {
+        core = {
+          fsmonitor = "watchman";
+          watchman.register_snapshot_trigger = true;
+        };
+
         git = {
           colocate = true;
           sign-on-push = true;
