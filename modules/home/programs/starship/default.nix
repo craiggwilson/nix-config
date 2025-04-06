@@ -25,10 +25,10 @@ in
       enableZshIntegration = config.hdwlinux.programs.zsh.enable;
       settings = {
         command_timeout = 5000;
-        format = "$nix_shell$shell$username$hostname$directory\${custom.jj}$git_branch$git_commit$git_state$git_metrics$git_status$kubernetes$line_break$character";
+        format = "$nix_shell$shell$username$hostname$directory\${custom.jj}$kubernetes$line_break$character";
 
         profiles = {
-          transient = "$time $character";
+          transient = "$time$character";
         };
 
         character = {
@@ -44,21 +44,6 @@ in
         };
 
         fill.symbol = " ";
-
-        git_branch = {
-          disabled = true;
-          style = config.hdwlinux.theme.colors.withHashtag.base04;
-          symbol = "";
-          format = "[$symbol$branch(:$remote_branch)]($style)";
-        };
-
-        git_commit.disabled = true;
-        git_metrics.disabled = true;
-        git_state.disabled = true;
-        git_status = {
-          disabled = true;
-          style = config.hdwlinux.theme.colors.withHashtag.base04;
-        };
 
         nix_shell = {
           symbol = "❄️ ";
