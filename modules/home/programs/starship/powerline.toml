@@ -1,0 +1,101 @@
+command_timeout = 5000
+format = """
+[](#81c8be)$nix_shell$shell$username$hostname\
+[](fg:#81c8be bg:#8caaee)$directory\
+[](fg:#8caaee bg:#ca9ee6)${custom.jj_change_prefix}${custom.jj_change_suffix}${custom.jj_bookmarks}${custom.jj_description}\
+$kubernetes\
+$line_break$character\
+"""
+
+[character]
+error_symbol = "[❯](#f38ba8)"
+success_symbol = "[❯](#ca9ee6)"
+
+[custom.jj_bookmarks]
+format ="[$output ]($style)"
+command = "jj log --revisions @ --no-graph --ignore-working-copy --color never --limit 1 --template 'bookmarks'"
+description = "The current change prefix."
+detect_folders = [".jj"]
+ignore_timeout = true
+style = "fg:#11111b bg:#ca9ee6"
+
+[custom.jj_change_prefix]
+format ="[ $output]($style)"
+command = "jj log --revisions @ --no-graph --ignore-working-copy --color never --limit 1 --template 'change_id.shortest(4).prefix()'"
+description = "The current change prefix."
+detect_folders = [".jj"]
+ignore_timeout = true
+style = "bold fg:#1e1e2e bg:#ca9ee6"
+
+[custom.jj_change_suffix]
+format ="[$output ]($style)"
+command = "jj log --revisions @ --no-graph --ignore-working-copy --color never --limit 1 --template 'change_id.shortest(4).rest()'"
+description = "The current change prefix."
+detect_folders = [".jj"]
+ignore_timeout = true
+style = "fg:#45475a bg:#ca9ee6"
+
+[custom.jj_description]
+format ="[$output]($style)"
+command = """
+jj log --revisions @ --no-graph --ignore-working-copy --color never --limit 1 --template '
+    concat( 
+        if(conflict, \"💥\"), 
+        if(divergent, \"🚧\"), 
+        if(hidden, \"👻\"), 
+        if(immutable, \"🔒\"),
+        if(empty, \"(empty)\"), 
+        if(
+            description.first_line().len() == 0, 
+            \"(no description set)\", 
+            if(
+                description.first_line().substr(0, 29) == description.first_line(), 
+                description.first_line(), 
+                description.first_line().substr(0, 29) ++ \"…\",
+            )
+        )
+    )'
+"""
+description = "The current change prefix."
+detect_folders = [".jj"]
+ignore_timeout = true
+style = "fg:#11111b bg:#ca9ee6"
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style)"
+style = "fg:#11111b bg:#8caaee"
+truncate_to_repo = true
+truncation_length = 3
+truncation_symbol = "…/"
+
+[fill]
+symbol = " "
+
+[hostname]
+style = "fg:#11111b bg:#89B4FA"
+
+[nix_shell]
+format = "[$symbol]($style)"
+style = "fg:#11111b bg:#89B4FA"
+symbol = "❄️"
+
+[profiles]
+transient = "$time $character"
+
+[shell]
+disabled = false
+format = "[$indicator]($style)"
+bash_indicator = ""
+powershell_indicator = ""
+style = "fg:#11111b bg:#81c8be"
+zsh_indicator = ""
+
+[time]
+disabled = false
+format = "[$time]($style)"
+style = "#89b4fa"
+
+[username]
+disabled = false
+format = "[$user]($style)"
+style_user = "fg:#11111b bg:#89B4FA"
