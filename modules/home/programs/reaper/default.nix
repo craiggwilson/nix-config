@@ -31,7 +31,7 @@ in
       pkgs.dragonfly-reverb
       pkgs.guitarix
       pkgs.FIL-plugins
-      pkgs.geonkick
+      #pkgs.geonkick
       pkgs.sfizz
 
       # windows plugin bridge
