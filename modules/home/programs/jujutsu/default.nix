@@ -29,6 +29,7 @@ in
 
         git = {
           colocate = true;
+          private-commits = "description(glob:'private:*')";
           sign-on-push = true;
           subprocess = true;
         };
