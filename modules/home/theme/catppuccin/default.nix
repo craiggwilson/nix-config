@@ -107,6 +107,8 @@ in
 
     # VSCode
     hdwlinux.programs.vscode.theme = "Catppuccin ${lib.hdwlinux.toTitle cfg.flavor}";
-    programs.vscode.extensions = with pkgs.vscode-extensions; [ catppuccin.catppuccin-vsc ];
+    programs.vscode.profiles.default.extensions = with pkgs.vscode-extensions; [
+      catppuccin.catppuccin-vsc
+    ];
   };
 }
