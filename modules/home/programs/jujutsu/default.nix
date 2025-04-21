@@ -24,7 +24,7 @@ in
       settings = {
         core = {
           fsmonitor = "watchman";
-          watchman.register_snapshot_trigger = true;
+          watchman.register-snapshot-trigger = true;
         };
 
         git = {
