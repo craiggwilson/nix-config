@@ -117,8 +117,11 @@ in
     };
 
     boot.tmp.useTmpfs = true;
-    systemd.services.nix-daemon = {
-      environment.TMPDIR = "/var/tmp";
+    systemd = {
+      shutdownRamfs.enable = false;
+      services.nix-daemon = {
+        environment.TMPDIR = "/var/tmp";
+      };
     };
     users.users.root.hashedPassword = "*";
 
