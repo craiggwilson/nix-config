@@ -14,15 +14,16 @@ in
     pkgs.gcc
     pkgs.bazelisk
     pkgs.bazel-gazelle
-    pkgs.bazel-buildtools
+    pkgs.stable.bazel-buildtools
     pkgs.pkg-config
     pkgs.libz
 
     # Java
     javapkg
+    pkgs.google-java-format
 
     # Go
-    pkgs.go_1_22
+    pkgs.go_1_23
 
     # node
     pkgs.nodejs_22
@@ -68,6 +69,14 @@ in
     (pkgs.writeShellScriptBin "bazel" ''
       bazelisk $@
     '')
+
+    (pkgs.writeShellScriptBin "start-mongod" ''
+      $MMS_HOME/scripts/mongodb-start-standalone.bash
+    '')
+
+    (pkgs.writeShellScriptBin "start-mongod-for-test" ''
+      $MMS_HOME/scripts/mongodb-start-standalone.bash -p 26000
+    '')
   ];
 
   includeClosures = true;
@@ -82,6 +91,7 @@ in
     } 
     export venvDir="./.venv"
 
+    export AWS_PROFILE="mms-scratch"
     export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
     export BAZEL_TELEMETRY=0
     export GOPRIVATE="github.com/10gen"
