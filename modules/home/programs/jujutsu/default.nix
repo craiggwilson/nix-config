@@ -22,6 +22,17 @@ in
       enable = true;
 
       settings = {
+        aliases = {
+          tug = [
+            "bookmark"
+            "move"
+            "--from"
+            "closest_bookmark(@)"
+            "--to"
+            "closest_pushable(@)"
+          ];
+        };
+
         core = {
           fsmonitor = "watchman";
           watchman.register-snapshot-trigger = true;
@@ -30,8 +41,15 @@ in
         git = {
           colocate = true;
           private-commits = "description(glob:'private:*')";
+          push-new-bookmarks = true;
           sign-on-push = true;
           subprocess = true;
+        };
+
+        revset-aliases = {
+          "closest_bookmark(to)" = "heads(::to & bookmarks())";
+          "closest_pushable(to)" =
+            ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
         };
 
         signing = {
