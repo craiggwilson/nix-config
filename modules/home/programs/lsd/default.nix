@@ -14,7 +14,8 @@ in
   config = lib.mkIf cfg.enable {
     programs.lsd = {
       enable = true;
-      enableAliases = true;
+      enableBashIntegration = config.hdwlinux.programs.bash.enable;
+      enableZshIntegration = config.hdwlinux.programs.zsh.enable;
     };
   };
 }
