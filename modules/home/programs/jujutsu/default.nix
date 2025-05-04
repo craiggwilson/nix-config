@@ -40,16 +40,17 @@ in
 
         git = {
           colocate = true;
-          private-commits = "description(glob:'private:*')";
+          private-commits = "private()";
           push-new-bookmarks = true;
           sign-on-push = true;
           subprocess = true;
         };
 
         revset-aliases = {
-          "closest_bookmark(to)" = "heads(::to & bookmarks())";
+          "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private())";
           "closest_pushable(to)" =
             ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
+          "private()" = "description(glob:'private:*')";
         };
 
         signing = {
