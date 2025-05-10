@@ -40,24 +40,26 @@ in
         ignoreTimeout = false;
         borderRadius = 5;
         borderSize = 1;
-        extraConfig = ''
-          [mode=idle]
-          default-timeout=0
-          ignore-timeout=1
-
-          [mode=do-not-disturb]
-          invisible=1
-        '';
+        criteria = {
+          "mode=idle" = {
+            default-timeout = 0;
+            ignore-timeout = 1;
+          };
+          "mode=do-not-disturb" = {
+            invisible = 1;
+          };
+        };
       }
       (lib.mkIf config.hdwlinux.theme.enable {
         backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00;
         borderColor = config.hdwlinux.theme.colors.withHashtag.base00;
         progressColor = config.hdwlinux.theme.colors.withHashtag.base02;
         textColor = config.hdwlinux.theme.colors.withHashtag.base05;
-        extraConfig = ''
-          [urgency=high]
-          border-color=${config.hdwlinux.theme.colors.withHashtag.base09}
-        '';
+        criteria = {
+          "urgency=high" = {
+            border-color = config.hdwlinux.theme.colors.withHashtag.base09;
+          };
+        };
       })
     ];
 
