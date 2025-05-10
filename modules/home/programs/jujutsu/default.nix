@@ -50,7 +50,7 @@ in
           "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private())";
           "closest_pushable(to)" =
             ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
-          "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks() | (trunk().. & ~mine())";
+          "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
           "private()" = "description(glob:'private:*')";
         };
 
@@ -65,7 +65,11 @@ in
         };
 
         ui = {
-          default-command = [ "log" ];
+          default-command = [
+            "log"
+            "-r"
+            "present(@) | present(trunk()) | bookmarks() | ancestors(immutable_heads().., 3)"
+          ];
           diff.format = "git";
         };
 
