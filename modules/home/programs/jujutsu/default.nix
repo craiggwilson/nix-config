@@ -50,6 +50,7 @@ in
           "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private())";
           "closest_pushable(to)" =
             ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
+          "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks() | (trunk().. & ~mine())";
           "private()" = "description(glob:'private:*')";
         };
 
