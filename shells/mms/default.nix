@@ -10,13 +10,14 @@ in
   targetPkgs = pkgs: [
     # Bazel
     #pkgs.bazel_7
-    pkgs.glibc
-    pkgs.gcc
     pkgs.bazelisk
     pkgs.bazel-gazelle
-    pkgs.stable.bazel-buildtools
-    pkgs.pkg-config
+    pkgs.gcc
+    pkgs.glibc
     pkgs.libz
+    pkgs.pkg-config
+    pkgs.stable.bazel-buildtools
+    pkgs.unzip
 
     # Java
     javapkg
@@ -30,9 +31,14 @@ in
     pkgs.nodejs_22.pkgs.pnpm
 
     # python
+    pkgs.openblas
     pkgs.python3.pkgs.python
     pkgs.python3.pkgs.venvShellHook
-    pkgs.openblas
+
+    # fern
+    pkgs.hdwlinux.fern
+    pkgs.minikube
+    pkgs.tilt
 
     # other
     pkgs.amazon-ecr-credential-helper
@@ -94,10 +100,10 @@ in
     export AWS_PROFILE="mms-scratch"
     export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
     export BAZEL_TELEMETRY=0
+    export FERN_BASE_DIRECTORY="$XDG_DATA_HOME/fern"
     export GOPRIVATE="github.com/10gen"
     export JAVA_HOME="${javapkg.home}";
     export MMS_HOME="$PWD";
-    #export BAZEL_ENGFLOW_AUTH_TEST_SUBJECT=1
 
     mkdir -p $TMPDIR
   '';
