@@ -37,10 +37,6 @@ in
       xwayland.enable = true;
       systemd.enable = true;
 
-      plugins = [
-        pkgs.hyprlandPlugins.hyprscroller
-      ];
-
       settings = lib.mkMerge [
         (lib.mkIf config.hdwlinux.theme.enable {
           misc.background_color = rgb config.hdwlinux.theme.colors.base00;
@@ -245,11 +241,6 @@ in
             ",switch:on:Lid Switch, exec, hyprctl keyword monitor \"${criteria}, disable\""
           ];
 
-          plugins = {
-            scroller = {
-              column_default_width = "seveneighths";
-            };
-          };
         }
       ];
     };

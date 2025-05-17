@@ -19,7 +19,6 @@ in
       initrd = {
         systemd = {
           enable = true;
-          strip = true;
         };
         verbose = false;
       };
