@@ -43,7 +43,6 @@ in
           private-commits = "private()";
           push-new-bookmarks = true;
           sign-on-push = true;
-          subprocess = true;
         };
 
         revset-aliases = {
@@ -68,7 +67,7 @@ in
           default-command = [
             "log"
             "-r"
-            "present(@) | present(trunk()) | bookmarks() | ancestors(immutable_heads().., 3)"
+            "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
           ];
           diff.format = "git";
         };

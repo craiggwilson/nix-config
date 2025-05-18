@@ -36,11 +36,12 @@ in
     services.mako = lib.mkMerge [
       {
         enable = true;
-        defaultTimeout = 5000;
-        ignoreTimeout = false;
-        borderRadius = 5;
-        borderSize = 1;
-        criteria = {
+        settings = {
+          border-radius = 5;
+          border-size = 1;
+          default-timeout = 5000;
+          ignore-timeout = false;
+
           "mode=idle" = {
             default-timeout = 0;
             ignore-timeout = 1;
@@ -51,11 +52,12 @@ in
         };
       }
       (lib.mkIf config.hdwlinux.theme.enable {
-        backgroundColor = config.hdwlinux.theme.colors.withHashtag.base00;
-        borderColor = config.hdwlinux.theme.colors.withHashtag.base00;
-        progressColor = config.hdwlinux.theme.colors.withHashtag.base02;
-        textColor = config.hdwlinux.theme.colors.withHashtag.base05;
-        criteria = {
+        settings = {
+          background-color = config.hdwlinux.theme.colors.withHashtag.base00;
+          border-color = config.hdwlinux.theme.colors.withHashtag.base00;
+          progress-color = config.hdwlinux.theme.colors.withHashtag.base02;
+          text-color = config.hdwlinux.theme.colors.withHashtag.base05;
+
           "urgency=high" = {
             border-color = config.hdwlinux.theme.colors.withHashtag.base09;
           };
