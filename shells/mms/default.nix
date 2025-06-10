@@ -59,7 +59,7 @@ in
     pkgs.librsvg
     pkgs.pango
 
-    (pkgs.writeShellScriptBin "render-helm" ''
+    (pkgs.writeShellScriptBin "render-helm-deployment" ''
       deploy="$1"
       name="$2"
       topo="''${3-:'aws.dev'}"
@@ -70,6 +70,19 @@ in
 
       #echo $CMD
       eval "$CMD"
+    '')
+
+    (pkgs.writeShellScriptBin "render-helm-deployments-for-diff" ''
+      global_deploy="$1"
+      global_name="$2"
+      local_deploy="$3"
+      local_name="$4"
+      topo="''${5-:'aws.dev'}"
+
+      mkdir -p "rendered-helm"
+
+      render-helm-deployment "$global_deploy" "$global_name" "$topo" > "rendered-helm/global-$global_name-$topo.yaml"
+      render-helm-deployment "$local_deploy" "$local_name" "$topo" > "rendered-helm/local-$local_name-$topo.yaml"
     '')
 
     (pkgs.writeShellScriptBin "bazel" ''

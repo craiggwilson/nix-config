@@ -23,6 +23,40 @@ in
 
       settings = {
         aliases = {
+          mine = [
+            "log"
+            "-r"
+            "mutable() & mine() | bookmarks()::"
+          ];
+
+          retrunk = [
+            "rebase"
+            "-d"
+            "trunk()"
+          ];
+
+          retrunk-all = [
+            "rebase"
+            "-s"
+            "all:roots(trunk()..mutable())"
+            "-d"
+            "trunk()"
+          ];
+
+          sync = [
+            "util"
+            "exec"
+            "--"
+            "bash"
+            "-c"
+            ''
+              branch=$(jj log -r "trunk()" -T "bookmarks" --no-graph)
+              jj git fetch --branch "$branch"
+              jj git push --bookmark "$branch"
+              jj git fetch --remote origin
+            ''
+          ];
+
           tug = [
             "bookmark"
             "move"
@@ -46,7 +80,7 @@ in
         };
 
         revset-aliases = {
-          "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private())";
+          "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private() & ~trunk())";
           "closest_pushable(to)" =
             ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
           "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
