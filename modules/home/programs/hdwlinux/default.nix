@@ -83,7 +83,7 @@ in
               hostname="$1"
               addr="$2"
               shift 2
-              git -C ${flake} add -A . && nixos-rebuild switch --flake "${flake}#$hostname"${privateCmd} --target-host "${user}@$addr" --use-remote-sudo "$@" |& nom
+              git -C ${flake} add -A . && nixos-rebuild switch --flake "${flake}#$hostname"${privateCmd} --target-host "${user}@$addr" --sudo "$@" --ask-sudo-password |& nom
             '';
             "*" =
               ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake}${privateCmd} "$@" |& nom'';

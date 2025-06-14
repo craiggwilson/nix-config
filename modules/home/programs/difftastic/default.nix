@@ -39,7 +39,7 @@ in
       };
 
       ui = {
-        diff.tool = "difft";
+        diff-formatter = "difft";
       };
     };
   };

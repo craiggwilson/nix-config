@@ -98,12 +98,12 @@ in
         };
 
         ui = {
+          conflict-marker-style = "git";
           default-command = [
             "log"
             "-r"
             "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
           ];
-          diff.format = "git";
         };
 
         user = {
