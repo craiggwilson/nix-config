@@ -18,7 +18,7 @@ let
       Once you have downloaded the file, please use the following
       commands and re-run the installation.
 
-      mv "Debian 9_10_11_12.deb" \$PWD/${name}
+      mv "falcon.deb" \$PWD/${name}
       nix-prefetch-url file://$\PWD/${name}
     '';
   };
