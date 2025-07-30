@@ -19,13 +19,13 @@ let
   prisma-access-browser = pkgs.writeScriptBin "prisma-access-browser" ''
     #! ${pkgs.bash}/bin/sh
 
-    "${fhsEnv}/bin/prisma-access-browser-bash" -c "PrismaAccessBrowser $*"
+    "${fhsEnv}/bin/prisma-access-browser-bash" -c "${pkgs.hdwlinux.prisma-access-browser-unwrapped}/prisma-access-browser $*"
   '';
 
 in
 {
   options.hdwlinux.programs.prisma-access-browser = {
-    enable = config.lib.hdwlinux.mkEnableOption "prisma-access-browser" false;
+    enable = config.lib.hdwlinux.mkEnableOption "prisma-access-browser" "work";
   };
 
   config = lib.mkIf cfg.enable {

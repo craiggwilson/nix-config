@@ -15,7 +15,7 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-9FXGLYbvab8k7d+lw/KfTpzcaToE8uKzyqsN5oT27Yw=";
   };
 
-  sourceRoot = "opt/paloaltonetwords/pab";
+  sourceRoot = "opt/paloaltonetworks/pab";
 
   unpackCmd = ''
     dpkg-deb -x "${src}" .
@@ -27,9 +27,13 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     stdenv.cc.cc.lib
-    # pkgs.curl
     pkgs.dpkg
-    # pkgs.libuuid
+    pkgs.qt5.full
+    pkgs.qt6.full
+    pkgs.cairo
+    pkgs.cups
+    pkgs.atk
+    pkgs.pango
   ];
 
   installPhase = ''

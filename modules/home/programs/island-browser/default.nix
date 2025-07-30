@@ -25,7 +25,7 @@ let
 in
 {
   options.hdwlinux.programs.island-browser = {
-    enable = config.lib.hdwlinux.mkEnableOption "island-browser" "work";
+    enable = config.lib.hdwlinux.mkEnableOption "island-browser" false;
   };
 
   config = lib.mkIf cfg.enable {
