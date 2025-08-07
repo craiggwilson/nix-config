@@ -9,11 +9,10 @@ in
   name = "mms";
   targetPkgs = pkgs: [
     # Bazel
-    #pkgs.bazel_7
     pkgs.bazelisk
-    pkgs.bazel-gazelle
     pkgs.gcc
     pkgs.glibc
+    pkgs.hdwlinux.engflow_auth
     pkgs.libz
     pkgs.pkg-config
     pkgs.stable.bazel-buildtools
@@ -23,7 +22,7 @@ in
     pkgs.google-java-format
 
     # Go
-    pkgs.go_1_23
+    pkgs.go_1_24
 
     # node
     pkgs.nodejs_22
@@ -49,6 +48,7 @@ in
     pkgs.libxml2
     pkgs.pre-commit
     pkgs.openssl
+    pkgs.openssh
     pkgs.yq
 
     pkgs.cairo
@@ -84,7 +84,7 @@ in
     export venvDir="./.venv"
 
     export AWS_PROFILE="mms-scratch"
-    export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
+    # export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
     export BAZEL_TELEMETRY=0
     export FERN_BASE_DIRECTORY="$XDG_DATA_HOME/fern"
     export GOPRIVATE="github.com/10gen"
