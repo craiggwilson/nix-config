@@ -50,6 +50,7 @@ in
     pkgs.openssl
     pkgs.openssh
     pkgs.yq
+    pkgs.zip
 
     pkgs.cairo
     pkgs.giflib
@@ -84,7 +85,7 @@ in
     export venvDir="./.venv"
 
     export AWS_PROFILE="mms-scratch"
-    # export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
+    export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
     export BAZEL_TELEMETRY=0
     export FERN_BASE_DIRECTORY="$XDG_DATA_HOME/fern"
     export GOPRIVATE="github.com/10gen"

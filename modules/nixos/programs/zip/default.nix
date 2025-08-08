@@ -6,7 +6,7 @@
 }:
 
 let
-  cfg = config.hdwlinux.programs.pciutils;
+  cfg = config.hdwlinux.programs.zip;
 in
 {
   options.hdwlinux.programs.zip = {
@@ -14,6 +14,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = [ pkgs.zip ];
+    environment.systemPackages = [
+      pkgs.zip
+      pkgs.unzip
+    ];
   };
 }
