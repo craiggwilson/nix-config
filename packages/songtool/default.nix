@@ -1,12 +1,9 @@
 {
-  lib,
-  inputs,
   pkgs,
-  stdenv,
   ...
 }:
 
-pkgs.buildGoModule rec {
+pkgs.buildGoModule {
   name = "songtool";
 
   src = pkgs.fetchFromGitHub {

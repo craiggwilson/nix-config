@@ -63,6 +63,7 @@ in
             "editor.fontFamily" = "FiraCode Nerd Font Mono";
             "editor.fontLigatures" = true;
             "explorer.confirmDelete" = false;
+            "github.copilot.nextEditSuggestions.enabled" = true;
             "lldb.suppressUpdateNotifications" = true;
             "nix.enableLanguageServer" = true;
             "nix.formatterPath" = [
@@ -112,12 +113,13 @@ in
             "rust-analyzer.inlayHints.parameterHints.enable" = false;
             "rust-analyzer.inlayHints.typeHints.enable" = false;
             "rust-analyzer.inlayHints.closingBraceHints.enable" = false;
+            "terminal.integrated.defaultProfile.linux" = "zsh";
             "update.mode" = "none";
             "window.menuBarVisibility" = "toggle";
             "window.titleBarStyle" = "custom";
-            "workbench.startupEditor" = "none";
             "workbench.colorTheme" = "${cfg.theme}";
-
+            "workbench.editor.pinnedTabsOnSeparateRow" = true;
+            "workbench.startupEditor" = "none";
             "[nix]" = {
               "editor.formatOnSave" = true;
             };

@@ -1,14 +1,22 @@
 {
   lib,
-  inputs,
   pkgs,
-  stdenv,
   ...
 }:
 
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
-    rust-bin.stable.latest.default
+    rust-bin.stable.latest.default.override
+    {
+      extensions = [
+        "rust-src"
+        "rust-analyzer"
+      ];
+    }
+
+    cargo-deny
+    cargo-generate
+    cargo-machete
 
     # pkg-config
     # atk
@@ -32,5 +40,7 @@ pkgs.mkShell rec {
   ];
 
   LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
-  RUST_BACKTRACE = "1";
+  RUST_BACKTRACE = 1;
+
+  shellHook = "zsh";
 }

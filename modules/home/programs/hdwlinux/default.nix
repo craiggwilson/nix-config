@@ -46,7 +46,7 @@ in
           develop = ''
             name="$1";
             shift;
-            nix develop "${flake}#$name" "$@";
+            nix develop "${flake}#$name" -c "$SHELL" "$@";
           '';
           firmware = {
             update = "sudo system76-firmware-cli schedule";

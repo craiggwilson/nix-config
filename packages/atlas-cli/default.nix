@@ -1,6 +1,4 @@
 {
-  lib,
-  inputs,
   pkgs,
   stdenv,
   ...
