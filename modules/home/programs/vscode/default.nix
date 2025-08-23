@@ -64,6 +64,9 @@ in
             "editor.fontLigatures" = true;
             "explorer.confirmDelete" = false;
             "github.copilot.nextEditSuggestions.enabled" = true;
+            "go.lintOnSave" = "package";
+            "go.lintTool" = "golangci-lint";
+            "go.vetOnSave" = "off";
             "lldb.suppressUpdateNotifications" = true;
             "nix.enableLanguageServer" = true;
             "nix.formatterPath" = [

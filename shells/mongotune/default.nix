@@ -45,6 +45,7 @@ in
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
     bpftools
+    bpftop
     ethtool
     mdbook
     mdbook-mermaid

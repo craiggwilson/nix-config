@@ -35,14 +35,14 @@
           mode = "1920x1200@59.95Hz";
           scale = 1.0;
         };
-        office-mounted-left = {
-          vendor = "Dell Inc.";
-          model = "DELL S2721DGF";
-          serial = "2WXSR83";
-          mode = "2560x1440@59.951Hz";
+        office-main = {
+          vendor = "Samsung Electric Company";
+          model = "Odyssey G95C";
+          serial = "HNTY500018";
+          mode = "5120x1440@59.977Hz";
           scale = 1.0;
         };
-        office-mounted-right = {
+        office-top-left = {
           vendor = "Dell Inc.";
           model = "DELL S2721DGF";
           serial = "DSWSR83";
@@ -72,21 +72,21 @@
       docked-closed = {
         outputs = [
           {
-            monitor = "office-mounted-left";
+            monitor = "office-main";
             enable = true;
-            position = "0,0";
-            workspaces = [ "2" ];
+            position = "0,1440";
+            workspaces = [ "3" ];
           }
           {
-            monitor = "office-mounted-right";
+            monitor = "office-top-left";
             enable = true;
-            position = "2560,0";
-            workspaces = [ "3" ];
+            position = "1290,0";
+            workspaces = [ "2" ];
           }
           {
             monitor = "portable";
             enable = true;
-            position = "1920,1440";
+            position = "610,2880";
             workspaces = [ "1" ];
           }
           {
@@ -98,27 +98,27 @@
       docked-open = {
         outputs = [
           {
-            monitor = "office-mounted-left";
+            monitor = "office-main";
             enable = true;
-            position = "0,0";
-            workspaces = [ "2" ];
+            position = "0,1440";
+            workspaces = [ "3" ];
           }
           {
-            monitor = "office-mounted-right";
+            monitor = "office-top-left";
             enable = true;
-            position = "2560,0";
-            workspaces = [ "3" ];
+            position = "1290,0";
+            workspaces = [ "2" ];
           }
           {
             monitor = "portable";
             enable = true;
-            position = "1920,1440";
+            position = "690,2880";
             workspaces = [ "1" ];
           }
           {
             monitor = "laptop";
             enable = true;
-            position = "5120,1440";
+            position = "5120,2880";
             workspaces = [ "10" ];
           }
         ];

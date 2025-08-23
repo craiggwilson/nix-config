@@ -1,0 +1,8 @@
+{
+    "configsvrs": [{}],
+    "shards": [
+        {"id": "sh01"}, 
+        {"id": "sh02"}
+    ], 
+    "routers": [{}, {}]
+}

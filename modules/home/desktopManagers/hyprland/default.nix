@@ -25,7 +25,7 @@ in
         "master"
         "scroller"
       ];
-      default = "dwindle";
+      default = "scroller";
     };
   };
 
