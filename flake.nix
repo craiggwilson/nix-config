@@ -83,7 +83,10 @@
       channels-config = {
         allowUnfree = true;
 
-        permittedInsecurePackages = [ "electron-25.9.0" ];
+        permittedInsecurePackages = [
+          "electron-25.9.0"
+          "qtwebengine-5.15.19"
+        ];
       };
 
       formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;

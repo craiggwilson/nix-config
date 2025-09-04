@@ -13,11 +13,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [
-      pkgs.gg-jj
-      pkgs.jjui
-    ];
-
     programs.jujutsu = {
       enable = true;
 
@@ -67,8 +62,8 @@ in
           ];
         };
 
-        core = {
-          fsmonitor = "watchman";
+        fsmonitor = {
+          backend = "watchman";
           watchman.register-snapshot-trigger = true;
         };
 

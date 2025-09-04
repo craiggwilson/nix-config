@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.libreoffice = {
-    enable = config.lib.hdwlinux.mkEnableOption "libreoffice" "gui";
+    enable = config.lib.hdwlinux.mkEnableOption "libreoffice" false;
   };
 
   config = lib.mkIf cfg.enable {
