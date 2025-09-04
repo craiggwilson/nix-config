@@ -22,7 +22,7 @@ in
           niri = {
             prettyName = "Niri";
             comment = "Niri managed by UWSM";
-            executable = "/run/current-system/sw/bin/niri";
+            binPath = "/run/current-system/sw/bin/niri";
           };
         };
       };

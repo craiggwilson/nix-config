@@ -11,6 +11,7 @@
     tags = [
       "boot:systemd"
       "desktop:hyprland"
+      "desktop:niri"
       "desktop:remote"
       "fonts"
       "gui"
@@ -81,13 +82,13 @@
             monitor = "office-top";
             enable = true;
             position = "1290,0";
-            workspaces = [ "2" ];
+            workspaces = [ "1" ];
           }
           {
             monitor = "portable";
             enable = true;
             position = "1000,2880";
-            workspaces = [ "1" ];
+            workspaces = [ "2" ];
           }
           {
             monitor = "laptop";
@@ -95,55 +96,26 @@
           }
         ];
       };
-      docked-no-top = {
+      docked-no-portable = {
         outputs = [
           {
             monitor = "office-main";
             enable = true;
             position = "0,1440";
-            workspaces = [ "3" ];
-          }
-          {
-            monitor = "office-top";
-            enable = false;
-          }
-          {
-            monitor = "portable";
-            enable = true;
-            position = "610,2880";
-            workspaces = [ "1" ];
-          }
-          {
-            monitor = "laptop";
-            enable = false;
-          }
-        ];
-      };
-      docked-open = {
-        outputs = [
-          {
-            monitor = "office-main";
-            enable = true;
-            position = "0,1440";
-            workspaces = [ "3" ];
+            workspaces = [
+              "2"
+              "3"
+            ];
           }
           {
             monitor = "office-top";
             enable = true;
             position = "1290,0";
-            workspaces = [ "2" ];
-          }
-          {
-            monitor = "portable";
-            enable = true;
-            position = "1000,2880";
             workspaces = [ "1" ];
           }
           {
             monitor = "laptop";
-            enable = true;
-            position = "5120,2880";
-            workspaces = [ "10" ];
+            enable = false;
           }
         ];
       };

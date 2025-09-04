@@ -30,7 +30,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hdwlinux.desktopManagers.wayland.enable = true;
     systemd.user.startServices = true;
 
     wayland.windowManager.hyprland = {

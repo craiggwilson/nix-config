@@ -82,28 +82,49 @@
       docked = {
         outputs = [
           {
-            monitor = "office-mounted-left";
+            monitor = "office-main";
             enable = true;
-            position = "0,0";
-            workspaces = [ "2" ];
+            position = "0,1440";
+            workspaces = [ "3" ];
           }
           {
-            monitor = "office-mounted-right";
+            monitor = "office-top";
             enable = true;
-            position = "2560,0";
-            workspaces = [ "3" ];
+            position = "1290,0";
+            workspaces = [ "1" ];
           }
           {
             monitor = "portable";
             enable = true;
-            position = "1920,1440";
+            position = "1000,2880";
+            workspaces = [ "2" ];
+          }
+          {
+            monitor = "laptop";
+            enable = false;
+          }
+        ];
+      };
+      docked-no-portable = {
+        outputs = [
+          {
+            monitor = "office-main";
+            enable = true;
+            position = "0,1440";
+            workspaces = [
+              "2"
+              "3"
+            ];
+          }
+          {
+            monitor = "office-top";
+            enable = true;
+            position = "1290,0";
             workspaces = [ "1" ];
           }
           {
             monitor = "laptop";
-            enable = true;
-            position = "5120,1440";
-            workspaces = [ "10" ];
+            enable = false;
           }
         ];
       };
