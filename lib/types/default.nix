@@ -9,6 +9,7 @@ let
     "camera"
     "cuda"
     "desktop:hyprland"
+    "desktop:niri"
     "desktop:remote"
     "filesystem:nfs"
     "fingerprint"

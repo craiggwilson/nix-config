@@ -42,7 +42,7 @@
           mode = "5120x1440@59.977Hz";
           scale = 1.0;
         };
-        office-top-left = {
+        office-top = {
           vendor = "Dell Inc.";
           model = "DELL S2721DGF";
           serial = "DSWSR83";
@@ -69,7 +69,7 @@
           }
         ];
       };
-      docked-closed = {
+      docked = {
         outputs = [
           {
             monitor = "office-main";
@@ -78,10 +78,34 @@
             workspaces = [ "3" ];
           }
           {
-            monitor = "office-top-left";
+            monitor = "office-top";
             enable = true;
             position = "1290,0";
             workspaces = [ "2" ];
+          }
+          {
+            monitor = "portable";
+            enable = true;
+            position = "1000,2880";
+            workspaces = [ "1" ];
+          }
+          {
+            monitor = "laptop";
+            enable = false;
+          }
+        ];
+      };
+      docked-no-top = {
+        outputs = [
+          {
+            monitor = "office-main";
+            enable = true;
+            position = "0,1440";
+            workspaces = [ "3" ];
+          }
+          {
+            monitor = "office-top";
+            enable = false;
           }
           {
             monitor = "portable";
@@ -104,7 +128,7 @@
             workspaces = [ "3" ];
           }
           {
-            monitor = "office-top-left";
+            monitor = "office-top";
             enable = true;
             position = "1290,0";
             workspaces = [ "2" ];
@@ -112,7 +136,7 @@
           {
             monitor = "portable";
             enable = true;
-            position = "690,2880";
+            position = "1000,2880";
             workspaces = [ "1" ];
           }
           {

@@ -34,7 +34,7 @@ in
         else
           {
             default_session = {
-              command = "${pkgs.greetd.tuigreet}/bin/tuigreet --remember --time --cmd \"${cmd}\"";
+              command = "${pkgs.greetd.tuigreet}/bin/tuigreet --remember --remember-session --time --cmd \"${cmd}\"";
               user = "greeter";
             };
           };
