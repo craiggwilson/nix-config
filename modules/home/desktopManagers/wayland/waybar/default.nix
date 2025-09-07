@@ -52,7 +52,8 @@ in
           reload_style_on_change = true;
           modules-left = [
             "idle_inhibitor"
-            "hyprland/workspaces" # TODO: niri/workspaces
+            "hyprland/workspaces"
+            "ext/workspaces"
             "mpris"
           ];
           modules-center = [

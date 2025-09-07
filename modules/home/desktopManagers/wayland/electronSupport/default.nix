@@ -19,6 +19,7 @@ in
     xdg.configFile."electron-flags.conf".text = ''
       --enable-features=UseOzonePlatform
       --ozone-platform=wayland
+      --wayland-text-input-version=3
     '';
   };
 }
