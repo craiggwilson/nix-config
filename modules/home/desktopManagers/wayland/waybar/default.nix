@@ -52,13 +52,11 @@ in
           reload_style_on_change = true;
           modules-left = [
             "idle_inhibitor"
-            "hyprland/workspaces"
             "ext/workspaces"
             "mpris"
           ];
           modules-center = [
             "clock"
-            "systemd-failed-units"
           ];
           modules-right = [
             "tray"
@@ -284,10 +282,6 @@ in
             format = "{}";
             on-click = "screenctl record stop";
             restart-interval = 1;
-          };
-
-          systemd-failed-units = {
-            on-click = "appctl exec-known terminal launch systemctl --failed && systemctl --user --failed";
           };
 
           temperature = {
