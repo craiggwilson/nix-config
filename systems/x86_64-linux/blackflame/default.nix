@@ -40,19 +40,19 @@
       fingerprint.enable = false;
       monitors = {
         laptop = {
-          vendor = "BOE";
-          model = "0x0A1C";
-          mode = "1920x1080@165.004Hz";
+          vendor = "LG Display";
+          model = "0x06B3";
+          mode = "1920x1200@59.95Hz";
           scale = 1.0;
         };
-        office-mounted-left = {
-          vendor = "Dell Inc.";
-          model = "DELL S2721DGF";
-          serial = "2WXSR83";
-          mode = "2560x1440@59.951Hz";
+        office-main = {
+          vendor = "Samsung Electric Company";
+          model = "Odyssey G95C";
+          serial = "HNTY500018";
+          mode = "5120x1440@59.977Hz";
           scale = 1.0;
         };
-        office-mounted-right = {
+        office-top = {
           vendor = "Dell Inc.";
           model = "DELL S2721DGF";
           serial = "DSWSR83";
