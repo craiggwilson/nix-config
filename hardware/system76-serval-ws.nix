@@ -71,7 +71,6 @@
 
   environment.systemPackages = [
     pkgs.system76-firmware
-    pkgs.firmware-manager
     pkgs.system76-keyboard-configurator
   ];
 

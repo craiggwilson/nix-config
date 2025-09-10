@@ -40,9 +40,9 @@
       fingerprint.enable = false;
       monitors = {
         laptop = {
-          vendor = "LG Display";
-          model = "0x06B3";
-          mode = "1920x1200@59.95Hz";
+          vendor = "BOE";
+          model = "0x0A1C";
+          mode = "1920x1080@165.004Hz";
           scale = 1.0;
         };
         office-main = {

@@ -23,13 +23,7 @@ in
 
     programs.ghostty = {
       enable = true;
-      package = pkgs.ghostty.overrideAttrs (_: {
-        preBuild = ''
-          shopt -s globstar
-          sed -i 's/^const xev = @import("xev");$/const xev = @import("xev").Epoll;/' **/*.zig
-          shopt -u globstar
-        '';
-      });
+      package = pkgs.ghostty;
       enableBashIntegration = config.hdwlinux.programs.bash.enable;
       enableZshIntegration = config.hdwlinux.programs.zsh.enable;
 
