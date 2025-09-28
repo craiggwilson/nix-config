@@ -63,7 +63,7 @@ in
             "editor.fontFamily" = "FiraCode Nerd Font Mono";
             "editor.fontLigatures" = true;
             "explorer.confirmDelete" = false;
-            "github.copilot.nextEditSuggestions.enabled" = true;
+            #github.copilot.nextEditSuggestions.enabled" = true;
             "go.lintOnSave" = "package";
             "go.lintTool" = "golangci-lint";
             "go.vetOnSave" = "off";
@@ -134,11 +134,6 @@ in
               "files.trimFinalNewlines" = true;
             };
           }
-          (lib.mkIf config.hdwlinux.programs.jujutsu.enable {
-            "git.autofetch" = false;
-            "git.enabled" = false;
-            "git.path" = null;
-          })
         ];
       };
     };

@@ -109,5 +109,11 @@ in
     };
 
     xdg.configFile."micro/syntax/jjdescription.yaml".source = ./micro-syntax.yaml;
+
+    programs.vscode.profiles.default.userSettings = lib.mkIf config.hdwlinux.programs.vscode.enable {
+      "git.autofetch" = false;
+      "git.enabled" = false;
+      "git.path" = null;
+    };
   };
 }
