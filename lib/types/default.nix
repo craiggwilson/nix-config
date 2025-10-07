@@ -71,6 +71,29 @@ in
       };
     };
 
+    mcpServer = lib.types.submodule {
+      options = {
+        type = lib.mkOption {
+          description = "The transport type for the MCP server.";
+          type = lib.types.enum [
+            "stdio"
+            "http"
+            "sse"
+          ];
+          default = "stdio";
+        };
+        command = lib.mkOption {
+          description = "The command to run.";
+          type = lib.types.str;
+        };
+        args = lib.mkOption {
+          description = "The arguments to pass to the command.";
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+        };
+      };
+    };
+
     monitor = lib.types.submodule {
       options = {
         model = lib.mkOption { type = lib.types.str; };

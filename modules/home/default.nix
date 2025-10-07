@@ -37,6 +37,11 @@ in
       };
     };
 
+    mcpServers = lib.mkOption {
+      description = "Options to set the mcp servers.";
+      type = lib.types.attrsOf lib.hdwlinux.types.mcpServer;
+    };
+
     outputProfiles = lib.mkOption {
       description = "Options to set the output profiles.";
       type = lib.types.attrsOf lib.hdwlinux.types.outputProfile;

@@ -9,6 +9,13 @@
 
 let
   cfg = config.hdwlinux.programs.vscode;
+
+  # Generate VSCode format MCP servers configuration
+  vscodeMcpServers = lib.mapAttrs (name: server: {
+    type = server.type;
+    command = server.command;
+    args = server.args;
+  }) config.hdwlinux.mcpServers;
 in
 {
   options.hdwlinux.programs.vscode = {
@@ -134,6 +141,9 @@ in
               "files.trimFinalNewlines" = true;
             };
           }
+          (lib.mkIf (config.hdwlinux.mcpServers != { }) {
+            "mcp.servers" = vscodeMcpServers;
+          })
         ];
       };
     };

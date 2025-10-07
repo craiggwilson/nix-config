@@ -13,6 +13,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    home.packages = [
+      #pkgs.jj-pre-push
+      pkgs.pre-commit
+    ];
+
     programs.jujutsu = {
       enable = true;
 
@@ -22,6 +27,12 @@ in
             "log"
             "-r"
             "mutable() & mine() | bookmarks()::"
+          ];
+
+          # Consider just overriding push. This effectively runs pre-commit checks.
+          push-with-checks = [
+            "jj-pre-push"
+            "push"
           ];
 
           retrunk = [

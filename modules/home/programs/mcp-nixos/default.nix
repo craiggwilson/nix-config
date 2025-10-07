@@ -15,6 +15,10 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.mcp-nixos ];
+    hdwlinux.mcpServers.nixos = {
+      type = "stdio";
+      command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
+      args = [ ];
+    };
   };
 }
