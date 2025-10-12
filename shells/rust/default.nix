@@ -6,13 +6,12 @@
 
 pkgs.mkShell rec {
   buildInputs = with pkgs; [
-    rust-bin.stable.latest.default.override
-    {
+    (rust-bin.stable.latest.default.override {
       extensions = [
         "rust-src"
         "rust-analyzer"
       ];
-    }
+    })
 
     cargo-deny
     cargo-generate

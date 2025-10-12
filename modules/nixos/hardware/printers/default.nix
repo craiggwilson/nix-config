@@ -8,7 +8,6 @@
 let
   cfg = config.hdwlinux.hardware.printers;
   ppdName = "Brother_HL-L2380DW.ppd";
-  defaultName = "Brother_HL-L2380DW";
 in
 {
   options.hdwlinux.hardware.printers = {
@@ -31,17 +30,5 @@ in
       );
     };
 
-    hardware.printers = lib.mkIf (lib.hdwlinux.matchTag "raeford" config.hdwlinux.tags) {
-      ensureDefaultPrinter = defaultName;
-      ensurePrinters = [
-        {
-          name = defaultName;
-          description = "Brother HL-L2380DW";
-          location = "Raeford";
-          deviceUri = "ipp://printer.raeford.wilsonfamilyhq.com/ipp";
-          model = ppdName;
-        }
-      ];
-    };
   };
 }

@@ -1,5 +1,4 @@
 {
-  lib,
   ...
 }:
 {
@@ -39,7 +38,7 @@
 
     hardware = {
       fingerprint.enable = false;
-      monitors = (import ../../../lib/monitors) // {
+      monitors = {
         laptop = {
           vendor = "BOE";
           model = "0x0A1C";
