@@ -144,19 +144,27 @@ in
         http-connections = 50;
         warn-dirty = false;
         log-lines = 50;
-        sandbox = "relaxed";
+        sandbox = true;
         auto-optimise-store = true;
-        trusted-users = [ "root" ];
-        allowed-users = [ "root" ];
+        trusted-users = [
+          "root"
+          "@wheel"
+        ];
+        allowed-users = [
+          "root"
+          "@wheel"
+        ];
         keep-outputs = true;
         keep-derivations = true;
         download-buffer-size = 1073741824; # 1 GiB
         substituters = [
           cfg.default-substituter.url
-        ] ++ (lib.mapAttrsToList (name: value: name) cfg.extra-substituters);
+        ]
+        ++ (lib.mapAttrsToList (name: value: name) cfg.extra-substituters);
         trusted-public-keys = [
           cfg.default-substituter.key
-        ] ++ (lib.mapAttrsToList (name: value: value.key) cfg.extra-substituters);
+        ]
+        ++ (lib.mapAttrsToList (name: value: value.key) cfg.extra-substituters);
       };
 
       gc = {

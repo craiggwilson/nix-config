@@ -6,7 +6,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     # also provide stable packages if unstable are breaking
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-23.11";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
 
     # nix user repository provides additional packages.
     nur.url = "github:nix-community/NUR";
@@ -84,8 +84,8 @@
         allowUnfree = true;
 
         permittedInsecurePackages = [
-          "electron-25.9.0"
-          "qtwebengine-5.15.19"
+          # Required for proprietary applications that bundle older versions
+          "electron-25.9.0" # Used by various Electron-based apps
         ];
       };
 
