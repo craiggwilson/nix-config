@@ -1,25 +1,11 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 
 let
   cfg = config.hdwlinux.security.ssh;
-
-  sshConfigFile = pkgs.writeText "ssh_config" ''
-    Host *
-      ForwardAgent no
-      Compression yes
-      ServerAliveInterval 0
-      ServerAliveCountMax 3
-      HashKnownHosts no
-      UserKnownHostsFile ~/.ssh/known_hosts
-      ControlMaster no
-      ControlPath ~/.ssh/master-%r@%n:%p
-      ControlPersist no
-  '';
 in
 {
   options.hdwlinux.security.ssh = {
@@ -40,24 +26,21 @@ in
 
     programs.ssh = {
       enable = true;
-      addKeysToAgent = "yes";
-      compression = true;
+      enableDefaultConfig = false;
       includes = map (i: "${i}") cfg.includes;
-      userKnownHostsFile = "~/.ssh/known_hosts " + (lib.concatStringsSep " " cfg.knownHosts);
-    };
 
-    # hdwlinux.user.updates.ssh = {
-    #   config = lib.hdwlinux.file.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/config" ''
-    #     rm -f $out
-    #     ${lib.concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.includes)}
-    #     cat ${sshConfigFile} >> $out
-    #     chmod 600 $out
-    #   '';
-    #   known-hosts = lib.hdwlinux.file.withConfirmOverwrite "${config.home.homeDirectory}/.ssh/known_hosts" ''
-    #     rm -f $out
-    #     ${lib.concatStringsSep "\n" (map (i: "cat ${i} >> $out") cfg.knownHosts)}
-    #     chmod 600 $out
-    #   '';
-    # };
+      matchBlocks."*" = {
+        addKeysToAgent = "yes";
+        compression = true;
+        userKnownHostsFile = "~/.ssh/known_hosts " + (lib.concatStringsSep " " cfg.knownHosts);
+        forwardAgent = false;
+        serverAliveInterval = 0;
+        serverAliveCountMax = 3;
+        hashKnownHosts = false;
+        controlMaster = "no";
+        controlPath = "~/.ssh/master-%r@%n:%p";
+        controlPersist = "no";
+      };
+    };
   };
 }
