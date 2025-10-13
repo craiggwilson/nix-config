@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -14,11 +13,11 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hdwlinux.security.ssh.includes = [
-      (pkgs.writeText "ssh_raeford_config" ''
-        Host *.${domain} *.tailc675f.ts.net
-          ForwardX11 yes
-      '')
-    ];
+    hdwlinux.security.ssh.matchBlocks = {
+      "raeford-hosts" = {
+        host = "*.${domain} *.tailc675f.ts.net";
+        forwardX11 = true;
+      };
+    };
   };
 }
