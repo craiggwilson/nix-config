@@ -1,11 +1,11 @@
 {
   lib,
   config,
+  inputs,
   ...
 }:
 let
   cfg = config.hdwlinux;
-
 in
 {
   options.hdwlinux = {

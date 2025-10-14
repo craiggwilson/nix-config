@@ -21,8 +21,8 @@ in
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = lib.mkIf (cfg.enable && cfg.extraConfig != null) {
     home.packages = [ pkgs.hdwlinux.evergreen ];
-    home.file.".evergreen.yml".text = lib.mkIf (cfg.extraConfig != null) cfg.extraConfig;
+    home.file.".evergreen.yml".text = cfg.extraConfig;
   };
 }

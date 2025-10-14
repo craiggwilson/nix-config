@@ -30,6 +30,7 @@
       "raeford"
       "scanning"
       "security:passwordmanager"
+      "users:craig"
       "v4l2loopback"
       "video:production"
       "virtualization:podman"

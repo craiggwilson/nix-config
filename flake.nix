@@ -42,11 +42,10 @@
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
+    hdwlinux-private.url = "git+file:///home/craig/Projects/github.com/craiggwilson/nix-private";
+
     # rust-overlay provides the latest rust packages
     rust-overlay.url = "github:oxalica/rust-overlay";
-
-    # secrets is a private repository.
-    secrets.url = "github:divnix/blank";
 
     # snowfall-lib provides structure to the flake
     snowfall-lib = {
@@ -105,14 +104,15 @@
       homes.modules = with inputs; [
         nix-flatpak.homeManagerModules.nix-flatpak
         spicetify-nix.homeManagerModules.default
+        hdwlinux-private.homeManagerModules.nix-private
       ];
 
       systems.modules.nixos = with inputs; [
         disko.nixosModules.disko
         home-manager.nixosModules.home-manager
-        musnix.nixosModules.musnix
         kolide-launcher.nixosModules.kolide-launcher
-        ./nixos/craig
+        musnix.nixosModules.musnix
+        hdwlinux-private.nixosModules.nix-private
       ];
     };
 }

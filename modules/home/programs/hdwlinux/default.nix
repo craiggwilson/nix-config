@@ -10,9 +10,6 @@
 let
   cfg = config.hdwlinux.programs.hdwlinux;
   user = config.snowfallorg.user.name;
-  privatePath = "${inputs.secrets}/home/${user}";
-  privateExists = builtins.pathExists privatePath;
-  privateCmd = if privateExists then " --override-input secrets ${flake}/../nix-private" else "";
 in
 {
   options.hdwlinux.programs.hdwlinux = {
@@ -38,9 +35,9 @@ in
             remote = ''
               hostname="$1"
               shift
-              git -C ${flake} add -A . && sudo nixos-rebuild build --flake "${flake}#$hostname"${privateCmd} "$@"
+              git -C ${flake} add -A . && sudo nixos-rebuild build --flake "${flake}#$hostname" "$@"
             '';
-            "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild build --flake ${flake}${privateCmd} "$@"'';
+            "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild build --flake ${flake} "$@"'';
           };
           config = "git -C ${flake} \"$@\"";
           develop = ''
@@ -83,10 +80,9 @@ in
               hostname="$1"
               addr="$2"
               shift 2
-              git -C ${flake} add -A . && nixos-rebuild switch --flake "${flake}#$hostname"${privateCmd} --target-host "${user}@$addr" --sudo "$@" --ask-sudo-password |& nom
+              git -C ${flake} add -A . && nixos-rebuild switch --flake "${flake}#$hostname" --target-host "${user}@$addr" --sudo "$@" --ask-sudo-password |& nom
             '';
-            "*" =
-              ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake}${privateCmd} "$@" |& nom'';
+            "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake} "$@" |& nom'';
           };
           wifi = {
             connect = "nmcli connection up \"$@\"";

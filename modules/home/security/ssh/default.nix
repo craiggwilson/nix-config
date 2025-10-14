@@ -10,11 +10,6 @@ in
 {
   options.hdwlinux.security.ssh = {
     enable = lib.hdwlinux.mkEnableOption "ssh" true;
-    includes = lib.mkOption {
-      type = lib.types.listOf lib.types.path;
-      default = [ ];
-      description = "Other files to include in the ssh config file.";
-    };
     knownHosts = lib.mkOption {
       type = lib.types.listOf lib.types.path;
       default = [ ];
@@ -32,8 +27,6 @@ in
     programs.ssh = {
       enable = true;
       enableDefaultConfig = false;
-      includes = map (i: "${i}") cfg.includes;
-
       matchBlocks = lib.mkMerge [
         {
           "*" = {

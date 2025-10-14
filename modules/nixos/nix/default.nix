@@ -98,16 +98,10 @@ in
         flake = cfg.flake;
         allowReboot = false;
         dates = "Fri *-*-* 02:00:00";
-        flags =
-          let
-            privateExists = builtins.pathExists "${inputs.secrets}/nixos";
-            secretsFlag = if privateExists then "--override-input secrets ${cfg.flake}/../nix-private" else "";
-          in
-          [
-            secretsFlag
-            "-L"
-            "--commit-lock-file"
-          ];
+        flags = [
+          "-L"
+          "--commit-lock-file"
+        ];
       };
 
       switch = {

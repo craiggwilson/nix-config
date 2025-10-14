@@ -32,6 +32,7 @@ let
     "theming:dracula"
     "theming:nord"
     "thunderbolt"
+    "users:craig"
     "v4l2loopback"
     "video:production"
     "virtualization:docker"
