@@ -11,7 +11,7 @@ in
 {
   options.hdwlinux.services.falcon-sensor = {
     enable = config.lib.hdwlinux.mkEnableOption "falcon-sensor" "work";
-    cid = lib.mkOption { type = lib.types.str; };
+    cidFile = lib.mkOption { type = lib.types.str; };
   };
 
   config = lib.mkIf cfg.enable {
@@ -24,7 +24,9 @@ in
       enable = true;
       description = "CrowdStrike Falcon Sensor";
       unitConfig.DefaultDependencies = false;
-      after = [ "local-fs.target" ];
+      after = [
+        "local-fs.target"
+      ];
       conflicts = [ "shutdown.target" ];
       before = [
         "sysinit.target"
@@ -35,13 +37,13 @@ in
           (pkgs.writeShellScriptBin "init-falcon" ''
             mkdir -p /opt/CrowdStrike
             ln -sf ${falcon}/opt/CrowdStrike/* /opt/CrowdStrike
-            ${falcon.pkgs.falconctl}/bin/falconctl -f -s --cid=${cfg.cid}
+            ${falcon.pkgs.falconctl}/bin/falconctl -f -s --cid=$(cat ${cfg.cidFile})
           '')
           + "/bin/init-falcon";
         ExecStart = "${falcon.pkgs.falcond}/bin/falcond";
         Type = "forking";
         PIDFile = "/run/falcond.pid";
-        Restart = "no";
+        Restart = "always";
         TimeoutStopSec = "60s";
         KillMode = "process";
       };

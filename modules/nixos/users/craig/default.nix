@@ -15,6 +15,7 @@ in
   config = lib.mkIf cfg.enable {
     hdwlinux = {
       nix.flake = "/home/${user}/Projects/github.com/craiggwilson/nix-config";
+      security.secrets.users = [ user ];
     };
 
     nix.settings = {

@@ -24,8 +24,8 @@ let
       export LD_LIBRARY_PATH="/var/opt/code42-aat/lib:/var/opt/code42-aat/lib/common:/opt/code42/lib:/usr/lib:$LD_LIBRARY_PATH" 
       cat > /tmp/code42.deployment.properties<< EOF
       DEPLOYMENT_URL=${cfg.deployment.url}
-      DEPLOYMENT_POLICY_TOKEN=${cfg.deployment.policy-token}
-      DEPLOYMENT_SECRET=${cfg.deployment.secret}
+      DEPLOYMENT_POLICY_TOKEN=$(cat ${cfg.deployment.policyTokenFile})
+      DEPLOYMENT_SECRET=$(cat ${cfg.deployment.secretFile})
       PROVIDED_USERNAME=${cfg.username}
       EOF
     '';
@@ -54,10 +54,10 @@ in
     deployment = lib.mkOption {
       type = lib.types.submodule {
         options = {
-          policy-token = lib.mkOption {
+          policyTokenFile = lib.mkOption {
             type = lib.types.str;
           };
-          secret = lib.mkOption {
+          secretFile = lib.mkOption {
             type = lib.types.str;
           };
           url = lib.mkOption {

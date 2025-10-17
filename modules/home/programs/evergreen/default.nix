@@ -14,15 +14,18 @@ in
       "programming"
       "work"
     ];
-    extraConfig = lib.mkOption {
-      description = "Extra configuration for evergreen.";
-      type = lib.types.nullOr lib.types.str;
-      default = null;
+    configFile = lib.mkOption {
+      type = lib.types.str;
+      default = "${config.home.homeDirectory}/.evergreen.yml";
+      description = "Path to the Evergreen configuration file.";
     };
   };
 
-  config = lib.mkIf (cfg.enable && cfg.extraConfig != null) {
-    home.packages = [ pkgs.hdwlinux.evergreen ];
-    home.file.".evergreen.yml".text = cfg.extraConfig;
+  config = lib.mkIf (cfg.enable) {
+    home.packages = [
+      (pkgs.writeScriptBin "evergreen" ''
+        ${pkgs.hdwlinux.evergreen}/bin/evergreen --config "${cfg.configFile}" "$@"
+      '')
+    ];
   };
 }

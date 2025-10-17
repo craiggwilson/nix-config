@@ -21,6 +21,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hdwlinux-private.url = "git+file:///home/craig/Projects/github.com/craiggwilson/nix-private";
+
     # home manager for config files and user installs
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -42,7 +44,10 @@
     # nix-hardware helps set up machine configs
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
-    hdwlinux-private.url = "git+file:///home/craig/Projects/github.com/craiggwilson/nix-private";
+    opnix = {
+      url = "github:craiggwilson/opnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # rust-overlay provides the latest rust packages
     rust-overlay.url = "github:oxalica/rust-overlay";
@@ -102,17 +107,19 @@
       ];
 
       homes.modules = with inputs; [
-        nix-flatpak.homeManagerModules.nix-flatpak
-        spicetify-nix.homeManagerModules.default
         hdwlinux-private.homeManagerModules.nix-private
+        nix-flatpak.homeManagerModules.nix-flatpak
+        opnix.homeManagerModules.default
+        spicetify-nix.homeManagerModules.default
       ];
 
       systems.modules.nixos = with inputs; [
         disko.nixosModules.disko
+        hdwlinux-private.nixosModules.nix-private
         home-manager.nixosModules.home-manager
         kolide-launcher.nixosModules.kolide-launcher
         musnix.nixosModules.musnix
-        hdwlinux-private.nixosModules.nix-private
+        opnix.nixosModules.default
       ];
     };
 }
