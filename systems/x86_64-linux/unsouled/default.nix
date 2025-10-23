@@ -3,7 +3,6 @@
 }:
 {
   imports = [
-    ../../../hardware/dell-xps-15-9520.nix
     ./disko.nix
   ];
 
@@ -35,13 +34,12 @@
 
     hardware = {
       fingerprint.enable = false;
-      monitors = {
-        laptop = {
-          vendor = "LG Display";
-          model = "0x06B3";
-          mode = "1920x1200@59.95Hz";
-          scale = 1.0;
-        };
+      models.dell-xps-15-9520.enable = true;
+      monitors.laptop = {
+        vendor = "LG Display";
+        model = "0x06B3";
+        mode = "1920x1200@59.95Hz";
+        scale = 1.0;
       };
     };
     outputProfiles = {
@@ -105,15 +103,6 @@
       };
     };
   };
-
-  boot.resumeDevice = "/dev/disk/by-uuid/451cd5d5-024b-4c13-9914-db4d4ab6c8db"; # findmnt -no UUID -T /.swapvol/swapfile
-  boot.kernelParams = [
-    "resume_offset=533760" # btrfs inspect-internal map-swapfile -r /.swapvol/swapfile
-  ];
-  systemd.sleep.extraConfig = ''
-    HibernateDelaySec=60m
-    SuspendState=mem # suspend2idle is buggy :(
-  '';
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

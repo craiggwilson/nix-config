@@ -3,7 +3,6 @@
 }:
 {
   imports = [
-    ../../../hardware/system76-serval-ws.nix
     ./disko.nix
   ];
 
@@ -39,13 +38,12 @@
 
     hardware = {
       fingerprint.enable = false;
-      monitors = {
-        laptop = {
-          vendor = "BOE";
-          model = "0x0A1C";
-          mode = "1920x1080@165.004Hz";
-          scale = 1.0;
-        };
+      models.system76-serval-ws.enable = true;
+      monitors.laptop = {
+        vendor = "BOE";
+        model = "0x0A1C";
+        mode = "1920x1080@165.004Hz";
+        scale = 1.0;
       };
     };
     outputProfiles = {
