@@ -3,13 +3,12 @@
   lib,
   pkgs,
   flake,
-  inputs,
   ...
 }:
 
 let
   cfg = config.hdwlinux.programs.hdwlinux;
-  user = config.snowfallorg.user.name;
+  user = config.hdwlinux.user.name;
 in
 {
   options.hdwlinux.programs.hdwlinux = {

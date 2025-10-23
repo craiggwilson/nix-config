@@ -1,6 +1,5 @@
 {
   lib,
-  pkgs,
   config,
   ...
 }:
@@ -12,7 +11,6 @@ in
     name = lib.mkOption {
       description = "The name to use for the user account.";
       type = lib.types.str;
-      default = config.snowfallorg.user.name;
     };
     fullName = lib.mkOption {
       type = lib.types.str;
