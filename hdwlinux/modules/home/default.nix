@@ -1,38 +1,13 @@
 {
   config,
   lib,
-  inputs,
   ...
 }:
 let
   cfg = config.hdwlinux;
 
-  # Recursively find all default.nix files in subdirectories
-  # Only do this when not using snowfall-lib (which auto-imports modules)
-  findModules =
-    dir:
-    let
-      entries = builtins.readDir dir;
-      subdirs = lib.filterAttrs (name: type: type == "directory") entries;
-
-      # For each subdirectory, check if it has a default.nix
-      moduleFiles = lib.mapAttrsToList (
-        name: _:
-        let
-          modulePath = dir + "/${name}/default.nix";
-        in
-        if builtins.pathExists modulePath then
-          [ modulePath ] ++ findModules (dir + "/${name}")
-        else
-          findModules (dir + "/${name}")
-      ) subdirs;
-    in
-    lib.flatten moduleFiles;
-
   # Get all module files except this one
-  # Only auto-import if we're not using snowfall-lib
-  # Snowfall-lib provides lib.snowfall, so we can detect it
-  allModules = if (lib ? snowfall) then [ ] else findModules ./.;
+  allModules = lib.hdwlinux.findModules ./.;
 in
 {
   imports = allModules;

@@ -1,33 +1,22 @@
-{
-  # Allow self-reference for recursive imports
-  self ? (import ./. { }),
-  # Load inputs from npins (non-flake dependency management)
-  inputs ? (import ./npins),
-  # Default to nixpkgs-unstable
-  nixpkgs ? inputs.nixpkgs-unstable,
-  # Support system override
-  system ? "x86_64-linux",
-  ...
-}@args:
 let
-  # Load raw inputs from npins
-  rawInputs = if args ? inputs then args.inputs else (import ./npins);
+  # Load inputs from npins
+  pins = import ./npins;
 
   # Use flake-compat to import flakes properly
-  flakeCompat = import rawInputs.flake-compat;
+  flakeCompat = import pins.flake-compat;
 
   # Import flakes using flake-compat
-  diskoFlake = (flakeCompat { src = rawInputs.disko; }).defaultNix;
-  homeManagerFlake = (flakeCompat { src = rawInputs.home-manager; }).defaultNix;
-  kolideFlake = (flakeCompat { src = rawInputs.kolide-launcher; }).defaultNix;
-  musnixFlake = (flakeCompat { src = rawInputs.musnix; }).defaultNix;
-  nixFlatpakFlake = (flakeCompat { src = rawInputs.nix-flatpak; }).defaultNix;
-  nixosHardwareFlake = (flakeCompat { src = rawInputs.nixos-hardware; }).defaultNix;
-  opnixFlake = (flakeCompat { src = rawInputs.opnix; }).defaultNix;
-  spicetifyFlake = (flakeCompat { src = rawInputs.spicetify-nix; }).defaultNix;
+  diskoFlake = (flakeCompat { src = pins.disko; }).defaultNix;
+  homeManagerFlake = (flakeCompat { src = pins.home-manager; }).defaultNix;
+  kolideFlake = (flakeCompat { src = pins.kolide-launcher; }).defaultNix;
+  musnixFlake = (flakeCompat { src = pins.musnix; }).defaultNix;
+  nixFlatpakFlake = (flakeCompat { src = pins.nix-flatpak; }).defaultNix;
+  nixosHardwareFlake = (flakeCompat { src = pins.nixos-hardware; }).defaultNix;
+  opnixFlake = (flakeCompat { src = pins.opnix; }).defaultNix;
+  spicetifyFlake = (flakeCompat { src = pins.spicetify-nix; }).defaultNix;
 
-  # Create a compatibility layer for inputs to match flake structure
-  inputs = rawInputs // {
+  # Augment inputs with flake outputs
+  inputs = pins // {
     disko = diskoFlake;
     home-manager = homeManagerFlake;
     kolide-launcher = kolideFlake;
@@ -37,6 +26,9 @@ let
     opnix = opnixFlake;
     spicetify-nix = spicetifyFlake;
   };
+
+  # Use nixpkgs-unstable from inputs
+  nixpkgs = pins.nixpkgs-unstable;
 
   # Supported systems
   systems = [ "x86_64-linux" ];
@@ -52,48 +44,29 @@ let
   # Import nixpkgs without overlays to get base lib
   baseNixpkgs = import nixpkgs { system = "x86_64-linux"; };
 
-  # Custom lib functions from lib directory
+  # Load utility functions from top-level lib
+  utilLib = import ./lib { lib = baseNixpkgs.lib; };
+
+  # Custom lib functions from hdwlinux/lib directory
   customLib = baseNixpkgs.lib.extend (
     final: prev:
     let
-      libDirs = builtins.readDir ./lib;
+      libDirs = builtins.readDir ./hdwlinux/lib;
       libNames = builtins.filter (name: libDirs.${name} == "directory") (builtins.attrNames libDirs);
 
-      libModules = builtins.map (name: import (./lib + "/${name}/default.nix") { lib = final; }) libNames;
+      libModules = builtins.map (
+        name: import (./hdwlinux/lib + "/${name}/default.nix") { lib = final; }
+      ) libNames;
 
-      # Also load the main lib/default.nix
-      mainLib = import ./lib/default.nix final;
+      # Also load the main hdwlinux/lib/default.nix
+      mainLib = import ./hdwlinux/lib/default.nix final;
     in
     {
-      hdwlinux = builtins.foldl' (acc: mod: acc // mod) mainLib libModules;
+      hdwlinux = builtins.foldl' (acc: mod: acc // mod) (mainLib // utilLib) libModules;
     }
   );
 
   lib = customLib;
-
-  # Load all overlays from the overlays directory
-  loadOverlays =
-    dir:
-    let
-      overlayDirs = builtins.readDir dir;
-      overlayNames = builtins.filter (name: overlayDirs.${name} == "directory") (
-        builtins.attrNames overlayDirs
-      );
-    in
-    builtins.map (
-      name:
-      let
-        overlayPath = dir + "/${name}/default.nix";
-        overlayModule = import overlayPath;
-        # All overlays in this repo follow the pattern: { args... }: final: prev: { ... }
-        # So we always call the module with args to get the actual overlay function
-        overlayFn = overlayModule {
-          inherit lib;
-          channels = { inherit nixpkgs; };
-        };
-      in
-      overlayFn
-    ) overlayNames;
 
   # Import stable nixpkgs
   mkStablePkgs =
@@ -103,12 +76,6 @@ let
       config = nixpkgsConfig;
     };
 
-  # Load NUR overlay
-  nurOverlay = import inputs.nur {
-    nurpkgs = baseNixpkgs;
-    pkgs = baseNixpkgs;
-  };
-
   # Base overlays (without custom packages to avoid circular dependency)
   baseOverlays = [
     # External overlays
@@ -116,13 +83,11 @@ let
       # Add stable packages
       stable = mkStablePkgs prev.system;
     })
-    # NUR overlay
-    nurOverlay.overlays.default or (final: prev: { })
     # Rust overlay
     (import inputs.rust-overlay)
     # Local overlays
   ]
-  ++ loadOverlays ./overlays;
+  ++ lib.hdwlinux.loadOverlays ./hdwlinux/overlays;
 
   # Import nixpkgs with base overlays for each system
   mkBasePkgs =
@@ -133,25 +98,8 @@ let
       overlays = baseOverlays;
     };
 
-  # Load all packages from the packages directory
-  loadPackages =
-    system:
-    let
-      pkgs = mkBasePkgs system;
-      packageDirs = builtins.readDir ./packages;
-      packageNames = builtins.filter (name: packageDirs.${name} == "directory") (
-        builtins.attrNames packageDirs
-      );
-    in
-    builtins.listToAttrs (
-      builtins.map (name: {
-        inherit name;
-        value = pkgs.callPackage (./packages + "/${name}") { };
-      }) packageNames
-    );
-
   # Packages for a specific system
-  packagesForSystem = system: loadPackages system;
+  packagesForSystem = system: lib.hdwlinux.loadPackages (mkBasePkgs system) ./hdwlinux/packages;
 
   # All overlays including custom packages
   allOverlays = baseOverlays ++ [
@@ -170,23 +118,6 @@ let
       overlays = allOverlays;
     };
 
-  # Load all shells from the shells directory
-  loadShells =
-    system:
-    let
-      pkgs = mkPkgs system;
-      shellDirs = builtins.readDir ./shells;
-      shellNames = builtins.filter (name: shellDirs.${name} == "directory") (
-        builtins.attrNames shellDirs
-      );
-    in
-    builtins.listToAttrs (
-      builtins.map (name: {
-        inherit name;
-        value = pkgs.callPackage (./shells + "/${name}") { inherit inputs lib; };
-      }) shellNames
-    );
-
   # Load private flake if it exists
   privateFlakePath = /home/craig/Projects/github.com/craiggwilson/nix-private;
   hasPrivateFlake =
@@ -198,58 +129,20 @@ let
     system: name: configuration:
     let
       # Load external modules from flake outputs
-      externalModules = builtins.filter (m: m != null) [
-        (
-          if inputs ? disko && inputs.disko ? nixosModules && inputs.disko.nixosModules ? disko then
-            inputs.disko.nixosModules.disko
-          else
-            null
-        )
-        (
-          if
-            inputs ? home-manager
-            && inputs.home-manager ? nixosModules
-            && inputs.home-manager.nixosModules ? home-manager
-          then
-            inputs.home-manager.nixosModules.home-manager
-          else
-            null
-        )
-        (
-          if
-            inputs ? kolide-launcher
-            && inputs.kolide-launcher ? nixosModules
-            && inputs.kolide-launcher.nixosModules ? kolide-launcher
-          then
-            inputs.kolide-launcher.nixosModules.kolide-launcher
-          else
-            null
-        )
-        (
-          if inputs ? musnix && inputs.musnix ? nixosModules && inputs.musnix.nixosModules ? musnix then
-            inputs.musnix.nixosModules.musnix
-          else
-            null
-        )
-        (
-          if inputs ? opnix && inputs.opnix ? nixosModules && inputs.opnix.nixosModules ? default then
-            inputs.opnix.nixosModules.default
-          else
-            null
-        )
-        (
-          if hasPrivateFlake && privateFlake ? nixosModules && privateFlake.nixosModules ? nix-private then
-            privateFlake.nixosModules.nix-private
-          else
-            null
-        )
-      ];
+      externalModules = [
+        inputs.disko.nixosModules.disko
+        inputs.home-manager.nixosModules.home-manager
+        inputs.kolide-launcher.nixosModules.kolide-launcher
+        inputs.musnix.nixosModules.musnix
+        inputs.opnix.nixosModules.default
+      ]
+      ++ lib.optional hasPrivateFlake privateFlake.nixosModules.nix-private;
     in
     import "${nixpkgs}/nixos/lib/eval-config.nix" {
       inherit system;
       modules = [
         # Local modules
-        ./modules/nixos
+        ./hdwlinux/modules/nixos
         # User configuration
         configuration
         # Configure nixpkgs with overlays
@@ -270,52 +163,18 @@ let
     let
       pkgs = mkPkgs system;
       # Load external modules from flake outputs
-      externalModules = builtins.filter (m: m != null) [
-        (
-          if
-            inputs ? nix-flatpak
-            && inputs.nix-flatpak ? homeManagerModules
-            && inputs.nix-flatpak.homeManagerModules ? nix-flatpak
-          then
-            inputs.nix-flatpak.homeManagerModules.nix-flatpak
-          else
-            null
-        )
-        (
-          if
-            inputs ? opnix && inputs.opnix ? homeManagerModules && inputs.opnix.homeManagerModules ? default
-          then
-            inputs.opnix.homeManagerModules.default
-          else
-            null
-        )
-        (
-          if
-            inputs ? spicetify-nix
-            && inputs.spicetify-nix ? homeManagerModules
-            && inputs.spicetify-nix.homeManagerModules ? default
-          then
-            inputs.spicetify-nix.homeManagerModules.default
-          else
-            null
-        )
-        (
-          if
-            hasPrivateFlake
-            && privateFlake ? homeManagerModules
-            && privateFlake.homeManagerModules ? nix-private
-          then
-            privateFlake.homeManagerModules.nix-private
-          else
-            null
-        )
-      ];
+      externalModules = [
+        inputs.nix-flatpak.homeManagerModules.nix-flatpak
+        inputs.opnix.homeManagerModules.default
+        inputs.spicetify-nix.homeManagerModules.default
+      ]
+      ++ lib.optional hasPrivateFlake privateFlake.homeManagerModules.nix-private;
     in
     inputs.home-manager.lib.homeManagerConfiguration {
       inherit pkgs;
       modules = [
         # Local modules
-        ./modules/home
+        ./hdwlinux/modules/home
         # User configuration
         configuration
       ]
@@ -335,7 +194,7 @@ let
         packages = packagesForSystem system;
 
         # Development shells
-        devShells = loadShells system;
+        devShells = lib.hdwlinux.loadShells (mkPkgs system) inputs ./hdwlinux/shells;
 
         # Formatter
         formatter = (mkPkgs system).nixfmt-rfc-style;
@@ -347,8 +206,12 @@ let
   );
 
   # Final outputs
-  finalOutputs = {
-    inherit self inputs lib;
+  finalOutputs = rec {
+    # Self-reference for modules
+    self = finalOutputs;
+
+    # Expose inputs and lib
+    inherit inputs lib;
 
     outPath = ./.;
 
@@ -369,40 +232,42 @@ let
       builtins.map
         (name: {
           inherit name;
-          value = import (./overlays + "/${name}/default.nix") {
+          value = import (./hdwlinux/overlays + "/${name}/default.nix") {
             inherit lib;
-            channels = { inherit nixpkgs; };
+            channels = { };
           };
         })
         (
-          builtins.filter (name: (builtins.readDir ./overlays).${name} == "directory") (
-            builtins.attrNames (builtins.readDir ./overlays)
+          builtins.filter (name: (builtins.readDir ./hdwlinux/overlays).${name} == "directory") (
+            builtins.attrNames (builtins.readDir ./hdwlinux/overlays)
           )
         )
     );
 
     # NixOS configurations
     nixosConfigurations = {
-      unsouled = mkNixosConfiguration "x86_64-linux" "unsouled" ./systems/x86_64-linux/unsouled;
-      blackflame = mkNixosConfiguration "x86_64-linux" "blackflame" ./systems/x86_64-linux/blackflame;
+      unsouled = mkNixosConfiguration "x86_64-linux" "unsouled" ./hdwlinux/systems/x86_64-linux/unsouled;
+      blackflame =
+        mkNixosConfiguration "x86_64-linux" "blackflame"
+          ./hdwlinux/systems/x86_64-linux/blackflame;
     };
 
     # Home Manager configurations
     homeConfigurations = {
-      "craig@unsouled" = mkHomeConfiguration "x86_64-linux" "craig" ./homes/x86_64-linux/craig;
-      "craig@blackflame" = mkHomeConfiguration "x86_64-linux" "craig" ./homes/x86_64-linux/craig;
+      "craig@unsouled" = mkHomeConfiguration "x86_64-linux" "craig" ./hdwlinux/homes/x86_64-linux/craig;
+      "craig@blackflame" = mkHomeConfiguration "x86_64-linux" "craig" ./hdwlinux/homes/x86_64-linux/craig;
     };
 
     # NixOS modules
     nixosModules = {
-      default = ./modules/nixos;
-      hdwlinux = ./modules/nixos;
+      default = ./hdwlinux/modules/nixos;
+      hdwlinux = ./hdwlinux/modules/nixos;
     };
 
     # Home Manager modules
     homeModules = {
-      default = ./modules/home;
-      hdwlinux = ./modules/home;
+      default = ./hdwlinux/modules/home;
+      hdwlinux = ./hdwlinux/modules/home;
     };
   };
 in

@@ -1,11 +1,46 @@
+# nix-config
+
+A non-flake NixOS configuration using npins for dependency management.
+
+## Structure
+
+```
+.
+├── default.nix          # Main entry point
+├── lib/                 # Top-level utility functions
+│   └── default.nix      # Module discovery, overlay/package/shell loaders
+├── hdwlinux/            # All hdwlinux-specific configuration
+│   ├── homes/           # Home Manager configurations
+│   ├── lib/             # Custom library functions (types, themes, etc.)
+│   ├── modules/         # NixOS and Home Manager modules
+│   ├── overlays/        # Nixpkgs overlays
+│   ├── packages/        # Custom packages
+│   ├── shells/          # Development shells
+│   └── systems/         # NixOS system configurations
+└── npins/               # Dependency management
+```
+
+## Usage
+
+### Building packages
+
+```bash
+nix-build -E '(import ./default.nix).packages.x86_64-linux.<package-name>'
+```
+
+### Entering development shells
+
+```bash
+nix-shell -E "(import ./default.nix).devShells.x86_64-linux.<shell-name>"
+```
+
+### Building NixOS system
+
+```bash
+sudo nixos-rebuild switch -I nixos-config=/path/to/nix-config/hdwlinux/systems/x86_64-linux/<host>/default.nix
+```
+
 # Installing
-
-## NixOS-Anywhere
-
-```
-echo -n "<password>" > /tmp/secret.key
-nix run github:nix-community/nixos-anywhere -- --flake .#<hostname> --disk-encryption-keys /tmp/secret.key /tmp/secret.key <user>@<ip>
-```
 
 ## Manual
 
@@ -24,17 +59,14 @@ git clone https://github.com/craiggwilson/nix-config
 
 ### Partitioning
 
-```
-echo -n "<password>" > /tmp/secret.key
-sudo nix --extra-experimental-features 'nix-command flakes' run github:nix-community/disko -- --mode disko --flake github:craiggwilson/nix-config#<host>
-```
+Use disko to partition the disk according to your host configuration.
 
 ### Install NixOS
 
 ```
 git clone https://github.com/craiggwilson/nix-config /tmp/nix-config
 
-sudo nixos-install --impure --flake /tmp/nix-config#<host>
+sudo nixos-install --impure -I nixos-config=/tmp/nix-config/hdwlinux/systems/x86_64-linux/<host>/default.nix
 ```
 
 # After Install
@@ -45,7 +77,7 @@ sudo nixos-install --impure --flake /tmp/nix-config#<host>
 scp /path/to/key user@ip:/path/to/key
 ```
 
-## Pull down config flake
+## Pull down config
 
 ```
 mkdir -p ~/Projects/github.com/craiggwilson
