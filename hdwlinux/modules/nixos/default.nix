@@ -5,12 +5,9 @@
 }:
 let
   cfg = config.hdwlinux;
-
-  # Get all module files except this one
-  allModules = lib.hdwlinux.findModules ./.;
 in
 {
-  imports = allModules;
+  imports = lib.hdwlinux.findSubdirFilesRecursive { dir = ./.; };
 
   options.hdwlinux = {
     apps = lib.mkOption {

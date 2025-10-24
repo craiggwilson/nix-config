@@ -1,17 +1,20 @@
 {
   "pins": {
     "flake-compat": {
-      "type": "Git",
+      "type": "GitRelease",
       "repository": {
         "type": "GitHub",
-        "owner": "edolstra",
+        "owner": "nilla-nix",
         "repo": "flake-compat"
       },
-      "branch": "master",
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
       "submodules": false,
-      "revision": "0f9255e01c2351cc7d116c072cb317785dd33b33",
-      "url": "https://github.com/edolstra/flake-compat/archive/0f9255e01c2351cc7d116c072cb317785dd33b33.tar.gz",
-      "hash": "0m9grvfsbwmvgwaxvdzv6cmyvjnlww004gfxjvcl806ndqaxzy4j"
+      "version": "v0.0.2",
+      "revision": "2653659fb5d86f2853caae1b6475e63e8c23439c",
+      "url": "https://api.github.com/repos/nilla-nix/flake-compat/tarball/v0.0.2",
+      "hash": "sha256-drL2fVdcowCdRauFVfqWWUfGEGVDqui5Ul240kyivZg="
     },
     "disko": {
       "type": "Git",
@@ -132,19 +135,6 @@
       "revision": "d5faa84122bc0a1fd5d378492efce4e289f8eac1",
       "url": "https://github.com/nixos/nixpkgs/archive/d5faa84122bc0a1fd5d378492efce4e289f8eac1.tar.gz",
       "hash": "0r2pkx7m1pb0fzfhb74jkr8y5qhs2b93sak5bd5rabvbm2zn36zs"
-    },
-    "nur": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "nix-community",
-        "repo": "NUR"
-      },
-      "branch": "master",
-      "submodules": false,
-      "revision": "c30a53a5947bcc874b3f8842e6fe5c34bc81d8dd",
-      "url": "https://github.com/nix-community/NUR/archive/c30a53a5947bcc874b3f8842e6fe5c34bc81d8dd.tar.gz",
-      "hash": "0xn6gnr91mvckpm1lmlnzkn3f3fv5qjn79cppfnq2mm0m60gkxdz"
     },
     "opnix": {
       "type": "Git",
