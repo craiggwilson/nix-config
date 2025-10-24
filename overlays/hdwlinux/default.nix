@@ -55,7 +55,7 @@ let
       '';
 in
 {
-  hdwlinux = prev.hdwlinux // {
+  hdwlinux = (prev.hdwlinux or { }) // {
     writeShellApplicationWithSubcommands =
       {
         name,

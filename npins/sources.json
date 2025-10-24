@@ -1,5 +1,18 @@
 {
   "pins": {
+    "flake-compat": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "edolstra",
+        "repo": "flake-compat"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "0f9255e01c2351cc7d116c072cb317785dd33b33",
+      "url": "https://github.com/edolstra/flake-compat/archive/0f9255e01c2351cc7d116c072cb317785dd33b33.tar.gz",
+      "hash": "0m9grvfsbwmvgwaxvdzv6cmyvjnlww004gfxjvcl806ndqaxzy4j"
+    },
     "disko": {
       "type": "Git",
       "repository": {
@@ -51,6 +64,22 @@
       "revision": "7ccc92050e43dc92309396c6f2fe1f542214a242",
       "url": "https://github.com/musnix/musnix/archive/7ccc92050e43dc92309396c6f2fe1f542214a242.tar.gz",
       "hash": "1wg2iflnr0062c34d0iqk2hyn27jshsz79a1i1qqc7j1hixspxx8"
+    },
+    "nix-flatpak": {
+      "type": "GitRelease",
+      "repository": {
+        "type": "GitHub",
+        "owner": "gmodena",
+        "repo": "nix-flatpak"
+      },
+      "pre_releases": false,
+      "version_upper_bound": null,
+      "release_prefix": null,
+      "submodules": false,
+      "version": "v0.1.0",
+      "revision": "df3ea9930422fb14bf00e857ff771ddb85aafba6",
+      "url": "https://api.github.com/repos/gmodena/nix-flatpak/tarball/v0.1.0",
+      "hash": "1dzfxzm953lxj0ykk0b9w1zfkfycdpnk1jisd3ak1vjvjlzhi7nr"
     },
     "nixos-generators": {
       "type": "Git",
@@ -111,11 +140,11 @@
         "owner": "nix-community",
         "repo": "NUR"
       },
-      "branch": "main",
+      "branch": "master",
       "submodules": false,
-      "revision": "4defa8a679785f5fd2ae4637ec27a27e85f318a5",
-      "url": "https://github.com/nix-community/NUR/archive/4defa8a679785f5fd2ae4637ec27a27e85f318a5.tar.gz",
-      "hash": "158bgbs2k2rysxppxhb2rnrn1wkq8darbijvg3i0jndm5l2hf3kx"
+      "revision": "c30a53a5947bcc874b3f8842e6fe5c34bc81d8dd",
+      "url": "https://github.com/nix-community/NUR/archive/c30a53a5947bcc874b3f8842e6fe5c34bc81d8dd.tar.gz",
+      "hash": "0xn6gnr91mvckpm1lmlnzkn3f3fv5qjn79cppfnq2mm0m60gkxdz"
     },
     "opnix": {
       "type": "Git",
@@ -142,19 +171,6 @@
       "revision": "28405834d4fdd458d28e123fae4db148daecec6f",
       "url": "https://github.com/oxalica/rust-overlay/archive/28405834d4fdd458d28e123fae4db148daecec6f.tar.gz",
       "hash": "1r331s9q6w053bcdvcmxczq56kg8ig1q7ql8qhasn0xsgf7aipp9"
-    },
-    "snowfall-lib": {
-      "type": "Git",
-      "repository": {
-        "type": "GitHub",
-        "owner": "snowfallorg",
-        "repo": "lib"
-      },
-      "branch": "main",
-      "submodules": false,
-      "revision": "02d941739f98a09e81f3d2d9b3ab08918958beac",
-      "url": "https://github.com/snowfallorg/lib/archive/02d941739f98a09e81f3d2d9b3ab08918958beac.tar.gz",
-      "hash": "04zx368i5jaf9xzqwzpd18d3g4p70r317ay9ckpzw5hrj406fbz2"
     },
     "spicetify-nix": {
       "type": "Git",

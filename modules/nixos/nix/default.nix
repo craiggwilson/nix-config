@@ -167,10 +167,11 @@ in
         options = "--delete-older-than 30d";
       };
 
-      # flake-utils-plus
-      generateRegistryFromInputs = false;
-      generateNixPathFromInputs = true;
-      linkInputs = true;
+      # flake-utils-plus / snowfall-lib options
+      # These are only available when using flakes with snowfall-lib
+      # generateRegistryFromInputs = false;
+      # generateNixPathFromInputs = true;
+      # linkInputs = true;
     };
   };
 }
