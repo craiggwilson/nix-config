@@ -1,0 +1,174 @@
+{
+  "pins": {
+    "disko": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "disko"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "3a9450b26e69dcb6f8de6e2b07b3fc1c288d85f5",
+      "url": "https://github.com/nix-community/disko/archive/3a9450b26e69dcb6f8de6e2b07b3fc1c288d85f5.tar.gz",
+      "hash": "0311bakrdiv7nbsavv2z7kcj2dbdmhmcjv52xzxwlis4d6fj3dfb"
+    },
+    "home-manager": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "home-manager"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "82b58f38202540bce4e5e00759d115c5a43cab85",
+      "url": "https://github.com/nix-community/home-manager/archive/82b58f38202540bce4e5e00759d115c5a43cab85.tar.gz",
+      "hash": "1glrqwsg3imzadm6w036jazi9lwpsi30lkfgnnqzd7fkk0526004"
+    },
+    "kolide-launcher": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "kolide",
+        "repo": "nix-agent"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "9861a1c126514d11a7100edae87ddfce31be909c",
+      "url": "https://github.com/kolide/nix-agent/archive/9861a1c126514d11a7100edae87ddfce31be909c.tar.gz",
+      "hash": "0xriwwl2ygrwzi0rz3xh47gfjgwqhyjm604sk4g38cy558fz0798"
+    },
+    "musnix": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "musnix",
+        "repo": "musnix"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "7ccc92050e43dc92309396c6f2fe1f542214a242",
+      "url": "https://github.com/musnix/musnix/archive/7ccc92050e43dc92309396c6f2fe1f542214a242.tar.gz",
+      "hash": "1wg2iflnr0062c34d0iqk2hyn27jshsz79a1i1qqc7j1hixspxx8"
+    },
+    "nixos-generators": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "nixos-generators"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "032decf9db65efed428afd2fa39d80f7089085eb",
+      "url": "https://github.com/nix-community/nixos-generators/archive/032decf9db65efed428afd2fa39d80f7089085eb.tar.gz",
+      "hash": "10kbyi4x2b0mk0kjk9w1kgc96n57m1c8qhzgngnlp974rcsa9r1x"
+    },
+    "nixos-hardware": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "NixOS",
+        "repo": "nixos-hardware"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "d6645c340ef7d821602fd2cd199e8d1eed10afbc",
+      "url": "https://github.com/NixOS/nixos-hardware/archive/d6645c340ef7d821602fd2cd199e8d1eed10afbc.tar.gz",
+      "hash": "0m84zxwanfq34j568w4xkvip5hwpwbhsk46xjvnl063y77i54vfs"
+    },
+    "nixpkgs-stable": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixos-24.11",
+      "submodules": false,
+      "revision": "50ab793786d9de88ee30ec4e4c24fb4236fc2674",
+      "url": "https://github.com/nixos/nixpkgs/archive/50ab793786d9de88ee30ec4e4c24fb4236fc2674.tar.gz",
+      "hash": "1s2gr5rcyqvpr58vxdcb095mdhblij9bfzaximrva2243aal3dgx"
+    },
+    "nixpkgs-unstable": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nixos",
+        "repo": "nixpkgs"
+      },
+      "branch": "nixpkgs-unstable",
+      "submodules": false,
+      "revision": "d5faa84122bc0a1fd5d378492efce4e289f8eac1",
+      "url": "https://github.com/nixos/nixpkgs/archive/d5faa84122bc0a1fd5d378492efce4e289f8eac1.tar.gz",
+      "hash": "0r2pkx7m1pb0fzfhb74jkr8y5qhs2b93sak5bd5rabvbm2zn36zs"
+    },
+    "nur": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "nix-community",
+        "repo": "NUR"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "4defa8a679785f5fd2ae4637ec27a27e85f318a5",
+      "url": "https://github.com/nix-community/NUR/archive/4defa8a679785f5fd2ae4637ec27a27e85f318a5.tar.gz",
+      "hash": "158bgbs2k2rysxppxhb2rnrn1wkq8darbijvg3i0jndm5l2hf3kx"
+    },
+    "opnix": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "craiggwilson",
+        "repo": "opnix"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "1a807befe8f418da0df24c54b9633c395d840d0e",
+      "url": "https://github.com/craiggwilson/opnix/archive/1a807befe8f418da0df24c54b9633c395d840d0e.tar.gz",
+      "hash": "0bwnr109w1pii95fia6rxcdskbi0h5isxh9fimqrr0ra7lnwqw13"
+    },
+    "rust-overlay": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "oxalica",
+        "repo": "rust-overlay"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "28405834d4fdd458d28e123fae4db148daecec6f",
+      "url": "https://github.com/oxalica/rust-overlay/archive/28405834d4fdd458d28e123fae4db148daecec6f.tar.gz",
+      "hash": "1r331s9q6w053bcdvcmxczq56kg8ig1q7ql8qhasn0xsgf7aipp9"
+    },
+    "snowfall-lib": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "snowfallorg",
+        "repo": "lib"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "02d941739f98a09e81f3d2d9b3ab08918958beac",
+      "url": "https://github.com/snowfallorg/lib/archive/02d941739f98a09e81f3d2d9b3ab08918958beac.tar.gz",
+      "hash": "04zx368i5jaf9xzqwzpd18d3g4p70r317ay9ckpzw5hrj406fbz2"
+    },
+    "spicetify-nix": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "Gerg-L",
+        "repo": "spicetify-nix"
+      },
+      "branch": "master",
+      "submodules": false,
+      "revision": "cde9f78ae705343a38f5d1d19ab34858b5e9caa9",
+      "url": "https://github.com/Gerg-L/spicetify-nix/archive/cde9f78ae705343a38f5d1d19ab34858b5e9caa9.tar.gz",
+      "hash": "0h26zsv6qk2rjygsxqahdj91vi52virv96s7h9d03qx2rwghawqz"
+    }
+  },
+  "version": 5
+}
