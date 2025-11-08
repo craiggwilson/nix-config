@@ -1,7 +1,4 @@
 { lib, config, ... }:
-let
-  inherit (config) inputs;
-in
 {
   config = {
     builders.nixpkgs = {
@@ -11,7 +8,7 @@ in
             pkgs = lib.mkOption {
               description = "The Nixpkgs instance to use to build the package.";
               type = lib.types.raw;
-              default = inputs.nixpkgs.result or null;
+              default = config.inputs.nixpkgs.result or null;
             };
 
             args = lib.mkOption {
@@ -38,7 +35,7 @@ in
             if !(package.settings.pkgs ? ${system}) then
               builtins.throw "No package set for system \"${system}\" provided for package \"${package.name}\"."
             else
-              pkgs.callPackage package.package package.settings.args
+              pkgs.callPackage package.src package.settings.args
           );
     };
   };

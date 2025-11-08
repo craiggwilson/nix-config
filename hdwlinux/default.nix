@@ -16,45 +16,42 @@ in
           };
         };
       };
-
       disko = {
         settings.inputs.nixpkgs = nixpkgs-flake;
       };
-
       home-manager = {
         settings.inputs.nixpkgs = nixpkgs-flake;
       };
-
       kolide-launcher = {
         settings.inputs.nixpkgs = nixpkgs-flake;
       };
-
       musnix = {
         settings.inputs.nixpkgs = nixpkgs-flake;
       };
-
       opnix = {
         settings.inputs.nixpkgs = nixpkgs-flake;
       };
-
       rust-overlay = {
         settings.inputs.nixpkgs = nixpkgs-flake;
       };
     };
 
-    custom = {
-      libs = [ ./lib ];
-      overlays = [
-        config.inputs.rust-overlay.result.overlays.default
-        ./overlays/calibre
-        ./overlays/hdwlinux
-        ./overlays/openssh
-      ];
+    extraLibs = [ ./lib ];
+
+    overlays = [
+      config.inputs.rust-overlay.result.overlays.default
+      ./overlays/calibre
+      ./overlays/hdwlinux
+      ./overlays/openssh
+    ];
+
+    packages = {
+      evergreen.src = ./packages/evergreen;
     };
 
     systems.nixos.unsouled = {
       system = "x86_64-linux";
-      args = {
+      specialArgs = {
         inputs = lib.mapAttrs (name: input: input.result) config.inputs;
       };
       modules = [

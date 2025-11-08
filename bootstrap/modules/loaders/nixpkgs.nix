@@ -16,7 +16,7 @@
                 overlays = lib.mkOption {
                   description = "The overlays to apply to the nixpkgs instance.";
                   type = lib.types.listOf lib.types.raw;
-                  default = config.custom.overlays;
+                  default = config.overlays;
                 };
                 config = lib.mkOption {
                   description = "The configuration to pass to the nixpkgs instance.";

@@ -1,71 +1,57 @@
-{ lib, config, ... }@params:
+{ lib, config, ... }:
 {
   options = {
     systems.nixos = lib.mkOption {
       description = "NixOS systems to create.";
       type = lib.types.lazyAttrsOf (
-        lib.types.submodule (
-          { config, ... }:
-          {
-            options = {
-              args = lib.mkOption {
-                description = "Additional arguments to pass to system modules.";
-                type = lib.types.attrs;
-                default.value = { };
-              };
+        lib.types.submodule (args: {
+          options = {
+            modules = lib.mkOption {
+              description = "A list of modules to use for the system.";
+              type = lib.types.listOf lib.types.raw;
+              default = [ ];
+            };
+            pkgs = lib.mkOption {
+              description = "The Nixpkgs instance to use.";
+              type = lib.types.raw;
+              default =
+                if config.inputs ? nixpkgs && config.inputs.nixpkgs.result ? ${args.config.system} then
+                  config.inputs.nixpkgs.result.${args.config.system}
+                else
+                  null;
+            };
+            specialArgs = lib.mkOption {
+              description = "Additional arguments to pass to system modules.";
+              type = lib.types.attrsOf lib.types.anything;
+              default.value = { };
+            };
+            system = lib.mkOption {
+              description = "The system to build for.";
+              type = lib.types.enum [ "x86_64-linux" ];
+              default = builtins.currentSystem;
+            };
 
-              custom = {
-                libs = lib.mkOption {
-                  description = "Additional lib functions to use for the system.";
-                  type = lib.types.listOf lib.types.raw;
-                  default = params.config.custom.libs;
-                };
-                packages = lib.mkOption {
-                  description = "Additional packages to use for the system.";
-                  type = lib.types.listOf lib.types.raw;
-                  default = params.config.custom.packages;
-                };
-              };
-
-              modules = lib.mkOption {
-                description = "A list of modules to use for the system.";
-                type = lib.types.listOf lib.types.raw;
-                default = [ ];
-              };
-
-              pkgs = lib.mkOption {
-                description = "The Nixpkgs instance to use.";
-                type = lib.types.raw;
-                default =
-                  if params.config.inputs ? nixpkgs && params.config.inputs.nixpkgs.result ? ${config.system} then
-                    params.config.inputs.nixpkgs.result.${config.system}
-                  else
-                    null;
-              };
-
-              system = lib.mkOption {
-                description = "The system to build for.";
-                type = lib.types.enum [ "x86_64-linux" ];
-                default = builtins.currentSystem;
-              };
-
-              result = lib.mkOption {
-                description = "The created NixOS system.";
-                type = lib.types.raw;
-                readOnly = true;
-                default = import "${config.pkgs.path}/nixos/lib/eval-config.nix" {
-                  inherit (config) modules pkgs;
+            result = lib.mkOption {
+              description = "The created NixOS system.";
+              type = lib.types.raw;
+              readOnly = true;
+              default =
+                let
+                  pkgs =
+                    args.config.pkgs // (builtins.mapAttrs (n: v: v.result.${args.config.system}) config.packages);
+                in
+                import "${pkgs.path}/nixos/lib/eval-config.nix" {
+                  inherit pkgs;
+                  inherit (args.config) modules specialArgs;
                   lib = lib.bootstrap.extendPkgsLib {
-                    inherit (config) pkgs;
-                    libs = config.custom.libs;
+                    inherit pkgs;
+                    libs = config.extraLibs;
                   };
-                  specialArgs = config.args;
                   modulesLocation = null;
                 };
-              };
             };
-          }
-        )
+          };
+        })
       );
       default = { };
     };

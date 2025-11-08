@@ -1,6 +1,6 @@
-{ lib, ... }@attrs:
+{ lib, config, ... }:
 let
-  loaders = lib.mapAttrsToList (name: loader: loader // { inherit name; }) attrs.config.loaders;
+  loaders = lib.mapAttrsToList (name: loader: loader // { inherit name; }) config.loaders;
   customLoaders = builtins.filter (
     loader:
     !(builtins.elem loader.name [
@@ -18,13 +18,12 @@ in
       lib.types.submodule (
         {
           name,
-          config,
           ...
-        }:
+        }@args:
         let
           input = {
             inherit name;
-            inherit (config) src loader settings;
+            inherit (args.config) src loader settings;
           };
 
           matching = builtins.filter (loader: input.loader == loader.name) loaders;
@@ -62,7 +61,7 @@ in
             src = lib.mkOption {
               description = "The source of the input.";
               type = lib.types.either lib.types.path lib.types.str;
-              default = if builtins.hasAttr name attrs.config.pins then attrs.config.pins.${name} else null;
+              default = if builtins.hasAttr name config.pins then config.pins.${name} else null;
             };
 
             loader = lib.mkOption {
@@ -70,7 +69,7 @@ in
               type = lib.types.str;
               default =
                 let
-                  contents = builtins.readDir config.src;
+                  contents = builtins.readDir args.config.src;
                   files = lib.filterAttrs (name: value: value == "regular") contents;
                   directories = lib.filterAttrs (name: value: value == "directory") contents;
                   symlinks = lib.filterAttrs (name: value: value == "symlink") contents;
@@ -133,7 +132,7 @@ in
     assertions = lib.mapAttrsToList (name: input: {
       assertion = input.valid.value;
       message = input.valid.message;
-    }) attrs.config.inputs;
-    inputs = builtins.mapAttrs (name: src: { src = src; }) attrs.config.pins;
+    }) config.inputs;
+    inputs = builtins.mapAttrs (name: src: { src = src; }) config.pins;
   };
 }
