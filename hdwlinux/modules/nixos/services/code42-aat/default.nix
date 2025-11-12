@@ -10,7 +10,7 @@ let
   fhsEnv = pkgs.buildFHSEnv {
     name = "code42-aat-bash";
     targetPkgs = pkgs: [
-      pkgs.hdwlinux.code42-aat-unwrapped
+      pkgs.code42-aat-unwrapped
 
       # need to replicate the buildInputs from the unwrapped package because
       # code42-aat downloads a new binary at runtime, so patchElf doesn't work.

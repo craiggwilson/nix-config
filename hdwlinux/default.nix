@@ -1,7 +1,6 @@
 { config, lib, ... }:
 let
   pins = import ../npins;
-  nixpkgs-flake = config.inputs.nixpkgs-unstable.result;
 in
 {
   config = {
@@ -16,23 +15,24 @@ in
           };
         };
       };
+
       disko = {
-        settings.inputs.nixpkgs = nixpkgs-flake;
+        settings.inputs.nixpkgs = config.inputs.nixpkgs.result;
       };
       home-manager = {
-        settings.inputs.nixpkgs = nixpkgs-flake;
+        settings.inputs.nixpkgs = config.inputs.nixpkgs.result;
       };
       kolide-launcher = {
-        settings.inputs.nixpkgs = nixpkgs-flake;
+        settings.inputs.nixpkgs = config.inputs.nixpkgs.result;
       };
       musnix = {
-        settings.inputs.nixpkgs = nixpkgs-flake;
+        settings.inputs.nixpkgs = config.inputs.nixpkgs.result;
       };
       opnix = {
-        settings.inputs.nixpkgs = nixpkgs-flake;
+        settings.inputs.nixpkgs = config.inputs.nixpkgs.result;
       };
       rust-overlay = {
-        settings.inputs.nixpkgs = nixpkgs-flake;
+        settings.inputs.nixpkgs = config.inputs.nixpkgs.result;
       };
     };
 
@@ -46,7 +46,16 @@ in
     ];
 
     packages = {
+      atlas-cli.src = ./packages/atlas-cli;
+      code42-aat-unwrapped.src = ./packages/code42-aat-unwrapped;
+      engflow_auth.src = ./packages/engflow_auth;
       evergreen.src = ./packages/evergreen;
+      fern.src = ./packages/fern;
+      island-browser-unwrapped.src = ./packages/island-browser-unwrapped;
+      matcha.src = ./packages/matcha;
+      mongo-orchestration.src = ./packages/mongo-orchestration;
+      prisma-access-browser-unwrapped.src = ./packages/prisma-access-browser-unwrapped;
+      songtool.src = ./packages/songtool;
     };
 
     systems.nixos.unsouled = {

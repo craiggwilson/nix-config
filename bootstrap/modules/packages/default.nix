@@ -5,8 +5,8 @@ in
 {
   options = {
     packages = lib.mkOption {
-      description = "A list of packages.";
-      default = [ ];
+      description = "A set of packages";
+      default = { };
       type = lib.types.lazyAttrsOf (
         lib.types.submodule (
           { name, ... }@args:
@@ -103,5 +103,19 @@ in
         )
       );
     };
+  };
+
+  config = {
+    # Add an overlay that makes custom packages available in pkgs
+    overlays = lib.mkBefore [
+      (
+        final: prev:
+        builtins.mapAttrs (
+          name: pkg:
+          pkg.result.${final.system}
+            or (builtins.throw "Package \"${name}\" is not available for system \"${final.system}\"")
+        ) config.packages
+      )
+    ];
   };
 }

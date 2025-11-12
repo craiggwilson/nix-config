@@ -37,8 +37,7 @@
               readOnly = true;
               default =
                 let
-                  pkgs =
-                    args.config.pkgs // (builtins.mapAttrs (n: v: v.result.${args.config.system}) config.packages);
+                  pkgs = args.config.pkgs;
                 in
                 import "${pkgs.path}/nixos/lib/eval-config.nix" {
                   inherit pkgs;

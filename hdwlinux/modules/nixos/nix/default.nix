@@ -74,14 +74,6 @@ in
       NIXPKGS_ALLOW_UNFREE = "1";
     };
 
-    nixpkgs = {
-      config.allowUnfree = true;
-      flake = {
-        setNixPath = true;
-        setFlakeRegistry = true;
-      };
-    };
-
     programs.nix-ld = {
       enable = true;
     };
