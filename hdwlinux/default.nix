@@ -49,6 +49,7 @@ in
       code42-aat-unwrapped.src = ./packages/code42-aat-unwrapped;
       engflow_auth.src = ./packages/engflow_auth;
       evergreen.src = ./packages/evergreen;
+      falcon-sensor.src = ./packages/falcon-sensor;
       fern.src = ./packages/fern;
       island-browser-unwrapped.src = ./packages/island-browser-unwrapped;
       matcha.src = ./packages/matcha;
@@ -60,6 +61,7 @@ in
     systems.nixos.unsouled = {
       system = "x86_64-linux";
       specialArgs = {
+        inherit pins;
         inputs = lib.mapAttrs (name: input: input.result) config.inputs;
       };
       modules = [
@@ -70,6 +72,7 @@ in
         config.inputs.musnix.result.nixosModules.musnix
         config.inputs.opnix.result.nixosModules.default
         ./modules/nixos
+        config.inputs.nix-private.result.nixosModules.nix-private
       ];
     };
   };

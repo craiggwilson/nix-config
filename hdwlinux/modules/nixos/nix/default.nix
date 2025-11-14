@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  pins,
   lib,
   pkgs,
   ...
@@ -116,13 +117,12 @@ in
       channel.enable = false;
 
       registry = {
-        nixpkgs.flake = inputs.nixpkgs;
-        stable.flake = inputs.nixpkgs-stable;
-        unstable.flake = inputs.nixpkgs;
         hdwlinux.to = {
           type = "path";
           path = cfg.flake;
         };
+        nixpkgs.flake = pins.nixpkgs;
+        stable.flake = pins.nixpkgs-stable;
       };
 
       settings = {
