@@ -1,5 +1,6 @@
 let
-  nixpkgs = import <nixpkgs> { };
+  bootstrapPins = import ./npins;
+  nixpkgs = import bootstrapPins.nixpkgs { };
   lib = nixpkgs.lib.extend (_: prev: prev // import ./lib/default.nix { lib = prev; });
 in
 {

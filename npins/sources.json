@@ -1,21 +1,5 @@
 {
   "pins": {
-    "flake-compat": {
-      "type": "GitRelease",
-      "repository": {
-        "type": "GitHub",
-        "owner": "nilla-nix",
-        "repo": "flake-compat"
-      },
-      "pre_releases": false,
-      "version_upper_bound": null,
-      "release_prefix": null,
-      "submodules": false,
-      "version": "v0.0.2",
-      "revision": "2653659fb5d86f2853caae1b6475e63e8c23439c",
-      "url": "https://api.github.com/repos/nilla-nix/flake-compat/tarball/v0.0.2",
-      "hash": "sha256-drL2fVdcowCdRauFVfqWWUfGEGVDqui5Ul240kyivZg="
-    },
     "disko": {
       "type": "Git",
       "repository": {
@@ -123,7 +107,7 @@
       "url": "https://github.com/nixos/nixpkgs/archive/50ab793786d9de88ee30ec4e4c24fb4236fc2674.tar.gz",
       "hash": "1s2gr5rcyqvpr58vxdcb095mdhblij9bfzaximrva2243aal3dgx"
     },
-    "nixpkgs-unstable": {
+    "nixpkgs": {
       "type": "Git",
       "repository": {
         "type": "GitHub",

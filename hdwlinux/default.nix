@@ -8,7 +8,6 @@ in
 
     inputs = {
       nixpkgs = {
-        src = pins.nixpkgs-unstable;
         settings = {
           config = {
             allowUnfree = true;

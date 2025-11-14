@@ -1,6 +1,7 @@
-{ lib, config, ... }:
+{ lib, ... }:
 let
-  compat = config.inputs.flake-compat.result;
+  bootstrapPins = import ../../npins;
+  compat = import bootstrapPins.flake-compat;
 in
 {
   config = {
