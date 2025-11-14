@@ -16,6 +16,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.hdwlinux.atlas-cli ];
+    home.packages = [ pkgs.atlas-cli ];
   };
 }

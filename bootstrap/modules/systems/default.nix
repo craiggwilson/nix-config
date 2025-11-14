@@ -35,19 +35,14 @@
               description = "The created NixOS system.";
               type = lib.types.raw;
               readOnly = true;
-              default =
-                let
-                  pkgs = args.config.pkgs;
-                in
-                import "${pkgs.path}/nixos/lib/eval-config.nix" {
-                  inherit pkgs;
-                  inherit (args.config) modules specialArgs;
-                  lib = lib.bootstrap.extendPkgsLib {
-                    inherit pkgs;
-                    libs = config.extraLibs;
-                  };
-                  modulesLocation = null;
+              default = import "${args.config.pkgs.path}/nixos/lib/eval-config.nix" {
+                inherit (args.config) pkgs modules specialArgs;
+                lib = lib.bootstrap.extendPkgsLib {
+                  inherit (args.config) pkgs;
+                  libs = config.extraLibs;
                 };
+                modulesLocation = null;
+              };
             };
           };
         })

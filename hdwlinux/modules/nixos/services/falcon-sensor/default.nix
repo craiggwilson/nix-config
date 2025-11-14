@@ -6,7 +6,7 @@
 }:
 let
   cfg = config.hdwlinux.services.falcon-sensor;
-  falcon = pkgs.hdwlinux.falcon-sensor;
+  falcon = pkgs.falcon-sensor;
 in
 {
   options.hdwlinux.services.falcon-sensor = {
