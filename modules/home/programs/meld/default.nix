@@ -16,7 +16,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ pkgs.meld ];
 
-    programs.git.extraConfig = lib.mkIf config.hdwlinux.programs.git.enable {
+    programs.git.settings = lib.mkIf config.hdwlinux.programs.git.enable {
       merge.tool = "${pkgs.meld}/bin/meld";
       "mergetool \"meld\"" = {
         path = "${pkgs.meld}/bin/meld";

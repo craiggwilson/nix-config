@@ -16,7 +16,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ pkgs.delta ];
 
-    programs.git.extraConfig = lib.mkIf config.hdwlinux.programs.git.enable {
+    programs.git.settings = lib.mkIf config.hdwlinux.programs.git.enable {
       core.pager = "delta";
       delta = {
         line-numbers = true;

@@ -17,7 +17,7 @@ in
     home.packages = [ pkgs.mergiraf ];
 
     programs.git = {
-      extraConfig = lib.mkIf config.hdwlinux.programs.git.enable {
+      settings = lib.mkIf config.hdwlinux.programs.git.enable {
         "merge \"mergiraf\"" = {
           name = "mergiraf";
           driver = "${pkgs.mergiraf}/bin/mergiraf merge --git %O %A %B -s %S -x %X -y %Y -p %P";

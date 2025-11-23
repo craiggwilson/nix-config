@@ -16,7 +16,7 @@ in
   config = lib.mkIf cfg.enable {
     home.packages = [ pkgs.difftastic ];
 
-    programs.git.extraConfig = lib.mkIf config.hdwlinux.programs.git.enable {
+    programs.git.settings = lib.mkIf config.hdwlinux.programs.git.enable {
       diff = {
         external = "${pkgs.difftastic}/bin/difft";
         tool = "difftastic";

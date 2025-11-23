@@ -18,7 +18,7 @@ in
       pkgs.nerd-fonts.droid-sans-mono
       pkgs.nerd-fonts.dejavu-sans-mono
       pkgs.nerd-fonts.fira-code
-      pkgs.noto-fonts-emoji
+      pkgs.noto-fonts-color-emoji
       pkgs.comic-mono
     ];
 

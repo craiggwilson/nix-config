@@ -135,9 +135,9 @@ in
             special_scale_factor = 1;
           };
 
-          gestures = {
-            workspace_swipe = true;
-          };
+          # gestures = {
+          #   workspace_swipe = true;
+          # };
 
           layerrule = [
             "blur,waybar"
@@ -161,7 +161,7 @@ in
             "opacity .95 .85,class:^(spotify)$"
             "opacity .95 .85,class:^(steam)$"
             "float,title:^(Quick Access — 1Password)$"
-            "dimaround,title:^(Quick Access — 1Password)$, floating"
+            #"dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
             "stayfocused,title:^(Quick Access — 1Password)$"
             "workspace special:dropdown,class:^(com.mitchellh.ghostty)$"

@@ -20,17 +20,18 @@ in
   config = lib.mkIf cfg.enable {
     programs.git = {
       enable = true;
-      aliases = {
-        amend = "commit --amend --no-edit";
-        branch-name = "branch --show-current";
-        co = "checkout";
-        conflicts = "diff --name-only --diff-filter=U";
-        difft = "difftool -t difft";
-        main-branch = "!git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4";
-        recent = "for-each-ref --count=12 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
-      } // cfg.aliases;
       attributes = [ "*.sh eol=lf" ];
-      extraConfig = {
+      settings = {
+        aliases = {
+          amend = "commit --amend --no-edit";
+          branch-name = "branch --show-current";
+          co = "checkout";
+          conflicts = "diff --name-only --diff-filter=U";
+          difft = "difftool -t difft";
+          main-branch = "!git symbolic-ref refs/remotes/origin/HEAD | cut -d'/' -f4";
+          recent = "for-each-ref --count=12 --sort=-committerdate refs/heads/ --format='%(refname:short)'";
+        }
+        // cfg.aliases;
         blame.ignoreRevsFile = ".git-blame-ignore-revs";
         branch.sort = "-committerdate";
         commit = {
@@ -80,7 +81,11 @@ in
           "git@github.com:".insteadOf = "https://github.com/";
           "ssh://git@github.com/".insteadOf = "https://github.com/";
         };
-        user.signingkey = "~/.ssh/id_rsa.pub";
+        user = {
+          email = config.hdwlinux.user.email;
+          name = config.hdwlinux.user.fullName;
+          signingkey = "~/.ssh/id_rsa.pub";
+        };
       };
       ignores = [
         ".cheat"
@@ -93,8 +98,6 @@ in
       lfs = {
         enable = true;
       };
-      userEmail = config.hdwlinux.user.email;
-      userName = config.hdwlinux.user.fullName;
     };
 
     xdg.configFile."/git/allowed_signers".text = ''
