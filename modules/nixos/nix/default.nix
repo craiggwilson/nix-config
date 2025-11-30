@@ -8,19 +8,6 @@
 
 let
   cfg = config.hdwlinux.nix;
-
-  substituters-submodule = lib.types.submodule (
-    { ... }:
-    {
-      options = {
-        key = lib.mkOption {
-          description = "The trusted public key for this substituter.";
-          type = (lib.types.nullOr lib.types.str);
-          default = lib.types.null;
-        };
-      };
-    }
-  );
 in
 {
   options.hdwlinux.nix = {
@@ -36,33 +23,14 @@ in
       default = null;
     };
 
-    default-substituter = {
-      url = lib.mkOption {
-        description = "The url for the substituter.";
-        type = lib.types.str;
-        default = "https://cache.nixos.org";
-      };
-
-      key = lib.mkOption {
-        description = "The trusted public key for the substituter.";
-        type = lib.types.str;
-        default = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=";
-      };
-    };
-
     extra-substituters = lib.mkOption {
       description = "Extra substituters to configure.";
-      type = lib.types.attrsOf substituters-submodule;
+      type = lib.types.attrsOf lib.types.str;
       default = { };
     };
   };
 
   config = {
-    assertions = lib.mapAttrsToList (name: value: {
-      assertion = value.key != null;
-      message = "hdwlinux.nix.extra-substituters.${name}.key must be set";
-    }) cfg.extra-substituters;
-
     environment.systemPackages = with pkgs; [
       cacert
       deploy-rs
@@ -152,13 +120,15 @@ in
         keep-derivations = true;
         download-buffer-size = 1073741824; # 1 GiB
         substituters = [
-          cfg.default-substituter.url
+          "https://cache.nixos.org"
+          "https://nix-community.cachix.org"
         ]
         ++ (lib.mapAttrsToList (name: value: name) cfg.extra-substituters);
         trusted-public-keys = [
-          cfg.default-substituter.key
+          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
         ]
-        ++ (lib.mapAttrsToList (name: value: value.key) cfg.extra-substituters);
+        ++ (lib.mapAttrsToList (name: value: value) cfg.extra-substituters);
       };
 
       gc = {
