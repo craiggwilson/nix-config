@@ -17,6 +17,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.MIDIVisualizer ];
+    home.packages = [ pkgs.midivisualizer ];
   };
 }

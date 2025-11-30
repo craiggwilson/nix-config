@@ -39,6 +39,7 @@ in
     mcpServers = lib.mkOption {
       description = "Options to set the mcp servers.";
       type = lib.types.attrsOf lib.hdwlinux.types.mcpServer;
+      default = { };
     };
 
     outputProfiles = lib.mkOption {

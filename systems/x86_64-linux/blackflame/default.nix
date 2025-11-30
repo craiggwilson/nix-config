@@ -15,7 +15,7 @@
       "audio:midi"
       "audio:production"
       "boot:systemd"
-      "cuda"
+      #"cuda" takes a long time to build
       "desktop:hyprland"
       "desktop:remote"
       "filesystem:nfs"

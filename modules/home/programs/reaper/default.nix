@@ -30,7 +30,7 @@ in
       pkgs.x42-gmsynth
       pkgs.dragonfly-reverb
       pkgs.guitarix
-      pkgs.FIL-plugins
+      pkgs.fil-plugins
       #pkgs.geonkick
       pkgs.sfizz
 
