@@ -1,4 +1,6 @@
 {
+  config,
+  lib,
   ...
 }:
 {
@@ -7,6 +9,13 @@
   ];
 
   hdwlinux = {
+    programs.powertop = {
+      autotune = false;
+      postStart = [
+        ''${lib.getExe' config.systemd.package "udevadm"} trigger -c bind -s usb -a idVendor=045e -a idProduct=0773''
+      ];
+    };
+
     services.system76-battery = {
       profile = "max_lifespan";
     };
@@ -15,7 +24,8 @@
       "audio:midi"
       "audio:production"
       "boot:systemd"
-      #"cuda" takes a long time to build
+      # Having some issues with xdg-desktop-portal-hyprland
+      #"cuda"
       "desktop:hyprland"
       "desktop:remote"
       "filesystem:nfs"
