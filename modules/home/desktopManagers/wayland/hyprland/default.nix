@@ -37,10 +37,6 @@ in
       xwayland.enable = true;
       systemd.enable = true;
 
-      plugins = [
-        pkgs.hyprlandPlugins.hyprscrolling
-      ];
-
       settings = lib.mkMerge [
         (lib.mkIf config.hdwlinux.theme.enable {
           misc.background_color = rgb config.hdwlinux.theme.colors.base00;
@@ -135,9 +131,12 @@ in
             special_scale_factor = 1;
           };
 
-          # gestures = {
-          #   workspace_swipe = true;
-          # };
+          gestures = {
+            workspace_swipe = 1;
+            # gesture = [
+            #   "3, horizontal, workspace"
+            # ];
+          };
 
           layerrule = [
             "blur,waybar"
@@ -151,7 +150,7 @@ in
             "ignorezero,syshud"
           ];
 
-          windowrulev2 = [
+          windowrule = [
             "opacity .95 .85,class:^(code)$"
             "opacity .95 .85,class:^(com.mitchellh.ghostty)$"
             "opacity .95 .85,class:^(firefox)$"
@@ -160,8 +159,9 @@ in
             "opacity .95 .85,class:^(Slack)$"
             "opacity .95 .85,class:^(spotify)$"
             "opacity .95 .85,class:^(steam)$"
+            "noscreenshare,class:^(1password)$"
             "float,title:^(Quick Access — 1Password)$"
-            #"dimaround,title:^(Quick Access — 1Password)$, floating"
+            "dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
             "stayfocused,title:^(Quick Access — 1Password)$"
             "workspace special:dropdown,class:^(com.mitchellh.ghostty)$"

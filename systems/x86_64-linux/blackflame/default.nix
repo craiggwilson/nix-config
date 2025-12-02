@@ -1,12 +1,15 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 {
   imports = [
     ./disko.nix
   ];
+
+  boot.kernelPackages = pkgs.linuxPackages_6_17;
 
   hdwlinux = {
     programs.powertop = {
