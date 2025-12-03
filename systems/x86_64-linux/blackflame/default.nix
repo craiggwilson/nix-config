@@ -30,6 +30,7 @@
       # Having some issues with xdg-desktop-portal-hyprland
       #"cuda"
       "desktop:hyprland"
+      "desktop:niri"
       "desktop:remote"
       "filesystem:nfs"
       "fonts"

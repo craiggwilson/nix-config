@@ -1,10 +1,20 @@
 
+cursor {
+    hide-when-typing
+}
+
+gestures {
+    hot-corners {
+        off
+    }
+}
+
+hotkey-overlay { skip-at-startup; }
 
 input {
     keyboard {
         xkb {
             layout "us"
-            // variant "dvorak"
             options "compose:ralt,ctrl:nocaps"
         }
     }
@@ -27,20 +37,35 @@ input {
 
 layout {
     focus-ring {
-        width 4
-        active-color "#b7bdf8" // Lavender from Catppuccin Macchiato theme
-        inactive-color "#6e738d" // Overlay0 from Catppuccin Macchiato theme
-        urgent-color "#f5a97f" // Catppuccin peach            "SUPER, X, exec, appctl exec powermenu"
+        on
+        width 2
     }
 
     shadow {
-        softness 10
         offset x=0 y=0
+        softness 10
+
+        color "#1e1e2e99"
     }
 
-    insert-hint {
-        color "#f5a97f80" // Peach from Catppuccin with reduced opacity
+    tab-indicator {
+        width 6
+        corner-radius 3
+        gaps-between-tabs 6
+        gap 8
+        place-within-column
+        hide-when-single-tab
     }
+
+    always-center-single-column
+
+    center-focused-column "never"
+
+    default-column-display "normal"
+
+    default-column-width { proportion 0.5; }
+
+    gaps 10
 
     preset-column-widths {
         proportion 0.25
@@ -49,89 +74,44 @@ layout {
         proportion 0.66667
         proportion 0.75
     }
-
-    default-column-width {}
-
-    gaps 10
-    center-focused-column "on-overflow"
-
-    default-column-display "normal"
-
-    tab-indicator {
-        width 6
-        corner-radius 3
-        gaps-between-tabs 6
-        active-color "#f4dbd6" // rosewater
-        urgent-color "#f5a97f" // Catppuccin peach
-        gap 8
-        place-within-column
-        hide-when-single-tab
-    }
 }
 
-overview {
-    backdrop-color "#1e2030" // Catppuccin mantle
-}
-
-cursor {
-    hide-when-typing
-}
+prefer-no-csd
 
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
-
-hotkey-overlay { skip-at-startup; }
-
-window-rule {
-    geometry-corner-radius 10
-}
-
-window-rule {
-    match is-window-cast-target=true
-    focus-ring {
-        active-color "#dd7878" // Maroon from Catppuccin Macchiato theme
-    }
-    shadow {
-        on
-        color "#dd7878" // Maroon from Catppuccin Macchiato theme
-    }
-}
-
-window-rule {
-    match is-urgent=true
-    shadow {
-        on
-        color "#f5a97f" // Catppuccin peach
-    }
-}
-
-window-rule {
-    match app-id="com.mitchellh.ghostty"
-    default-column-width { proportion 0.25; }
-}
-
-window-rule {
-    match app-id="1Password"
-    default-column-width { proportion 0.33; }
-    block-out-from "screen-capture"
-}
 
 layer-rule {
     match namespace="rofi"
 
     shadow {
         on
-        // off
+
         softness 40
         spread 5
-        offset x=0 y=5
         draw-behind-window true
         color "#00000064"
         // inactive-color "#00000064"
     }
 
-    place-within-backdrop true
     baba-is-float true
 }
+
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+window-rule {
+    match app-id="com.mitchellh.ghostty"
+    default-column-width { proportion 0.5; }
+}
+
+window-rule {
+    match app-id="1password"
+    default-column-width { proportion 0.33; }
+    block-out-from "screen-capture"
+}
+
 
 binds { 
     Mod+E hotkey-overlay-title="Launch file manager" { spawn "appctl" "exec-known" "fileManager"; }
@@ -154,7 +134,6 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
     Mod+Space hotkey-overlay-title="Show application menu" { spawn "appctl" "exec" "appctl" "show-menu"; }
     Mod+Tab repeat=false { toggle-overview; }
-    //Mod+Tab hotkey-overlay-title="Show open windows" { spawn "appctl" "exec" "appctl" "show-windows"; }
 
     XF86AudioRaiseVolume  { spawn "audioctl" "output" "volume" "raise"; }
     XF86AudioLowerVolume  { spawn "audioctl" "output" "volume" "lower"; }
@@ -209,15 +188,15 @@ binds {
     Mod+BracketLeft  { consume-or-expel-window-left; }
     Mod+BracketRight { consume-or-expel-window-right; }
 
-    Print { screenshot; }
-    Ctrl+Print { screenshot-screen; }
-    Alt+Print { screenshot-window; }
+    Print       { screenshot; }
+    Ctrl+Print  { screenshot-screen; }
+    Alt+Print   { screenshot-window; }
 
     Mod+Shift+Ctrl+E { quit; }
-    // Mod+Shift+P { power-off-monitors; }
 
-    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
-    Mod+WheelScrollUp   cooldown-ms=150 { focus-workspace-up; }
+    Mod+WheelScrollDown                 { focus-workspace-down; }
+    Mod+WheelScrollUp                   { focus-workspace-up; }
     Mod+WheelScrollRight                { focus-column-right; }
     Mod+WheelScrollLeft                 { focus-column-left; }
 }
+
