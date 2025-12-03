@@ -132,10 +132,10 @@ in
           };
 
           gestures = {
-            workspace_swipe = 1;
-            # gesture = [
-            #   "3, horizontal, workspace"
-            # ];
+            #workspace_swipe = 1;
+            gesture = [
+              "3, horizontal, workspace"
+            ];
           };
 
           layerrule = [
@@ -161,7 +161,7 @@ in
             "opacity .95 .85,class:^(steam)$"
             "noscreenshare,class:^(1password)$"
             "float,title:^(Quick Access — 1Password)$"
-            "dimaround,title:^(Quick Access — 1Password)$, floating"
+            #"dimaround,title:^(Quick Access — 1Password)$, floating"
             "center,title:^(Quick Access — 1Password)$"
             "stayfocused,title:^(Quick Access — 1Password)$"
             "workspace special:dropdown,class:^(com.mitchellh.ghostty)$"
