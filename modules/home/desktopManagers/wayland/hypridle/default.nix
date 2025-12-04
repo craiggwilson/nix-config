@@ -22,7 +22,7 @@ in
         general = {
           lock_cmd = "pidof hyprlock || hyprlock";
           before_sleep_cmd = "loginctl lock-session";
-          after_sleep_cmd = "hyprctl dispatch dpms on";
+          after_sleep_cmd = "screenctl power on";
         };
 
         listener = [
@@ -33,8 +33,8 @@ in
           }
           {
             timeout = 240;
-            on-timeout = "if pgrep -x hyprlock; then hyprctl dispatch dpms off; fi";
-            on-resume = "hyprctl dispatch dpms on";
+            on-timeout = "if pgrep -x hyprlock; then screenctl power off; fi";
+            on-resume = "screenctl power on";
           }
           {
             timeout = 300;
@@ -42,8 +42,8 @@ in
           }
           {
             timeout = 360;
-            on-timeout = "hyprctl dispatch dpms off";
-            on-resume = "hyprctl dispatch dpms on";
+            on-timeout = "screenctl power off";
+            on-resume = "screenctl power on";
           }
           {
             timeout = 1800;

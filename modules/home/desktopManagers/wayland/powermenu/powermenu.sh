@@ -59,8 +59,7 @@ run_cmd() {
 		elif [[ $1 == '--suspend' ]]; then
 			systemctl suspend
 		elif [[ $1 == '--logout' ]]; then
-			uwsm stop
-            #loginctl terminate-session $XDG_SESSION_ID
+            loginctl terminate-session $XDG_SESSION_ID
 		fi
 	else
 		exit 0

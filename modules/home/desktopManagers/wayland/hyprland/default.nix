@@ -32,6 +32,11 @@ in
   config = lib.mkIf cfg.enable {
     systemd.user.startServices = true;
 
+    hdwlinux.desktopManagers.wayland.screen.monitors = {
+      on = ''if [ "$XDG_CURRENT_DESKTOP" = "Hyprland" ]; then ${pkgs.hyprland}/bin/hyprctl dispatch dpms on; fi'';
+      off = ''if [ "$XDG_CURRENT_DESKTOP" = "Hyprland" ]; then ${pkgs.hyprland}/bin/hyprctl dispatch dpms off; fi'';
+    };
+
     wayland.windowManager.hyprland = {
       enable = true;
       xwayland.enable = true;

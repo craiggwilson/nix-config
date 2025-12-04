@@ -20,6 +20,15 @@ in
 {
   options.hdwlinux.desktopManagers.wayland.screen = {
     enable = lib.hdwlinux.mkEnableOption "screen" config.hdwlinux.desktopManagers.wayland.enable;
+
+    monitors = {
+      off = lib.mkOption {
+        type = lib.types.separatedString ";";
+      };
+      on = lib.mkOption {
+        type = lib.types.separatedString ";";
+      };
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -50,6 +59,10 @@ in
               builtins.replaceStrings [ "screen-capture-menu.rasi" ] [ "${./screen-capture-menu.rasi}" ]
                 (builtins.readFile ./screen-capture-menu.sh);
             window = "hyprshot -m window --clipboard-only";
+          };
+          power = {
+            off = cfg.monitors.off;
+            on = cfg.monitors.on;
           };
           record = {
             desktop = recordCommand "slurp -o";

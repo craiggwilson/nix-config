@@ -2,7 +2,7 @@
   config,
   flake,
   lib,
-  inputs,
+  pkgs,
   ...
 }:
 let
@@ -16,6 +16,11 @@ in
 
   config = lib.mkIf cfg.enable {
     systemd.user.startServices = true;
+
+    hdwlinux.desktopManagers.wayland.screen.monitors = {
+      on = ''if [ "$XDG_CURRENT_DESKTOP" = "niri" ]; then ${pkgs.niri}/bin/niri msg action power-on-monitors; fi'';
+      off = ''if [ "$XDG_CURRENT_DESKTOP" = "niri" ]; then ${pkgs.niri}/bin/niri msg action power-off-monitors; fi'';
+    };
 
     home.sessionVariables.NIRI_DISABLE_SYSTEM_MANAGER_NOTIFY = "1";
 
