@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.services.system76-battery = {
-    enable = lib.hdwlinux.mkEnableOption "system76-battery" config.hardware.system76.power-daemon.enable;
+    enable = lib.hdwlinux.mkEnableOption "system76-battery" config.hdwlinux.hardware.models.system76-serval-ws.enable;
     profile = lib.mkOption {
       description = "The profile to use when setting the charge-thresholds on boot.";
       type = lib.types.enum [
