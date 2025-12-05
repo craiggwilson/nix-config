@@ -14,6 +14,8 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    hdwlinux.desktopManagers.wayland.enable = lib.mkDefault true;
+
     programs.hyprland = {
       enable = true;
       xwayland.enable = true;

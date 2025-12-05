@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 
@@ -32,6 +33,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    xdg.configFile."rofi/screen-capture-menu.rasi".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/screen/screen-capture-menu.rasi";
+
+    xdg.configFile."rofi/screen-record-menu.rasi".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/screen/screen-record-menu.rasi";
+
     home.packages = [
       (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "screenctl";
@@ -55,9 +62,7 @@ in
           capture = {
             desktop = "hyprshot -m output --clipboard-only";
             region = "hyprshot -m region --clipboard-only";
-            show-menu =
-              builtins.replaceStrings [ "screen-capture-menu.rasi" ] [ "${./screen-capture-menu.rasi}" ]
-                (builtins.readFile ./screen-capture-menu.sh);
+            show-menu = builtins.readFile ./screen-capture-menu.sh;
             window = "hyprshot -m window --clipboard-only";
           };
           power = {
@@ -68,9 +73,7 @@ in
             desktop = recordCommand "slurp -o";
             is-recording = "pgrep -x \"wl-screenrec\" > /dev/null";
             region = recordCommand "slurp";
-            show-menu =
-              builtins.replaceStrings [ "screen-record-menu.rasi" ] [ "${./screen-record-menu.rasi}" ]
-                (builtins.readFile ./screen-record-menu.sh);
+            show-menu = builtins.readFile ./screen-record-menu.sh;
             stop = "pkill --signal SIGINT \"wl-screenrec\"";
             watch = ''
               while true; do 

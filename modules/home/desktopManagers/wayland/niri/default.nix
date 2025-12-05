@@ -34,7 +34,7 @@ in
           background-color "${colors.base00}"
 
           focus-ring {
-              active-gradient from="${colors.base0E}" to="${colors.base0D}" angle=60
+              active-color "${colors.base0E}"
               inactive-color "${colors.base03}"
               urgent-color "${colors.base06}"
           }

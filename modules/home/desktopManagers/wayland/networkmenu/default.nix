@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 
@@ -14,12 +15,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+
+    xdg.configFile."rofi/networkmenu.rasi".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/networkmenu/networkmenu.rasi";
+
     home.packages = [
-      (pkgs.writeShellScriptBin "networkmenu" (
-        builtins.replaceStrings [ "networkmenu.rasi" ] [ "${./networkmenu.rasi}" ] (
-          builtins.readFile ./networkmenu.sh
-        )
-      ))
+      (pkgs.writeShellScriptBin "networkmenu" (builtins.readFile ./networkmenu.sh))
     ];
   };
 }

@@ -36,9 +36,10 @@ input {
 }
 
 layout {
+
     focus-ring {
         on
-        width 2
+        width 3
     }
 
     shadow {
@@ -55,6 +56,8 @@ layout {
         gap 8
         place-within-column
         hide-when-single-tab
+
+        position "top"
     }
 
     always-center-single-column
@@ -78,6 +81,10 @@ layout {
 
 prefer-no-csd
 
+recent-windows {
+    off
+}
+
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 layer-rule {
@@ -96,6 +103,11 @@ layer-rule {
     baba-is-float true
 }
 
+layer-rule {
+    match namespace="waybar"
+    place-within-backdrop true
+}
+
 window-rule {
     geometry-corner-radius 10
     clip-to-geometry true
@@ -112,18 +124,16 @@ window-rule {
     block-out-from "screen-capture"
 }
 
-
 binds { 
     Mod+E hotkey-overlay-title="Launch file manager" { spawn "appctl" "exec-known" "fileManager"; }
-    Mod+F { maximize-column; }
-    Mod+Shift+F { toggle-windowed-fullscreen; }
+    Mod+F { fullscreen-window; }
+    Mod+Shift+F { toggle-window-floating; }
     Mod+L hotkey-overlay-title="Toggle password manager" { spawn "appctl" "exec-known" "passwordManager" "toggle"; }
     Mod+Shift+L hotkey-overlay-title="Lock password manager" { spawn "appctl" "exec-known" "passwordManager" "lock"; }
     Mod+M { center-column; }
     Mod+Q hotkey-overlay-title="Close window" { close-window; }
     Mod+R { switch-preset-column-width; }
     Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "appctl" "exec-known" "terminal"; }
-    Mod+Shift+T { toggle-window-floating; }
     Mod+V hotkey-overlay-title="Show clipboard menu" { spawn "appctl" "exec" "clipboardctl" "show-menu"; }
     Mod+W { toggle-column-tabbed-display; }
     Mod+X hotkey-overlay-title="Open power menu" { spawn "appctl" "exec" "powermenu"; }
@@ -141,15 +151,16 @@ binds {
     XF86MonBrightnessUp   { spawn "screenctl" "backlight" "raise"; }
     XF86MonBrightnessDown { spawn "screenctl" "backlight" "lower"; }
 
-    Mod+Left  { focus-column-left; }
-    Mod+Down  { focus-window-down; }
-    Mod+Up    { focus-window-up; }
-    Mod+Right { focus-column-right; }
+    Mod+Left  { focus-column-or-monitor-left; }
+    Mod+Down  { focus-window-or-monitor-down; }
+    Mod+Up    { focus-window-or-monitor-up; }
+    Mod+Right { focus-column-or-monitor-right; }
+    Mod+Delete { center-column;}
 
-    Mod+Shift+Left  { move-column-left; }
+    Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
     Mod+Shift+Down  { move-window-down; }
     Mod+Shift+Up    { move-window-up; }
-    Mod+Shift+Right { move-column-right; }
+    Mod+Shift+Right { move-column-right-or-to-monitor-right; }
 
     Mod+Home { focus-column-first; }
     Mod+End  { focus-column-last; }
@@ -185,8 +196,8 @@ binds {
     Mod+Shift+9 { move-column-to-workspace 9; }
     Mod+Shift+0 { move-column-to-workspace 10; }
 
-    Mod+BracketLeft  { consume-or-expel-window-left; }
-    Mod+BracketRight { consume-or-expel-window-right; }
+    Mod+Shift+BracketLeft  { consume-or-expel-window-left; }
+    Mod+Shift+BracketRight { consume-or-expel-window-right; }
 
     Print       { screenshot; }
     Ctrl+Print  { screenshot-screen; }

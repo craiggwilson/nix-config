@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 
@@ -30,7 +31,7 @@ in
         "display-window" = "";
         "drun-display-format" = "{name}";
         "window-format" = "{w} · {c} · {t}";
-        "modes" = "window,drun,hyprland-keybinds:${./scripts/hyprland-keybinds.sh}";
+        "modes" = "window,drun";
       };
     };
 
@@ -62,6 +63,7 @@ in
       }
     '';
 
-    xdg.configFile."rofi/theme.rasi".source = ./theme.rasi;
+    xdg.configFile."rofi/theme.rasi".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/rofi/theme.rasi";
   };
 }

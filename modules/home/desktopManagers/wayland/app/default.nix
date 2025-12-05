@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 
@@ -29,6 +30,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+    xdg.configFile."rofi/app-menu.rasi".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/app/app-menu.rasi";
+
     home.packages = [
       (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
         name = "appctl";
@@ -43,7 +47,7 @@ in
           show-menu = ''
             pkill rofi || rofi \
               -show drun \
-              -theme ${./app-menu.rasi} \
+              -theme app-menu.rasi \
               -run-command 'appctl exec {cmd}'
           '';
           show-windows = "pkill rofi || rofi -show window";

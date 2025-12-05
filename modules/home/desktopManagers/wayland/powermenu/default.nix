@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  flake,
   ...
 }:
 
@@ -14,12 +15,12 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+
+    xdg.configFile."rofi/powermenu.rasi".source =
+      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/powermenu/powermenu.rasi";
+
     home.packages = [
-      (pkgs.writeShellScriptBin "powermenu" (
-        builtins.replaceStrings [ "powermenu.rasi" ] [ "${./powermenu.rasi}" ] (
-          builtins.readFile ./powermenu.sh
-        )
-      ))
+      (pkgs.writeShellScriptBin "powermenu" (builtins.readFile ./powermenu.sh))
     ];
   };
 }
