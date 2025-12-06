@@ -37,7 +37,6 @@ in
           "performable:ctrl+c=copy_to_clipboard"
           "ctrl+shift+left=csi:1;6D"
           "ctrl+shift+right=csi:1;6C"
-          "global:super+grave_accent=toggle_quick_terminal"
         ];
       };
 

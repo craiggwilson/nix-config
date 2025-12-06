@@ -52,7 +52,8 @@ in
           reload_style_on_change = true;
           modules-left = [
             "idle_inhibitor"
-            "ext/workspaces"
+            "hyprland/workspaces"
+            "niri/window"
             "mpris"
           ];
           modules-center = [
@@ -284,6 +285,14 @@ in
             restart-interval = 1;
           };
 
+          systemd-failed-units = {
+            hide-on-ok = false;
+            format = "✗ {nr_failed}";
+            format-ok = "✓";
+            system = true;
+            user = false;
+          };
+
           temperature = {
             format = " {temperatureF}°F";
           };
@@ -291,6 +300,10 @@ in
           tray = {
             icon-size = 13;
             spacing = 13;
+          };
+
+          "ext/workspaces" = {
+            active-only = false;
           };
         }
       ];
