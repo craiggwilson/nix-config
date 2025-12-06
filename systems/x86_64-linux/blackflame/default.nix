@@ -12,12 +12,7 @@
   boot.kernelPackages = pkgs.linuxPackages_6_17;
 
   hdwlinux = {
-    programs.powertop = {
-      autotune = false;
-      postStart = [
-        ''${lib.getExe' config.systemd.package "udevadm"} trigger -c bind -s usb -a idVendor=045e -a idProduct=0773''
-      ];
-    };
+    #programs.powertop.autotune = false;
 
     services.system76-battery = {
       profile = "max_lifespan";

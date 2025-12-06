@@ -15,12 +15,7 @@ in
     autotune = lib.mkOption {
       description = "Whether to run powertop --auto-tune at startup.";
       type = lib.types.bool;
-      default = false;
-    };
-    postStart = lib.mkOption {
-      description = "A list of bash commands to run after powertop has been autotuned.";
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
+      default = true;
     };
   };
 
@@ -29,7 +24,14 @@ in
 
     powerManagement.powertop = {
       enable = cfg.autotune;
-      postStart = lib.concatLines cfg.postStart;
+      postStart = # Turn off auto suspend for USB HID devices.
+        ''
+          HIDDEVICES=$(ls /sys/bus/usb/drivers/usbhid | grep -oE '^[0-9]+-[0-9\.]+' | sort -u)
+          for i in $HIDDEVICES; do
+            echo -n "Enabling " | cat - /sys/bus/usb/devices/$i/product
+            echo 'on' > /sys/bus/usb/devices/$i/power/control
+          done
+        '';
     };
   };
 }
