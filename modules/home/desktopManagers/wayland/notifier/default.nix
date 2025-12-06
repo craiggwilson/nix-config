@@ -28,7 +28,7 @@ in
           dismiss-all = "makoctl dismiss --all";
           remove-tag = "makoctl mode -r \"$1\"";
           toggle-tag = "makoctl mode -t \"$1\"";
-          watch = ./notifyctl-watch.sh;
+          watch = builtins.readFile ./notifyctl-watch.sh;
         };
       })
     ];
