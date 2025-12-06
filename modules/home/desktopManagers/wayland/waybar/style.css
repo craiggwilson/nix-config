@@ -60,8 +60,8 @@ tooltip {
 }
 
 #backlight:hover {
-    border-top-color: @base09;
-    color: @base09;
+    border-top-color: @base0F;
+    color: @base0F;
 }
 
 #cava:hover {
@@ -75,8 +75,8 @@ tooltip {
 }
 
 #idle_inhibitor.activated, #idle_inhibitor:hover {
-    border-top-color: @base08;
-    color: @base08;
+    border-top-color: @base09;
+    color: @base09;
 }
 
 #mpris:hover {
@@ -102,6 +102,12 @@ tooltip {
 #custom-power:hover {
     border-top-color: @base04;
     color: @base04;
+}
+
+#privacy {
+    color: @base08;
+    border-top: 3px solid @base08;
+    padding: 0px 12px;
 }
 
 #pulseaudio:hover {
@@ -131,11 +137,6 @@ tooltip {
 
 #tray {
     margin: 0px 20px;
-}
-
-#tray:hover {
-    border-top-color: @base08;
-    color: @base08;
 }
 
 #workspaces button:hover {

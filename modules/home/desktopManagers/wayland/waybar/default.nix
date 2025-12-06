@@ -53,11 +53,11 @@ in
           modules-left = [
             "idle_inhibitor"
             "hyprland/workspaces"
-            "niri/window"
-            "mpris"
           ];
           modules-center = [
+            "systemd-failed-units"
             "clock"
+            "privacy"
           ];
           modules-right = [
             "tray"
@@ -200,17 +200,6 @@ in
             ];
           };
 
-          mpris = {
-            format = "{status_icon} {artist}: {title}";
-            tooltip-format = "{album}";
-            status-icons = {
-              playing = "🎵";
-              paused = "⏸";
-            };
-            artist-len = 20;
-            title-len = 50;
-          };
-
           network = {
             format-wifi = "{icon} {essid}";
             format-icons = [
@@ -238,6 +227,20 @@ in
             on-click = "notifyctl toggle-tag do-not-disturb";
             on-click-right = "notifyctl dismiss-all";
             restart-interval = 1;
+          };
+
+          privacy = {
+            icon-size = 12;
+            ignore = [
+              {
+                type = "audio-in";
+                name = "cava";
+              }
+              {
+                type = "screenshare";
+                name = "obs";
+              }
+            ];
           };
 
           pulseaudio = {
@@ -286,11 +289,11 @@ in
           };
 
           systemd-failed-units = {
-            hide-on-ok = false;
+            hide-on-ok = true;
             format = "✗ {nr_failed}";
             format-ok = "✓";
             system = true;
-            user = false;
+            user = true;
           };
 
           temperature = {
