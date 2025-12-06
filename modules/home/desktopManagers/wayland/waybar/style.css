@@ -110,16 +110,6 @@ tooltip {
     padding: 0px 12px;
 }
 
-#pulseaudio:hover {
-    border-top-color: @base0D;
-    color: @base0D;
-}
-
-#pulseaudio.microphone:hover {
-    border-top-color: @base0E;
-    color: @base0E;
-}
-
 #custom-recording {
     border-top-color: @base08;
     color: @base08;
@@ -137,6 +127,16 @@ tooltip {
 
 #tray {
     margin: 0px 20px;
+}
+
+#wireplumber:hover {
+    border-top-color: @base0D;
+    color: @base0D;
+}
+
+#wireplumber.microphone:hover {
+    border-top-color: @base0E;
+    color: @base0E;
 }
 
 #workspaces button:hover {

@@ -85,8 +85,8 @@ in
             orientation = "inherit";
             modules = [
               "cava"
-              "pulseaudio"
-              "pulseaudio#microphone"
+              "wireplumber"
+              "wireplumber#microphone"
             ];
           };
 
@@ -243,43 +243,6 @@ in
             ];
           };
 
-          pulseaudio = {
-            format = "{icon} {volume}%";
-            tooltip = false;
-            format-muted = " Muted";
-            on-click = "audioctl output mute toggle";
-            on-click-middle = "appctl exec easyeffects";
-            on-click-right = "appctl exec audioctl output show-menu";
-            on-scroll-up = "audioctl output volume raise";
-            on-scroll-down = "audioctl output volume lower";
-            scroll-step = 5;
-            format-icons = {
-              headphone = "";
-              hands-free = "";
-              headset = "";
-              phone = "";
-              portable = "";
-              car = "";
-              default = [
-                ""
-                ""
-                ""
-              ];
-            };
-          };
-
-          "pulseaudio#microphone" = {
-            format = "{format_source}";
-            format-source = " {volume}%";
-            format-source-muted = " Muted";
-            on-click = "audioctl input mute toggle";
-            on-click-middle = "appctl exec easyeffects";
-            on-click-right = "appctl exec audioctl input show-menu";
-            on-scroll-up = "audioctl input volume raise";
-            on-scroll-down = "audioctl input volume lower";
-            scroll-step = 5;
-          };
-
           "custom/recording" = {
             exec = "screenctl record watch";
             hide-empty-text = true;
@@ -303,6 +266,38 @@ in
           tray = {
             icon-size = 13;
             spacing = 13;
+          };
+
+          wireplumber = {
+            tooltip = false;
+            format = "{icon} {volume}%";
+            format-muted = " Muted";
+            on-click = "audioctl output mute toggle";
+            on-click-middle = "appctl exec easyeffects";
+            on-click-right = "appctl exec audioctl output show-menu";
+            on-scroll-up = "audioctl output volume raise";
+            on-scroll-down = "audioctl output volume lower";
+            reverse-scrolling = true;
+            scroll-step = 5;
+            format-icons = [
+              ""
+              ""
+              ""
+            ];
+          };
+
+          "wireplumber#microphone" = {
+            node-type = "Audio/Source";
+            tooltip = false;
+            format = " {volume}%";
+            format-muted = " Muted";
+            on-click = "audioctl input mute toggle";
+            on-click-middle = "appctl exec easyeffects";
+            on-click-right = "appctl exec audioctl input show-menu";
+            on-scroll-up = "audioctl input volume raise";
+            on-scroll-down = "audioctl input volume lower";
+            reverse-scrolling = true;
+            scroll-step = 5;
           };
 
           "ext/workspaces" = {
