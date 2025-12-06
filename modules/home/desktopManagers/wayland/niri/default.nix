@@ -61,18 +61,31 @@ in
       window-rule {
           match is-window-cast-target=true
           focus-ring {
-              active-color "${colors.base08}80"
+              active-color "${colors.base0A}80"
           }
           shadow {
-              "on"
-              color "${colors.base08}80"
+              on
+              
+              color "${colors.base0A}80"
           }
       }
+
       window-rule {
-          match is-urgent=true
+          match is-floating=true
+
           shadow {
-              "on"
-              color "${colors.base06}"
+              on
+
+              softness 40
+              draw-behind-window true
+              spread 25
+              color "#7d0d2d70"
+          }
+
+          opacity 0.95
+
+          focus-ring {
+              active-color "${colors.base08}"
           }
       }
     '';

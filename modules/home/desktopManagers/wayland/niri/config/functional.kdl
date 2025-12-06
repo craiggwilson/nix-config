@@ -36,17 +36,9 @@ input {
 }
 
 layout {
-
     focus-ring {
         on
         width 3
-    }
-
-    shadow {
-        offset x=0 y=0
-        softness 10
-
-        color "#1e1e2e99"
     }
 
     tab-indicator {
@@ -56,7 +48,6 @@ layout {
         gap 8
         place-within-column
         hide-when-single-tab
-
         position "top"
     }
 
@@ -66,7 +57,7 @@ layout {
 
     default-column-display "normal"
 
-    default-column-width { proportion 0.5; }
+    default-column-width { proportion 0.65; }
 
     gaps 10
 
@@ -94,10 +85,9 @@ layer-rule {
         on
 
         softness 40
-        spread 5
+        spread 25
         draw-behind-window true
-        color "#00000064"
-        // inactive-color "#00000064"
+        color "#00000080"
     }
 
     baba-is-float true
@@ -130,6 +120,10 @@ window-rule {
     match app-id=r#"^scratch*"#
     open-on-workspace "scratch"
     open-floating true
+
+    default-column-width { proportion 0.95; }
+    default-window-height { proportion 0.95; }
+    default-column-display "tabbed"
 }
 
 spawn-at-startup "appctl" "exec-known" "terminal" "--class=scratch.terminal"
@@ -166,7 +160,7 @@ binds {
     Mod+Down  { focus-window-or-monitor-down; }
     Mod+Up    { focus-window-or-monitor-up; }
     Mod+Right { focus-column-or-monitor-right; }
-    Mod+Delete { center-column;}
+    Mod+Return { center-column; }
 
     Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
     Mod+Shift+Down  { move-window-down; }
