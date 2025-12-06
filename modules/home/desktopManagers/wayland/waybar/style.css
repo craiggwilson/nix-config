@@ -11,25 +11,19 @@
 }
 
 window {
-    background-color: @base01;
+    background-color: alpha(@base01, .75);
     border: 0px solid @base07;
-    border-radius: 0px 0px 10px 10px;
+    border-radius: 0px 0px 15px 15px;
     color: @base07;
 }
 
-button {
-    padding: 0px 12px;
-    padding-top: 3px;
+button, label.module, #tray {
+    padding: 3px 12px 0px 12px;
 }
 
 button:hover, button.active, button.focused, button.urgent {
     padding-top: 0px;
     border-top: 3px solid transparent;
-}
-
-label.module {
-    background-color: transparent;
-    padding: 3px 12px 0px 12px;
 }
 
 label.module:hover {
@@ -38,7 +32,7 @@ label.module:hover {
 }
 
 menu {
-    border-radius: 10px;
+    border-radius: 15px;
     padding: 10px;
 }
 
@@ -53,7 +47,7 @@ menu menuitem:hover {
 
 tooltip {
     background-color: @base01;
-    border-radius: 10px;
+    border-radius: 15px;
     border-width: 2px;
     border-style: solid;
     border-color: @base01;
@@ -69,9 +63,17 @@ tooltip {
     color: @base0D;
 }
 
+#clock {
+    border-radius: 0 0 15px 15px;
+}
+
 #clock:hover {
     border-top-color: @base07;
     color: @base07;
+}
+
+#idle_inhibitor {
+    border-radius: 0 0 15px 15px;
 }
 
 #idle_inhibitor.activated, #idle_inhibitor:hover {
@@ -92,6 +94,10 @@ tooltip {
 #network:hover .module {
     border-top-width: 0px;
     padding-top: 0px;
+}
+
+#custom-notifications {
+    border-radius: 0 0 15px 0;
 }
 
 #custom-notifications.some, #custom-notifications:hover {
@@ -126,7 +132,7 @@ tooltip {
 }
 
 #tray {
-    margin: 0px 20px;
+  border-radius: 0 0 0 15px;   
 }
 
 #wireplumber:hover {

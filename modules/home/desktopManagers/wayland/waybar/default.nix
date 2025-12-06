@@ -43,7 +43,7 @@ in
       settings = [
         {
           layer = "top";
-          margin = "4 8";
+          margin = "0 0";
           position = "top";
           exclusive = true;
           passthrough = false;
