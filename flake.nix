@@ -38,6 +38,11 @@
     # musnix optimizes audio for realtime/production.
     musnix.url = "github:musnix/musnix";
 
+    niri-scratchpad = {
+      url = "github:gvolpe/niri-scratchpad";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # nix-flatpak provides declaritive flatpak installation.
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.1.0";
 

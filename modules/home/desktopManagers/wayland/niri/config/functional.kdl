@@ -124,6 +124,16 @@ window-rule {
     block-out-from "screen-capture"
 }
 
+workspace "scratch"
+
+window-rule {
+    match app-id="scratch.terminal"
+    open-on-workspace "scratch"
+    open-floating true
+}
+
+//spawn-at-startup "appctl" "exec-known" "terminal" "--class=scratch.terminal"
+
 binds { 
     Mod+E hotkey-overlay-title="Launch file manager" { spawn "appctl" "exec-known" "fileManager"; }
     Mod+F { fullscreen-window; }
@@ -144,6 +154,7 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
     Mod+Space hotkey-overlay-title="Show application menu" { spawn "appctl" "exec" "appctl" "show-menu"; }
     Mod+Tab repeat=false { toggle-overview; }
+    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn-sh "nscratch -id scratch.terminal -m -s \"appctl exec-known terminal --class=scratch.terminal\""; }
 
     XF86AudioRaiseVolume  { spawn "audioctl" "output" "volume" "raise"; }
     XF86AudioLowerVolume  { spawn "audioctl" "output" "volume" "lower"; }

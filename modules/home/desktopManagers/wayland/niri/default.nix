@@ -3,6 +3,7 @@
   flake,
   lib,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -22,6 +23,9 @@ in
       off = ''if [ "$XDG_CURRENT_DESKTOP" = "niri" ]; then ${pkgs.niri}/bin/niri msg action power-off-monitors; fi'';
     };
 
+    home.packages = [
+      inputs.niri-scratchpad.packages.${pkgs.system}.niri-scratchpad
+    ];
     home.sessionVariables.NIRI_DISABLE_SYSTEM_MANAGER_NOTIFY = "1";
 
     xdg.configFile."niri/config.kdl".text = ''
