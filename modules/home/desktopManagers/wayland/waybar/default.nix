@@ -101,6 +101,7 @@ in
               "cpu"
               "memory"
               "temperature"
+              "power-profiles-daemon"
             ];
           };
 
@@ -227,6 +228,17 @@ in
             on-click = "notifyctl toggle-tag do-not-disturb";
             on-click-right = "notifyctl dismiss-all";
             restart-interval = 1;
+          };
+
+          power-profiles-daemon = {
+            tooltip-format = "{profile}";
+            tooltip = true;
+            format-icons = {
+              default = "";
+              performance = "";
+              balanced = "";
+              power-saver = "";
+            };
           };
 
           privacy = {
