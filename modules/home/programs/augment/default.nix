@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  pkgs,
   ...
 }:
 let
@@ -22,6 +23,9 @@ in
   };
 
   config = lib.mkIf cfg.enable {
+
+    home.packages = [ pkgs.hdwlinux.auggie ];
+
     xdg.configFile."augment/mcp-servers.json".text = builtins.toJSON {
       mcpServers = augmentMcpServers;
     };
