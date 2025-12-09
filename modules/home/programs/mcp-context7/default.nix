@@ -21,12 +21,6 @@ in
     enable = config.lib.hdwlinux.mkEnableOption "mcp-context7" [
       "programming"
     ];
-
-    apiKey = lib.mkOption {
-      description = "Context7 API key for higher rate limits and private repositories";
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-    };
   };
 
   config = lib.mkIf cfg.enable {
