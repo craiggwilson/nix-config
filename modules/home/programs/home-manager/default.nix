@@ -4,10 +4,10 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.home-manager;
+  cfg = config.hdwlinux.programs.home-manager;
 in
 {
-  options.hdwlinux.home-manager = {
+  options.hdwlinux.programs.home-manager = {
     enable = lib.hdwlinux.mkEnableOption "home-manager" true;
   };
 
