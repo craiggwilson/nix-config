@@ -16,7 +16,7 @@ in
     services.openssh = {
       enable = true;
 
-      settings.X11Forwarding = true;
+      settings.X11Forwarding = false;
 
       # Require public key authentication
       settings.PasswordAuthentication = false;
