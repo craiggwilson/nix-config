@@ -91,11 +91,6 @@
 
       channels-config = {
         allowUnfree = true;
-
-        permittedInsecurePackages = [
-          # Required for proprietary applications that bundle older versions
-          "electron-25.9.0" # Used by various Electron-based apps
-        ];
       };
 
       formatter.x86_64-linux = inputs.nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
