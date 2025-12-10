@@ -6,14 +6,14 @@
 }:
 
 let
-  cfg = config.hdwlinux.programs.claude-code;
+  cfg = config.hdwlinux.programs.cava;
 in
 {
-  options.hdwlinux.programs.claude-code = {
-    enable = config.lib.hdwlinux.mkEnableOption "claude-code" "work";
+  options.hdwlinux.programs.cava = {
+    enable = config.lib.hdwlinux.mkEnableOption "cava" "audio";
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = [ pkgs.claude-code ];
+    home.packages = [ pkgs.cava ];
   };
 }

@@ -135,9 +135,9 @@
     },
     "hdwlinux-private": {
       "locked": {
-        "lastModified": 1765330383,
-        "narHash": "sha256-+O/SqE8wTB8rMk7BRZu8/9ZIk+iVkzLWbBDB+H/tH2k=",
-        "rev": "1f767d427ecc4a7ec800724ec23285d23b0e2399",
+        "lastModified": 1765396895,
+        "narHash": "sha256-WY1nhgBzwEfJ4DBvitlMHMdZNXV+KuDCkD3OiEEOMRM=",
+        "rev": "e923cc4e6d24089797deb0d6e92c27893d5098ff",
         "revCount": 85,
         "type": "git",
         "url": "file:///home/craig/Projects/github.com/craiggwilson/nix-private"

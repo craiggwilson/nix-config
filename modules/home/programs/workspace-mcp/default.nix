@@ -5,12 +5,12 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.programs.mcp-google-workspace;
+  cfg = config.hdwlinux.programs.workspace-mcp;
 
   # Create a wrapper script that runs the Google Workspace MCP server with configuration
-  mcpPackage = pkgs.writeShellScriptBin "mcp-google-workspace" ''
-    GOOGLE_OAUTH_CLIENT_ID="$(cat ${config.hdwlinux.security.secrets.entries.mcpGoogleWorkspaceClientID.path})" \
-    GOOGLE_OAUTH_CLIENT_SECRET="$(cat ${config.hdwlinux.security.secrets.entries.mcpGoogleWorkspaceClientSecret.path})" \
+  mcpPackage = pkgs.writeShellScriptBin "workspace-mcp" ''
+    GOOGLE_OAUTH_CLIENT_ID="$(cat ${config.hdwlinux.security.secrets.entries.workspaceMcpClientID.path})" \
+    GOOGLE_OAUTH_CLIENT_SECRET="$(cat ${config.hdwlinux.security.secrets.entries.workspaceMcpClientSecret.path})" \
     USER_GOOGLE_EMAIL="${cfg.userEmail}" \
     ${pkgs.hdwlinux.workspace-mcp}/bin/workspace-mcp \
       --single-user \
@@ -20,8 +20,8 @@ let
   '';
 in
 {
-  options.hdwlinux.programs.mcp-google-workspace = {
-    enable = config.lib.hdwlinux.mkEnableOption "mcp-google-workspace" [
+  options.hdwlinux.programs.workspace-mcp = {
+    enable = config.lib.hdwlinux.mkEnableOption "workspace-mcp" [
       "programming"
       "work"
     ];
@@ -73,7 +73,7 @@ in
 
     hdwlinux.mcpServers.google-workspace = {
       type = "stdio";
-      command = "mcp-google-workspace";
+      command = "workspace-mcp";
       args = [ ];
     };
   };

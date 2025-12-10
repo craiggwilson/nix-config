@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.programs.mcp-sequential-thinking;
+  cfg = config.hdwlinux.programs.sequential-thinking;
 
   # Create a wrapper script that runs the sequential-thinking MCP server with API key support
-  mcpPackage = pkgs.writeShellScriptBin "mcp-sequential-thinking" ''
+  mcpPackage = pkgs.writeShellScriptBin "sequential-thinking" ''
     # Ensure Node.js and npm are available in PATH
     export PATH="${pkgs.nodejs}/bin:${pkgs.nodePackages.npm}/bin:$PATH"
 
@@ -17,8 +17,8 @@ let
   '';
 in
 {
-  options.hdwlinux.programs.mcp-sequential-thinking = {
-    enable = config.lib.hdwlinux.mkEnableOption "mcp-sequential-thinking" [
+  options.hdwlinux.programs.sequential-thinking = {
+    enable = config.lib.hdwlinux.mkEnableOption "sequential-thinking" [
       "programming"
     ];
   };
@@ -29,7 +29,7 @@ in
 
     hdwlinux.mcpServers.sequential-thinking = {
       type = "stdio";
-      command = "mcp-sequential-thinking";
+      command = "sequential-thinking";
       args = [ ];
     };
   };

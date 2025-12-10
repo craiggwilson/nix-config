@@ -5,10 +5,10 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.programs.mcp-context7;
+  cfg = config.hdwlinux.programs.context7;
 
   # Create a wrapper script that runs the context7 MCP server with API key support
-  mcpPackage = pkgs.writeShellScriptBin "mcp-context7" ''
+  mcpPackage = pkgs.writeShellScriptBin "context7" ''
     # Ensure Node.js and npm are available in PATH
     export PATH="${pkgs.nodejs}/bin:${pkgs.nodePackages.npm}/bin:$PATH"
 
@@ -17,8 +17,8 @@ let
   '';
 in
 {
-  options.hdwlinux.programs.mcp-context7 = {
-    enable = config.lib.hdwlinux.mkEnableOption "mcp-context7" [
+  options.hdwlinux.programs.context7 = {
+    enable = config.lib.hdwlinux.mkEnableOption "context7" [
       "programming"
     ];
   };
@@ -29,7 +29,7 @@ in
 
     hdwlinux.mcpServers.context7 = {
       type = "stdio";
-      command = "mcp-context7";
+      command = "context7";
       args = [ ];
     };
   };

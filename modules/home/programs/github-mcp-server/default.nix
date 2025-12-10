@@ -5,17 +5,17 @@
   ...
 }:
 let
-  cfg = config.hdwlinux.programs.mcp-github;
+  cfg = config.hdwlinux.programs.github-mcp-server;
 
   # Create a wrapper script that runs the github MCP server with API key support
-  mcpPackage = pkgs.writeShellScriptBin "mcp-github" ''
+  mcpPackage = pkgs.writeShellScriptBin "github-mcp-server" ''
     # Use the pinned version instead of @latest for reproducibility
     GITHUB_PERSONAL_ACCESS_TOKEN=$(cat ${config.hdwlinux.security.secrets.entries.githubApiToken.path}) ${pkgs.github-mcp-server}/bin/github-mcp-server "$@"
   '';
 in
 {
-  options.hdwlinux.programs.mcp-github = {
-    enable = config.lib.hdwlinux.mkEnableOption "mcp-github" [
+  options.hdwlinux.programs.github-mcp-server = {
+    enable = config.lib.hdwlinux.mkEnableOption "github-mcp-server" [
       "programming"
     ];
   };
@@ -26,7 +26,7 @@ in
 
     hdwlinux.mcpServers.github = {
       type = "stdio";
-      command = "mcp-github";
+      command = "github-mcp-server";
       args = [ "stdio" ];
     };
   };
