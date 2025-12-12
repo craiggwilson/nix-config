@@ -108,7 +108,6 @@
 
       homes.modules = with inputs; [
         hdwlinux-private.homeManagerModules.nix-private
-        nix-flatpak.homeManagerModules.nix-flatpak
         opnix.homeManagerModules.default
         spicetify-nix.homeManagerModules.default
       ];
@@ -119,6 +118,7 @@
         home-manager.nixosModules.home-manager
         kolide-launcher.nixosModules.kolide-launcher
         musnix.nixosModules.musnix
+        nix-flatpak.nixosModules.nix-flatpak
         opnix.nixosModules.default
       ];
     };

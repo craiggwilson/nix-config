@@ -14,10 +14,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = lib.mkIf (!config.hdwlinux.services.flatpak.enable) [ pkgs.obsidian ];
-
-    hdwlinux.services.flatpak.packages = lib.mkIf config.hdwlinux.services.flatpak.enable [
-      "md.obsidian.Obsidian"
-    ];
+    home.packages = [ pkgs.obsidian ];
   };
 }

@@ -8,68 +8,11 @@ let
   cfg = config.hdwlinux;
 in
 {
-  options.hdwlinux = {
-    apps = lib.mkOption {
-      description = "List of categorical apps to reference generically.";
-      type = lib.types.attrsOf lib.hdwlinux.types.app;
-      default = { };
-    };
-
-    hardware = {
-      audio.soundcard = lib.mkOption {
-        description = "The soundcard information.";
-        type = lib.hdwlinux.types.pcicard;
-      };
-      graphics = {
-        card = lib.mkOption {
-          description = "The intel video card information.";
-          type = lib.hdwlinux.types.pcicard;
-        };
-        nvidia.card = lib.mkOption {
-          description = "The nvidia graphics card information.";
-          type = lib.hdwlinux.types.pcicard;
-        };
-      };
-      monitors = lib.mkOption {
-        description = "Options to set the monitor configuration.";
-        type = lib.types.attrsOf lib.hdwlinux.types.monitor;
-      };
-    };
-
+  options.hdwlinux = lib.hdwlinux.sharedOptions // {
     mcpServers = lib.mkOption {
       description = "Options to set the mcp servers.";
       type = lib.types.attrsOf lib.hdwlinux.types.mcpServer;
       default = { };
-    };
-
-    networking = {
-      domain = lib.mkOption {
-        description = "The domain to use for networking.";
-        type = lib.types.str;
-      };
-      tailscale = {
-        enable = lib.mkOption {
-          description = "Whether to enable tailscale.";
-          type = lib.types.bool;
-          default = false;
-        };
-        tailnet = lib.mkOption {
-          description = "The tailnet to use for tailscale.";
-          type = lib.types.str;
-          default = "";
-        };
-      };
-    };
-
-    outputProfiles = lib.mkOption {
-      description = "Options to set the output profiles.";
-      type = lib.types.attrsOf lib.hdwlinux.types.outputProfile;
-    };
-
-    tags = lib.mkOption {
-      description = "Tags used to identify feature enablement.";
-      type = lib.hdwlinux.types.allTags;
-      default = [ ];
     };
   };
 

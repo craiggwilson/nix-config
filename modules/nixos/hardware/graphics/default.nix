@@ -10,10 +10,7 @@ in
 {
   options.hdwlinux.hardware.graphics = {
     enable = config.lib.hdwlinux.mkEnableOption "graphics" "graphics";
-    card = lib.mkOption {
-      description = "The default graphics card information.";
-      type = lib.hdwlinux.types.pcicard;
-    };
+    card = lib.hdwlinux.sharedOptions.hardware.graphics.card;
   };
 
   config = lib.mkIf cfg.enable {

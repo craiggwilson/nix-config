@@ -1,10 +1,13 @@
 { ... }:
 {
-  hdwlinux.tags = [
-    "users:craig"
-    "theming:catppuccin"
-    "yubikey"
-  ];
+  hdwlinux = {
+    flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
+    tags = [
+      "users:craig"
+      "theming:catppuccin"
+      "yubikey"
+    ];
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions

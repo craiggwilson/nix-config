@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  flake,
   ...
 }:
 
@@ -64,6 +63,6 @@ in
     '';
 
     xdg.configFile."rofi/theme.rasi".source =
-      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/rofi/theme.rasi";
+      config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/home/desktopManagers/wayland/rofi/theme.rasi";
   };
 }

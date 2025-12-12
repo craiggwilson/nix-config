@@ -12,11 +12,9 @@
   boot.kernelPackages = pkgs.linuxPackages_6_17;
 
   hdwlinux = {
-    hardware.models.system76-serval-ws.enable = true;
+    flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
 
-    services.system76-battery = {
-      profile = "max_lifespan";
-    };
+    hardware.models.system76-serval-ws.enable = true;
 
     tags = [
       "audio:midi"

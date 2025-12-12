@@ -15,9 +15,6 @@ in
   config = lib.mkIf cfg.enable {
     home-manager = {
       backupFileExtension = ".bak";
-      extraSpecialArgs = {
-        flake = config.hdwlinux.nix.flake;
-      };
       useUserPackages = true;
       useGlobalPkgs = true;
       verbose = true;

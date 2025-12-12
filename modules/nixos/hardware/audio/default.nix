@@ -9,10 +9,7 @@ in
 {
   options.hdwlinux.hardware.audio = {
     enable = config.lib.hdwlinux.mkEnableOption "audio" "audio";
-    soundcard = lib.mkOption {
-      description = "The soundcard information.";
-      type = lib.hdwlinux.types.pcicard;
-    };
+    soundcard = lib.hdwlinux.sharedOptions.hardware.audio.soundcard;
   };
 
   config = lib.mkIf cfg.enable {

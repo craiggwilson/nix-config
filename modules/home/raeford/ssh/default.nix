@@ -17,7 +17,7 @@ in
         host = "*.${config.hdwlinux.networking.domain}";
         forwardX11 = true;
       };
-      tailnet = lib.mkIf config.hdwlinux.networking.tailscale.enable {
+      tailnet = lib.mkIf (config.hdwlinux.networking.tailscale.tailnet != "") {
         host = "*.${config.hdwlinux.networking.tailscale.tailnet}";
         forwardX11 = true;
       };

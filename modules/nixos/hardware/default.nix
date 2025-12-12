@@ -9,10 +9,7 @@ let
 in
 {
   options.hdwlinux.hardware = {
-    monitors = lib.mkOption {
-      description = "Options to set the monitor configuration.";
-      type = lib.types.attrsOf lib.hdwlinux.types.monitor;
-    };
+    monitors = lib.hdwlinux.sharedOptions.hardware.monitors;
   };
 
   config = {

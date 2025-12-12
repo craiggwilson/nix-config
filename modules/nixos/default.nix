@@ -9,21 +9,12 @@ let
 in
 {
   options.hdwlinux = {
-    apps = lib.mkOption {
-      description = "List of categorical apps to reference generically.";
-      type = lib.types.attrsOf lib.hdwlinux.types.app;
-      default = { };
-    };
-
-    outputProfiles = lib.mkOption {
-      description = "Options to set the output profiles.";
-      type = lib.types.attrsOf lib.hdwlinux.types.outputProfile;
-    };
-
-    tags = lib.mkOption {
-      description = "Tags used to enable components in the system.";
-      type = lib.hdwlinux.types.allTags;
-    };
+    inherit (lib.hdwlinux.sharedOptions)
+      apps
+      flake
+      outputProfiles
+      tags
+      ;
   };
 
   config = {
@@ -41,6 +32,7 @@ in
       {
         hdwlinux = {
           apps = cfg.apps;
+          flake = cfg.flake;
           outputProfiles = cfg.outputProfiles;
           tags = cfg.tags;
         };

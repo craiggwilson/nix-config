@@ -2,12 +2,12 @@
   config,
   lib,
   pkgs,
-  flake,
   ...
 }:
 
 let
   cfg = config.hdwlinux.programs.hdwlinux;
+  flake = config.hdwlinux.flake;
   user = config.hdwlinux.user.name;
 in
 {

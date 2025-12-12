@@ -9,9 +9,7 @@ in
 {
   options.hdwlinux.networking = {
     enable = config.lib.hdwlinux.mkEnableOption "networking" "networking";
-    domain = lib.mkOption {
-      type = lib.types.str;
-    };
+    domain = lib.hdwlinux.sharedOptions.networking.domain;
   };
 
   config = lib.mkIf cfg.enable {

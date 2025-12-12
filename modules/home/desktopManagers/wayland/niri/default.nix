@@ -1,6 +1,5 @@
 {
   config,
-  flake,
   lib,
   pkgs,
   inputs,
@@ -90,6 +89,6 @@ in
       }
     '';
     xdg.configFile."niri/functional.kdl".source =
-      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/niri/config/functional.kdl";
+      config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/home/desktopManagers/wayland/niri/config/functional.kdl";
   };
 }

@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  flake,
   ...
 }:
 
@@ -31,7 +30,7 @@ in
 
   config = lib.mkIf cfg.enable {
     xdg.configFile."rofi/app-menu.rasi".source =
-      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/app/app-menu.rasi";
+      config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/home/desktopManagers/wayland/app/app-menu.rasi";
 
     home.packages = [
       (pkgs.hdwlinux.writeShellApplicationWithSubcommands {

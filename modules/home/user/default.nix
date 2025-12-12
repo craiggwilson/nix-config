@@ -34,7 +34,7 @@ in
   config = {
     home = {
       username = lib.mkDefault cfg.name;
-      homeDirectory = lib.mkDefault cfg.home;
+      homeDirectory = lib.mkDefault cfg.homeDirectory;
       file.".ssh/id_rsa.pub".text = cfg.publicKey;
       sessionPath = [ "$HOME/.local/bin" ];
     };

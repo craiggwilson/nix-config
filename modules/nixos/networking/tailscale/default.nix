@@ -9,13 +9,13 @@ in
 {
   options.hdwlinux.networking.tailscale = {
     enable = config.lib.hdwlinux.mkEnableOption "tailscale" "networking:tailscale";
-    tailnet = lib.mkOption {
-      type = lib.types.str;
-      default = "tailc675f.ts.net";
-    };
+    tailnet = lib.hdwlinux.sharedOptions.networking.tailscale.tailnet;
   };
 
   config = lib.mkIf cfg.enable {
+
+    hdwlinux.networking.tailscale.tailnet = lib.mkDefault "tailc675f.ts.net";
+
     services.tailscale = {
       enable = true;
       useRoutingFeatures = "client";

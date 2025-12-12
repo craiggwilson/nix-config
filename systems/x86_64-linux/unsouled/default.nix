@@ -12,6 +12,7 @@
   boot.kernelPackages = pkgs.linuxPackages_6_17;
 
   hdwlinux = {
+    flake = "/home/craig/Projects/github.com/craiggwilson/nix-config";
     hardware.models.dell-xps-15-9520.enable = true;
     tags = [
       "audio"

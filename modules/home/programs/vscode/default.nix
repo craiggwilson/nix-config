@@ -2,13 +2,13 @@
   config,
   lib,
   pkgs,
-  flake,
   host,
   ...
 }:
 
 let
   cfg = config.hdwlinux.programs.vscode;
+  flake = config.hdwlinux.flake;
 
   # Generate VSCode format MCP servers configuration
   vscodeMcpServers = lib.mapAttrs (name: server: {

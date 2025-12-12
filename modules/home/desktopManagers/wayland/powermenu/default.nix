@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  flake,
   ...
 }:
 
@@ -17,7 +16,7 @@ in
   config = lib.mkIf cfg.enable {
 
     xdg.configFile."rofi/powermenu.rasi".source =
-      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/powermenu/powermenu.rasi";
+      config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/home/desktopManagers/wayland/powermenu/powermenu.rasi";
 
     home.packages = [
       (pkgs.writeShellScriptBin "powermenu" (builtins.readFile ./powermenu.sh))

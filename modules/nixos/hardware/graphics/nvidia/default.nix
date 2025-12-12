@@ -10,10 +10,7 @@ in
 {
   options.hdwlinux.hardware.graphics.nvidia = {
     enable = config.lib.hdwlinux.mkEnableOption "nvidia" "graphics:nvidia";
-    card = lib.mkOption {
-      description = "The nvidia graphics card information.";
-      type = lib.hdwlinux.types.pcicard;
-    };
+    card = lib.hdwlinux.sharedOptions.hardware.graphics.nvidia.card;
   };
 
   config = lib.mkIf cfg.enable {

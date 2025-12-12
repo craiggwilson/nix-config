@@ -17,12 +17,6 @@ in
       default = pkgs.nixVersions.latest;
     };
 
-    flake = lib.mkOption {
-      description = "The git repository directory that holds the flake.";
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-    };
-
     extra-substituters = lib.mkOption {
       description = "Extra substituters to configure.";
       type = lib.types.attrsOf lib.types.str;
@@ -63,7 +57,7 @@ in
 
       autoUpgrade = lib.mkIf (lib.hdwlinux.matchTag "work" config.hdwlinux.tags) {
         enable = true;
-        flake = cfg.flake;
+        flake = config.hdwlinux.flake;
         allowReboot = false;
         dates = "Fri *-*-* 02:00:00";
         flags = [
@@ -97,7 +91,7 @@ in
         unstable.flake = inputs.nixpkgs;
         hdwlinux.to = {
           type = "path";
-          path = cfg.flake;
+          path = config.hdwlinux.flake;
         };
       };
 

@@ -2,7 +2,6 @@
   config,
   lib,
   pkgs,
-  flake,
   ...
 }:
 
@@ -34,10 +33,10 @@ in
 
   config = lib.mkIf cfg.enable {
     xdg.configFile."rofi/screen-capture-menu.rasi".source =
-      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/screen/screen-capture-menu.rasi";
+      config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/home/desktopManagers/wayland/screen/screen-capture-menu.rasi";
 
     xdg.configFile."rofi/screen-record-menu.rasi".source =
-      config.lib.file.mkOutOfStoreSymlink "${flake}/modules/home/desktopManagers/wayland/screen/screen-record-menu.rasi";
+      config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/home/desktopManagers/wayland/screen/screen-record-menu.rasi";
 
     home.packages = [
       (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
