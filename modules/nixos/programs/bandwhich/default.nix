@@ -6,10 +6,10 @@
 }:
 
 let
-  cfg = config.hdwlinux.programsd.bandwhich;
+  cfg = config.hdwlinux.programs.bandwhich;
 in
 {
-  options.hdwlinux.programsd.bandwhich = {
+  options.hdwlinux.programs.bandwhich = {
     enable = lib.hdwlinux.mkEnableOption "bandwhich" true;
   };
 

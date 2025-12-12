@@ -53,66 +53,13 @@
         scale = 1.0;
       };
     };
-    outputProfiles = {
-      laptop = {
-        outputs = [
-          {
-            monitor = "laptop";
-            enable = true;
-            position = "0,0";
-          }
-        ];
-      };
-      docked = {
-        outputs = [
-          {
-            monitor = "office-main";
-            enable = true;
-            position = "0,1440";
-            workspaces = [ "3" ];
-          }
-          {
-            monitor = "office-top";
-            enable = true;
-            position = "1290,0";
-            workspaces = [ "1" ];
-          }
-          {
-            monitor = "portable";
-            enable = true;
-            position = "1000,2880";
-            workspaces = [ "2" ];
-          }
-          {
-            monitor = "laptop";
-            enable = false;
-          }
-        ];
-      };
-      docked-no-portable = {
-        outputs = [
-          {
-            monitor = "office-main";
-            enable = true;
-            position = "0,1440";
-            workspaces = [
-              "2"
-              "3"
-            ];
-          }
-          {
-            monitor = "office-top";
-            enable = true;
-            position = "1290,0";
-            workspaces = [ "1" ];
-          }
-          {
-            monitor = "laptop";
-            enable = false;
-          }
-        ];
-      };
-    };
+    outputProfiles.laptop.outputs = [
+      {
+        monitor = "laptop";
+        enable = true;
+        position = "0,0";
+      }
+    ];
   };
 
   # This value determines the NixOS release from which the default

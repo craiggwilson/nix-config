@@ -6,19 +6,14 @@
 }:
 
 let
-  cfg = config.hdwlinux.programs.freetube;
+  cfg = config.hdwlinux.programs.ffmpeg;
 in
 {
-  options.hdwlinux.programs.freetube = {
-    enable = config.lib.hdwlinux.mkEnableOption "freetube" [
-      "gui"
-      "personal"
-    ];
+  options.hdwlinux.programs.ffmpeg = {
+    enable = lib.hdwlinux.mkEnableOption "ffmpeg" true;
   };
 
   config = lib.mkIf cfg.enable {
-    programs.freetube = {
-      enable = true;
-    };
+    home.packages = [ pkgs.ffmpeg ];
   };
 }

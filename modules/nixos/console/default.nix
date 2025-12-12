@@ -1,14 +1,14 @@
 {
-  lib,
   config,
+  lib,
   ...
 }:
 let
-  cfg = config.hdwlinux.conosle;
+  cfg = config.hdwlinux.console;
 in
 {
 
-  options.hdwlinux.conosle = {
+  options.hdwlinux.console = {
     enable = lib.hdwlinux.mkEnableOption "console" true;
   };
 
