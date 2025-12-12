@@ -48,7 +48,10 @@ in
     pkgs.libxml2
     pkgs.pre-commit
     pkgs.openssl
-    pkgs.openssh
+    (pkgs.openssh.overrideAttrs (old: {
+      patches = (old.patches or [ ]) ++ [ ./openssh.patch ];
+      doCheck = false;
+    }))
     pkgs.yq
     pkgs.zip
 
