@@ -5,7 +5,6 @@
 }:
 let
   cfg = config.hdwlinux.raeford.printers;
-  domain = config.hdwlinux.networking.domain or "raeford.wilsonfamilyhq.com";
   ppdName = "Brother_HL-L2380DW.ppd";
   defaultName = "Brother_HL-L2380DW";
 in
@@ -26,7 +25,7 @@ in
           name = defaultName;
           description = "Brother HL-L2380DW";
           location = "Raeford";
-          deviceUri = "ipp://printer.${domain}/ipp";
+          deviceUri = "ipp://printer.${config.hdwlinux.networking.domain}/ipp";
           model = ppdName;
         }
       ];

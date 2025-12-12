@@ -5,7 +5,6 @@
 }:
 let
   cfg = config.hdwlinux.raeford.filesystems;
-  domain = config.hdwlinux.networking.domain or "raeford.wilsonfamilyhq.com";
 in
 {
   options.hdwlinux.raeford.filesystems = {
@@ -19,7 +18,7 @@ in
       # Shared office files
       {
         local = "/mnt/shared";
-        remote = "synology.${domain}:/volume1/shared";
+        remote = "synology.${config.hdwlinux.networking.domain}:/volume1/shared";
         auto = true;
       }
     ]
@@ -27,7 +26,7 @@ in
       # Gaming files for systems with gaming tag
       {
         local = "/mnt/games";
-        remote = "synology.${domain}:/volume2/games";
+        remote = "synology.${config.hdwlinux.networking.domain}:/volume2/games";
         auto = true;
       }
     ]);

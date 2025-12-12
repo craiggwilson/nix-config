@@ -12,7 +12,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    # Set the domain for raeford office
     hdwlinux.networking.domain = lib.mkDefault "raeford.wilsonfamilyhq.com";
   };
 }

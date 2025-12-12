@@ -5,7 +5,6 @@
 }:
 let
   cfg = config.hdwlinux.raeford.ssh;
-  domain = config.hdwlinux.networking.domain or "raeford.wilsonfamilyhq.com";
 in
 {
   options.hdwlinux.raeford.ssh = {
@@ -14,8 +13,12 @@ in
 
   config = lib.mkIf cfg.enable {
     hdwlinux.security.ssh.matchBlocks = {
-      "raeford-hosts" = {
-        host = "*.${domain} *.tailc675f.ts.net";
+      raeford = {
+        host = "*.${config.hdwlinux.networking.domain}";
+        forwardX11 = true;
+      };
+      tailnet = lib.mkIf config.hdwlinux.networking.tailscale.enable {
+        host = "*.${config.hdwlinux.networking.tailscale.tailnet}";
         forwardX11 = true;
       };
     };

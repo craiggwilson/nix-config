@@ -42,6 +42,25 @@ in
       default = { };
     };
 
+    networking = {
+      domain = lib.mkOption {
+        description = "The domain to use for networking.";
+        type = lib.types.str;
+      };
+      tailscale = {
+        enable = lib.mkOption {
+          description = "Whether to enable tailscale.";
+          type = lib.types.bool;
+          default = false;
+        };
+        tailnet = lib.mkOption {
+          description = "The tailnet to use for tailscale.";
+          type = lib.types.str;
+          default = "";
+        };
+      };
+    };
+
     outputProfiles = lib.mkOption {
       description = "Options to set the output profiles.";
       type = lib.types.attrsOf lib.hdwlinux.types.outputProfile;

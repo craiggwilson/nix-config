@@ -11,7 +11,6 @@ in
     enable = config.lib.hdwlinux.mkEnableOption "networking" "networking";
     domain = lib.mkOption {
       type = lib.types.str;
-      default = "raeford.wilsonfamilyhq.com";
     };
   };
 
@@ -27,5 +26,11 @@ in
         enable = true;
       };
     };
+
+    home-manager.sharedModules = [
+      {
+        hdwlinux.networking.domain = cfg.domain;
+      }
+    ];
   };
 }
