@@ -24,7 +24,6 @@
       "laptop"
       "networking"
       "networking:tailscale"
-      "nvidia"
       "programming"
       "printing"
       "raeford"

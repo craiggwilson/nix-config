@@ -44,9 +44,9 @@ in
         "bluetooth"
         "camera"
         "fingerprint"
+        "graphics:nvidia"
         "laptop"
         "networking"
-        "nvidia"
         "thunderbolt"
       ];
     };
