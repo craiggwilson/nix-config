@@ -37,7 +37,21 @@ in
             };
           };
         };
+        monitors.laptop = {
+          vendor = "LG Display";
+          model = "0x06B3";
+          mode = "1920x1200@59.95Hz";
+          scale = 1.0;
+        };
       };
+
+      outputProfiles.laptop.outputs = [
+        {
+          monitor = "laptop";
+          enable = true;
+          position = "0,0";
+        }
+      ];
 
       tags = [
         "audio"

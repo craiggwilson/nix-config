@@ -12,6 +12,7 @@
   boot.kernelPackages = pkgs.linuxPackages_6_17;
 
   hdwlinux = {
+    hardware.models.dell-xps-15-9520.enable = true;
     tags = [
       "audio"
       "bluetooth"
@@ -21,7 +22,6 @@
       "desktop:remote"
       "fonts"
       "gui"
-      "laptop"
       "networking"
       "networking:tailscale"
       "programming"
@@ -38,21 +38,7 @@
 
     hardware = {
       fingerprint.enable = false;
-      models.dell-xps-15-9520.enable = true;
-      monitors.laptop = {
-        vendor = "LG Display";
-        model = "0x06B3";
-        mode = "1920x1200@59.95Hz";
-        scale = 1.0;
-      };
     };
-    outputProfiles.laptop.outputs = [
-      {
-        monitor = "laptop";
-        enable = true;
-        position = "0,0";
-      }
-    ];
   };
 
   # This value determines the NixOS release from which the default

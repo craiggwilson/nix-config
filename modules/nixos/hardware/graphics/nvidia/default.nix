@@ -17,7 +17,6 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    hdwlinux.hardware.graphics.enable = lib.mkDefault true;
 
     services.xserver.videoDrivers = [
       "nvidia"

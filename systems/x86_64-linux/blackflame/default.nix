@@ -12,6 +12,8 @@
   boot.kernelPackages = pkgs.linuxPackages_6_17;
 
   hdwlinux = {
+    hardware.models.system76-serval-ws.enable = true;
+
     services.system76-battery = {
       profile = "max_lifespan";
     };
@@ -45,21 +47,7 @@
 
     hardware = {
       fingerprint.enable = false;
-      models.system76-serval-ws.enable = true;
-      monitors.laptop = {
-        vendor = "BOE";
-        model = "0x0A1C";
-        mode = "1920x1080@165.004Hz";
-        scale = 1.0;
-      };
     };
-    outputProfiles.laptop.outputs = [
-      {
-        monitor = "laptop";
-        enable = true;
-        position = "0,0";
-      }
-    ];
   };
 
   # This value determines the NixOS release from which the default

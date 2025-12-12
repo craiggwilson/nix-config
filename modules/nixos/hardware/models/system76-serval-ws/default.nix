@@ -22,17 +22,6 @@ in
 
   config = lib.mkIf cfg.enable {
     hdwlinux = {
-      tags = [
-        "audio"
-        "bluetooth"
-        "camera"
-        "fingerprint"
-        "graphics:nvidia"
-        "laptop"
-        "networking"
-        "thunderbolt"
-      ];
-
       hardware = {
         audio = {
           soundcard = {
@@ -52,7 +41,33 @@ in
             };
           };
         };
+        monitors.laptop = {
+          vendor = "BOE";
+          model = "0x0A1C";
+          mode = "1920x1080@165.004Hz";
+          scale = 1.0;
+        };
       };
+
+      outputProfiles.laptop.outputs = [
+        {
+          monitor = "laptop";
+          enable = true;
+          position = "0,0";
+        }
+      ];
+
+      tags = [
+        "audio"
+        "bluetooth"
+        "camera"
+        "fingerprint"
+        "graphics:nvidia"
+        "laptop"
+        "networking"
+        "thunderbolt"
+      ];
+
     };
 
     boot = {
