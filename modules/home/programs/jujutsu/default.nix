@@ -86,7 +86,7 @@ in
         };
 
         revset-aliases = {
-          "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private() & ~trunk())";
+          "closest_bookmark(to)" = "heads(::to & bookmarks() & ~private() & ~trunk()) | heads(::to & bookmarks() & ~private() & ~present(heads(::to & bookmarks() & ~private() & ~trunk())))";
           "closest_pushable(to)" =
             ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
           "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
