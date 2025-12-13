@@ -41,6 +41,7 @@ in
           rust-lang.rust-analyzer
           tamasfe.even-better-toml
           jnoortheen.nix-ide
+          visualjj.visualjj
           zxh404.vscode-proto3
           (
             let

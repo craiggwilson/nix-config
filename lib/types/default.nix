@@ -125,10 +125,9 @@ in
         };
 
         outputs = lib.mkOption {
-          type = lib.types.listOf (
+          type = lib.types.attrsOf (
             lib.types.submodule {
               options = {
-                monitor = lib.mkOption { type = lib.types.str; };
                 enable = lib.mkOption {
                   type = lib.types.bool;
                   default = true;
@@ -137,7 +136,10 @@ in
                   type = lib.types.listOf lib.types.str;
                   default = [ ];
                 };
-                position = lib.mkOption { type = lib.types.str; };
+                position = lib.mkOption {
+                  type = lib.types.str;
+                  default = "0,0";
+                };
                 transform = lib.mkOption {
                   type = lib.types.str;
                   default = "normal";
@@ -149,6 +151,7 @@ in
               };
             }
           );
+          default = { };
         };
       };
     };

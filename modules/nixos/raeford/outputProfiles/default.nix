@@ -14,30 +14,26 @@ in
   config = lib.mkIf cfg.enable {
     hdwlinux.outputProfiles = {
       raeford-docked = {
-        outputs = [
-          {
-            monitor = "office-main";
+        outputs = {
+          office-main = {
             enable = true;
             position = "0,1440";
             workspaces = [ "3" ];
-          }
-          {
-            monitor = "office-top";
+          };
+          office-top = {
             enable = true;
             position = "1290,0";
             workspaces = [ "1" ];
-          }
-          {
-            monitor = "portable";
+          };
+          portable = {
             enable = true;
             position = "1000,2880";
             workspaces = [ "2" ];
-          }
-          {
-            monitor = "laptop";
+          };
+          laptop = {
             enable = false;
-          }
-        ];
+          };
+        };
       };
     };
   };

@@ -6,6 +6,21 @@
 }:
 let
   cfg = config.hdwlinux;
+
+  # Extract all monitor names referenced in outputProfiles
+  allReferencedMonitors = lib.unique (
+    lib.flatten (
+      lib.mapAttrsToList (
+        _profileName: profile: lib.attrNames profile.outputs
+      ) cfg.outputProfiles
+    )
+  );
+
+  # Get the list of declared monitor names
+  declaredMonitors = lib.attrNames cfg.hardware.monitors;
+
+  # Find any monitor references that don't exist in hardware.monitors
+  invalidMonitors = lib.filter (m: !(lib.elem m declaredMonitors)) allReferencedMonitors;
 in
 {
   options.hdwlinux = {
@@ -18,6 +33,18 @@ in
   };
 
   config = {
+    assertions = [
+      {
+        assertion = invalidMonitors == [ ];
+        message = ''
+          The following monitor names referenced in outputProfiles do not exist in hardware.monitors:
+            ${lib.concatStringsSep ", " invalidMonitors}
+
+          Declared monitors: ${lib.concatStringsSep ", " declaredMonitors}
+        '';
+      }
+    ];
+
     lib.hdwlinux = {
       mkEnableOption =
         name: default:

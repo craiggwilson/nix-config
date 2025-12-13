@@ -49,13 +49,12 @@ in
         };
       };
 
-      outputProfiles.laptop.outputs = [
-        {
-          monitor = "laptop";
+      outputProfiles.laptop.outputs = {
+        laptop = {
           enable = true;
           position = "0,0";
-        }
-      ];
+        };
+      };
 
       tags = [
         "audio"

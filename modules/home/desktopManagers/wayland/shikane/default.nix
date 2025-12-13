@@ -19,10 +19,10 @@ let
 
   mapProfileOutputs =
     outputs:
-    builtins.map (
-      output:
+    lib.mapAttrsToList (
+      monitorName: output:
       let
-        monitor = config.hdwlinux.hardware.monitors.${output.monitor};
+        monitor = config.hdwlinux.hardware.monitors.${monitorName};
       in
       {
         enable = output.enable;
