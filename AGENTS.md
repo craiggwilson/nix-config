@@ -15,8 +15,8 @@ This is a NixOS and Home Manager configuration flake for "Half-Dozen Wilson's Li
 | `flake.nix` | Flake entrypoint with inputs, overlays, and system/home modules |
 | `systems/` | NixOS system configurations per architecture/hostname (e.g., `systems/x86_64-linux/blackflame/`) |
 | `homes/` | Standalone Home Manager configurations per user (e.g., `homes/x86_64-linux/craig/`) |
-| `modules/nixos/` | NixOS-specific modules under `hdwlinux.*` options |
-| `modules/home/` | Home Manager modules under `hdwlinux.*` options |
+| `nixosModules/` | NixOS-specific modules under `hdwlinux.*` options |
+| `homeModules/` | Home Manager modules under `hdwlinux.*` options |
 | `lib/` | Custom library functions available as `lib.hdwlinux.*` |
 | `packages/` | Custom package derivations available as `pkgs.hdwlinux.*` |
 | `shells/` | Development shells invoked via `nix develop .#<name>` |
@@ -164,8 +164,8 @@ hdwlinux develop <name>   # Enter a development shell
 - In library code or option type definitions, use `lib.hdwlinux.mkEnableOption`
 
 ### NixOS vs Home Manager
-- NixOS modules go in `modules/nixos/`
-- Home Manager modules go in `modules/home/`
+- NixOS modules go in `nixosModules/`
+- Home Manager modules go in `homeModules/`
 - To share data from NixOS to Home Manager, use `home-manager.sharedModules`
 - Never import Home Manager modules directly into NixOS modules
 
@@ -181,10 +181,10 @@ hdwlinux develop <name>   # Enter a development shell
 
 ## Adding New Modules
 
-1. Create `modules/home/programs/<name>/default.nix` (or appropriate subdirectory)
+1. Create `homeModules/programs/<name>/default.nix` (or appropriate subdirectory)
 2. Follow the standard module structure above
 3. Add appropriate tags to gate enablement
-4. The module is automatically discovered by snowfall-lib
+4. The module is automatically discovered by bootstrap
 
 ## Adding New Packages
 
