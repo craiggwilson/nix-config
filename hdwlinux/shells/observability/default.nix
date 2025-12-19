@@ -1,6 +1,7 @@
 {
   pkgs ? import <nixpkgs> { },
   lib,
+  ...
 }:
 let
   javapkg = pkgs.temurin-bin-17;

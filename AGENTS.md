@@ -1,250 +1,168 @@
-# AGENTS.md
+# AGENTS.md - AI Assistant Guide
 
-This is a NixOS and Home Manager configuration flake for "Half-Dozen Wilson's Linux" (hdwlinux), built using snowfall-lib for structured module organization.
+## Repository Overview
 
-## Project Overview
+This is a NixOS/Home Manager configuration repository for personal systems using the **substrate** framework.
 
-- **Namespace**: All custom modules, options, and library functions use the `hdwlinux` namespace
-- **Framework**: Built on [snowfall-lib](https://github.com/snowfallorg/lib) which provides convention-based directory structure
-- **Targets**: NixOS systems (x86_64-linux) and standalone Home Manager configurations
+### Version Control
 
-## Directory Structure
+**This repository uses Jujutsu (jj), not Git.** Use `jj` commands for all version control operations:
 
-| Directory | Purpose |
-|-----------|---------|
-| `flake.nix` | Flake entrypoint with inputs, overlays, and system/home modules |
-| `systems/` | NixOS system configurations per architecture/hostname (e.g., `systems/x86_64-linux/blackflame/`) |
-| `homes/` | Standalone Home Manager configurations per user (e.g., `homes/x86_64-linux/craig/`) |
-| `nixosModules/` | NixOS-specific modules under `hdwlinux.*` options |
-| `homeModules/` | Home Manager modules under `hdwlinux.*` options |
-| `lib/` | Custom library functions available as `lib.hdwlinux.*` |
-| `packages/` | Custom package derivations available as `pkgs.hdwlinux.*` |
-| `shells/` | Development shells invoked via `nix develop .#<name>` |
-| `overlays/` | Nixpkgs overlays |
-
-## Tag-Based Enable System
-
-This flake uses a **tag-based conditional enable pattern** instead of simple booleans:
-
-```nix
-# In system configuration (systems/x86_64-linux/<hostname>/default.nix)
-hdwlinux.tags = [
-  "programming"
-  "gui"
-  "work"
-  "networking:tailscale"
-];
-
-# In modules, options use tags instead of booleans:
-options.hdwlinux.programs.augment = {
-  enable = config.lib.hdwlinux.mkEnableOption "augment" [ "programming" "work" ];
-};
+```bash
+jj status          # Check current state
+jj diff            # View changes
+jj new             # Create a new change
+jj describe -m ""  # Add a description to the current change
+jj squash          # Squash changes into parent
+jj log             # View history
+jj git push        # Push to remote
 ```
 
-Tags support hierarchical matching (e.g., `"audio"` matches `"audio:production"`). Available tags are defined in `lib/types/default.nix`.
+### Deprecated Directories (IGNORE)
 
-## Module Conventions
+The following directories are deprecated and will be removed. Do not reference, modify, or use them:
 
-### Standard Module Structure
+- `bootstrap/` - Deprecated bootstrap code
+- `hdwlinux/` - Legacy configuration system
+
+### Related Repositories
+
+- **`nix-private`** (sibling repository): Contains private/sensitive substrateModules imported via `inputs.hdwlinux-private.substrateModules.nix-private`
+- Clone location: `~/Projects/github.com/craiggwilson/nix-private`
+
+---
+
+## File Structure
+
+```
+nix-config/
+├── hdwlinux/           # Active configuration using substrate
+│   ├── flake.nix        # Main flake definition
+│   ├── modules/         # Substrate modules
+│   │   ├── apps/        # Application category definitions
+│   │   ├── boot/        # Boot configuration
+│   │   ├── desktop/     # Desktop environment (Hyprland, etc.)
+│   │   ├── hardware/    # Hardware configurations
+│   │   ├── hosts/       # Host-specific configurations
+│   │   ├── programs/    # Program configurations
+│   │   ├── services/    # System services
+│   │   └── users/       # User configurations
+│   └── packages/        # Custom package definitions
+└── substrate/           # Framework for building NixOS/Home Manager configs
+    ├── builders/        # Flake-parts integration
+    ├── core/            # Core framework logic
+    └── extensions/      # Tags, types, home-manager extensions
+```
+
+---
+
+## Substrate Framework
+
+### Core Concepts
+
+Substrate is a framework for building modular NixOS and Home Manager configurations with a tag-based selection system.
+
+#### Module Structure
+
+Modules are defined under `config.substrate.modules.<path>.<name>`:
 
 ```nix
 {
-  config,
-  lib,
-  pkgs,
-  ...
-}:
-let
-  cfg = config.hdwlinux.programs.<name>;  # or hdwlinux.services.<name>, etc.
-in
-{
-  options.hdwlinux.programs.<name> = {
-    enable = config.lib.hdwlinux.mkEnableOption "<name>" "<tag-or-tags>";
-    # Additional options...
-  };
-
-  config = lib.mkIf cfg.enable {
-    # Configuration when enabled
+  config.substrate.modules.programs.example = {
+    tags = [ "some-tag" ];  # Required tags to enable this module
+    
+    nixos = { pkgs, ... }: {
+      # NixOS configuration
+    };
+    
+    homeManager = { config, ... }: {
+      # Home Manager configuration
+    };
   };
 }
 ```
 
-### Key Patterns
+#### Tags System
 
-- Use `config.lib.hdwlinux.mkEnableOption` (from module scope) or `lib.hdwlinux.mkEnableOption` (from lib scope) for enable options
-- Always guard config with `lib.mkIf cfg.enable`
-- Access custom packages via `pkgs.hdwlinux.<package-name>`
-- Access library functions via `lib.hdwlinux.<function>`
-- NixOS modules pass values to Home Manager via `home-manager.sharedModules`
+Tags control which modules are included in a configuration:
 
-### Shared Options
+- Tags are hierarchical (e.g., `desktop:custom:hyprland` implies `desktop:custom` and `desktop`)
+- Hosts and users declare tags; modules require tags to be included
+- Use `hasTag` in module functions to conditionally configure based on active tags
 
-Options shared between NixOS and Home Manager are defined in `lib/options/default.nix` as `lib.hdwlinux.sharedOptions`.
+#### Hosts and Users
 
-## MCP Server Configuration
-
-MCP (Model Context Protocol) servers are defined in Home Manager modules:
+Hosts are defined with associated users and tags:
 
 ```nix
-hdwlinux.mcpServers.<server-name> = {
-  type = "stdio";  # or "http", "sse"
-  command = "command-name";
-  args = [ ];
+substrate.hosts.hostname = {
+  system = "x86_64-linux";
+  users = [ "username@profile" ];
+  tags = [ "host:hostname" ];
 };
 ```
 
-These are automatically aggregated and written to configuration files for Augment, VSCode, and other tools.
+Users can have multiple profiles (e.g., `craig@personal`, `craig@work`).
 
-## Code Style
+---
 
-- **Formatter**: `nixfmt-rfc-style` (run via `nix fmt`)
-- **Indentation**: 2 spaces
-- **Trailing commas**: Use in multi-line lists and attrsets
-- **Attribute ordering**: Alphabetize when practical
-- **String interpolation**: Use `${...}` syntax, escape with `''${...}` in shell scripts
+## Code Style Guidelines
 
-## Common Commands
+### Comments
+
+**Only explain "why", never "what":**
+
+- ✅ Document complex business logic or architectural decisions
+- ✅ Explain non-obvious design choices or workarounds
+- ✅ Note external dependencies or constraints
+- ❌ Do not describe what code does if it's readable
+- ❌ Do not add comments for simple/obvious functionality
+- ❌ Do not use comments as code documentation for straightforward Nix expressions
+
+### Nix Style
+
+- Use `lib.mkIf` for conditional configuration
+- Use `lib.mkOption` with proper types and descriptions for options
+- Follow existing patterns in the codebase for consistency
+
+---
+
+## Development Workflow
+
+### Building Configurations
 
 ```bash
-# Format all Nix files
-nix fmt
+# Build NixOS configuration
+nix build .#nixosConfigurations.hostname.config.system.build.toplevel
 
-# Check flake validity
+# Build Home Manager configuration  
+nix build .#homeConfigurations.username.activationPackage
+
+# Run validation checks
 nix flake check
-
-# Build the current system (without switching)
-sudo nixos-rebuild build --flake .
-
-# Build and switch to new configuration
-sudo nixos-rebuild switch --flake .
-
-# Build a specific system
-sudo nixos-rebuild build --flake .#<hostname>
-
-# Enter a development shell
-nix develop .#<shell-name>
-
-# Show flake outputs
-nix flake show
-
-# Update flake inputs
-nix flake update
-
-# Update a specific input
-nix flake update <input-name>
 ```
 
-## Helper Commands (when hdwlinux module is enabled)
-
-The `hdwlinux` CLI provides convenience wrappers:
+### Testing Changes
 
 ```bash
-hdwlinux switch           # Rebuild and switch to new configuration
-hdwlinux build            # Build without switching
-hdwlinux flake update     # Update flake inputs
-hdwlinux develop <name>   # Enter a development shell
+# Test a new configuration (NixOS)
+sudo nixos-rebuild test --flake .#hostname
+
+# Switch to new configuration (Home Manager standalone)
+home-manager test --flake .#username
 ```
 
-## Testing & Validation
+### Common Patterns
 
-- Run `nix flake check` before committing to validate the flake
-- Run `nix fmt` to ensure consistent formatting
-- Test builds with `nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel`
+1. **Adding a new program**: Create `hdwlinux/modules/programs/<name>/default.nix` with appropriate tags
+2. **Adding a new host**: Create `hdwlinux/modules/hosts/<hostname>/default.nix` with disko config if needed
+3. **Adding a new tag**: Add to the `substrate.settings.tags` list in the flake
 
-## Important Pitfalls
+---
 
-### Tag Matching
-- Tags use prefix matching: enabling `"audio"` will match modules requiring `"audio"` OR `"audio:production"` OR `"audio:midi"`
-- When requiring multiple tags, pass a list: `[ "programming" "work" ]` means BOTH must be present
-- Tags are defined in `lib/types/default.nix` - add new tags there before using them
-- Tags cannot be defined in the same module that is guarded by tags. This will result in a cycle.
+## Key Files
 
-### Module Scope vs Lib Scope
-- Inside modules, use `config.lib.hdwlinux.mkEnableOption` (evaluated per-module)
-- In library code or option type definitions, use `lib.hdwlinux.mkEnableOption`
+- `hdwlinux/flake.nix` - Main entry point, imports all modules and defines substrate settings
+- `substrate/extensions/tags/default.nix` - Tag system implementation
+- `substrate/builders/flake-parts/*.nix` - NixOS and Home Manager configuration builders
 
-### NixOS vs Home Manager
-- NixOS modules go in `nixosModules/`
-- Home Manager modules go in `homeModules/`
-- To share data from NixOS to Home Manager, use `home-manager.sharedModules`
-- Never import Home Manager modules directly into NixOS modules
-
-### Package Access
-- Custom packages in `packages/` are available as `pkgs.hdwlinux.<name>`
-- Upstream packages are accessed normally via `pkgs.<name>`
-- Stable channel packages are available via `pkgs.stable.<name>`
-
-### Private Configuration
-- Secrets and private configuration come from `hdwlinux-private` flake input
-- Never commit secrets to this repository
-- Use `opnix` for 1Password secret management
-
-## Adding New Modules
-
-1. Create `homeModules/programs/<name>/default.nix` (or appropriate subdirectory)
-2. Follow the standard module structure above
-3. Add appropriate tags to gate enablement
-4. The module is automatically discovered by bootstrap
-
-## Adding New Packages
-
-1. Create `packages/<name>/default.nix`
-2. Define the derivation with standard nixpkgs patterns
-3. Access via `pkgs.hdwlinux.<name>` in modules
-
-## Adding New Systems
-
-1. Create `systems/x86_64-linux/<hostname>/default.nix`
-2. Set `hdwlinux.flake` to the flake directory path
-3. Set `hdwlinux.tags` to enable desired features
-4. Add `disko.nix` for disk partitioning if needed
-5. Set `system.stateVersion` appropriately
-
-## Version Control
-
-This repository uses **[Jujutsu (jj)](https://github.com/jj-vcs/jj)** instead of Git for version control operations. While the repository is Git-compatible (hosted on GitHub), prefer `jj` commands over `git` commands.
-
-### Common jj Commands
-
-```bash
-# Show status
-jj status
-
-# Show log (default shows relevant commits)
-jj log
-
-# Create a new change
-jj new
-
-# Describe the current change (commit message)
-jj describe -m "Add module for X"
-
-# Squash current change into parent
-jj squash
-
-# Edit a previous change
-jj edit <change-id>
-
-# Push to remote
-jj git push
-
-# Fetch from remote
-jj git fetch
-
-# Create a bookmark (branch) and push
-jj bookmark create <name> -r @
-jj git push --bookmark <name>
-```
-
-### Key Differences from Git
-
-- **No staging area**: All changes are automatically included in the current change
-- **Working copy is a commit**: The working directory is always a commit that can be amended
-- **Change IDs vs commit hashes**: jj uses short change IDs (e.g., `kkmpptxz`) that are stable across rebases
-- **Automatic rebasing**: Child commits are automatically rebased when parents change
-
-## Commit Guidelines
-
-- Use imperative mood: "Add module for X" not "Added module for X"
-- Reference affected hosts/modules in commit messages
-- Run `nix fmt` and `nix flake check` before committing
