@@ -50,7 +50,8 @@ let
             imports = [
               (getHomePath userName)
             ]
-            ++ config.project.homeModules;
+            ++ config.project.homeModules
+            ++ [ config.flake.modules.homeManager.base ];
           };
         }) users
       );
@@ -64,6 +65,7 @@ let
       modules =
         # Import all internal NixOS modules
         (map (p: import p) config.project.nixosModules)
+        ++ [ config.flake.modules.nixos.base ]
         # External modules from flake.nix
         ++ config.project.external.nixosModules
         # System-specific configuration

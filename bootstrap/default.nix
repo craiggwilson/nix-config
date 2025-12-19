@@ -58,8 +58,10 @@ let
           bootstrapModules
           ++ extraModules
           ++ [
+            inputs.flake-parts.flakeModules.modules
             inputs.home-manager.flakeModules.home-manager
           ]
+          ++ [ (inputs.import-tree ../modules) ]
           ++ [
             {
               inherit project;
