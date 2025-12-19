@@ -1,0 +1,158 @@
+@import url("colors.css"); 
+
+* {
+    all: unset;
+    font-family: FiraCode Nerd Font Propo, DroidSansM Nerd Font Propo, monospace;
+    font-weight: bold;
+    font-size: 14px;
+    margin: 0px;
+    padding: 0px;
+    opacity: .99;
+}
+
+window {
+    background-color: alpha(@base01, .75);
+    border: 0px solid @base07;
+    border-radius: 0px 0px 15px 15px;
+    color: @base07;
+}
+
+button, label.module, #tray {
+    padding: 3px 12px 0px 12px;
+}
+
+button:hover, button.active, button.focused, button.urgent {
+    padding-top: 0px;
+    border-top: 3px solid transparent;
+}
+
+label.module:hover {
+    border-top: 3px solid transparent;
+    padding-top: 0px;
+}
+
+menu {
+    border-radius: 15px;
+    padding: 10px;
+}
+
+menu menuitem {
+    padding: 5px;
+    border-left: 3px solid transparent;
+}
+
+menu menuitem:hover {
+    border-left: 3px solid @base07;
+}
+
+tooltip {
+    background-color: @base01;
+    border-radius: 15px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: @base01;
+}
+
+#backlight:hover {
+    border-top-color: @base0F;
+    color: @base0F;
+}
+
+#cava:hover {
+    border-top-color: @base0D;
+    color: @base0D;
+}
+
+#clock {
+    border-radius: 0 0 15px 15px;
+}
+
+#clock:hover {
+    border-top-color: @base07;
+    color: @base07;
+}
+
+#idle_inhibitor {
+    border-radius: 0 0 15px 15px;
+}
+
+#idle_inhibitor.activated, #idle_inhibitor:hover {
+    border-top-color: @base09;
+    color: @base09;
+}
+
+#mpris:hover {
+    border-top-color: @base07;
+    color: @base07;
+}
+
+#network:hover {
+    border-top: 3px solid @base0A;
+    color: @base0A;
+}
+
+#network:hover .module {
+    border-top-width: 0px;
+    padding-top: 0px;
+}
+
+#custom-notifications {
+    border-radius: 0 0 15px 0;
+}
+
+#custom-notifications.some, #custom-notifications:hover {
+    border-top-color: @base0A;
+    color: @base0A;
+}
+
+#custom-power:hover {
+    border-top-color: @base04;
+    color: @base04;
+}
+
+#privacy {
+    color: @base08;
+    border-top: 3px solid @base08;
+    padding: 0px 12px;
+}
+
+#custom-recording {
+    border-top-color: @base08;
+    color: @base08;
+}
+
+#stats:hover {
+    border-top: 3px solid @base0C;
+    color: @base0C;
+}
+
+#stats:hover .module {
+    border-top-width: 0px;
+    padding-top: 0px;
+}
+
+#tray {
+  border-radius: 0 0 0 15px;   
+}
+
+#wireplumber:hover {
+    border-top-color: @base0D;
+    color: @base0D;
+}
+
+#wireplumber.microphone:hover {
+    border-top-color: @base0E;
+    color: @base0E;
+}
+
+#workspaces button:hover {
+    border-top-color: alpha(@base0E, .8);
+    color: alpha(@base0E, .8);
+}
+
+#workspaces button.active, 
+#workspaces button.focused, 
+#workspaces button.urgent {
+    border-top-color: @base0E;
+    color: @base0E;
+}

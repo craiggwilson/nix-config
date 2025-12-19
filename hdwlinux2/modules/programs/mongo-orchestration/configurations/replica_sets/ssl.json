@@ -1,0 +1,55 @@
+{
+    "id": "repl0", 
+    "members": [
+        {
+            "procParams": {
+                "dbpath": "$DBPATH/db27017",
+                "ipv6": true, 
+                "logpath": "$LOGPATH/db27017.log", 
+                "journal": true,
+                "port": 27017
+            }, 
+            "rsParams": {
+                "priority": 99,
+                "tags": {
+                    "ordinal": "one",
+                    "dc": "ny"
+                }
+            }
+        }, 
+        {
+            "procParams": {
+                "dbpath": "$DBPATH/db27018",
+                "ipv6": true, 
+                "logpath": "$LOGPATH/db27018.log", 
+                "journal": true,
+                "port": 27018
+            }, 
+            "rsParams": {
+                "priority": 1.1,
+                "tags": {
+                    "ordinal": "two",
+                    "dc": "pa"
+                }
+            }
+        }, 
+        {
+            "procParams": {
+                "dbpath": "$DBPATH/db27019",
+                "ipv6": true, 
+                "logpath": "$LOGPATH/27019.log", 
+                "journal": true,
+                "port": 27019
+            },
+            "rsParams": {
+                "arbiterOnly": true
+            }
+        }
+    ], 
+    "sslParams": {
+        "sslCAFile": "$SSL_FILES/ca.pem", 
+        "sslOnNormalPorts": true, 
+        "sslPEMKeyFile": "$SSL_FILES/server.pem", 
+        "sslWeakCertificateValidation": true
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "configsvrs": [{}],
+    "shards": [
+        {
+            "id": "sh01",
+            "shardParams": {
+                "procParams": {
+                    "storageEngine": "wiredTiger"
+                }
+            }
+        },
+        {"id": "sh02"}
+    ],
+    "routers": [{}, {}]
+}

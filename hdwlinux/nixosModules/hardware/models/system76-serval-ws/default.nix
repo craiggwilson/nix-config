@@ -55,18 +55,6 @@ in
           position = "0,0";
         };
       };
-
-      tags = [
-        "audio"
-        "bluetooth"
-        "camera"
-        "fingerprint"
-        "graphics:nvidia"
-        "laptop"
-        "networking"
-        "thunderbolt"
-      ];
-
     };
 
     boot = {

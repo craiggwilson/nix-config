@@ -9,7 +9,7 @@ let
 in
 {
   options.hdwlinux.programs.bat = {
-    enable = lib.hdwlinux.mkEnableOption "bat" true;
+    enable = lib.hdwlinux.mkEnableOption "bat" false;
   };
 
   config = lib.mkIf cfg.enable {

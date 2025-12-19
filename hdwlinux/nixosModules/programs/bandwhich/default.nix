@@ -10,7 +10,7 @@ let
 in
 {
   options.hdwlinux.programs.bandwhich = {
-    enable = lib.hdwlinux.mkEnableOption "bandwhich" true;
+    enable = lib.hdwlinux.mkEnableOption "bandwhich" false;
   };
 
   config = lib.mkIf cfg.enable {
