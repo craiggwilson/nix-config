@@ -22,7 +22,8 @@
               pkgs.nix-output-monitor
               pkgs.nvd
             ]
-            ++ (if hasTag "hardware:system76" then [ pkgs.system76-power ] else [ ]);
+            ++ (if hasTag "hardware:system76" then [ pkgs.system76-power ] else [ ])
+            ++ (if hasTag "gui" then [ pkgs.wlr-randr ] else [ ]);
             subcommands = {
               battery = {
                 set-profile = "system76-power charge-thresholds --profile \"$@\"";
@@ -82,6 +83,33 @@
                 "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake} "$@" |& nom'';
               };
               test = ''git -C ${flake} add -A . && sudo nixos-rebuild test --flake ${flake} "$@" |& nom'';
+              monitors = {
+                fix = ''
+                  echo "Forcing DRM connectors to re-read EDID..."
+                  for status in /sys/class/drm/card*/status; do
+                    sudo tee "$status" <<< detect >/dev/null 2>&1 || true
+                  done
+                  echo "Done. Monitors should be re-detected."
+                '';
+                "*" = ''
+                  if command -v wlr-randr &>/dev/null; then
+                    wlr-randr
+                  else
+                    echo "wlr-randr not available. Install it for detailed monitor info."
+                    echo ""
+                    echo "Connected monitors (basic info):"
+                    for dir in /sys/class/drm/card*-*/; do
+                      if [[ -f "$dir/status" ]]; then
+                        status=$(cat "$dir/status" 2>/dev/null || echo "unknown")
+                        connector=$(basename "$dir")
+                        if [[ "$status" == "connected" ]]; then
+                          echo "  $connector"
+                        fi
+                      fi
+                    done
+                  fi
+                '';
+              };
               wifi = {
                 connect = "nmcli connection up \"$@\"";
                 disconnect = ''

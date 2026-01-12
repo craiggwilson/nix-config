@@ -39,4 +39,19 @@ in
     nixos = monitorsOption;
     homeManager = monitorsOption;
   };
+
+  config.substrate.modules.hardware.monitors-fix = {
+    tags = [ "gui" ];
+
+    nixos = {
+      # Some monitors (e.g. Samsung Odyssey G95C via docking station) don't
+      # reliably send EDID on resume, causing them to be misidentified.
+      powerManagement.resumeCommands = ''
+        sleep 3
+        for status in /sys/class/drm/card*/status; do
+          echo detect > "$status" 2>/dev/null || true
+        done
+      '';
+    };
+  };
 }

@@ -148,7 +148,7 @@ nix flake check
 # Test a new configuration (NixOS)
 sudo nixos-rebuild test --flake .#hostname
 
-# Switch to new configuration (Home Manager standalone)
+# Test a new configuration (Home Manager standalone)
 home-manager test --flake .#username
 ```
 
