@@ -1,17 +1,18 @@
 {
   config.substrate.modules.desktop.custom.audioctl = {
-    tags = [ "desktop:custom" "audio" ];
+    tags = [
+      "desktop:custom"
+      "audio"
+    ];
 
     homeManager =
       { pkgs, ... }:
       {
         home.packages = [
+          pkgs.pavucontrol
+          pkgs.wireplumber
           (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
             name = "audioctl";
-            runtimeInputs = [
-              pkgs.pavucontrol
-              pkgs.wireplumber
-            ];
             subcommands = {
               input = {
                 mute = {
@@ -43,4 +44,3 @@
       };
   };
 }
-

@@ -1,11 +1,41 @@
 {
   config.substrate.modules.services._1password = {
-    tags = [ "gui" "security:passwordmanager" ];
+    tags = [ "security:passwordmanager" ];
+
+    nixos =
+      {
+        lib,
+        hasTag,
+        ...
+      }:
+      {
+        programs._1password.enable = true;
+
+        programs._1password-gui = lib.mkIf (hasTag "gui") {
+          enable = true;
+        };
+
+        security.pam.services."1password".enableGnomeKeyring = hasTag "gui";
+      };
 
     homeManager =
-      { pkgs, ... }:
       {
-        systemd.user.services."1password" = {
+        hasTag,
+        lib,
+        pkgs,
+        ...
+      }:
+      {
+        hdwlinux.apps.passwordManager = lib.mkIf (hasTag "gui") {
+          package = pkgs._1password-gui;
+          argGroups = {
+            toggle = [ "--toggle" ];
+            lock = [ "--lock" ];
+            quickaccess = [ "--quick-access" ];
+          };
+        };
+
+        systemd.user.services."1password" = lib.mkIf (hasTag "gui") {
           Unit = {
             Description = "Password manager daemon";
             Documentation = [ "https://www.1password.com" ];
