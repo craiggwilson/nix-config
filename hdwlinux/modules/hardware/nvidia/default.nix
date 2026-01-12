@@ -1,23 +1,20 @@
-{ config, lib, ... }:
+{ config, ... }:
 let
   pcicardType = config.substrate.types.pcicard;
-
-  nvidiaCardOption = {
-    options.hdwlinux.hardware.graphics.nvidia.card = lib.mkOption {
-      description = "The nvidia graphics card information.";
-      type = pcicardType;
-    };
-  };
 in
 {
-  config.substrate.modules.hardware.nvidia-options = {
-    tags = [ ];
-    nixos = nvidiaCardOption;
-    homeManager = nvidiaCardOption;
-  };
-
   config.substrate.modules.hardware.nvidia = {
     tags = [ "graphics:nvidia" ];
+
+    generic =
+      { lib, ... }:
+
+      {
+        options.hdwlinux.hardware.graphics.nvidia.card = lib.mkOption {
+          description = "The nvidia graphics card information.";
+          type = pcicardType lib;
+        };
+      };
 
     nixos =
       { config, lib, ... }:
@@ -49,4 +46,3 @@ in
       };
   };
 }
-

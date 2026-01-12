@@ -1,29 +1,5 @@
-{ lib, ... }:
-let
-  cursorType = lib.types.submodule {
-    options = {
-      package = lib.mkOption {
-        type = lib.types.package;
-        description = "Package providing the cursor theme.";
-      };
-      name = lib.mkOption {
-        type = lib.types.str;
-        description = "The cursor name within the package.";
-      };
-      size = lib.mkOption {
-        type = lib.types.int;
-        default = 32;
-        description = "The cursor size.";
-      };
-    };
-  };
-in
 {
-  # Register the cursor type in substrate.types
-  config.substrate.types.cursor = cursorType;
-
   config.substrate.modules.theming.options = {
-    tags = [ ]; # Always included
     homeManager =
       { config, lib, ... }:
       {
@@ -40,7 +16,25 @@ in
           };
           cursor = lib.mkOption {
             description = "The cursor theme.";
-            type = lib.types.nullOr cursorType;
+            type = lib.types.nullOr (
+              lib.types.submodule {
+                options = {
+                  package = lib.mkOption {
+                    type = lib.types.package;
+                    description = "Package providing the cursor theme.";
+                  };
+                  name = lib.mkOption {
+                    type = lib.types.str;
+                    description = "The cursor name within the package.";
+                  };
+                  size = lib.mkOption {
+                    type = lib.types.int;
+                    default = 32;
+                    description = "The cursor size.";
+                  };
+                };
+              }
+            );
             default = null;
           };
           dark = lib.mkOption {

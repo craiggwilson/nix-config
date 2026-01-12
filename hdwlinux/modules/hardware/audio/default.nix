@@ -1,23 +1,20 @@
-{ config, lib, ... }:
+{ config, ... }:
 let
   pcicardType = config.substrate.types.pcicard;
-
-  soundcardOption = {
-    options.hdwlinux.hardware.audio.soundcard = lib.mkOption {
-      description = "The soundcard information.";
-      type = pcicardType;
-    };
-  };
 in
 {
-  config.substrate.modules.hardware.audio-options = {
-    tags = [ ];
-    nixos = soundcardOption;
-    homeManager = soundcardOption;
-  };
-
   config.substrate.modules.hardware.audio = {
     tags = [ "audio" ];
+
+    generic =
+      { lib, ... }:
+      {
+        options.hdwlinux.hardware.audio.soundcard = lib.mkOption {
+          description = "The soundcard information.";
+          type = pcicardType lib;
+        };
+      };
+
     nixos =
       { lib, ... }:
       {
@@ -39,4 +36,3 @@ in
       };
   };
 }
-

@@ -219,7 +219,12 @@
           "gaming:streaming"
           "graphics"
           "graphics:nvidia"
-          { "gui" = [ "fonts" ]; }
+          {
+            "gui" = [
+              "fonts"
+              "graphics"
+            ];
+          }
           "laptop"
           "networking"
           "networking:tailscale"
