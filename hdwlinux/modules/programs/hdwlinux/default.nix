@@ -3,7 +3,12 @@
     tags = [ ]; # Always included
 
     homeManager =
-      { config, hasTag, pkgs, ... }:
+      {
+        config,
+        hasTag,
+        pkgs,
+        ...
+      }:
       let
         flake = config.hdwlinux.flake;
         user = config.hdwlinux.user.name;
@@ -76,6 +81,7 @@
                 '';
                 "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake} "$@" |& nom'';
               };
+              test = ''git -C ${flake} add -A . && sudo nixos-rebuild test --flake ${flake} "$@" |& nom'';
               wifi = {
                 connect = "nmcli connection up \"$@\"";
                 disconnect = ''
@@ -99,4 +105,3 @@
       };
   };
 }
-

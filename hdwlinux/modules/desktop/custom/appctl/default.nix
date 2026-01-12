@@ -53,7 +53,7 @@
                 pkill rofi || rofi \
                   -show drun \
                   -theme app-menu.rasi \
-                  -run-command 'appctl exec {cmd}'
+                  -drun-run-command 'appctl exec {cmd}'
               '';
               show-windows = "pkill rofi || rofi -show window";
             };

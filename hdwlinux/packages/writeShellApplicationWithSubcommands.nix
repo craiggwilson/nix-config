@@ -70,7 +70,10 @@ let
       results = lib.mapAttrsToList processOne (lib.filterAttrs (n: _: n != "*") subcommands);
 
       defaultRecipe =
-        if builtins.hasAttr "*" subcommands then writeRecipe "default" subcommands."*" true else "";
+        if builtins.hasAttr "*" subcommands then
+          writeRecipe "default" subcommands."*" true
+        else
+          writeRecipe "default" "@just --list" true;
     in
     {
       files = lib.flatten (map (r: r.files) results);
