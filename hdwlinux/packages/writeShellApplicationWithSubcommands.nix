@@ -73,7 +73,7 @@ let
         if builtins.hasAttr "*" subcommands then
           writeRecipe "default" subcommands."*" true
         else
-          writeRecipe "default" "@just --list" true;
+          writeRecipe "default" "@just --list --list-submodules --justfile {{source_file()}}" true;
     in
     {
       files = lib.flatten (map (r: r.files) results);
@@ -101,15 +101,6 @@ pkgs.writeShellApplication {
   inherit name;
   runtimeInputs = runtimeInputs ++ [ pkgs.just ];
   text = ''
-    flags=()
-    args=()
-    for arg in "$@"; do
-      if [[ "$arg" == -* ]]; then
-        flags+=("$arg")
-      else
-        args+=("$arg")
-      fi
-    done
-    exec just --list-submodules --justfile "${justfile}" --working-directory "$(pwd)" "''${flags[@]}" "''${args[@]}"
+    exec just --justfile "${justfile}" --working-directory "$(pwd)" "$@"
   '';
 }
