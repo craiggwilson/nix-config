@@ -174,15 +174,15 @@
 
         # Add menu theme files using symlinks for easy editing
         xdg.configFile."rofi/app-menu.rasi".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/hdwlinux/modules/desktop/custom/rofi/app-menu.rasi";
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/app-menu.rasi";
         xdg.configFile."rofi/networkmenu.rasi".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/hdwlinux/modules/desktop/custom/rofi/networkmenu.rasi";
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/networkmenu.rasi";
         xdg.configFile."rofi/powermenu.rasi".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/hdwlinux/modules/desktop/custom/rofi/powermenu.rasi";
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/powermenu.rasi";
         xdg.configFile."rofi/screen-capture-menu.rasi".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/hdwlinux/modules/desktop/custom/rofi/screen-capture-menu.rasi";
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/screen-capture-menu.rasi";
         xdg.configFile."rofi/screen-record-menu.rasi".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/hdwlinux/modules/desktop/custom/rofi/screen-record-menu.rasi";
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/screen-record-menu.rasi";
       };
   };
 }

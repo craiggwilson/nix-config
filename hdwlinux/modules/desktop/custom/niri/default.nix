@@ -132,7 +132,7 @@
           }
         '';
         xdg.configFile."niri/functional.kdl".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/hdwlinux/modules/desktop/custom/niri/config/functional.kdl";
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/niri/config/functional.kdl";
       };
   };
 }
