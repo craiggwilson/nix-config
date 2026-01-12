@@ -25,7 +25,7 @@
 
         themeFile = pkgs.writeTextFile {
           name = "vscode-hdwlinux-theme.json";
-          text = (import ./_template.nix) themeColors;
+          text = (import ./_template.nix) themeColors.withHashtag;
         };
         themeExtension =
           pkgs.runCommandLocal "hdwlinux-vscode"
@@ -43,6 +43,7 @@
       {
         programs.vscode = {
           enable = true;
+          package = pkgs.vscodium;
           mutableExtensionsDir = true;
 
           profiles.default = {
