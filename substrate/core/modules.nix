@@ -2,11 +2,13 @@
 let
   settings = config.substrate.settings;
 
-  reservedNames = settings.supportedClasses ++ lib.attrNames settings.extraModuleOptions;
+  allClasses = [ "generic" ] ++ settings.supportedClasses;
+
+  reservedNames = allClasses ++ lib.attrNames settings.extraModuleOptions;
 
   treeType = lib.types.submodule {
     options =
-      lib.genAttrs settings.supportedClasses (
+      lib.genAttrs allClasses (
         _:
         lib.mkOption {
           type = lib.types.nullOr lib.types.deferredModule;
@@ -18,8 +20,7 @@ let
   };
 
   hasSubstrateContent =
-    module:
-    builtins.any (class: module ? ${class} && module.${class} != null) settings.supportedClasses;
+    module: builtins.any (class: module ? ${class} && module.${class} != null) allClasses;
 
   collectSubstrateModules =
     module:

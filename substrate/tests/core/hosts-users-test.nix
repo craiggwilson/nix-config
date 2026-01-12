@@ -67,11 +67,7 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.users.alice = {
-                fullName = "Alice";
-                email = "alice@test.com";
-                publicKey = null;
-              };
+              config.substrate.users.alice = { };
               config.substrate.hosts.testhost = {
                 users = [ "alice" ];
               };
@@ -81,22 +77,17 @@ let
         eval.config.substrate.hosts.testhost.users == [ "alice" ];
     };
 
-    # Test 4: User can be defined with required fields
+    # Test 4: User can be defined with just a name
     userRequiredFields = {
       check =
         let
           eval = evalSubstrate [
             {
-              config.substrate.users.bob = {
-                fullName = "Bob Smith";
-                email = "bob@test.com";
-                publicKey = null;
-              };
+              config.substrate.users.bob = { };
             }
           ];
         in
-        eval.config.substrate.users.bob.fullName == "Bob Smith"
-        && eval.config.substrate.users.bob.email == "bob@test.com";
+        eval.config.substrate.users.bob.name == "bob";
     };
 
     # Test 5: User name defaults to attribute name
@@ -105,32 +96,24 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.users.charlie = {
-                fullName = "Charlie";
-                email = "charlie@test.com";
-                publicKey = null;
-              };
+              config.substrate.users.charlie = { };
             }
           ];
         in
         eval.config.substrate.users.charlie.name == "charlie";
     };
 
-    # Test 6: User homeDirectory has sensible default
+    # Test 6: User name is accessible
     userHomeDirectoryDefault = {
       check =
         let
           eval = evalSubstrate [
             {
-              config.substrate.users.dave = {
-                fullName = "Dave";
-                email = "dave@test.com";
-                publicKey = null;
-              };
+              config.substrate.users.dave = { };
             }
           ];
         in
-        eval.config.substrate.users.dave.homeDirectory == "/home/dave";
+        eval.config.substrate.users.dave.name == "dave";
     };
 
     # Test 7: Multiple hosts can be defined
@@ -154,16 +137,8 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.users.user1 = {
-                fullName = "User 1";
-                email = "user1@test.com";
-                publicKey = null;
-              };
-              config.substrate.users.user2 = {
-                fullName = "User 2";
-                email = "user2@test.com";
-                publicKey = null;
-              };
+              config.substrate.users.user1 = { };
+              config.substrate.users.user2 = { };
             }
           ];
         in

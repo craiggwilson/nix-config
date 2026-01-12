@@ -151,6 +151,61 @@ let
         in
         args.foo == "bar" && args.baz == 42;
     };
+
+    # Test 11: extractClassModules includes generic modules for nixos
+    extractClassModulesIncludesGenericForNixos = {
+      check =
+        let
+          eval = evalSubstrate [ ];
+          extractClassModules = eval.config.substrate.lib.extractClassModules;
+          mods = [
+            { generic = { shared = true; }; nixos = null; }
+            { generic = null; nixos = { enable = true; }; }
+          ];
+        in
+        lib.length (extractClassModules "nixos" mods) == 2;
+    };
+
+    # Test 12: extractClassModules includes generic modules for homeManager
+    extractClassModulesIncludesGenericForHomeManager = {
+      check =
+        let
+          eval = evalSubstrate [ ];
+          extractClassModules = eval.config.substrate.lib.extractClassModules;
+          mods = [
+            { generic = { shared = true; }; homeManager = null; }
+            { generic = null; homeManager = { config = { }; }; }
+          ];
+        in
+        lib.length (extractClassModules "homeManager" mods) == 2;
+    };
+
+    # Test 13: extractClassModules with both generic and specific modules
+    extractClassModulesBothGenericAndSpecific = {
+      check =
+        let
+          eval = evalSubstrate [ ];
+          extractClassModules = eval.config.substrate.lib.extractClassModules;
+          mods = [
+            { generic = { shared = true; }; nixos = { specific = true; }; }
+          ];
+          result = extractClassModules "nixos" mods;
+        in
+        lib.length result == 2;
+    };
+
+    # Test 14: extractClassModules for generic class does not double-include generic
+    extractClassModulesGenericClassNoDoubleInclude = {
+      check =
+        let
+          eval = evalSubstrate [ ];
+          extractClassModules = eval.config.substrate.lib.extractClassModules;
+          mods = [
+            { generic = { shared = true; }; nixos = null; }
+          ];
+        in
+        lib.length (extractClassModules "generic" mods) == 1;
+    };
   };
 
   results = lib.mapAttrs runTest tests;

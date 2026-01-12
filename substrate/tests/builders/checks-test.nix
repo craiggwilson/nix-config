@@ -67,9 +67,6 @@ let
             {
               config.substrate.settings.tags = [ "desktop" "laptop" ];
               config.substrate.users.alice = {
-                fullName = "Alice";
-                email = "alice@test.com";
-                publicKey = null;
                 tags = [ "desktop" ];
               };
             }
@@ -84,11 +81,7 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.users.alice = {
-                fullName = "Alice";
-                email = "alice@test.com";
-                publicKey = null;
-              };
+              config.substrate.users.alice = { };
               config.substrate.hosts.myhost = {
                 users = [ "alice" ];
               };

@@ -377,9 +377,6 @@ let
               }
               {
                 config.substrate.users.testuser = {
-                  fullName = "Test User";
-                  email = "test@test.com";
-                  publicKey = null;
                   tags = [ "core" ];
                 };
               }
@@ -430,9 +427,6 @@ let
               }
               {
                 config.substrate.users.testuser = {
-                  fullName = "Test User";
-                  email = "test@test.com";
-                  publicKey = null;
                   tags = [ "core" ];
                 };
               }
@@ -442,6 +436,40 @@ let
         in
         # Only one module should be found (the one with "core" tag)
         lib.length found == 1;
+    };
+
+    # Test 17: Generic class is recognized as substrate content
+    genericClassIsSubstrateContent = {
+      check =
+        let
+          eval = evalSubstrate [
+            {
+              config.substrate.modules.programs.shared = {
+                generic = { };
+              };
+            }
+          ];
+          found = eval.config.substrate.finders.all.find [ ];
+        in
+        lib.length found == 1;
+    };
+
+    # Test 18: Module with only generic class is collected
+    moduleWithOnlyGenericIsCollected = {
+      check =
+        let
+          eval = evalSubstrate [
+            {
+              config.substrate.modules.programs.sharedOnly = {
+                generic = {
+                  someOption = true;
+                };
+              };
+            }
+          ];
+        in
+        eval.config.substrate.modules.programs.sharedOnly ? generic
+        && eval.config.substrate.modules.programs.sharedOnly.generic != null;
     };
   };
 

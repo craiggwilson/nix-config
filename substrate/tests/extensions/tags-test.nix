@@ -29,7 +29,7 @@ let
       {
         inherit name;
         success = false;
-        message = "FAIL: ${result.value or "evaluation error"}";
+        message = "FAIL: evaluation error";
       };
 
   # Evaluate a substrate configuration with tags extension
@@ -94,9 +94,6 @@ let
                 "theming:catppuccin"
               ];
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "theming:catppuccin" ];
               };
             }
@@ -121,9 +118,6 @@ let
               ];
               # Use the metatag which has an invalid implied tag
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "hardware:dell" ];  # This should trigger validation of implied "typo-tag"
               };
             }
@@ -191,9 +185,6 @@ let
                 tags = [ "extra" ];
               };
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "core" ];
               };
             }
@@ -220,9 +211,6 @@ let
                 tags = [ "core" ];
               };
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "core" ];
               };
             }
@@ -253,9 +241,6 @@ let
                 tags = [ "desktop:custom" ];
               };
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "desktop:custom:hyprland" ];
               };
             }
@@ -278,9 +263,6 @@ let
                 { "gui" = [ "fonts" ]; }
               ];
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "gui" ];
               };
             }
@@ -318,9 +300,6 @@ let
                 "theming:catppuccin:mocha"
               ];
               config.substrate.users.testuser = {
-                fullName = "Test User";
-                email = "test@test.com";
-                publicKey = null;
                 tags = [ "theming:catppuccin:mocha" ];
               };
             }

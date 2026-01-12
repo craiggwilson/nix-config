@@ -26,7 +26,12 @@ let
 
   extractClassModules =
     class: mods:
-    lib.flatten (lib.map (m: if m ? ${class} && m.${class} != null then [ m.${class} ] else [ ]) mods);
+    let
+      extractClass = c: lib.flatten (lib.map (m: if m ? ${c} && m.${c} != null then [ m.${c} ] else [ ]) mods);
+      classModules = extractClass class;
+      genericModules = if class != "generic" then extractClass "generic" else [ ];
+    in
+    genericModules ++ classModules;
 
   extraArgsGenerator =
     { hostcfg, usercfg }:

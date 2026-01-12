@@ -9,15 +9,16 @@ let
 
   validateModuleClasses =
     let
-      supportedClasses = settings.supportedClasses;
+      allClasses = [ "generic" ] ++ settings.supportedClasses;
       modulesWithUnsupportedClasses = lib.filter (
         m:
         let
           usedClasses = lib.filter (c: m ? ${c} && m.${c} != null) [
+            "generic"
             "nixos"
             "homeManager"
           ];
-          unsupportedClasses = lib.filter (c: !(lib.elem c supportedClasses)) usedClasses;
+          unsupportedClasses = lib.filter (c: !(lib.elem c allClasses)) usedClasses;
         in
         unsupportedClasses != [ ]
       ) allModules;
