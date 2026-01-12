@@ -61,117 +61,6 @@
           }
         '';
 
-        xdg.configFile."rofi/theme.rasi".text = ''
-          @import "colors.rasi"
-
-          * {
-              font:                        "JetBrainsMono Nerd Font 12";
-              border-colour:               var(selected);
-              handle-colour:               var(selected);
-              background-colour:           var(background);
-              foreground-colour:           var(foreground);
-              alternate-background:        var(background-alt);
-              normal-background:           var(background);
-              normal-foreground:           var(foreground);
-              urgent-background:           var(urgent);
-              urgent-foreground:           var(background);
-              active-background:           var(active);
-              active-foreground:           var(background);
-              selected-normal-background:  var(selected);
-              selected-normal-foreground:  var(background);
-              selected-urgent-background:  var(active);
-              selected-urgent-foreground:  var(background);
-              selected-active-background:  var(urgent);
-              selected-active-foreground:  var(background);
-              alternate-normal-background: var(background);
-              alternate-normal-foreground: var(foreground);
-              alternate-urgent-background: var(urgent);
-              alternate-urgent-foreground: var(background);
-              alternate-active-background: var(active);
-              alternate-active-foreground: var(background);
-          }
-
-          window {
-              transparency:                "real";
-              location:                    center;
-              anchor:                      center;
-              fullscreen:                  false;
-              width:                       600px;
-              x-offset:                    0px;
-              y-offset:                    0px;
-              enabled:                     true;
-              margin:                      0px;
-              padding:                     0px;
-              border:                      0px solid;
-              border-radius:               10px;
-              border-color:                @border-colour;
-              cursor:                      "default";
-              background-color:            @background-colour;
-          }
-
-          mainbox {
-              enabled:                     true;
-              spacing:                     10px;
-              margin:                      0px;
-              padding:                     30px;
-              border:                      0px solid;
-              border-radius:               0px 0px 0px 0px;
-              border-color:                @border-colour;
-              background-color:            transparent;
-              children:                    [ "inputbar", "listview" ];
-          }
-
-          inputbar {
-              enabled:                     true;
-              spacing:                     10px;
-              margin:                      0px;
-              padding:                     15px;
-              border:                      0px solid;
-              border-radius:               10px;
-              border-color:                @border-colour;
-              background-color:            @alternate-background;
-              text-color:                  @foreground-colour;
-              children:                    [ "prompt", "entry" ];
-          }
-
-          prompt {
-              enabled:                     true;
-              background-color:            inherit;
-              text-color:                  inherit;
-          }
-
-          entry {
-              enabled:                     true;
-              background-color:            inherit;
-              text-color:                  inherit;
-              cursor:                      text;
-              placeholder:                 "Search...";
-              placeholder-color:           inherit;
-          }
-
-          listview {
-              enabled:                     true;
-              columns:                     1;
-              lines:                       6;
-              cycle:                       true;
-              dynamic:                     true;
-              scrollbar:                   false;
-              layout:                      vertical;
-              reverse:                     false;
-              fixed-height:                true;
-              fixed-columns:               true;
-              spacing:                     5px;
-              margin:                      0px;
-              padding:                     0px;
-              border:                      0px solid;
-              border-radius:               0px;
-              border-color:                @border-colour;
-              background-color:            transparent;
-              text-color:                  @foreground-colour;
-              cursor:                      "default";
-          }
-        '';
-
         # Add menu theme files using symlinks for easy editing
         xdg.configFile."rofi/app-menu.rasi".source =
           config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/app-menu.rasi";
@@ -183,6 +72,8 @@
           config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/screen-capture-menu.rasi";
         xdg.configFile."rofi/screen-record-menu.rasi".source =
           config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/screen-record-menu.rasi";
+        xdg.configFile."rofi/theme.rasi".source =
+          config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/desktop/custom/rofi/theme.rasi";
       };
   };
 }
