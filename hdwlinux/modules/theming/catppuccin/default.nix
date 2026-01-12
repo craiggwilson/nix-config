@@ -30,7 +30,6 @@ let
     base16 = "74c7ec"; # sapphire - bright blue
     base17 = "f5c2e7"; # pink - bright purple
   };
-
   # Pre-compute withHashtag version
   withHashtag = builtins.mapAttrs (_: value: "#" + value) colors;
 
@@ -87,24 +86,25 @@ in
     tags = [ "theming:catppuccin" ];
 
     nixos = {
+      # TODO: this is going to be a problem with two users and different themes.
       console.colors = [
-        "1e1e2e"
-        "f38ba8"
-        "a6e3a1"
-        "f9e2af"
-        "89b4fa"
-        "f5c2e7"
-        "94e2d5"
-        "cdd6f4"
+        colors.base00
+        colors.base08
+        colors.base0B
+        colors.base0A
+        colors.base0D
+        colors.base06
+        colors.base0C
+        colors.base05
 
-        "585b70"
-        "f38ba8"
-        "a6e3a1"
-        "f9e2af"
-        "89b4fa"
-        "f5c2e7"
-        "94e2d5"
-        "b4befe"
+        colors.base04
+        colors.base08
+        colors.base0B
+        colors.base0A
+        colors.base15
+        colors.base17
+        colors.base0C
+        colors.base07
       ];
     };
 
