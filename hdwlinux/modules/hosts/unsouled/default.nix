@@ -2,7 +2,6 @@
 let
   hostname = "unsouled";
   diskoConfig = import ./_disko.nix;
-  flakePath = "/home/craig/Projects/github.com/craiggwilson/nix-config/hdwlinux";
 in
 {
   substrate.hosts.${hostname} = {
@@ -15,6 +14,9 @@ in
 
   substrate.modules.hosts.${hostname} = {
     tags = [ "host:${hostname}" ];
+    generic = {
+      hdwlinux.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config/hdwlinux";
+    };
     nixos =
       { pkgs, ... }:
       {
@@ -31,13 +33,7 @@ in
           };
         };
 
-        hdwlinux.flake = flakePath;
-
         system.stateVersion = "23.05";
       };
-
-    homeManager = {
-      hdwlinux.flake = flakePath;
-    };
   };
 }
