@@ -64,9 +64,24 @@ in
         nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
         services = {
+          auto-cpufreq = {
+            enable = true;
+            settings = {
+              battery = {
+                governor = "powersave";
+                turbo = "never";
+              };
+              charger = {
+                governor = "performance";
+                turbo = "auto";
+              };
+            };
+          };
+
           thermald.enable = true;
-          tlp.enable = true;
+          tlp.enable = lib.mkForce false;
         };
+
       }
       // sharedHardwareConfig;
 
