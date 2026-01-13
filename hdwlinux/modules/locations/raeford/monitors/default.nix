@@ -10,6 +10,9 @@
           serial = "HNTY500018";
           mode = "5120x1440@59.977Hz";
           scale = 1.0;
+          edidOverride = {
+            edidFile = ./firmware/samsung-odyssey-g95c.bin;
+          };
         };
 
         office-top = {

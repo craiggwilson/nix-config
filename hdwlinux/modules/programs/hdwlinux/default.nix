@@ -85,10 +85,15 @@
               test = ''git -C ${flake} add -A . && sudo nixos-rebuild test --flake ${flake} "$@" |& nom'';
               monitors = {
                 fix = ''
-                  echo "Forcing DRM connectors to re-read EDID..."
-                  for status in /sys/class/drm/card*/status; do
-                    sudo tee "$status" <<< detect >/dev/null 2>&1 || true
-                  done
+                  if [[ -x /etc/hdwlinux/edid-fix ]]; then
+                    echo "Running EDID fix script..."
+                    sudo /etc/hdwlinux/edid-fix
+                  else
+                    echo "Forcing DRM connectors to re-read EDID..."
+                    for status in /sys/class/drm/card*/status; do
+                      sudo tee "$status" <<< detect >/dev/null 2>&1 || true
+                    done
+                  fi
                   echo "Done. Monitors should be re-detected."
                 '';
                 "*" = ''
