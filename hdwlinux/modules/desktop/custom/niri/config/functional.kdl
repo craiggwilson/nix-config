@@ -134,7 +134,6 @@ binds {
     Mod+Shift+F { toggle-window-floating; }
     Mod+L hotkey-overlay-title="Toggle password manager" { spawn "appctl" "exec-known" "passwordManager" "toggle"; }
     Mod+Shift+L hotkey-overlay-title="Lock password manager" { spawn "appctl" "exec-known" "passwordManager" "lock"; }
-    Mod+M { center-column; }
     Mod+Q hotkey-overlay-title="Close window" { close-window; }
     Mod+R { switch-preset-column-width; }
     Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "appctl" "exec-known" "terminal"; }
@@ -143,12 +142,14 @@ binds {
     Mod+X hotkey-overlay-title="Open power menu" { spawn "appctl" "exec" "powermenu"; }
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
+    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn-sh "nscratch -id scratch.terminal -m -s \"appctl exec-known terminal launch --class=scratch.terminal\""; }
     Mod+Minus { set-column-width "-10%"; }
     Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Return { center-column; }
+    Mod+Shift+Return { maximize-window-to-edges; }
     Mod+Shift+Slash { show-hotkey-overlay; }
     Mod+Space hotkey-overlay-title="Show application menu" { spawn "appctl" "exec" "appctl" "show-menu"; }
     Mod+Tab repeat=false { toggle-overview; }
-    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn-sh "nscratch -id scratch.terminal -m -s \"appctl exec-known terminal --class=scratch.terminal\""; }
 
     XF86AudioRaiseVolume  { spawn "audioctl" "output" "volume" "raise"; }
     XF86AudioLowerVolume  { spawn "audioctl" "output" "volume" "lower"; }
@@ -160,7 +161,7 @@ binds {
     Mod+Down  { focus-window-or-monitor-down; }
     Mod+Up    { focus-window-or-monitor-up; }
     Mod+Right { focus-column-or-monitor-right; }
-    Mod+Return { center-column; }
+
 
     Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
     Mod+Shift+Down  { move-window-down; }
