@@ -11,7 +11,12 @@
     };
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         colors = config.hdwlinux.theme.colors or { };
         hasColors = colors != { } && builtins.hasAttr "withHashtag" colors;
@@ -68,7 +73,7 @@
             inner_color = ${rgb colors.base02}
             font_color = ${rgb colors.base05}
             fade_on_empty = false
-            placeholder_text = <span foreground="${colors.withHashtag.base05}"><i>󰌾 Logged in as </i></span><span foreground="${colors.withHashtag.base0B}">$USER</span>
+            placeholder_text = <i>󰌾 Logged in as </i>$USER
             hide_input = false
             check_color = ${rgb colors.base0D}
             fail_color = ${rgb colors.base08}
@@ -82,4 +87,3 @@
       };
   };
 }
-
