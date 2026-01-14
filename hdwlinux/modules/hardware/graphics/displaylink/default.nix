@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.hardware.displaylink = {
+  config.substrate.modules.hardware.graphics.displaylink = {
     nixos =
       { config, lib, ... }:
       let
@@ -12,4 +12,3 @@
       };
   };
 }
-

@@ -3,7 +3,7 @@ let
   pcicardType = config.substrate.types.pcicard;
 in
 {
-  config.substrate.modules.hardware.nvidia = {
+  config.substrate.modules.hardware.graphics.nvidia = {
     tags = [ "graphics:nvidia" ];
 
     generic =

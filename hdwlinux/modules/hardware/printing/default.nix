@@ -2,7 +2,7 @@ let
   ppdName = "Brother_HL-L2380DW.ppd";
 in
 {
-  config.substrate.modules.hardware.printers = {
+  config.substrate.modules.hardware.printing = {
     tags = [ "printing" ];
 
     nixos =
@@ -25,4 +25,3 @@ in
       };
   };
 }
-
