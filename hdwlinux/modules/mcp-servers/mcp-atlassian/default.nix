@@ -1,9 +1,18 @@
 {
   config.substrate.modules.programs.mcp-atlassian = {
-    tags = [ "users:craig:work" ];
+    tags = [
+      "users:craig:work"
+      "programming"
+      "ai:mcp"
+    ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         secrets = config.hdwlinux.security.secrets.entries;
         hasSecrets = secrets ? jiraAccessToken && secrets ? confluenceAccessToken;
@@ -30,4 +39,3 @@
       };
   };
 }
-

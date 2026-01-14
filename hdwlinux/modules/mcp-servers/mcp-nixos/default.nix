@@ -5,7 +5,7 @@
   # See: https://github.com/NixOS/nixpkgs/issues/XXXXX
   #
   # config.substrate.modules.programs.mcp-nixos = {
-  #   tags = [ "programming" ];
+  #   tags = [ "programming" "ai:mcp" ];
   #
   #   homeManager =
   #     { pkgs, ... }:
@@ -18,4 +18,3 @@
   #     };
   # };
 }
-

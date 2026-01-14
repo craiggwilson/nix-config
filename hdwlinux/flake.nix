@@ -152,6 +152,7 @@
           # User-specific tags
           {
             "users:craig" = [
+              "ai:mcp"
               "desktop:custom:niri"
               "networking:tailscale"
               "programming"
@@ -202,6 +203,7 @@
           }
 
           # Feature tags
+          "ai:mcp"
           "audio"
           "audio:midi"
           "audio:production"

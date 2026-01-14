@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.context7-mcp = {
-    tags = [ "programming" ];
+    tags = [
+      "programming"
+      "ai:mcp"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -15,4 +18,3 @@
       };
   };
 }
-

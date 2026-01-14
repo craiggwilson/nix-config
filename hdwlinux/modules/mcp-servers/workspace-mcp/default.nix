@@ -1,9 +1,18 @@
 {
   config.substrate.modules.programs.workspace-mcp = {
-    tags = [ "users:craig:work" ];
+    tags = [
+      "users:craig:work"
+      "programming"
+      "ai:mcp"
+    ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         cfg = config.hdwlinux.programs.workspace-mcp;
         secrets = config.hdwlinux.security.secrets.entries;
@@ -77,4 +86,3 @@
       };
   };
 }
-

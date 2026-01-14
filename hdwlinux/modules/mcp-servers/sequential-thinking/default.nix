@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.sequential-thinking = {
-    tags = [ "programming" ];
+    tags = [
+      "programming"
+      "ai:mcp"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -21,4 +24,3 @@
       };
   };
 }
-
