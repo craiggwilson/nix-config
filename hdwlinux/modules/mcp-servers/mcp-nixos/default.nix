@@ -4,17 +4,20 @@
   # but nixpkgs has mcp 1.25.0
   # See: https://github.com/NixOS/nixpkgs/issues/XXXXX
   #
-  # config.substrate.modules.programs.mcp-nixos = {
-  #   tags = [ "programming" "ai:mcp" ];
-  #
-  #   homeManager =
-  #     { pkgs, ... }:
-  #     {
-  #       hdwlinux.mcpServers.nixos = {
-  #         type = "stdio";
-  #         command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
-  #         args = [ ];
-  #       };
-  #     };
-  # };
+  config.substrate.modules.programs.mcp-nixos = {
+    tags = [
+      "programming"
+      "ai:mcp"
+    ];
+
+    homeManager =
+      { pkgs, ... }:
+      {
+        hdwlinux.mcpServers.nixos = {
+          type = "stdio";
+          command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
+          args = [ ];
+        };
+      };
+  };
 }

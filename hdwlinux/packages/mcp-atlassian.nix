@@ -2,20 +2,15 @@
 let
   python3Packages = pkgs.python3Packages;
 
-  fastmcp-legacy = python3Packages.buildPythonPackage rec {
+  fastmcp = python3Packages.buildPythonPackage rec {
     pname = "fastmcp";
-    version = "2.3.4";
-    pyproject = true;
+    version = "2.2.7";
+    format = "wheel";
 
-    src = python3Packages.fetchPypi {
-      inherit pname version;
-      sha256 = "sha256-8/4AS4c1s2WmXsJUfutH24NS1WE2lyVIVLx8nDw2Duo=";
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/dc/65/a68d6288963d89a43a880c6e6f38caf24d26eef9149200797891f56ae02a/fastmcp-2.2.7-py3-none-any.whl";
+      sha256 = "sha256-B0dCek9RWD6Frc7q7Rh6QDKm4nxwVZDZUbRfA+2FFIs=";
     };
-
-    build-system = [
-      python3Packages.hatchling
-      python3Packages.uv-dynamic-versioning
-    ];
 
     dependencies = [
       python3Packages.mcp
@@ -27,9 +22,8 @@ let
       python3Packages.click
       python3Packages.python-dotenv
       python3Packages.rich
-      python3Packages.typer
-      python3Packages.exceptiongroup
       python3Packages.websockets
+      python3Packages.exceptiongroup
     ];
 
     doCheck = false;
@@ -38,7 +32,7 @@ let
     meta = with lib; {
       description = "FastMCP - A fast, simple framework for building Model Context Protocol servers";
       homepage = "https://github.com/jlowin/fastmcp";
-      license = licenses.mit;
+      license = licenses.asl20;
       platforms = platforms.all;
     };
   };
@@ -85,14 +79,14 @@ let
 in
 python3Packages.buildPythonApplication rec {
   pname = "mcp-atlassian";
-  version = "0.11.0";
+  version = "0.10.3";
   pyproject = true;
 
   src = pkgs.fetchFromGitHub {
     owner = "sooperset";
     repo = "mcp-atlassian";
-    rev = "ca05d51cea76ac19c37c6d30a5883b1f6fe74caf";
-    sha256 = "sha256-nDjIM98DsPwqbjDkVhwErBSWTR911lxa6w8NM9GrdPE=";
+    rev = "v${version}";
+    sha256 = "sha256-aD2O4TSDtof7gsm0FL0ipnjz5IoOV4r3ff0Ylcz0TDo=";
   };
 
   build-system = [
@@ -106,7 +100,7 @@ python3Packages.buildPythonApplication rec {
     python3Packages.beautifulsoup4
     python3Packages.httpx
     python3Packages.mcp
-    fastmcp-legacy
+    fastmcp
     python3Packages.python-dotenv
     python3Packages.markdownify
     python3Packages.markdown
@@ -120,7 +114,6 @@ python3Packages.buildPythonApplication rec {
     python3Packages.python-dateutil
     python3Packages.types-python-dateutil
     python3Packages.keyring
-    python3Packages.cachetools
   ];
 
   doCheck = false;
