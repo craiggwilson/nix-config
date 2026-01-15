@@ -69,71 +69,70 @@
           '') monitorsWithEdidOverride)}
         '';
 
-        # Script to apply EDID overrides to connected displays with missing/invalid EDID
         edidFixScript = pkgs.writeShellScript "edid-fix" ''
           set -euo pipefail
 
           EDID_DIR="${edidDir}"
           DEBUG_DRI="/sys/kernel/debug/dri"
 
-          # Ensure debugfs is mounted
           if ! mountpoint -q /sys/kernel/debug 2>/dev/null; then
             mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null || true
           fi
 
+          apply_edid_override() {
+            local connector="$1"
+            local edid_file="$2"
+            local name="$3"
+
+            local card_num=$(echo "$connector" | sed -n 's/card\([0-9]*\)-.*/\1/p')
+            local conn_name=$(echo "$connector" | sed 's/card[0-9]*-//')
+            local override_path="$DEBUG_DRI/$card_num/$conn_name/edid_override"
+            local status_path="/sys/class/drm/$connector/status"
+
+            if [ -f "$override_path" ]; then
+              echo "Applying $name EDID to $conn_name"
+              if cat "$edid_file" > "$override_path" 2>/dev/null; then
+                echo "Resetting connector $conn_name"
+                echo off > "$status_path" 2>/dev/null || true
+                sleep 1
+                echo on > "$status_path" 2>/dev/null || true
+                return 0
+              else
+                echo "Failed to write EDID override for $conn_name"
+                return 1
+              fi
+            else
+              echo "No edid_override file at $override_path"
+              return 1
+            fi
+          }
+
           ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: monitor: ''
-            # Look for ${name} (${monitor.model}) on ${monitor.edidOverride.connectorPrefix}* connectors
             EDID_FILE="$EDID_DIR/${name}.bin"
             SERIAL="${monitor.serial or ""}"
-            MODEL="${monitor.model}"
 
             for connector_dir in /sys/class/drm/card*-${monitor.edidOverride.connectorPrefix}*/; do
               [ -d "$connector_dir" ] || continue
 
               connector=$(basename "$connector_dir")
-              status=$(cat "$connector_dir/status" 2>/dev/null || echo "unknown")
+              conn_status=$(cat "$connector_dir/status" 2>/dev/null || echo "unknown")
+              [ "$conn_status" = "connected" ] || continue
 
-              # Only process connected displays
-              [ "$status" = "connected" ] || continue
+              edid_path="$connector_dir/edid"
+              needs_override=false
 
-              # Check if EDID exists and is valid
-              edid_file="$connector_dir/edid"
-              if [ -f "$edid_file" ]; then
-                # Check if EDID contains expected serial or is empty/corrupt
-                edid_size=$(wc -c < "$edid_file" 2>/dev/null || echo 0)
-                if [ "$edid_size" -lt 128 ]; then
-                  echo "Connector $connector has invalid EDID (size: $edid_size), checking if override needed..."
-                elif [ -n "$SERIAL" ]; then
-                  # Check if serial matches (EDID serial is in ASCII at specific offsets)
-                  if ! strings "$edid_file" 2>/dev/null | grep -q "$SERIAL"; then
-                    # Serial doesn't match, might be wrong EDID or different monitor
-                    continue
-                  fi
-                  # Serial matches but EDID might be incomplete - apply override
-                  echo "Connector $connector appears to be ${name}, applying EDID override..."
-                else
-                  continue
-                fi
+              if [ ! -f "$edid_path" ]; then
+                needs_override=true
               else
-                echo "Connector $connector has no EDID, checking if override needed..."
+                edid_size=$(wc -c < "$edid_path" 2>/dev/null || echo 0)
+                if [ "$edid_size" -lt 128 ]; then
+                  needs_override=true
+                fi
               fi
 
-              # Find the DRI debug path for this connector
-              # Extract card number and connector name
-              card_num=$(echo "$connector" | sed -n 's/card\([0-9]*\)-.*/\1/p')
-              conn_name=$(echo "$connector" | sed 's/card[0-9]*-//')
-
-              override_path="$DEBUG_DRI/$card_num/$conn_name/edid_override"
-
-              if [ -f "$override_path" ]; then
-                echo "Applying ${name} EDID to $conn_name via $override_path"
-                cat "$EDID_FILE" > "$override_path" 2>/dev/null || echo "Failed to write EDID override for $conn_name"
-
-                # Trigger re-detection
-                status_file="$connector_dir/../card''${card_num}-''${conn_name}/status"
-                if [ -f "$status_file" ] && [ -w "$status_file" ]; then
-                  echo detect > "$status_file" 2>/dev/null || true
-                fi
+              if [ "$needs_override" = "true" ]; then
+                echo "Connector $connector needs EDID override (${name})"
+                apply_edid_override "$connector" "$EDID_FILE" "${name}" || true
               fi
             done
           '') monitorsWithEdidOverride)}
@@ -143,7 +142,7 @@
         environment.etc."hdwlinux/edid-fix".source = edidFixScript;
 
         boot.postBootCommands = ''
-          sleep 2
+          sleep 3
           /etc/hdwlinux/edid-fix || true
         '';
 

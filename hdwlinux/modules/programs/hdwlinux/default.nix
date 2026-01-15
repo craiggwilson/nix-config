@@ -89,12 +89,12 @@
                     echo "Running EDID fix script..."
                     sudo /etc/hdwlinux/edid-fix
                   else
-                    echo "Forcing DRM connectors to re-read EDID..."
+                    echo "No EDID fix script found. Forcing DRM connector re-detection..."
                     for status in /sys/class/drm/card*/status; do
                       sudo tee "$status" <<< detect >/dev/null 2>&1 || true
                     done
                   fi
-                  echo "Done. Monitors should be re-detected."
+                  echo "Done."
                 '';
                 "*" = ''
                   if command -v wlr-randr &>/dev/null; then
