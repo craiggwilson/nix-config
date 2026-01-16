@@ -5,10 +5,6 @@
     homeManager =
       { config, pkgs, ... }:
       {
-        home.packages = [
-          pkgs.pre-commit
-        ];
-
         programs.jujutsu = {
           enable = true;
 
@@ -57,9 +53,9 @@
                 "bookmark"
                 "move"
                 "--from"
-                "closest_bookmark(@)"
+                "closest_pushable(@-)"
                 "--to"
-                "closest_pushable(@)"
+                "@-"
               ];
             };
 
@@ -84,10 +80,8 @@
             };
 
             revset-aliases = {
-              "closest_bookmark(to)" =
-                "heads(::to & bookmarks() & ~private() & ~trunk()) | heads(::to & bookmarks() & ~private() & ~present(heads(::to & bookmarks() & ~private() & ~trunk())))";
               "closest_pushable(to)" =
-                ''heads(::to & mutable() & ~description(exact:" ") & (~empty() | merges()))'';
+                "coalesce(heads(::to & bookmarks() & ~private() & ~trunk()), heads(::to & bookmarks() & ~private()))";
               "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
               "private()" = "description(glob:'private:*')";
             };
