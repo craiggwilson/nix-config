@@ -17,14 +17,6 @@ jj squash          # Squash changes into parent
 jj log             # View history
 jj git push        # Push to remote
 ```
-
-### Deprecated Directories (IGNORE)
-
-The following directories are deprecated and will be removed. Do not reference, modify, or use them:
-
-- `bootstrap/` - Deprecated bootstrap code
-- `hdwlinux/` - Legacy configuration system
-
 ### Related Repositories
 
 - **`nix-private`** (sibling repository): Contains private/sensitive substrateModules imported via `inputs.hdwlinux-private.substrateModules.nix-private`

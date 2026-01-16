@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.powertop = {
+  config.substrate.modules.services.powertop = {
     nixos =
       { pkgs, ... }:
       {
@@ -7,7 +7,6 @@
 
         powerManagement.powertop = {
           enable = true;
-          # Turn off auto suspend for USB HID devices.
           postStart = ''
             HIDDEVICES=$(ls /sys/bus/usb/drivers/usbhid | grep -oE '^[0-9]+-[0-9\.]+' | sort -u)
             for i in $HIDDEVICES; do
@@ -19,3 +18,4 @@
       };
   };
 }
+

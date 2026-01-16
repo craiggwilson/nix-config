@@ -1,40 +1,38 @@
 { inputs, ... }:
-let
-  # Shared hardware config for both nixos and home-manager
-  sharedHardwareConfig = {
-    hdwlinux.hardware = {
-      audio.soundcard = {
-        busId = "00:1f.3";
-        path = "/dev/snd/controlC0";
-      };
-      graphics = {
-        card = {
-          busId = "00:02.0";
-          path = "/dev/dri/card1";
-        };
-        nvidia.card = {
-          busId = "01:00.0";
-          path = "/dev/dri/card0";
-        };
-      };
-      monitors.laptop = {
-        vendor = "BOE";
-        model = "0x0A1C";
-        mode = "1920x1080@165.004Hz";
-        scale = 1.0;
-      };
-      outputProfiles.laptop = {
-        outputs.laptop = {
-          enable = true;
-          position = "0,0";
-        };
-      };
-    };
-  };
-in
 {
   config.substrate.modules.hardware.models.system76-serval-ws = {
     tags = [ "hardware:system76-serval-ws" ];
+
+    generic = {
+      hdwlinux.hardware = {
+        audio.soundcard = {
+          busId = "00:1f.3";
+          path = "/dev/snd/controlC0";
+        };
+        graphics = {
+          card = {
+            busId = "00:02.0";
+            path = "/dev/dri/card1";
+          };
+          nvidia.card = {
+            busId = "01:00.0";
+            path = "/dev/dri/card0";
+          };
+        };
+        monitors.laptop = {
+          vendor = "BOE";
+          model = "0x0A1C";
+          mode = "1920x1080@165.004Hz";
+          scale = 1.0;
+        };
+        outputProfiles.laptop = {
+          outputs.laptop = {
+            enable = true;
+            position = "0,0";
+          };
+        };
+      };
+    };
 
     nixos =
       { pkgs, lib, ... }:
@@ -70,9 +68,6 @@ in
           pkgs.system76-firmware
           pkgs.system76-keyboard-configurator
         ];
-      }
-      // sharedHardwareConfig;
-
-    homeManager = sharedHardwareConfig;
+      };
   };
 }
