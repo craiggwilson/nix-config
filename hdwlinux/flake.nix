@@ -85,6 +85,7 @@
           ./packages/fern.nix
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
+          ./packages/slack-mcp-server.nix
           ./packages/songtool.nix
           ./packages/workspace-mcp.nix
           ./packages/writeShellApplicationWithSubcommands.nix
