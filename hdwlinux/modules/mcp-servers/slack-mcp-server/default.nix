@@ -9,13 +9,11 @@
     homeManager =
       {
         config,
-        lib,
         pkgs,
         ...
       }:
       let
         secrets = config.hdwlinux.security.secrets.entries;
-        hasSecrets = secrets ? slackMcpXoxcToken && secrets ? slackMcpXoxdToken;
 
         mcpPackage = pkgs.writeShellScriptBin "slack-mcp-server" ''
           SLACK_MCP_XOXC_TOKEN=$(cat ${secrets.slackMcpXoxcToken.path}) \
@@ -24,13 +22,20 @@
         '';
       in
       {
-        config = lib.mkIf hasSecrets {
+        config = {
           home.packages = [ mcpPackage ];
 
-          hdwlinux.mcpServers.slack = {
-            type = "stdio";
-            command = "slack-mcp-server";
-            args = [ ];
+          hdwlinux = {
+            mcpServers.slack = {
+              type = "stdio";
+              command = "slack-mcp-server";
+              args = [ ];
+            };
+
+            security.secrets.entries = {
+              slackMcpXoxcToken.source = "manual";
+              slackMcpXoxdToken.source = "manual";
+            };
           };
         };
       };
