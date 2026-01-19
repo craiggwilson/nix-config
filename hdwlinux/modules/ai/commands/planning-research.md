@@ -131,7 +131,54 @@ If research reveals important context, update:
 3. I'll gather and analyze information
 4. I'll document findings in `research/[topic].md`
 5. I'll update CONTEXT.md with key references
-6. I'll summarize planning implications
+6. I'll commit the changes to version control with a descriptive message
+7. I'll summarize planning implications
+
+## Version Control
+
+After documenting research findings, I will commit the changes:
+
+```bash
+# Stage and commit research
+jj describe -m "planning: research [topic-slug] for [project-name]
+
+Research Question: [Brief question statement]
+
+Key Findings:
+- [Finding 1]
+- [Finding 2]
+
+Recommendation: [Primary recommendation]
+
+Planning Impact: [How this affects roadmap/project/task planning]"
+jj new  # Create a new change for subsequent work
+```
+
+The commit message should:
+- Start with `planning:` prefix
+- Include the research topic
+- Summarize key findings
+- Note the recommendation and planning impact
+
+### Retrieving Context History
+
+Previous research and how findings evolved can be retrieved from the repository history:
+
+```bash
+# View history of research commits
+jj log --no-graph -r 'description(glob:"planning: research*")'
+
+# Show how a research document evolved
+jj file annotate research/[topic].md
+
+# View research at a specific revision
+jj file show research/[topic].md -r [revision]
+
+# Compare current findings to earlier version
+jj diff -r [revision] research/[topic].md
+```
+
+This history tracks how research findings and recommendations evolved as new information was discovered.
 
 **Let me review the project context and begin the research.**
 

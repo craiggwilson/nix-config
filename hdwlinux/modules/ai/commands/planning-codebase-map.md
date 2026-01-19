@@ -109,7 +109,58 @@ I will update the "Source Code Locations" section:
 2. I'll analyze the repository structure
 3. I'll document findings in `research/codebase-[name].md`
 4. I'll update CONTEXT.md with source code references
-5. I'll highlight planning-relevant insights
+5. I'll commit the changes to version control with a descriptive message
+6. I'll highlight planning-relevant insights
+
+## Version Control
+
+After documenting the codebase analysis, I will commit the changes:
+
+```bash
+# Stage and commit codebase mapping
+jj describe -m "planning: map codebase [repo-name] for [project-name]
+
+Repository: [repo-name]
+- Language: [primary language]
+- Build: [build system]
+
+Key Modules:
+- [module1]: [purpose]
+- [module2]: [purpose]
+
+Technical Debt/Risks:
+- [Risk 1]
+
+Planning Recommendations:
+- [Key consideration for planning]"
+jj new  # Create a new change for subsequent work
+```
+
+The commit message should:
+- Start with `planning:` prefix
+- Include the repository being mapped
+- Summarize key modules discovered
+- Note technical debt or risks relevant to planning
+
+### Retrieving Context History
+
+Previous codebase analyses and how understanding evolved can be retrieved from the repository history:
+
+```bash
+# View history of codebase mapping commits
+jj log --no-graph -r 'description(glob:"planning: map codebase*")'
+
+# Show how codebase analysis evolved
+jj file annotate research/codebase-[name].md
+
+# View analysis at a specific revision
+jj file show research/codebase-[name].md -r [revision]
+
+# Compare current analysis to earlier version
+jj diff -r [revision] research/codebase-[name].md
+```
+
+This history tracks how codebase understanding evolved, useful when the codebase itself changes during planning.
 
 **Let me begin by reviewing the project context and then mapping the codebase.**
 

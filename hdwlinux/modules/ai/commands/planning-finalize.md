@@ -119,6 +119,53 @@ I will generate a final checklist showing:
 3. I'll identify any gaps and either resolve them or document them
 4. I'll create the finalization summary
 5. I'll prepare handoff materials for the next phase
+6. I'll commit the changes to version control with a descriptive message
+
+## Version Control
+
+After finalizing the planning cycle, I will commit the changes:
+
+```bash
+# Stage and commit finalization
+jj describe -m "planning: finalize [project-name] [planning-type] planning
+
+Completed: YYYY-MM-DD
+- All deliverables validated and complete
+- Final session notes archived
+- Handoff materials prepared
+
+Deliverables:
+- [List key deliverables]
+
+Ready for: [Next phase - e.g., execution, project planning, task planning]"
+jj new  # Create a new change for subsequent work
+```
+
+The commit message should:
+- Start with `planning:` prefix
+- Indicate this is a finalization
+- List the completed deliverables
+- Note what phase comes next
+
+### Retrieving Context History
+
+The complete history of the planning cycle can be retrieved from the repository:
+
+```bash
+# View all planning commits for this cycle
+jj log --no-graph -r 'description(glob:"planning:*")'
+
+# Show how a specific file evolved
+jj file annotate [file-path]
+
+# View a file at a specific revision
+jj file show [file-path] -r [revision]
+
+# Compare final state to initial init
+jj diff -r [init-revision] [file-path]
+```
+
+This history serves as a complete audit trail of the planning cycle, useful for retrospectives and future reference.
 
 **Let me review the project directory and begin the finalization process.**
 

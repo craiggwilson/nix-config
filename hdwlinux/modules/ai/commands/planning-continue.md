@@ -74,7 +74,51 @@ At the end of this session, I will:
 2. I'll summarize where we left off and what's next
 3. I'll continue work on the highest priority items
 4. I'll update all tracking documents
-5. I'll provide clear next steps for the following session
+5. I'll commit the changes to version control with a descriptive message
+6. I'll provide clear next steps for the following session
+
+## Version Control
+
+After updating planning documents, I will commit the changes:
+
+```bash
+# Stage and commit session work
+jj describe -m "planning: continue [project-name] planning session
+
+Session: YYYY-MM-DD
+- [Summary of work completed this session]
+- Updated PROGRESS.md with current status
+- [Other artifacts created/updated]
+
+Next: [Brief description of next steps]"
+jj new  # Create a new change for subsequent work
+```
+
+The commit message should:
+- Start with `planning:` prefix
+- Include the session date
+- Summarize what was accomplished
+- Note what comes next
+
+### Retrieving Context History
+
+If context from previous sessions is unclear or needs verification, retrieve it from the repository history:
+
+```bash
+# View history of planning changes
+jj log --no-graph -r 'description(glob:"planning:*")'
+
+# Show how a specific file evolved
+jj file annotate [file-path]
+
+# View a file at a specific revision
+jj file show [file-path] -r [revision]
+
+# Compare current state to previous version
+jj diff -r [revision] [file-path]
+```
+
+This history provides full traceability of how planning artifacts evolved across sessions.
 
 **Let me review the project directory and resume the planning work.**
 
