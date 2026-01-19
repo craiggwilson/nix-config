@@ -26,7 +26,7 @@
           home.packages = [ mcpPackage ];
 
           hdwlinux = {
-            mcpServers.slack = {
+            ai.mcpServers.slack = {
               type = "stdio";
               command = "slack-mcp-server";
               args = [ ];

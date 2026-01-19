@@ -21,7 +21,7 @@
           type = server.type;
           command = server.command;
           args = server.args;
-        }) config.hdwlinux.mcpServers;
+        }) config.hdwlinux.ai.mcpServers;
 
         themeFile = pkgs.writeTextFile {
           name = "vscode-hdwlinux-theme.json";

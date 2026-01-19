@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.mcp-servers = {
+  config.substrate.modules.ai.mcp-servers = {
     generic =
       { lib, ... }:
       let
@@ -28,7 +28,7 @@
 
       in
       {
-        options.hdwlinux.mcpServers = lib.mkOption {
+        options.hdwlinux.ai.mcpServers = lib.mkOption {
           description = "MCP servers to configure for AI assistants.";
           type = lib.types.attrsOf mcpServerType;
           default = { };

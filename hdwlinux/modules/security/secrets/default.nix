@@ -3,11 +3,18 @@
   config.substrate.modules.security.secrets = {
     tags = [ "security:secrets" ];
     nixos =
-      { config, lib, ... }:
+      {
+        config,
+        lib,
+        inputs,
+        ...
+      }:
       let
         cfg = config.hdwlinux.security.secrets;
       in
       {
+        imports = [ inputs.opnix.nixosModules.default ];
+
         options.hdwlinux.security.secrets = {
           entries = lib.mkOption {
             type = lib.types.attrsOf (
@@ -114,6 +121,8 @@
         cfg = config.hdwlinux.security.secrets;
       in
       {
+        imports = [ inputs.opnix.homeManagerModules.default ];
+
         options.hdwlinux.security.secrets = {
           entries = lib.mkOption {
             type = lib.types.attrsOf (
@@ -254,15 +263,13 @@
             secretsSetScript =
               let
                 secretCases = lib.concatStringsSep "\n" (
-                  lib.mapAttrsToList (
-                    name: entry: ''
-                      "${name}")
-                        secret_path="${entry.path}"
-                        secret_owner="${entry.owner}"
-                        secret_group="${entry.group}"
-                        secret_mode="${entry.mode}"
-                        ;;''
-                  ) manualEntries
+                  lib.mapAttrsToList (name: entry: ''
+                    "${name}")
+                      secret_path="${entry.path}"
+                      secret_owner="${entry.owner}"
+                      secret_group="${entry.group}"
+                      secret_mode="${entry.mode}"
+                      ;;'') manualEntries
                 );
               in
               ''

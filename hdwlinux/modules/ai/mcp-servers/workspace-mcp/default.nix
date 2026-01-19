@@ -77,7 +77,7 @@
         config = lib.mkIf hasSecrets {
           home.packages = [ mcpPackage ];
 
-          hdwlinux.mcpServers.google-workspace = {
+          hdwlinux.ai.mcpServers.google-workspace = {
             type = "stdio";
             command = "workspace-mcp";
             args = [ ];

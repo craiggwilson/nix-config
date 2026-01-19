@@ -13,7 +13,7 @@
     homeManager =
       { pkgs, ... }:
       {
-        hdwlinux.mcpServers.nixos = {
+        hdwlinux.ai.mcpServers.nixos = {
           type = "stdio";
           command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
           args = [ ];

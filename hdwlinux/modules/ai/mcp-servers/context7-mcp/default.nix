@@ -10,7 +10,7 @@
       {
         home.packages = [ pkgs.hdwlinux.context7-mcp ];
 
-        hdwlinux.mcpServers.context7-mcp = {
+        hdwlinux.ai.mcpServers.context7-mcp = {
           type = "stdio";
           command = "context7-mcp";
           args = [ ];

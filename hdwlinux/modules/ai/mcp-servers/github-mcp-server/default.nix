@@ -24,7 +24,7 @@
         config = lib.mkIf hasSecrets {
           home.packages = [ mcpPackage ];
 
-          hdwlinux.mcpServers.github = {
+          hdwlinux.ai.mcpServers.github = {
             type = "stdio";
             command = "github-mcp-server";
             args = [ "stdio" ];

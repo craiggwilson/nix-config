@@ -1,14 +1,22 @@
 {
   config.substrate.modules.programs.augment = {
-    tags = [ "programming" "users:craig:work" ];
+    tags = [
+      "programming"
+      "users:craig:work"
+    ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         augmentMcpServers = lib.mapAttrs (name: server: {
           command = server.command;
           args = server.args;
-        }) config.hdwlinux.mcpServers;
+        }) config.hdwlinux.ai.mcpServers;
       in
       {
         home.packages = [
@@ -17,9 +25,14 @@
           '')
         ];
 
-        home.file.".augment/mcp-servers.json".text = builtins.toJSON {
-          mcpServers = augmentMcpServers;
-        };
+        home.file = {
+          ".augment/mcp-servers.json".text = builtins.toJSON {
+            mcpServers = augmentMcpServers;
+          };
+        }
+        // (lib.mapAttrs' (
+          n: v: lib.nameValuePair ".augment/agents/${n}.md" { text = v; }
+        ) config.hdwlinux.ai.agents);
 
         programs.vscode.profiles.default.userSettings = lib.mkIf config.programs.vscode.enable {
           "github.copilot.enable" = {
@@ -29,4 +42,3 @@
       };
   };
 }
-

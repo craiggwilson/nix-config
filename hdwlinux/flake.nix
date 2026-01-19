@@ -28,6 +28,11 @@
 
     musnix.url = "github:musnix/musnix";
 
+    nirinit = {
+      url = "github:amaanq/nirinit";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     niri-scratchpad = {
       url = "github:gvolpe/niri-scratchpad";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -102,14 +107,6 @@
 
         nixosModules = [
           inputs.disko.nixosModules.disko
-          inputs.kolide-launcher.nixosModules.kolide-launcher
-          inputs.musnix.nixosModules.musnix
-          inputs.nix-flatpak.nixosModules.nix-flatpak
-          inputs.opnix.nixosModules.default
-        ];
-
-        homeManagerModules = [
-          inputs.opnix.homeManagerModules.default
         ];
 
         overlays = [

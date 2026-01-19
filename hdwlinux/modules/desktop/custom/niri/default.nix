@@ -6,8 +6,15 @@
     ];
 
     nixos =
-      { lib, pkgs, ... }:
       {
+        lib,
+        pkgs,
+        inputs,
+        ...
+      }:
+      {
+        imports = [ inputs.nirinit.nixosModules.nirinit ];
+
         programs = {
           niri.enable = true;
           uwsm = {
@@ -22,7 +29,10 @@
           };
         };
 
-        services.xserver.desktopManager.runXdgAutostartIfNone = true;
+        services = {
+          nirinit.enable = true;
+          xserver.desktopManager.runXdgAutostartIfNone = true;
+        };
 
         systemd.packages = [ pkgs.niri ];
 
@@ -61,6 +71,8 @@
         colors = config.hdwlinux.theme.colors.withHashtag;
       in
       {
+        imports = [ inputs.nirinit.homeModules.nirinit ];
+
         home.packages = [
           (pkgs.xwayland-satellite.override { withSystemd = false; })
           inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.niri-scratchpad
