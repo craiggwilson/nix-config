@@ -3,7 +3,7 @@ let
   dir = builtins.readDir ./.;
   mdFiles = builtins.filter (name: builtins.match ".*\\.md$" name != null) (builtins.attrNames dir);
   nameFromFile = file: builtins.replaceStrings [ ".md" ] [ "" ] file;
-  agents = builtins.listToAttrs (
+  rules = builtins.listToAttrs (
     map (file: {
       name = nameFromFile file;
       value = builtins.readFile (./. + "/${file}");
@@ -11,17 +11,17 @@ let
   );
 in
 {
-  config.substrate.modules.ai.agents = {
+  config.substrate.modules.ai.rules = {
     generic =
       { lib, ... }:
       {
-        options.hdwlinux.ai.agents = lib.mkOption {
-          description = "Agent definitions.";
+        options.hdwlinux.ai.rules = lib.mkOption {
+          description = "Rule definitions.";
           type = lib.types.attrsOf lib.types.lines;
           default = { };
         };
 
-        config.hdwlinux.ai.agents = agents;
+        config.hdwlinux.ai.rules = rules;
       };
   };
 }
