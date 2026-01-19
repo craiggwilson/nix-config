@@ -13,10 +13,11 @@
         ...
       }:
       let
-        augmentMcpServers = lib.mapAttrs (name: server: {
+        mcpServers = lib.mapAttrs (name: server: {
           command = server.command;
           args = server.args;
         }) config.hdwlinux.ai.mcpServers;
+
       in
       {
         home.packages = [
@@ -27,8 +28,10 @@
 
         home.file = {
           ".augment/mcp-servers.json".text = builtins.toJSON {
-            mcpServers = augmentMcpServers;
+            inherit mcpServers;
           };
+          # ".augment/settings.json".source =
+          #   config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/programs/augment/settings.json";
         }
         // (lib.mapAttrs' (
           n: v: lib.nameValuePair ".augment/agents/${n}.md" { text = v; }

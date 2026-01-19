@@ -1,0 +1,27 @@
+{
+  "model": "opus4.5",
+  "indexingAllowDirs": [
+    "/home/craig/Projects/github.com/craiggwilson/nix-config",
+    "/home/craig/Projects/github.com/10gen/mms",
+    "/home/craig/Projects/github.com/10gen/mms-automation",
+    "/home/craig/Projects/github.com/10gen",
+    "home/craig/Projects/github.com/xgen-cloud/gosre",
+    "/home/craig/Projects/planning/DataPlaneAvailability",
+    "/home/craig/Projects/planning/MVCP"
+  ],
+  "verbose": false,
+  "shell": "zsh",
+  "toolPermissions": [
+    { "toolName": "view", "permission": { "type": "allow" } },
+    { "toolName": "codebase-retrieval", "permission": { "type": "allow" } },
+    { "toolName": "grep-search", "permission": { "type": "allow" } },
+    { "toolName": "web-search", "permission": { "type": "allow" } },
+    { "toolName": "web-fetch", "permission": { "type": "allow" } },
+    { "toolName": "str-replace-editor", "permission": { "type": "ask-user" } },
+    { "toolName": "save-file", "permission": { "type": "ask-user" } },
+    { "toolName": "remove-files", "permission": { "type": "ask-user" } },
+    { "toolName": "launch-process", "shellInputRegex": "^(cd|ls|pwd|echo|bat|cat|grep|rg)\\s", "permission": { "type": "allow" } },
+    { "toolName": "launch-process", "shellInputRegex": "^(sudo|shutdown|reboot)", "permission": { "type": "deny" } },
+    { "toolName": "launch-process", "permission": { "type": "ask-user" } }
+  ]
+}
