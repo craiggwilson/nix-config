@@ -1,11 +1,13 @@
 ---
 description: Finalize and wrap up a planning cycle
-argument-hint: [project-directory]
+argument-hint: [optional-focus-area]
 ---
 
 You are finalizing a planning workflow. Your task is to ensure all deliverables are complete, validated, and ready for execution.
 
-**Project Directory**: $ARGUMENTS
+**Finalization Focus**: $ARGUMENTS
+
+If provided, the focus area (e.g., "security review", "stakeholder signoff", "handoff preparation") directs the finalization toward specific validation concerns. Otherwise, I'll perform a comprehensive completeness review based on the planning type.
 
 ## Finalization Process
 
@@ -112,14 +114,77 @@ I will generate a final checklist showing:
 2. [Follow-up action]
 ```
 
+## Subagent Delegation
+
+During finalization, subagents can provide quality assurance reviews and help fill gaps identified in the completeness check.
+
+### Available Finalization Subagents
+
+| Subagent | Specialty | When to Delegate |
+|----------|-----------|------------------|
+| `roadmap-builder` | Strategic alignment validation | Roadmap finalization, ensuring OKR alignment |
+| `project-planner` | Scope/risk/resource review | Project artifact validation, risk register completeness |
+| `task-planner` | Story quality, INVEST criteria | Sprint backlog validation, acceptance criteria review |
+| `codebase-analyst` | Technical feasibility review | Validating technical assumptions in plans |
+| `security-architect` | Security review | Validating security considerations in plans |
+
+### Delegation Criteria
+
+Delegate during finalization when:
+- **Gap filling**: Completeness review identifies missing elements requiring expertise
+- **Quality validation**: Artifacts benefit from expert review before handoff
+- **Cross-domain review**: Plans span multiple domains needing specialized validation
+- **Lessons learned**: Capturing insights requires domain-specific retrospection
+
+### Handoff Process
+
+**Context to provide subagent:**
+```
+1. Planning type and artifacts to review
+2. Specific gaps or concerns identified
+3. Quality criteria for this planning type
+4. Handoff requirements for next phase
+5. Stakeholder expectations
+```
+
+**Expected deliverables from subagent:**
+- Validation report with findings
+- Gap remediation content (if filling gaps)
+- Quality improvement recommendations
+- Handoff readiness assessment
+
+### Integration Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  planning-finalize (orchestrator)                │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Completeness review against checklist                       │
+│  2. For each gap or quality concern:                             │
+│     ├── Minor issues → resolve directly                         │
+│     ├── Expertise gaps → delegate to appropriate subagent       │
+│     └── Cross-domain issues → parallel subagent review          │
+│  3. Quality validation (can delegate specialized reviews)       │
+│  4. Integrate subagent outputs into final artifacts             │
+│  5. Package deliverables and prepare handoff                    │
+│  6. Document lessons learned (can delegate to relevant experts) │
+│  7. Commit finalization and archive                              │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Process
 
 1. I'll review all planning artifacts in the project directory
 2. I'll validate completeness against the appropriate checklist
-3. I'll identify any gaps and either resolve them or document them
-4. I'll create the finalization summary
-5. I'll prepare handoff materials for the next phase
-6. I'll commit the changes to version control with a descriptive message
+3. I'll identify any gaps and assess whether subagent expertise is needed
+4. I'll resolve gaps directly or delegate to subagents as appropriate
+5. I'll integrate all outputs and create the finalization summary
+6. I'll prepare handoff materials for the next phase
+7. I'll commit the changes to version control with a descriptive message
+
+## Formatting Guidelines
+
+All planning artifacts must follow the markdown formatting standards defined in the global `markdown-formatting` rule. Key requirements include JIRA ticket hyperlinks, ISO date formats, consistent status indicators, and proper document structure.
 
 ## Version Control
 

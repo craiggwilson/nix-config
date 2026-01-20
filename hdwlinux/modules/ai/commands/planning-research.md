@@ -1,11 +1,13 @@
 ---
 description: Conduct focused research as part of planning discovery
-argument-hint: [topic]
+argument-hint: [research-topic]
 ---
 
 You are conducting focused research as part of a planning workflow. This command assumes you are working within a project directory context.
 
 **Research Topic**: $ARGUMENTS
+
+The research topic should describe what needs to be investigated (e.g., "authentication patterns", "database migration strategies", "event-driven architecture", "CI/CD pipeline options"). This helps focus the research on planning-relevant questions.
 
 ## Planning Context
 
@@ -124,15 +126,82 @@ If research reveals important context, update:
 - Link research to relevant planning items
 - Note any new tasks identified
 
+## Subagent Delegation
+
+Research often benefits from specialized expertise. As orchestrator, I delegate to subagents when their focus can improve research depth or efficiency.
+
+### Available Research Subagents
+
+| Subagent | Specialty | When to Delegate |
+|----------|-----------|------------------|
+| `codebase-analyst` | Code archaeology, architecture discovery, dependency analysis | Codebase research, implementation patterns, technical debt analysis |
+| `security-architect` | Threat modeling, security patterns, compliance | Security-related research, authentication/authorization patterns |
+| `distributed-systems-architect` | Service design, resilience patterns, multi-region | Scalability research, system integration patterns |
+| `aws-expert` | AWS services, well-architected framework | Cloud architecture research, AWS service evaluation |
+| `terraform-expert` | Infrastructure as code, provider patterns | IaC research, deployment strategy evaluation |
+| `mongodb-expert` | Data modeling, query optimization | Database research, data architecture decisions |
+| `kafka-expert` | Event streaming, topic design | Messaging research, async communication patterns |
+
+### Delegation Criteria
+
+Delegate research to a specialized subagent when:
+- **Domain expertise required**: Research topic requires deep specialized knowledge
+- **Technical depth needed**: Analysis requires understanding complex implementation details
+- **Cross-cutting concerns**: Research spans multiple technical domains
+- **Best practice validation**: Need authoritative guidance on patterns or approaches
+
+### Handoff Process
+
+**Context to provide subagent:**
+```
+1. Research question and scope
+2. Relevant context from CONTEXT.md
+3. How findings will inform planning decisions
+4. Specific areas of focus or concern
+5. Constraints (timeline, technology stack, existing decisions)
+```
+
+**Expected deliverables from subagent:**
+- Detailed analysis in the expected research format
+- Trade-off evaluation with clear recommendations
+- Risks identified with suggested mitigations
+- References to authoritative sources
+- Open questions for follow-up
+
+### Integration Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  planning-research (orchestrator)                │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Review planning context and clarify research question        │
+│  2. Identify research type and required expertise                │
+│  3. If specialized expertise needed:                             │
+│     ├── Select appropriate subagent(s)                          │
+│     ├── Prepare context package with research focus             │
+│     ├── Invoke subagent(s) - can run multiple in parallel       │
+│     ├── Review outputs for quality and relevance                │
+│     └── Synthesize findings into unified research document      │
+│  4. Document findings in research/[topic].md                    │
+│  5. Update CONTEXT.md and PROGRESS.md                           │
+│  6. Commit and summarize planning implications                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Process
 
 1. I'll review CONTEXT.md and PROGRESS.md for planning context
 2. I'll clarify the research question if needed
-3. I'll gather and analyze information
-4. I'll document findings in `research/[topic].md`
-5. I'll update CONTEXT.md with key references
-6. I'll commit the changes to version control with a descriptive message
-7. I'll summarize planning implications
+3. I'll assess whether specialized subagents can improve research quality
+4. I'll gather and analyze information (delegating to subagents as appropriate)
+5. I'll synthesize all findings into `research/[topic].md`
+6. I'll update CONTEXT.md with key references
+7. I'll commit the changes to version control with a descriptive message
+8. I'll summarize planning implications
+
+## Formatting Guidelines
+
+All planning artifacts must follow the markdown formatting standards defined in the global `markdown-formatting` rule. Key requirements include JIRA ticket hyperlinks, ISO date formats, consistent status indicators, and proper document structure.
 
 ## Version Control
 

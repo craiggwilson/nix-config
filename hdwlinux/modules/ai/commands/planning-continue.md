@@ -1,11 +1,13 @@
 ---
 description: Continue an in-progress planning cycle
-argument-hint: [project-directory]
+argument-hint: [optional-focus-area]
 ---
 
 You are continuing an existing planning workflow. Your task is to pick up where the previous session left off and drive progress toward completion.
 
-**Project Directory**: $ARGUMENTS
+**Session Focus**: $ARGUMENTS
+
+If provided, the focus area (e.g., "risk assessment", "dependency mapping", "sprint backlog") directs this session toward specific planning concerns. Otherwise, I'll prioritize based on PROGRESS.md and outstanding work items.
 
 ## Resume Process
 
@@ -68,14 +70,75 @@ At the end of this session, I will:
 - [ ] Sprint backlog ready
 - [ ] Sprint goal defined
 
+## Subagent Delegation
+
+When continuing a planning cycle, I assess whether specialized subagents can accelerate progress on specific work items.
+
+### Available Planning Subagents
+
+| Subagent | Specialty | When to Delegate |
+|----------|-----------|------------------|
+| `roadmap-builder` | Strategic planning, OKR alignment | Roadmap refinement, initiative prioritization |
+| `project-planner` | Scope, resources, risk assessment | WBS development, resource planning, risk register updates |
+| `task-planner` | Stories, acceptance criteria, estimation | Backlog refinement, story decomposition |
+| `codebase-analyst` | Code archaeology, architecture | Technical discovery tasks, dependency analysis |
+
+### Delegation Criteria
+
+Delegate to subagents during continuation when:
+- **Backlog depth required**: Outstanding items need detailed decomposition
+- **Specialized deliverables**: Specific artifacts benefit from focused expertise
+- **Parallel workstreams**: Multiple independent work items can be addressed simultaneously
+- **Quality improvement**: Previous artifacts need expert-level refinement
+
+### Handoff Process
+
+**Context to provide subagent:**
+```
+1. Planning type and current phase
+2. Specific deliverable or work item to complete
+3. Relevant context from CONTEXT.md and PROGRESS.md
+4. Previous session notes if relevant
+5. Quality criteria and constraints
+```
+
+**Expected deliverables from subagent:**
+- Completed or refined planning artifacts
+- Updated risk or dependency information
+- Recommendations for remaining work
+- Blockers or questions identified
+
+### Integration Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  planning-continue (orchestrator)                │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Context recovery from planning artifacts                     │
+│  2. Status assessment - identify highest priority work           │
+│  3. For each work item, assess if delegation beneficial:         │
+│     ├── Simple/quick items → handle directly                    │
+│     ├── Complex/specialized items → delegate to subagent        │
+│     └── Multiple independent items → parallel subagent calls    │
+│  4. Review and integrate subagent outputs                        │
+│  5. Update PROGRESS.md and session documentation                │
+│  6. Commit and identify next session priorities                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Process
 
 1. I'll review the project directory to understand current state
 2. I'll summarize where we left off and what's next
-3. I'll continue work on the highest priority items
-4. I'll update all tracking documents
-5. I'll commit the changes to version control with a descriptive message
-6. I'll provide clear next steps for the following session
+3. I'll assess which work items benefit from subagent delegation
+4. I'll continue work on the highest priority items (with subagent support as needed)
+5. I'll update all tracking documents
+6. I'll commit the changes to version control with a descriptive message
+7. I'll provide clear next steps for the following session
+
+## Formatting Guidelines
+
+All planning artifacts must follow the markdown formatting standards defined in the global `markdown-formatting` rule. Key requirements include JIRA ticket hyperlinks, ISO date formats, consistent status indicators, and proper document structure.
 
 ## Version Control
 

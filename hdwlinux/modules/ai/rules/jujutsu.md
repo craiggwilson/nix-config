@@ -50,10 +50,13 @@ jj resolve             # Mark conflicts as resolved
 
 ### Starting new work
 ```bash
-jj new main            # Start new change based on main
-jj describe -m "feat: description of work"
+jj new main -m "feat: description of work" # Start new change based on main
+jj new # temporary commit to make changes in
 # ... make changes ...
-jj new                 # Start next change when ready
+jj squash # Squash to commit changes
+# ... make changes ...
+jj squash # Squash to commit changes
+jj new -m "feat: description of next work" # Start new change based on main
 ```
 
 ### Pushing changes
@@ -64,8 +67,7 @@ jj git push                     # Push to remote
 
 ### Updating from remote
 ```bash
-jj git fetch
-jj rebase -d main@origin       # Rebase onto updated main
+jj sync
 ```
 
 Always use `jj` commands. Never use `git` commands directly.
