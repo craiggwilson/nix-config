@@ -17,11 +17,24 @@
         flake = config.hdwlinux.flake;
         themeColors = config.hdwlinux.theme.colors;
 
-        vscodeMcpServers = lib.mapAttrs (name: server: {
-          type = server.type;
-          command = server.command;
-          args = server.args;
-        }) config.hdwlinux.ai.mcpServers;
+        # Transform tagged union to VS Code's expected format
+        vscodeMcpServers = lib.mapAttrs (
+          name: server:
+          if server ? stdio then
+            {
+              type = "stdio";
+              command = server.stdio.command;
+              args = server.stdio.args;
+            }
+          else if server ? http then
+            {
+              type = "http";
+              url = server.http.url;
+              headers = server.http.headers;
+            }
+          else
+            throw "Unknown MCP server type for ${name}"
+        ) config.hdwlinux.ai.mcpServers;
 
         themeFile = pkgs.writeTextFile {
           name = "vscode-hdwlinux-theme.json";

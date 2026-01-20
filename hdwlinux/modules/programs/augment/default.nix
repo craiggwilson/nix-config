@@ -13,10 +13,22 @@
         ...
       }:
       let
-        mcpServers = lib.mapAttrs (name: server: {
-          command = server.command;
-          args = server.args;
-        }) config.hdwlinux.ai.mcpServers;
+        # Transform tagged union to augment's expected format (stdio servers only)
+        mcpServers = lib.mapAttrs (
+          name: server:
+          if server ? stdio then
+            {
+              command = server.stdio.command;
+              args = server.stdio.args;
+            }
+          else if server ? http then
+            {
+              url = server.http.url;
+              headers = server.http.headers;
+            }
+          else
+            throw "Unknown MCP server type for ${name}"
+        ) config.hdwlinux.ai.mcpServers;
 
       in
       {

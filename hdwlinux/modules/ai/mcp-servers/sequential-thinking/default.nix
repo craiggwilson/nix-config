@@ -16,8 +16,7 @@
       {
         home.packages = [ mcpPackage ];
 
-        hdwlinux.ai.mcpServers.sequential-thinking = {
-          type = "stdio";
+        hdwlinux.ai.mcpServers.sequential-thinking.stdio = {
           command = "sequential-thinking";
           args = [ ];
         };

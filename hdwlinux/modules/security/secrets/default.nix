@@ -262,6 +262,9 @@
             # Generate the secrets set script with configured values
             secretsSetScript =
               let
+                hasManualEntries = manualEntries != { };
+                manualEntriesList = lib.concatStringsSep "\n" (lib.mapAttrsToList (n: _: "  ${n}") manualEntries);
+                # Each case sets variables and then runs the write logic inline
                 secretCases = lib.concatStringsSep "\n" (
                   lib.mapAttrsToList (name: entry: ''
                     "${name}")
@@ -269,77 +272,74 @@
                       secret_owner="${entry.owner}"
                       secret_group="${entry.group}"
                       secret_mode="${entry.mode}"
+
+                      # Read value from stdin (never from command line to avoid history)
+                      echo "Enter secret value for '$name' (input hidden):"
+                      read -rs value
+                      echo
+
+                      if [[ -z "$value" ]]; then
+                        echo "Error: No secret value provided." >&2
+                        exit 1
+                      fi
+
+                      # Create directory and write secret
+                      secret_dir=$(dirname "$secret_path")
+                      mkdir -p "$secret_dir"
+                      echo "$value" > "$secret_path"
+                      chmod "$secret_mode" "$secret_path"
+                      chown "$secret_owner:$secret_group" "$secret_path" 2>/dev/null || true
+                      echo "Secret '$name' written to $secret_path"
                       ;;'') manualEntries
                 );
               in
-              ''
-                name=""
+              if hasManualEntries then
+                ''
+                  name=""
 
-                # Parse arguments
-                while [[ $# -gt 0 ]]; do
-                  case "$1" in
-                    *)
-                      if [[ -z "$name" ]]; then
-                        name="$1"
-                        shift
-                      else
-                        echo "Error: Unknown argument '$1'" >&2
-                        echo "Usage: hdwlinux secrets set <name>" >&2
-                        exit 1
-                      fi
-                      ;;
-                  esac
-                done
+                  # Parse arguments
+                  while [[ $# -gt 0 ]]; do
+                    case "$1" in
+                      *)
+                        if [[ -z "$name" ]]; then
+                          name="$1"
+                          shift
+                        else
+                          echo "Error: Unknown argument '$1'" >&2
+                          echo "Usage: hdwlinux secrets set <name>" >&2
+                          exit 1
+                        fi
+                        ;;
+                    esac
+                  done
 
-                if [[ -z "$name" ]]; then
-                  echo "Error: Secret name is required." >&2
-                  echo "Usage: hdwlinux secrets set <name>" >&2
-                  echo ""
-                  echo "Available manual secrets:"
-                  ${
-                    if manualEntries == { } then
-                      ''echo "  (none configured)"''
-                    else
-                      ''echo "${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: _: "  ${n}") manualEntries)}"''
-                  }
-                  exit 1
-                fi
-
-                # Look up secret configuration
-                case "$name" in
-                ${secretCases}
-                  *)
-                    echo "Error: Unknown secret '$name'" >&2
+                  if [[ -z "$name" ]]; then
+                    echo "Error: Secret name is required." >&2
+                    echo "Usage: hdwlinux secrets set <name>" >&2
                     echo ""
                     echo "Available manual secrets:"
-                    ${
-                      if manualEntries == { } then
-                        ''echo "  (none configured)"''
-                      else
-                        ''echo "${lib.concatStringsSep "\n" (lib.mapAttrsToList (n: _: "  ${n}") manualEntries)}"''
-                    }
+                    echo "${manualEntriesList}"
                     exit 1
-                    ;;
-                esac
+                  fi
 
-                # Read value from stdin (never from command line to avoid history)
-                echo "Enter secret value for '$name' (input hidden):"
-                read -rs value
-                echo
-
-                if [[ -z "$value" ]]; then
-                  echo "Error: No secret value provided." >&2
+                  # Look up secret configuration and handle it
+                  case "$name" in
+                  ${secretCases}
+                    *)
+                      echo "Error: Unknown secret '$name'" >&2
+                      echo ""
+                      echo "Available manual secrets:"
+                      echo "${manualEntriesList}"
+                      exit 1
+                      ;;
+                  esac
+                ''
+              else
+                ''
+                  echo "No manual secrets configured." >&2
+                  echo "All secrets are managed via 1Password (source = 'op')." >&2
                   exit 1
-                fi
-
-                # Create directory and write secret
-                secret_dir=$(dirname "$secret_path")
-                mkdir -p "$secret_dir"
-                echo "$value" > "$secret_path"
-                chmod "$secret_mode" "$secret_path"
-                chown "$secret_owner:$secret_group" "$secret_path" 2>/dev/null || true
-                echo "Secret '$name' written to $secret_path"
-              '';
+                '';
           in
           lib.mkMerge [
             (lib.mkIf hasOpEntries {
