@@ -150,6 +150,11 @@ home-manager test --flake .#username
 2. **Adding a new host**: Create `hdwlinux/modules/hosts/<hostname>/default.nix` with disko config if needed
 3. **Adding a new tag**: Add to the `substrate.settings.tags` list in the flake
 
+
+### Agent Usage
+
+You can consult the **nix-expert** on best nix practices and other types of questions.
+
 ---
 
 ## Key Files
