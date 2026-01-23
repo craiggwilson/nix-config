@@ -1,5 +1,7 @@
 {
-  config.substrate.modules.ai.mcp-servers = {
+  # Base module that defines the mcpServers option
+  # Uses a unique path to avoid tag conflicts with individual MCP server modules
+  config.substrate.modules.ai._mcp-servers-base = {
     generic =
       { lib, ... }:
       let

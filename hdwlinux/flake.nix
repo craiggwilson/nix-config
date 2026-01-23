@@ -152,6 +152,7 @@
             "users:craig" = [
               "ai:mcp"
               "desktop:custom:niri"
+              "dictation"
               "networking:tailscale"
               "programming"
               "security:passwordmanager"
@@ -213,6 +214,7 @@
           { "desktop:custom" = [ "gui" ]; }
           "desktop:custom:hyprland"
           "desktop:custom:niri"
+          "dictation"
           "filesystem:nfs"
           "fonts"
           { "gaming" = [ "gui" ]; }

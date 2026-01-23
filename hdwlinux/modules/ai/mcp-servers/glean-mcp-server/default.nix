@@ -5,7 +5,7 @@
       "programming"
       "ai:mcp"
     ];
-    generic = {
+    homeManager = {
       hdwlinux.ai.mcpServers.glean.http = {
         url = "https://mongodb-be.glean.com/mcp/default";
       };

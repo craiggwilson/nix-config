@@ -207,6 +207,9 @@ binds {
     Alt+Print   { screenshot-window; }
     Mod+Print { spawn "appctl" "exec" "screenctl" "record" "show-menu"; }
 
+    Mod+D hotkey-overlay-title="Toggle dictation (clipboard)" { spawn "appctl" "exec" "dictctl" "toggle" "clipboard"; }
+    Mod+Shift+D hotkey-overlay-title="Toggle dictation (type)" { spawn "appctl" "exec" "dictctl" "toggle" "type"; }
+
     Mod+Shift+Ctrl+E { quit; }
 
     Mod+WheelScrollDown                 { focus-workspace-down; }
