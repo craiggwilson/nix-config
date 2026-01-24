@@ -44,7 +44,7 @@ in
 
       pkgs = import inputs.nixpkgs {
         system = hostcfg.system;
-        config.allowUnfree = true;
+        config = hostcfg.nixpkgsConfig or { };
         overlays = allOverlays;
       };
 

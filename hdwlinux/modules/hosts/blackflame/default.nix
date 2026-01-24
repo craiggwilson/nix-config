@@ -10,6 +10,10 @@ in
     tags = [
       "host:${hostname}"
     ];
+    nixpkgsConfig = {
+      allowUnfree = true;
+      cudaSupport = true;
+    };
   };
 
   substrate.modules.hosts.${hostname} = {

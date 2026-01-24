@@ -130,7 +130,6 @@
               "hardware:system76-serval-ws"
 
               "boot:systemd"
-              "cuda"
               "printing"
               "raeford"
               "scanning"
@@ -141,7 +140,6 @@
               "hardware:dell-xps-15-9520"
 
               "boot:systemd"
-              "cuda"
               "printing"
               "raeford"
               "scanning"
@@ -210,7 +208,6 @@
           "bluetooth"
           "boot:systemd"
           "camera"
-          { "cuda" = [ "graphics:nvidia" ]; }
           "desktop"
           { "desktop:custom" = [ "gui" ]; }
           "desktop:custom:hyprland"

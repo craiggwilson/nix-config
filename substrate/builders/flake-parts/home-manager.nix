@@ -18,7 +18,7 @@ in
       let
         userPkgs = import inputs.nixpkgs {
           inherit (usercfg) system;
-          config.allowUnfree = true;
+          config = usercfg.nixpkgsConfig or { };
           overlays = allOverlays;
         };
         extraArgs = slib.extraArgsGenerator {

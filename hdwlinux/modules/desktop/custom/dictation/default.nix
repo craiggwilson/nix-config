@@ -6,17 +6,9 @@
       {
         lib,
         pkgs,
-        hasTag,
         ...
       }:
       let
-        # Use CUDA-enabled whisper-cpp if an NVIDIA GPU is configured
-        whisperCpp =
-          if hasTag "graphics:nvidia" then
-            pkgs.whisper-cpp.override { cudaSupport = true; }
-          else
-            pkgs.whisper-cpp;
-
         whisperModel = pkgs.fetchurl {
           url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.en.bin";
           sha256 = "0mj3vbvaiyk5x2ids9zlp2g94a01l4qar9w109qcg3ikg0sfjdyc";
@@ -86,7 +78,7 @@
           notify-send "Dictation" "Transcribing..." --icon=audio-x-generic
 
           # Transcribe the recording using whisper-cli
-          transcript=$(${lib.getExe' whisperCpp "whisper-cli"} \
+          transcript=$(${lib.getExe' pkgs.whisper-cpp "whisper-cli"} \
             --model "${whisperModel}" \
             --file "${audioFile}" \
             --language en \
@@ -114,7 +106,7 @@
       in
       {
         home.packages = [
-          whisperCpp
+          pkgs.whisper-cpp
           pkgs.wl-clipboard
           pkgs.wtype
           (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
@@ -124,7 +116,7 @@
               pkgs.libnotify
               pkgs.pipewire
               pkgs.procps
-              whisperCpp
+              pkgs.whisper-cpp
               pkgs.wl-clipboard
               pkgs.wtype
             ];
