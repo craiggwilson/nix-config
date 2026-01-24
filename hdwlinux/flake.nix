@@ -141,6 +141,7 @@
               "hardware:dell-xps-15-9520"
 
               "boot:systemd"
+              "cuda"
               "printing"
               "raeford"
               "scanning"
