@@ -16,25 +16,6 @@
                 "mutable() & mine() | bookmarks()::"
               ];
 
-              push-with-checks = [
-                "jj-pre-push"
-                "push"
-              ];
-
-              retrunk = [
-                "rebase"
-                "-d"
-                "trunk()"
-              ];
-
-              retrunk-all = [
-                "rebase"
-                "-s"
-                "all:roots(trunk()..mutable())"
-                "-d"
-                "trunk()"
-              ];
-
               sync = [
                 "util"
                 "exec"
@@ -53,9 +34,9 @@
                 "bookmark"
                 "move"
                 "--from"
-                "closest_pushable(@-)"
+                "heads(::@ & bookmarks())"
                 "--to"
-                "@-"
+                "closest_pushable(@)"
               ];
             };
 
@@ -81,7 +62,7 @@
 
             revset-aliases = {
               "closest_pushable(to)" =
-                "coalesce(heads(::to & bookmarks() & ~private() & ~trunk()), heads(::to & bookmarks() & ~private()))";
+                "heads(::to & mutable() & ~description(exact:\"\") & (~empty() | merges()))";
               "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
               "private()" = "description(glob:'private:*')";
             };
@@ -102,6 +83,8 @@
                 "log"
                 "-r"
                 "present(@) | ancestors(immutable_heads().., 2) | present(trunk())"
+                "--limit"
+                "20"
               ];
             };
 
