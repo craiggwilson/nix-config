@@ -7,13 +7,13 @@ let
 in
 {
   substrate.users = {
-    "craig@personal" = {
+    "${name}@personal" = {
       inherit name;
       tags = [
         "users:${name}:personal"
       ];
     };
-    "craig@work" = {
+    "${name}@work" = {
       inherit name;
       tags = [
         "users:${name}:work"

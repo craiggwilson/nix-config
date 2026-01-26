@@ -1,8 +1,5 @@
-{ lib, ... }:
 {
   config.substrate.modules.security.ssh = {
-    tags = [ ]; # Always included
-
     homeManager =
       { config, lib, ... }:
       let
@@ -50,4 +47,3 @@
       };
   };
 }
-
