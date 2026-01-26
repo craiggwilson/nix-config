@@ -143,6 +143,7 @@
                   "files.trimFinalNewlines" = true;
                 };
                 "mcp.servers" = vscodeMcpServers;
+                "excalidraw.theme" = "auto";
               }
             ];
           };
