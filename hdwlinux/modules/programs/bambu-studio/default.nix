@@ -3,10 +3,8 @@
     tags = [
       "users:craig:personal"
     ];
-    homeManager =
-      { pkgs, ... }:
-      {
-        home.packages = [ pkgs.stable.bambu-studio ];
-      };
+    homeManager = {
+      config.hdwlinux.programs.flatpaks = [ "com.bambulab.BambuStudio" ];
+    };
   };
 }

@@ -38,7 +38,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=v0.1.0";
+    nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
@@ -166,6 +166,7 @@
               "audio:midi"
               "audio:production"
               "filesystem:nfs"
+              "flatpaks"
               "gaming"
               "virtualization:podman"
             ];
@@ -214,6 +215,7 @@
           "desktop:custom:niri"
           "dictation"
           "filesystem:nfs"
+          "flatpaks"
           "fonts"
           { "gaming" = [ "gui" ]; }
           "gaming:streaming"
