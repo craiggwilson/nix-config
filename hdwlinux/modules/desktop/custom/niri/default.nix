@@ -44,17 +44,18 @@
           enable = true;
           configPackages = [ pkgs.niri ];
           config.niri = {
-            # Use mkForce to override nixpkgs default
             default = lib.mkForce [
+              "gnome"
               "gtk"
-              "wlr"
             ];
+            # Route screen sharing to gnome portal for window selection support
+            "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
+            "org.freedesktop.impl.portal.RemoteDesktop" = [ "gnome" ];
             "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
           };
           extraPortals = [
             pkgs.xdg-desktop-portal-gnome
             pkgs.xdg-desktop-portal-gtk
-            pkgs.xdg-desktop-portal-wlr
           ];
           xdgOpenUsePortal = true;
         };
