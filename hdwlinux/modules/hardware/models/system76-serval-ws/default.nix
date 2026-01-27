@@ -69,5 +69,17 @@
           pkgs.system76-keyboard-configurator
         ];
       };
+
+    homeManager =
+      { pkgs, ... }:
+      {
+        hdwlinux.programs.hdwlinux = {
+          runtimeInputs = [ pkgs.system76-power ];
+          subcommands.battery = {
+            set-profile = "system76-power charge-thresholds --profile \"$@\"";
+            "*" = "system76-power charge-thresholds";
+          };
+        };
+      };
   };
 }

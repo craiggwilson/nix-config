@@ -40,15 +40,10 @@
                   pkgs.nix-output-monitor
                   pkgs.nvd
                 ]
-                ++ (if hasTag "hardware:system76" then [ pkgs.system76-power ] else [ ])
                 ++ (if hasTag "gui" then [ pkgs.wlr-randr ] else [ ])
                 ++ cfg.runtimeInputs;
               subcommands =
                 {
-                  battery = {
-                    set-profile = "system76-power charge-thresholds --profile \"$@\"";
-                    "*" = "system76-power charge-thresholds";
-                  };
                   build = {
                     remote = ''
                       hostname="$1"
