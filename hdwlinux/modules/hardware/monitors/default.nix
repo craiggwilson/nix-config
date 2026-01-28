@@ -56,17 +56,24 @@
       };
 
     nixos =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
-        monitorsWithEdidOverride = lib.filterAttrs
-          (_: monitor: monitor.edidOverride != null)
-          config.hdwlinux.hardware.monitors;
+        monitorsWithEdidOverride = lib.filterAttrs (
+          _: monitor: monitor.edidOverride != null
+        ) config.hdwlinux.hardware.monitors;
 
         edidDir = pkgs.runCommand "edid-files" { } ''
           mkdir -p $out
-          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: monitor: ''
-            cp ${monitor.edidOverride.edidFile} $out/${name}.bin
-          '') monitorsWithEdidOverride)}
+          ${lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (name: monitor: ''
+              cp ${monitor.edidOverride.edidFile} $out/${name}.bin
+            '') monitorsWithEdidOverride
+          )}
         '';
 
         edidFixScript = pkgs.writeShellScript "edid-fix" ''
@@ -107,49 +114,91 @@
             fi
           }
 
-          ${lib.concatStringsSep "\n" (lib.mapAttrsToList (name: monitor: ''
-            EDID_FILE="$EDID_DIR/${name}.bin"
-            SERIAL="${monitor.serial or ""}"
+          ${lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (name: monitor: ''
+              EDID_FILE="$EDID_DIR/${name}.bin"
+              SERIAL="${monitor.serial or ""}"
 
-            for connector_dir in /sys/class/drm/card*-${monitor.edidOverride.connectorPrefix}*/; do
-              [ -d "$connector_dir" ] || continue
+              for connector_dir in /sys/class/drm/card*-${monitor.edidOverride.connectorPrefix}*/; do
+                [ -d "$connector_dir" ] || continue
 
-              connector=$(basename "$connector_dir")
-              conn_status=$(cat "$connector_dir/status" 2>/dev/null || echo "unknown")
-              [ "$conn_status" = "connected" ] || continue
+                connector=$(basename "$connector_dir")
+                conn_status=$(cat "$connector_dir/status" 2>/dev/null || echo "unknown")
+                [ "$conn_status" = "connected" ] || continue
 
-              edid_path="$connector_dir/edid"
-              needs_override=false
+                edid_path="$connector_dir/edid"
+                needs_override=false
 
-              if [ ! -f "$edid_path" ]; then
-                needs_override=true
-              else
-                edid_size=$(wc -c < "$edid_path" 2>/dev/null || echo 0)
-                if [ "$edid_size" -lt 128 ]; then
+                if [ ! -f "$edid_path" ]; then
                   needs_override=true
+                else
+                  edid_size=$(wc -c < "$edid_path" 2>/dev/null || echo 0)
+                  if [ "$edid_size" -lt 128 ]; then
+                    needs_override=true
+                  fi
                 fi
-              fi
 
-              if [ "$needs_override" = "true" ]; then
-                echo "Connector $connector needs EDID override (${name})"
-                apply_edid_override "$connector" "$EDID_FILE" "${name}" || true
-              fi
-            done
-          '') monitorsWithEdidOverride)}
+                if [ "$needs_override" = "true" ]; then
+                  echo "Connector $connector needs EDID override (${name})"
+                  apply_edid_override "$connector" "$EDID_FILE" "${name}" || true
+                fi
+              done
+            '') monitorsWithEdidOverride
+          )}
         '';
       in
       lib.mkIf (monitorsWithEdidOverride != { }) {
         environment.etc."hdwlinux/edid-fix".source = edidFixScript;
 
         boot.postBootCommands = ''
-          sleep 3
+          sleep 10
           /etc/hdwlinux/edid-fix || true
         '';
 
         powerManagement.resumeCommands = ''
-          sleep 3
+          sleep 10
           /etc/hdwlinux/edid-fix || true
         '';
+      };
+
+    homeManager =
+      { pkgs, ... }:
+      {
+        hdwlinux.programs.hdwlinux = {
+          runtimeInputs = [ pkgs.wlr-randr ];
+          subcommands.monitors = {
+            fix = ''
+              if [[ -x /etc/hdwlinux/edid-fix ]]; then
+                echo "Running EDID fix script..."
+                sudo /etc/hdwlinux/edid-fix
+              else
+                echo "No EDID fix script found. Forcing DRM connector re-detection..."
+                for status in /sys/class/drm/card*/status; do
+                  sudo tee "$status" <<< detect >/dev/null 2>&1 || true
+                done
+              fi
+              echo "Done."
+            '';
+            "*" = ''
+              if command -v wlr-randr &>/dev/null; then
+                wlr-randr
+              else
+                echo "wlr-randr not available. Install it for detailed monitor info."
+                echo ""
+                echo "Connected monitors (basic info):"
+                for dir in /sys/class/drm/card*-*/; do
+                  if [[ -f "$dir/status" ]]; then
+                    status=$(cat "$dir/status" 2>/dev/null || echo "unknown")
+                    connector=$(basename "$dir")
+                    if [[ "$status" == "connected" ]]; then
+                      echo "  $connector"
+                    fi
+                  fi
+                done
+              fi
+            '';
+          };
+        };
       };
   };
 }

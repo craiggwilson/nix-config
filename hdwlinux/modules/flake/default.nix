@@ -9,5 +9,17 @@
           default = null;
         };
       };
+
+    homeManager =
+      { config, ... }:
+      let
+        flake = config.hdwlinux.flake;
+      in
+      {
+        hdwlinux.programs.hdwlinux.subcommands.flake = {
+          update = "nix flake update --flake ${flake} \"$@\"";
+          "*" = "echo ${flake}";
+        };
+      };
   };
 }

@@ -112,7 +112,13 @@
       {
         hdwlinux.programs.hdwlinux = {
           runtimeInputs = [ pkgs.tlp ];
-          subcommands.battery = {
+          subcommands = {
+            firmware = {
+              update = "fwupdmgr update";
+              refresh = "fwupdmgr refresh";
+              "*" = "fwupdmgr get-updates";
+            };
+            battery = {
             # TLP profiles mapped to match system76-power naming
             # Dell supports: start 50-95, stop 55-100 (hardware enforces start = stop - 5)
             set-profile = ''
@@ -141,6 +147,7 @@
               esac
             '';
             "*" = "sudo tlp-stat -b";
+            };
           };
         };
       };

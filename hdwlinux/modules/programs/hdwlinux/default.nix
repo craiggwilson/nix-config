@@ -5,7 +5,6 @@
     homeManager =
       {
         config,
-        hasTag,
         lib,
         pkgs,
         ...
@@ -40,7 +39,6 @@
                   pkgs.nix-output-monitor
                   pkgs.nvd
                 ]
-                ++ (if hasTag "gui" then [ pkgs.wlr-randr ] else [ ])
                 ++ cfg.runtimeInputs;
               subcommands =
                 {
@@ -58,13 +56,6 @@
                     shift;
                     nix develop "${flake}#$name" -c "$SHELL" "$@";
                   '';
-                  firmware = {
-                    update = "sudo system76-firmware-cli schedule";
-                  };
-                  flake = {
-                    update = "nix flake update --flake ${flake} \"$@\"";
-                    "*" = "echo ${flake}";
-                  };
                   generations = {
                     delete-older-than = "nix-collect-garbage --delete-older-than \"$@\"";
                     diff = {
@@ -98,55 +89,6 @@
                     "*" = ''git -C ${flake} add -A . && sudo nixos-rebuild switch --flake ${flake} "$@" |& nom'';
                   };
                   test = ''git -C ${flake} add -A . && sudo nixos-rebuild test --flake ${flake} "$@" |& nom'';
-                  monitors = {
-                    fix = ''
-                      if [[ -x /etc/hdwlinux/edid-fix ]]; then
-                        echo "Running EDID fix script..."
-                        sudo /etc/hdwlinux/edid-fix
-                      else
-                        echo "No EDID fix script found. Forcing DRM connector re-detection..."
-                        for status in /sys/class/drm/card*/status; do
-                          sudo tee "$status" <<< detect >/dev/null 2>&1 || true
-                        done
-                      fi
-                      echo "Done."
-                    '';
-                    "*" = ''
-                      if command -v wlr-randr &>/dev/null; then
-                        wlr-randr
-                      else
-                        echo "wlr-randr not available. Install it for detailed monitor info."
-                        echo ""
-                        echo "Connected monitors (basic info):"
-                        for dir in /sys/class/drm/card*-*/; do
-                          if [[ -f "$dir/status" ]]; then
-                            status=$(cat "$dir/status" 2>/dev/null || echo "unknown")
-                            connector=$(basename "$dir")
-                            if [[ "$status" == "connected" ]]; then
-                              echo "  $connector"
-                            fi
-                          fi
-                        done
-                      fi
-                    '';
-                  };
-                  wifi = {
-                    connect = "nmcli connection up \"$@\"";
-                    disconnect = ''
-                      active="$(nmcli -t -f active,ssid dev wifi | rg '^yes' | cut -d: -f2)"
-                      nmcli connection down "$active"
-                    '';
-                    off = "nmcli radio wifi off";
-                    on = "nmcli radio wifi on";
-                    "*" = ''
-                      status="$(nmcli radio wifi)"
-                      if [[ "$status" == 'disabled' ]]; then
-                        echo "disabled"
-                      else
-                        nmcli connection show
-                      fi
-                    '';
-                  };
                 }
                 // cfg.subcommands;
             })

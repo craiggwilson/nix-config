@@ -75,9 +75,14 @@
       {
         hdwlinux.programs.hdwlinux = {
           runtimeInputs = [ pkgs.system76-power ];
-          subcommands.battery = {
-            set-profile = "system76-power charge-thresholds --profile \"$@\"";
-            "*" = "system76-power charge-thresholds";
+          subcommands = {
+            battery = {
+              set-profile = "system76-power charge-thresholds --profile \"$@\"";
+              "*" = "system76-power charge-thresholds";
+            };
+            firmware = {
+              update = "sudo system76-firmware-cli schedule";
+            };
           };
         };
       };
