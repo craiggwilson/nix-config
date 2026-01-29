@@ -20,24 +20,37 @@
 
         monitorType = lib.types.submodule {
           options = {
-            model = lib.mkOption { type = lib.types.str; };
+            model = lib.mkOption {
+              type = lib.types.str;
+              description = "Monitor model name for identification.";
+            };
             serial = lib.mkOption {
               type = lib.types.nullOr lib.types.str;
               default = null;
+              description = "Monitor serial number for unique identification.";
             };
-            vendor = lib.mkOption { type = lib.types.str; };
-            mode = lib.mkOption { type = lib.types.str; };
+            vendor = lib.mkOption {
+              type = lib.types.str;
+              description = "Monitor vendor/manufacturer name.";
+            };
+            mode = lib.mkOption {
+              type = lib.types.str;
+              description = "Display mode (resolution and refresh rate, e.g., '2560x1440@165').";
+            };
             scale = lib.mkOption {
               type = lib.types.float;
               default = 1.0;
+              description = "Display scaling factor.";
             };
             adaptive_sync = lib.mkOption {
               type = lib.types.bool;
               default = false;
+              description = "Whether to enable adaptive sync (VRR/FreeSync/G-Sync).";
             };
             displaylink = lib.mkOption {
               type = lib.types.bool;
               default = false;
+              description = "Whether this monitor uses a DisplayLink adapter.";
             };
             edidOverride = lib.mkOption {
               type = lib.types.nullOr edidOverrideType;

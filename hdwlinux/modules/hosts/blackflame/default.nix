@@ -1,4 +1,4 @@
-{ inputs, lib, ... }:
+{ inputs, ... }:
 let
   hostname = "blackflame";
   diskoConfig = import ./_disko.nix;

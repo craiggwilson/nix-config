@@ -15,9 +15,9 @@
           enable = true;
           defaultFonts = {
             emoji = [ "Noto Color Emoji" ];
-            monospace = [ "FireCode Nerd Font Mono" ];
-            sansSerif = [ "FireCode Nerd Font" ];
-            serif = [ "FireCode Nerd Font" ];
+            monospace = [ "FiraCode Nerd Font Mono" ];
+            sansSerif = [ "FiraCode Nerd Font" ];
+            serif = [ "FiraCode Nerd Font" ];
           };
         };
       };
