@@ -25,7 +25,7 @@
               default = [ ];
             };
             nixpkgsConfig = lib.mkOption {
-              type = lib.types.attrs;
+              type = lib.types.attrsOf lib.types.anything;
               description = ''
                 Additional nixpkgs config to apply when instantiating nixpkgs for this host.
                 This is merged with the default config (allowUnfree = true).

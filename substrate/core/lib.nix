@@ -2,7 +2,9 @@
 let
   settings = config.substrate.settings;
 
-  packageNameFromPath =
+  # Extracts a name from a path by taking the basename and removing .nix suffix.
+  # Works for both files (foo.nix -> foo) and directories (foo/ -> foo).
+  nameFromPath =
     path:
     let
       basename = baseNameOf path;
@@ -12,8 +14,8 @@ let
   mkPackages =
     pkgs:
     lib.listToAttrs (
-      map (path: {
-        name = packageNameFromPath path;
+      lib.map (path: {
+        name = nameFromPath path;
         value = import path { inherit lib pkgs; };
       }) settings.packages
     );
@@ -35,7 +37,7 @@ let
 
   extraArgsGenerator =
     { hostcfg, usercfg }:
-    lib.mergeAttrsList (builtins.map (f: f { inherit hostcfg usercfg; }) settings.extraArgsGenerators);
+    lib.mergeAttrsList (lib.map (f: f { inherit hostcfg usercfg; }) settings.extraArgsGenerators);
 
   hasClass = class: builtins.elem class settings.supportedClasses;
 in
@@ -48,6 +50,7 @@ in
     readOnly = true;
     default = {
       inherit
+        nameFromPath
         mkPackages
         mkPackagesDerivationsOnly
         mkAllOverlays

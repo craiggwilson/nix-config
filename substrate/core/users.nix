@@ -16,7 +16,7 @@
               default = builtins.currentSystem;
             };
             nixpkgsConfig = lib.mkOption {
-              type = lib.types.attrs;
+              type = lib.types.attrsOf lib.types.anything;
               description = ''
                 Additional nixpkgs config to apply when instantiating nixpkgs for this user
                 (standalone home-manager only). This is merged with the default config

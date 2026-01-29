@@ -4,35 +4,8 @@
   pkgs ? import <nixpkgs> { },
 }:
 let
-  lib = pkgs.lib;
-
-  # Helper to run a test and return result
-  runTest =
-    name: test:
-    let
-      result = builtins.tryEval (builtins.deepSeq test.check test.check);
-    in
-    if result.success then
-      if result.value == true then
-        { inherit name; success = true; message = "PASS"; }
-      else
-        { inherit name; success = false; message = "FAIL: check returned false"; }
-    else
-      { inherit name; success = false; message = "FAIL: evaluation error"; };
-
-  # Evaluate a substrate configuration
-  evalSubstrate =
-    modules:
-    lib.evalModules {
-      modules = [
-        ../../core/settings.nix
-        ../../core/lib.nix
-        ../../core/modules.nix
-        ../../core/finders.nix
-        ../../core/overlays.nix
-        ../../core/packages.nix
-      ] ++ modules;
-    };
+  testLib = import ../lib.nix { inherit pkgs; };
+  inherit (testLib) lib evalSubstrate runTests;
 
   tests = {
     # Test 1: unique deduplicates list preserving order
@@ -207,24 +180,6 @@ let
         lib.length (extractClassModules "generic" mods) == 1;
     };
   };
-
-  results = lib.mapAttrs runTest tests;
-  allPassed = lib.all (r: r.success) (lib.attrValues results);
 in
-{
-  inherit results allPassed;
-  summary =
-    let
-      passed = lib.filter (r: r.success) (lib.attrValues results);
-      failed = lib.filter (r: !r.success) (lib.attrValues results);
-    in
-    ''
-      Lib Tests
-      =========
-      Tests: ${toString (lib.length (lib.attrValues results))}
-      Passed: ${toString (lib.length passed)}
-      Failed: ${toString (lib.length failed)}
-      ${lib.concatMapStringsSep "\n" (r: "  ${r.name}: ${r.message}") (lib.attrValues results)}
-    '';
-}
+runTests "Lib Tests" tests
 

@@ -4,51 +4,22 @@
   pkgs ? import <nixpkgs> { },
 }:
 let
-  lib = pkgs.lib;
+  testLib = import ../lib.nix { inherit pkgs; };
+  inherit (testLib) lib mkEvalSubstrate runTests;
 
-  # Helper to run a test and return result
-  runTest =
-    name: test:
-    let
-      result = builtins.tryEval (builtins.deepSeq test.check test.check);
-    in
-    if result.success then
-      if result.value == true then
-        {
-          inherit name;
-          success = true;
-          message = "PASS";
-        }
-      else
-        {
-          inherit name;
-          success = false;
-          message = "FAIL: check returned false";
-        }
-    else
-      {
-        inherit name;
-        success = false;
-        message = "FAIL: evaluation error";
-      };
-
-  # Evaluate a substrate configuration with tags extension
-  evalSubstrate =
-    modules:
-    lib.evalModules {
-      modules = [
-        ../../core/settings.nix
-        ../../core/lib.nix
-        ../../core/modules.nix
-        ../../core/finders.nix
-        ../../core/hosts.nix
-        ../../core/users.nix
-        ../../core/overlays.nix
-        ../../core/packages.nix
-        ../../core/checks.nix
-        ../../extensions/tags/default.nix
-      ] ++ modules;
-    };
+  # Tags extension tests need extended core plus tags extension
+  evalSubstrate = mkEvalSubstrate [
+    ../../core/settings.nix
+    ../../core/lib.nix
+    ../../core/modules.nix
+    ../../core/finders.nix
+    ../../core/hosts.nix
+    ../../core/users.nix
+    ../../core/overlays.nix
+    ../../core/packages.nix
+    ../../core/checks.nix
+    ../../extensions/tags/default.nix
+  ];
 
   tests = {
     # Test 1: Simple string tags are normalized to attrsets
@@ -315,24 +286,6 @@ let
         && args.hasTag "theming";
     };
   };
-
-  results = lib.mapAttrs runTest tests;
-  allPassed = lib.all (r: r.success) (lib.attrValues results);
 in
-{
-  inherit results allPassed;
-  summary =
-    let
-      passed = lib.filter (r: r.success) (lib.attrValues results);
-      failed = lib.filter (r: !r.success) (lib.attrValues results);
-    in
-    ''
-      Tags Extension Tests
-      ====================
-      Tests: ${toString (lib.length (lib.attrValues results))}
-      Passed: ${toString (lib.length passed)}
-      Failed: ${toString (lib.length failed)}
-      ${lib.concatMapStringsSep "\n" (r: "  ${r.name}: ${r.message}") (lib.attrValues results)}
-    '';
-}
+runTests "Tags Extension Tests" tests
 

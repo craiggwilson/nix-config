@@ -6,21 +6,15 @@
 }:
 let
   settings = config.substrate.settings;
-  allOverlays = config.substrate.lib.mkAllOverlays;
+  slib = config.substrate.lib;
+  allOverlays = slib.mkAllOverlays;
   hasShells = (settings.shells or [ ]) != [ ];
-
-  shellNameFromPath =
-    path:
-    let
-      basename = baseNameOf path;
-    in
-    lib.removeSuffix ".nix" basename;
 
   mkShells =
     pkgs:
     lib.listToAttrs (
-      map (path: {
-        name = shellNameFromPath path;
+      lib.map (path: {
+        name = slib.nameFromPath path;
         value = import path {
           inherit lib inputs pkgs;
           inherit (pkgs) stdenv;

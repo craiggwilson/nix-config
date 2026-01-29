@@ -4,50 +4,22 @@
   pkgs ? import <nixpkgs> { },
 }:
 let
-  lib = pkgs.lib;
+  testLib = import ../lib.nix { inherit pkgs; };
+  inherit (testLib) lib mkEvalSubstrate evalSubstrate runTests;
 
-  # Helper to run a test and return result
-  runTest =
-    name: test:
-    let
-      result = builtins.tryEval (builtins.deepSeq test.check test.check);
-    in
-    if result.success then
-      if result.value == true then
-        { inherit name; success = true; message = "PASS"; }
-      else
-        { inherit name; success = false; message = "FAIL: check returned false"; }
-    else
-      { inherit name; success = false; message = "FAIL: evaluation error"; };
-
-  # Evaluate substrate without home-manager extension
-  evalSubstrateBase =
-    modules:
-    lib.evalModules {
-      modules = [
-        ../../core/settings.nix
-        ../../core/lib.nix
-        ../../core/modules.nix
-        ../../core/finders.nix
-        ../../core/overlays.nix
-        ../../core/packages.nix
-      ] ++ modules;
-    };
+  # Rename the base evaluator for clarity
+  evalSubstrateBase = evalSubstrate;
 
   # Evaluate substrate with home-manager extension
-  evalSubstrateWithHM =
-    modules:
-    lib.evalModules {
-      modules = [
-        ../../core/settings.nix
-        ../../core/lib.nix
-        ../../core/modules.nix
-        ../../core/finders.nix
-        ../../core/overlays.nix
-        ../../core/packages.nix
-        ../../extensions/home-manager/default.nix
-      ] ++ modules;
-    };
+  evalSubstrateWithHM = mkEvalSubstrate [
+    ../../core/settings.nix
+    ../../core/lib.nix
+    ../../core/modules.nix
+    ../../core/finders.nix
+    ../../core/overlays.nix
+    ../../core/packages.nix
+    ../../extensions/home-manager/default.nix
+  ];
 
   tests = {
     # Test 1: homeManager class is not supported without extension
@@ -144,24 +116,6 @@ let
         lib.elem "nixos" classes && lib.elem "homeManager" classes;
     };
   };
-
-  results = lib.mapAttrs runTest tests;
-  allPassed = lib.all (r: r.success) (lib.attrValues results);
 in
-{
-  inherit results allPassed;
-  summary =
-    let
-      passed = lib.filter (r: r.success) (lib.attrValues results);
-      failed = lib.filter (r: !r.success) (lib.attrValues results);
-    in
-    ''
-      Home-Manager Extension Tests
-      ============================
-      Tests: ${toString (lib.length (lib.attrValues results))}
-      Passed: ${toString (lib.length passed)}
-      Failed: ${toString (lib.length failed)}
-      ${lib.concatMapStringsSep "\n" (r: "  ${r.name}: ${r.message}") (lib.attrValues results)}
-    '';
-}
+runTests "Home-Manager Extension Tests" tests
 

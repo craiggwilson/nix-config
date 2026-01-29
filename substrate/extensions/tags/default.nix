@@ -2,16 +2,17 @@
 let
   finderName = "by-tags";
   rawTags = config.substrate.settings.tags;
+  slib = config.substrate.lib;
 
-  unique = list: lib.foldl' (acc: x: if lib.elem x acc then acc else acc ++ [ x ]) [ ] list;
-
+  # Extracts parent prefixes from a hierarchical tag.
+  # e.g., "desktop:custom:niri" -> ["desktop", "desktop:custom"]
   parentPrefixes =
     tag:
     let
       parts = lib.splitString ":" tag;
       indices = lib.range 1 (builtins.length parts - 1);
     in
-    map (i: lib.concatStringsSep ":" (lib.take i parts)) indices;
+    lib.map (i: lib.concatStringsSep ":" (lib.take i parts)) indices;
 
   normalizedTags = lib.foldl' (
     acc: item:
@@ -25,7 +26,7 @@ let
   ) { } rawTags;
 
   allTagNames = builtins.attrNames normalizedTags;
-  allImpliedTags = unique (lib.flatten (builtins.attrValues normalizedTags));
+  allImpliedTags = slib.unique (lib.flatten (builtins.attrValues normalizedTags));
   invalidImpliedTags = lib.filter (t: !(builtins.elem t allTagNames)) allImpliedTags;
 
   validatedTagNames =
@@ -34,6 +35,8 @@ let
     else
       throw "Invalid implied tags: ${builtins.toString invalidImpliedTags}. All implied tags must be explicitly declared.";
 
+  # Recursively expands a tag to include all implied tags and parent prefixes.
+  # Uses a 'seen' set to prevent infinite loops from circular implications.
   expandTag =
     tag: seen:
     if builtins.elem tag seen then
@@ -43,12 +46,18 @@ let
         newSeen = seen ++ [ tag ];
         explicitImplied = if normalizedTags ? ${tag} then normalizedTags.${tag} else [ ];
         parents = parentPrefixes tag;
-        allImplied = unique (explicitImplied ++ parents);
+        allImplied = slib.unique (explicitImplied ++ parents);
       in
-      [ tag ] ++ lib.flatten (map (t: expandTag t newSeen) allImplied);
+      [ tag ] ++ lib.flatten (lib.map (t: expandTag t newSeen) allImplied);
 
-  expandTags = tags: unique (lib.flatten (map (t: expandTag t [ ]) tags));
+  expandTags = tags: slib.unique (lib.flatten (lib.map (t: expandTag t [ ]) tags));
 
+  # Tag matching functions:
+  # - elemPrefix: checks if any element in xs starts with prefix x
+  # - validSingle: a single tag requirement is satisfied if there's a prefix match
+  # - validAll: handles both string tags and nested lists (AND logic for lists)
+  #   e.g., tags = ["gui"] means "gui" must match
+  #   e.g., tags = [["gui" "fonts"]] means BOTH "gui" AND "fonts" must match
   elemPrefix = x: xs: builtins.any (e: lib.strings.hasPrefix x e) xs;
   validSingle = x: xs: elemPrefix x xs;
   validAll =
@@ -81,7 +90,7 @@ let
         else
           [ ];
     in
-    expandTags (unique (hostTags ++ userTags));
+    expandTags (slib.unique (hostTags ++ userTags));
 
   mkHasTag = tags: tag: builtins.any (t: lib.strings.hasPrefix tag t) tags;
 in
@@ -111,7 +120,7 @@ in
         );
         apply =
           list:
-          map (
+          lib.map (
             item: if builtins.isString item then { ${item} = [ ]; } else item
           ) list;
         description = ''
@@ -144,10 +153,10 @@ in
       find =
         cfgs:
         let
-          allTags = unique (lib.flatten (map tagsFromAttrs cfgs));
+          allTags = slib.unique (lib.flatten (lib.map tagsFromAttrs cfgs));
         in
-        assert validatedTagNames != [ ] || validatedTagNames == [ ];
-        filterByTags (expandTags allTags) (config.substrate.finders.all.find cfgs);
+        # Force evaluation of validatedTagNames to trigger validation errors early
+        builtins.seq validatedTagNames (filterByTags (expandTags allTags) (config.substrate.finders.all.find cfgs));
     };
 
     settings = {
@@ -170,7 +179,6 @@ in
 
       checks =
         let
-          slib = config.substrate.lib;
           allModules = config.substrate.finders.all.find [ ];
 
           validateModuleTags =
@@ -278,19 +286,40 @@ in
                   "Found invalid implied tags: ${toString invalidImplied}";
             };
 
+          # Detect circular tag implications (e.g., A implies B, B implies A)
+          validateCircularTags =
+            let
+              # Check if following implications from a tag leads back to itself
+              hasCircularPath =
+                startTag: currentTag: visited:
+                let
+                  implied = normalizedTags.${currentTag} or [ ];
+                  isCircular = lib.elem startTag implied;
+                  newVisited = visited ++ [ currentTag ];
+                  # Only follow tags we haven't visited to avoid infinite recursion
+                  unvisitedImplied = lib.filter (t: !(lib.elem t newVisited)) implied;
+                in
+                isCircular || builtins.any (t: hasCircularPath startTag t newVisited) unvisitedImplied;
+
+              tagsWithCircular = lib.filter (tag: hasCircularPath tag tag [ ]) (builtins.attrNames normalizedTags);
+            in
+            {
+              name = "circular-tag-implications";
+              valid = tagsWithCircular == [ ];
+              warn = true; # Warning rather than error since expandTag handles cycles
+              message =
+                if tagsWithCircular == [ ] then
+                  "No circular tag implications detected"
+                else
+                  "Found tags with circular implications: ${toString tagsWithCircular}. While handled safely, this may indicate a configuration error.";
+            };
+
           validateUnusedTags =
             let
-              getParentPrefixes =
-                tag:
-                let
-                  parts = lib.splitString ":" tag;
-                  indices = lib.range 1 (builtins.length parts - 1);
-                in
-                map (i: lib.concatStringsSep ":" (lib.take i parts)) indices;
+              # Reuse the top-level parentPrefixes function
+              expandWithPrefixes = tags: slib.unique (tags ++ lib.flatten (lib.map parentPrefixes tags));
 
-              expandWithPrefixes = tags: slib.unique (tags ++ lib.flatten (map getParentPrefixes tags));
-
-              moduleTagsUsed = expandWithPrefixes (lib.flatten (map (m: m.tags or [ ]) allModules));
+              moduleTagsUsed = expandWithPrefixes (lib.flatten (lib.map (m: m.tags or [ ]) allModules));
 
               hostTagsUsed = expandWithPrefixes (
                 lib.flatten (lib.mapAttrsToList (_: h: h.tags or [ ]) config.substrate.hosts)
@@ -322,6 +351,7 @@ in
           validateHostTags
           validateUserTags
           validateImpliedTags
+          validateCircularTags
           validateUnusedTags
         ];
     };

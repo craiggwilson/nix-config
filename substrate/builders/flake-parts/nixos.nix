@@ -18,13 +18,13 @@ in
     hostname: hostcfg:
     let
       mkNixosUser = usercfg: {
-        isNormalUser = true;
+        isNormalUser = lib.mkDefault true;
         name = usercfg.name;
-        group = "users";
+        group = lib.mkDefault "users";
       };
 
       nixosUsers = lib.listToAttrs (
-        builtins.map (
+        lib.map (
           user:
           let
             usercfg = config.substrate.users.${user};

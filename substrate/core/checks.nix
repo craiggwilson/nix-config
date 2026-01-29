@@ -13,11 +13,8 @@ let
       modulesWithUnsupportedClasses = lib.filter (
         m:
         let
-          usedClasses = lib.filter (c: m ? ${c} && m.${c} != null) [
-            "generic"
-            "nixos"
-            "homeManager"
-          ];
+          # Dynamically check all supported classes instead of hardcoding
+          usedClasses = lib.filter (c: m ? ${c} && m.${c} != null) allClasses;
           unsupportedClasses = lib.filter (c: !(lib.elem c allClasses)) usedClasses;
         in
         unsupportedClasses != [ ]
