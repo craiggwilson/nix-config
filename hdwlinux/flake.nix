@@ -173,6 +173,7 @@
           }
           {
             "users:craig:work" = [
+              "cloud:sync"
               "virtualization:docker"
             ];
           }
@@ -209,6 +210,7 @@
           "bluetooth"
           "boot:systemd"
           "camera"
+          "cloud:sync"
           "desktop"
           { "desktop:custom" = [ "gui" ]; }
           "desktop:custom:hyprland"
