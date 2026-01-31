@@ -150,6 +150,7 @@
           {
             "users:craig" = [
               "ai:mcp"
+              "cloud:sync"
               "desktop:custom:niri"
               "dictation"
               "networking:tailscale"
@@ -173,7 +174,6 @@
           }
           {
             "users:craig:work" = [
-              "cloud:sync"
               "virtualization:docker"
             ];
           }
