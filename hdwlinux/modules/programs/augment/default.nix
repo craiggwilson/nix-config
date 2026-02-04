@@ -53,7 +53,10 @@
         ) config.hdwlinux.ai.commands)
         // (lib.mapAttrs' (
           n: v: lib.nameValuePair ".augment/rules/${n}.md" { text = v; }
-        ) config.hdwlinux.ai.rules);
+        ) config.hdwlinux.ai.rules)
+        // (lib.mapAttrs' (
+          n: v: lib.nameValuePair ".augment/skills/${n}" { source = v; }
+        ) config.hdwlinux.ai.skills);
 
         programs.vscode.profiles.default.userSettings = lib.mkIf config.programs.vscode.enable {
           "github.copilot.enable" = {
