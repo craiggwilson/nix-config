@@ -967,6 +967,7 @@ class Diagram:
         shape: Literal["rectangle", "ellipse", "diamond"] = "rectangle",
         font_size: int = None,
         vertical_align: Literal["top", "middle"] = "middle",
+        opacity: int = 100,
     ) -> Element:
         """Create a labeled box (rectangle, ellipse, or diamond).
 
@@ -976,6 +977,7 @@ class Diagram:
         Args:
             vertical_align: "middle" centers text vertically (default for nodes),
                            "top" aligns text to top (useful for containers).
+            opacity: Opacity of the box from 0 (transparent) to 100 (opaque). Default is 100.
         """
         # Use configured font size if not specified
         if font_size is None:
@@ -1002,6 +1004,7 @@ class Diagram:
             roughness=self.style.roughness,
             stroke_style=self.style.stroke_style,
             stroke_width=self.style.stroke_width,
+            opacity=opacity,
         )
 
         # Get IDs for binding
