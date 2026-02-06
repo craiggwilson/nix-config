@@ -1,7 +1,7 @@
 {
   # Base module that defines the mcpServers option
   # Uses a unique path to avoid tag conflicts with individual MCP server modules
-  config.substrate.modules.ai.agent._mcp-servers-base = {
+  config.substrate.modules.ai.agent.mcp-servers = {
     homeManager =
       { lib, ... }:
       let

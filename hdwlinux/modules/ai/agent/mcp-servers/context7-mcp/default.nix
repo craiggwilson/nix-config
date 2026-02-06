@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.context7-mcp = {
+  config.substrate.modules.ai.agent.mcp-servers.context7-mcp = {
     tags = [
       "programming"
       "ai:mcp"

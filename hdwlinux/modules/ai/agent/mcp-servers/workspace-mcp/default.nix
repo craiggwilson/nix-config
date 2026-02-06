@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.workspace-mcp = {
+  config.substrate.modules.ai.agent.mcp-servers.workspace-mcp = {
     tags = [
       "programming"
       "ai:mcp"
@@ -13,7 +13,7 @@
         ...
       }:
       let
-        cfg = config.hdwlinux.programs.workspace-mcp;
+        cfg = config.hdwlinux.ai.agent.mcp-servers.workspace-mcp;
         secrets = config.hdwlinux.security.secrets.entries;
         hasSecrets = secrets ? workspaceMcpClientID && secrets ? workspaceMcpClientSecret;
 
@@ -29,7 +29,7 @@
         '';
       in
       {
-        options.hdwlinux.programs.workspace-mcp = {
+        options.hdwlinux.ai.agent.mcp-servers.workspace-mcp = {
           tools = lib.mkOption {
             type = lib.types.listOf (
               lib.types.enum [
@@ -83,7 +83,7 @@
       };
   };
 
-  config.substrate.modules.programs.workspace-mcp-craig-work = {
+  config.substrate.modules.ai.agent.mcp-servers.workspace-mcp-craig-work = {
     tags = [
       "users:craig:work"
       "programming"
@@ -92,7 +92,7 @@
 
     homeManager = {
       config = {
-        hdwlinux.programs.workspace-mcp.userEmail = "craig.wilson@mongodb.com";
+        hdwlinux.ai.agent.mcp-servers.workspace-mcp.userEmail = "craig.wilson@mongodb.com";
 
         hdwlinux.security.secrets.entries.workspaceMcpClientID = {
           reference = "op://Work/workspace-mcp/client_id";

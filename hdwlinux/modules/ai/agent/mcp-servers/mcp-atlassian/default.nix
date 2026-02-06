@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.mcp-atlassian = {
+  config.substrate.modules.ai.agent.mcp-servers.mcp-atlassian = {
     tags = [
       "users:craig:work"
       "programming"

@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.github-mcp-server = {
+  config.substrate.modules.ai.agent.mcp-servers.github-mcp-server = {
     tags = [
       "programming"
       "ai:mcp"

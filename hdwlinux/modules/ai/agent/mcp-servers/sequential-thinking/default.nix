@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.sequential-thinking = {
+  config.substrate.modules.ai.agent.mcp-servers.sequential-thinking = {
     tags = [
       "programming"
       "ai:mcp"
