@@ -12,51 +12,16 @@
         pkgs,
         ...
       }:
-      let
-        # Transform tagged union to augment's expected format (stdio servers only)
-        mcpServers = lib.mapAttrs (
-          name: server:
-          if server ? stdio then
-            {
-              command = server.stdio.command;
-              args = server.stdio.args;
-            }
-          else if server ? http then
-            {
-              url = server.http.url;
-              headers = server.http.headers;
-            }
-          else
-            throw "Unknown MCP server type for ${name}"
-        ) config.hdwlinux.ai.mcpServers;
-
-      in
       {
         home.packages = [
           (pkgs.writeShellScriptBin "auggie" ''
-            ${pkgs.hdwlinux.auggie}/bin/auggie --mcp-config ~/.augment/mcp-servers.json "$@"
+            ${pkgs.hdwlinux.auggie}/bin/auggie --mcp-config ~/.ai/agent/mcp-servers.json "$@"
           '')
         ];
 
-        home.file = {
-          ".augment/mcp-servers.json".text = builtins.toJSON {
-            inherit mcpServers;
-          };
-          # ".augment/settings.json".source =
-          #   config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/modules/programs/augment/settings.json";
-        }
-        // (lib.mapAttrs' (
-          n: v: lib.nameValuePair ".augment/agents/${n}.md" { text = v; }
-        ) config.hdwlinux.ai.agents)
-        // (lib.mapAttrs' (
-          n: v: lib.nameValuePair ".augment/commands/${n}.md" { text = v; }
-        ) config.hdwlinux.ai.commands)
-        // (lib.mapAttrs' (
-          n: v: lib.nameValuePair ".augment/rules/${n}.md" { text = v; }
-        ) config.hdwlinux.ai.rules)
-        // (lib.mapAttrs' (
-          n: v: lib.nameValuePair ".augment/skills/${n}" { source = v; }
-        ) config.hdwlinux.ai.skills);
+        # Symlink ~/.augment -> ~/.ai/agent for Augment Code compatibility
+        home.file.".augment".source =
+          config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.ai/agent";
 
         programs.vscode.profiles.default.userSettings = lib.mkIf config.programs.vscode.enable {
           "github.copilot.enable" = {

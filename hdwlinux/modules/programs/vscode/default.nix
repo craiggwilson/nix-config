@@ -34,7 +34,7 @@
             }
           else
             throw "Unknown MCP server type for ${name}"
-        ) config.hdwlinux.ai.mcpServers;
+        ) config.hdwlinux.ai.agent.mcpServers;
 
         themeFile = pkgs.writeTextFile {
           name = "vscode-hdwlinux-theme.json";
