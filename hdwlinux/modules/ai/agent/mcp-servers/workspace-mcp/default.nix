@@ -1,7 +1,6 @@
 {
   config.substrate.modules.programs.workspace-mcp = {
     tags = [
-      "users:craig:work"
       "programming"
       "ai:mcp"
     ];
@@ -69,7 +68,6 @@
 
           userEmail = lib.mkOption {
             type = lib.types.str;
-            default = "";
             description = "User email to run the MCP server as.";
           };
         };
@@ -83,5 +81,27 @@
           };
         };
       };
+  };
+
+  config.substrate.modules.programs.workspace-mcp-craig-work = {
+    tags = [
+      "users:craig:work"
+      "programming"
+      "ai:mcp"
+    ];
+
+    homeManager = {
+      config = {
+        hdwlinux.programs.workspace-mcp.userEmail = "craig.wilson@mongodb.com";
+
+        hdwlinux.security.secrets.entries.workspaceMcpClientID = {
+          reference = "op://Work/workspace-mcp/client_id";
+        };
+
+        hdwlinux.security.secrets.entries.workspaceMcpClientSecret = {
+          reference = "op://Work/workspace-mcp/client_secret";
+        };
+      };
+    };
   };
 }

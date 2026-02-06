@@ -1,20 +1,19 @@
 ---
 name: google-docs
-description: Manage Google Docs and Google Drive with full document operations and file management. Includes Markdown support for creating formatted documents with headings, bold, italic, lists, tables, and checkboxes. Also supports Drive operations (upload, download, share, search, convert).
+description: Manage Google Docs with full document operations. Includes Markdown support for creating formatted documents with headings, bold, italic, lists, tables, and checkboxes.
 category: productivity
-version: 1.3.0
-key_capabilities: create-from-markdown, insert-from-markdown, tables, formatted text, Drive upload/download/share/search, markdown-to-doc conversion
-when_to_use: Document content operations, formatted document creation from Markdown, tables, Drive file management, sharing files, converting markdown files to Google Docs
+version: 2.0.0
+key_capabilities: create-from-markdown, insert-from-markdown, tables, formatted text, read, structure, insert, append, replace, format
+when_to_use: Document content operations, formatted document creation from Markdown, tables, reading documents, editing documents
 allowed-tools: Bash(ruby:*)
 ---
 
-# Google Docs & Drive Management Skill
+# Google Docs Management Skill
 
 ## Purpose
 
-Manage Google Docs documents and Google Drive files with comprehensive operations:
+Manage Google Docs documents with comprehensive operations:
 
-**Google Docs:**
 - Read document content and structure
 - Insert and append text
 - Find and replace text
@@ -24,22 +23,14 @@ Manage Google Docs documents and Google Drive files with comprehensive operation
 - Delete content ranges
 - Get document structure (headings)
 - Insert inline images from URLs
-
-**Google Drive:**
-- Upload files to Drive
-- Download files from Drive
-- Search and list files
-- Share files with users or publicly
-- Create folders
-- Move, copy, and delete files
-- Get file metadata
-
-**Integration**: The drive_manager.rb script shares OAuth credentials with docs_manager.rb
+- Insert tables
 
 **📚 Additional Resources**:
-- See `references/integration-patterns.md` for complete workflow examples
+- See `references/docs_operations.md` for complete operation reference
 - See `references/troubleshooting.md` for error handling and debugging
-- See `references/cli-patterns.md` for CLI interface design rationale
+- See `references/formatting_guide.md` for text formatting options
+
+**Note**: For Google Drive file operations (upload, download, share, search), use the `google-drive-skill` instead.
 
 ## When to Use This Skill
 
@@ -50,19 +41,14 @@ Use this skill when:
 - User requests text formatting or modifications
 - User asks about document structure or headings
 - User wants to find and replace text
+- User wants to insert tables or images into a document
 - Keywords: "Google Doc", "document", "edit doc", "format text", "insert text"
 
 **📋 Discovering Your Documents**:
-To list or search for documents, use drive_manager.rb:
+To list or search for documents, use the `google-drive-skill`:
 ```bash
-# List recent documents
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
-  --query "mimeType='application/vnd.google-apps.document'" \
-  --max-results 50
-
-# Search by name
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
-  --query "name contains 'Report' and mimeType='application/vnd.google-apps.document'"
+~/.ai/agent/skills/google-drive-skill/bin/ruby ~/.ai/agent/skills/google-drive-skill/scripts/drive_manager.rb search \
+  --query "mimeType='application/vnd.google-apps.document'"
 ```
 
 ## Core Workflows
@@ -86,16 +72,7 @@ To list or search for documents, use drive_manager.rb:
 
 ### 2. Create Documents
 
-> ⚠️ **PREFERRED METHOD FOR MARKDOWN FILES**: When converting an existing markdown file to a Google Doc, use the **Drive upload with conversion** approach instead of `create-from-markdown`. This uses Google Drive's native markdown conversion which handles all formatting reliably:
->
-> ```bash
-> ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb upload \
->   --file ./document.md \
->   --name "Document Title" \
->   --convert-to google-docs
-> ```
->
-> This approach is more reliable for complex markdown with inline code, tables, and nested formatting. Use `create-from-markdown` only for programmatically generating small markdown snippets.
+> ⚠️ **TIP FOR MARKDOWN FILES**: When converting an existing markdown file to a Google Doc, use the `google-drive-skill` with `--convert-to google-docs` for more reliable formatting. This skill's `create-from-markdown` is best for programmatically generating content.
 
 **Create new document (plain text)**:
 ```bash
@@ -105,23 +82,7 @@ echo '{
 }' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
 ```
 
-**Upload and convert markdown file to Google Doc (RECOMMENDED for files)**:
-```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb upload \
-  --file ./project-proposal.md \
-  --name "Project Proposal" \
-  --convert-to google-docs
-```
-
-This uses Google Drive's native markdown-to-Doc conversion, which reliably handles:
-- All heading levels
-- Bold, italic, and inline code formatting
-- Bullet and numbered lists
-- Tables with proper formatting
-- Code blocks
-- Links and images
-
-**Create document from Markdown (for small programmatic snippets)**:
+**Create document from Markdown**:
 ```bash
 echo '{
   "title": "Project Proposal",
@@ -142,7 +103,7 @@ echo '{
 
 **Document ID**:
 - Returned in response for future operations
-- Use with drive_manager.rb for sharing/organizing
+- Use with `google-drive-skill` for sharing/organizing
 
 ### 3. Insert and Append Text
 
@@ -425,125 +386,14 @@ Index 13: "S" (start of "Second")
 Index 29: end of document
 ```
 
-## Google Drive Operations
+## Integration with Google Drive
 
-The `drive_manager.rb` script provides comprehensive Google Drive file management.
+For file management operations (upload, download, share, search, organize), use the `google-drive-skill`. The two skills work together:
 
-### Upload Files
+- **This skill (google-docs)**: Create and edit document content
+- **google-drive-skill**: Upload, download, share, organize files
 
-```bash
-# Upload a file to Drive root
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb upload --file ./document.pdf
-
-# Upload to specific folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb upload --file ./diagram.excalidraw --folder-id abc123
-
-# Upload with custom name
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb upload --file ./local.txt --name "Remote Name.txt"
-```
-
-### Download Files
-
-```bash
-# Download a file
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb download --file-id abc123 --output ./local_copy.pdf
-
-# Export Google Doc as PDF
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb download --file-id abc123 --output ./doc.pdf --export-as pdf
-
-# Export Google Sheet as CSV
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb download --file-id abc123 --output ./data.csv --export-as csv
-```
-
-### Search and List Files
-
-```bash
-# List recent files
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb list --max-results 20
-
-# Search by name
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search --query "name contains 'Report'"
-
-# Search by type
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search --query "mimeType='application/vnd.google-apps.document'"
-
-# Search in folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search --query "'folder_id' in parents"
-
-# Combine queries
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search --query "name contains '.excalidraw' and modifiedTime > '2024-01-01'"
-```
-
-### Share Files
-
-```bash
-# Share with specific user (reader)
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share --file-id abc123 --email user@example.com --role reader
-
-# Share with write access
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share --file-id abc123 --email user@example.com --role writer
-
-# Make publicly accessible (anyone with link)
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share --file-id abc123 --type anyone --role reader
-
-# Share with entire domain
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share --file-id abc123 --type domain --domain example.com --role reader
-```
-
-### Folder Management
-
-```bash
-# Create a folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb create-folder --name "Project Documents"
-
-# Create folder inside another folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb create-folder --name "Diagrams" --parent-id abc123
-
-# Move file to folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb move --file-id file123 --folder-id folder456
-```
-
-### Other Operations
-
-```bash
-# Get file metadata
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb get-metadata --file-id abc123
-
-# Copy a file
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb copy --file-id abc123 --name "Copy of Document"
-
-# Update file content (replace)
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb update --file-id abc123 --file ./new_content.pdf
-
-# Delete file (moves to trash)
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb delete --file-id abc123
-```
-
-### Output Format
-
-All commands return JSON with consistent structure:
-```json
-{
-  "status": "success",
-  "operation": "upload",
-  "file": {
-    "id": "1abc...",
-    "name": "document.pdf",
-    "mime_type": "application/pdf",
-    "web_view_link": "https://drive.google.com/file/d/1abc.../view",
-    "web_content_link": "https://drive.google.com/uc?id=1abc...",
-    "created_time": "2024-01-15T10:30:00Z",
-    "modified_time": "2024-01-15T10:30:00Z",
-    "size": 12345
-  }
-}
-```
-
----
-
-## Integration Workflows
-
-### Create and Organize Documents
+### Example Workflow
 
 ```bash
 # Step 1: Create document (returns document_id)
@@ -553,22 +403,20 @@ echo '{"title":"Report"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/
 # Step 2: Add content
 echo '{"document_id":"abc123","text":"# Report\n\nContent here"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert
 
-# Step 3: Organize in folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb move --file-id abc123 --folder-id [folder_id]
-
-# Step 4: Share with team
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share --file-id abc123 --email team@company.com --role writer
+# Step 3: Use google-drive-skill to organize and share
+# See google-drive-skill for move, share, download operations
 ```
 
 ### Export Document to PDF
 
+Use the `google-drive-skill` download command with `--export-as pdf`:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb download --file-id abc123 --output ./report.pdf --export-as pdf
+~/.ai/agent/skills/google-drive-skill/bin/ruby ~/.ai/agent/skills/google-drive-skill/scripts/drive_manager.rb download --file-id abc123 --output ./report.pdf --export-as pdf
 ```
 
 ### Excalidraw Diagrams Workflow
 
-For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` skill which integrates with drive_manager.rb for:
+For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` skill which integrates with `google-drive-skill` for:
 - Uploading .excalidraw files to Drive
 - Getting shareable edit URLs for Excalidraw web
 - Round-trip editing between AI and human
@@ -644,7 +492,6 @@ For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` ski
 - Common document operations
 - Workflow examples
 - Index calculation examples
-- Integration with drive_manager.rb for file operations
 
 ## Error Handling
 
@@ -694,7 +541,7 @@ For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` ski
 1. Always provide meaningful title
 2. Add initial content when creating for better context
 3. Save returned document_id for future operations
-4. Use drive_manager.rb to organize and share
+4. Use `google-drive-skill` to organize and share
 
 ### Text Insertion
 1. Read document first to understand current structure
@@ -806,18 +653,19 @@ echo '{"document_id":"abc123","image_url":"https://example.com/image.png"}' | ~/
    }' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
    ```
 
-4. **Share with team**:
+4. **Share with team** (use `google-drive-skill`):
    ```bash
-   ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share --file-id abc123 --email team@company.com --role writer
+   ~/.ai/agent/skills/google-drive-skill/bin/ruby ~/.ai/agent/skills/google-drive-skill/scripts/drive_manager.rb share --file-id abc123 --email team@company.com --role writer
    ```
 
 ## Version History
 
-- **1.3.0** (2026-02-05) - Added `--convert-to` option for Drive uploads to convert files to Google formats on upload. **Recommended approach for markdown-to-Google-Doc conversion** using `upload --convert-to google-docs` which uses Google Drive's native conversion for reliable formatting.
-- **1.2.0** (2025-12-25) - Added markdown support documentation: `create-from-markdown`, `insert-from-markdown`, `insert-table` commands. Supports headings, bold, italic, code, lists, checkboxes, tables, and horizontal rules.
-- **1.1.0** (2025-12-20) - Added Google Drive operations via drive_manager.rb: upload, download, search, list, share, move, copy, delete, folder management. Integrated with excalidraw-diagrams skill for diagram workflows.
-- **1.0.0** (2025-11-10) - Initial Google Docs skill with full document operations: read, create, insert, append, replace, format, page breaks, structure analysis. Shared OAuth token with email, calendar, contacts, drive, and sheets skills.
+- **2.0.0** (2026-02-06) - Split Google Drive operations into separate `google-drive-skill`. This skill now focuses on document content operations only. Use `google-drive-skill` for file management (upload, download, share, search, organize).
+- **1.3.0** (2026-02-05) - Added `--convert-to` option for Drive uploads.
+- **1.2.0** (2025-12-25) - Added markdown support: `create-from-markdown`, `insert-from-markdown`, `insert-table` commands.
+- **1.1.0** (2025-12-20) - Added Google Drive operations (now moved to `google-drive-skill`).
+- **1.0.0** (2025-11-10) - Initial Google Docs skill with full document operations.
 
 ---
 
-**Dependencies**: Ruby with `google-apis-docs_v1`, `google-apis-drive_v3`, `googleauth` gems (shared with other Google skills)
+**Dependencies**: Ruby with `google-apis-docs_v1`, `googleauth` gems (shared with other Google skills)

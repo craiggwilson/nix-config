@@ -1,17 +1,17 @@
 {
-  config.substrate.modules.ai.agent.skills.google-docs-skill = {
+  config.substrate.modules.ai.agent.skills.google-drive-skill = {
     homeManager =
       { config, pkgs, ... }:
       let
         gems = pkgs.bundlerEnv {
-          name = "google-docs-skill-gems";
+          name = "google-drive-skill-gems";
           ruby = pkgs.ruby;
           gemdir = ./_gems;
         };
       in
       {
         hdwlinux = {
-          ai.skills.google-docs-skill = pkgs.runCommand "google-docs-skill" { } ''
+          ai.skills.google-drive-skill = pkgs.runCommand "google-drive-skill" { } ''
             mkdir -p $out/bin
             cp -r ${./skill}/* $out/
             chmod +x $out/scripts/*.rb
@@ -23,6 +23,7 @@
             chmod +x $out/bin/ruby
           '';
 
+          # Shared OAuth credentials with google-docs-skill
           security.secrets.entries.googleApiOauth = {
             path = "${config.home.homeDirectory}/.ai/agent/.google/client_secret.json";
             reference = "op://Work/google-api-oauth/client_secret.json";
