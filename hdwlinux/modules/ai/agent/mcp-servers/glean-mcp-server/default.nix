@@ -6,9 +6,9 @@
       "ai:mcp"
     ];
     homeManager = {
-      hdwlinux.ai.agent.mcpServers.glean.http = {
-        url = "https://mongodb-be.glean.com/mcp/default";
-      };
+      # hdwlinux.ai.agent.mcpServers.glean.http = {
+      #   url = "https://mongodb-be.glean.com/mcp/default";
+      # };
     };
   };
 }
