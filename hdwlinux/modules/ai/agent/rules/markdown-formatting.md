@@ -1,6 +1,6 @@
 ---
 description: Markdown formatting standards for all generated documents
-alwaysApply: true
+type: always_apply
 ---
 
 # Markdown Formatting Standards

@@ -1,6 +1,6 @@
 ---
 description: GitHub access configuration
-alwaysApply: true
+type: agent_requested
 ---
 
 # GitHub Access

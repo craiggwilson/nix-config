@@ -19,9 +19,17 @@
           '')
         ];
 
-        # Symlink ~/.augment -> ~/.ai/agent for Augment Code compatibility
-        home.file.".augment".source =
-          config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.ai/agent";
+        home.file = {
+          ".augment/agents".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.ai/agent/agents";
+          ".augment/commands".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.ai/agent/commands";
+          ".augment/rules".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.ai/agent/rules";
+          ".augment/skills".source =
+            config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.ai/agent/skills";
+          #".augment/settings.json".source = ./settings.json;
+        };
 
         programs.vscode.profiles.default.userSettings = lib.mkIf config.programs.vscode.enable {
           "github.copilot.enable" = {

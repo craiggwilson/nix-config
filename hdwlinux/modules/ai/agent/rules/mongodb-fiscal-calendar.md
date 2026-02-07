@@ -1,6 +1,6 @@
 ---
 description: MongoDB fiscal year and quarter conventions used during planning.
-alwaysApply: agent-requested
+type: agent-requested
 ---
 
 # MongoDB Fiscal Year Calendar

@@ -1,6 +1,6 @@
 ---
 description: Version control using Jujutsu (jj)
-alwaysApply: true
+type: always_apply
 ---
 
 # Version Control: Jujutsu (jj)

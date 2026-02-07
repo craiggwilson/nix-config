@@ -1,6 +1,6 @@
 ---
 description: Google Workspace access configuration
-alwaysApply: agent-requested
+type: agent-requested
 ---
 
 # Google Workspace Access
