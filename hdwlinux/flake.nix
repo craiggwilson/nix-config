@@ -171,7 +171,7 @@
           }
           {
             "users:craig:personal" = [
-              "audio:midi"
+              #"audio:midi"
               "audio:production"
               "filesystem:nfs"
               "flatpaks"
