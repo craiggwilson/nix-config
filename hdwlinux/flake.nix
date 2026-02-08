@@ -52,6 +52,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -112,6 +117,9 @@
         overlays = [
           # NUR (Nix User Repository)
           inputs.nur.overlays.default
+
+          # Rust overlay for rust-bin
+          inputs.rust-overlay.overlays.default
 
           # Stable nixpkgs for packages not in unstable
           (final: prev: {
