@@ -1,8 +1,7 @@
 {
   config.substrate.modules.ai.agent.mcp-servers.workspace-mcp = {
     tags = [
-      "programming"
-      "ai:mcp"
+      "ai:agent"
     ];
 
     homeManager =
@@ -85,9 +84,8 @@
 
   config.substrate.modules.ai.agent.mcp-servers.workspace-mcp-craig-work = {
     tags = [
+      "ai:agent"
       "users:craig:work"
-      "programming"
-      "ai:mcp"
     ];
 
     homeManager = {

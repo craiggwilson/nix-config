@@ -1,5 +1,9 @@
 {
-  config.substrate.modules.ai.agent.shared = {
+  config.substrate.modules.ai.agent = {
+    tags = [
+      "ai:agent"
+    ];
+
     homeManager =
       {
         config,

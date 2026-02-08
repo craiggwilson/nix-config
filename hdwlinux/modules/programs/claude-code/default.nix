@@ -1,6 +1,10 @@
 {
   config.substrate.modules.programs.claude-code = {
-    tags = [ "users:craig:work" ];
+    tags = [
+      "ai:agent"
+      "programming"
+      "users:craig:work"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -9,4 +13,3 @@
       };
   };
 }
-

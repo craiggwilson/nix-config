@@ -1,5 +1,9 @@
 {
   config.substrate.modules.ai.agent.skills.excalidraw-diagrams = {
+    tags = [
+      "ai:agent"
+    ];
+
     homeManager =
       { pkgs, ... }:
       let

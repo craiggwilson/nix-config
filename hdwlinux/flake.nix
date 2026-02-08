@@ -95,7 +95,6 @@
           ./packages/fern.nix
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
-          ./packages/slack-mcp-server.nix
           ./packages/songtool.nix
           ./packages/workspace-mcp.nix
           ./packages/writeShellApplicationWithSubcommands.nix
@@ -157,7 +156,7 @@
           # User-specific tags
           {
             "users:craig" = [
-              "ai:mcp"
+              "ai:agent"
               "cloud:sync"
               "desktop:custom:niri"
               "dictation"
@@ -211,7 +210,7 @@
           }
 
           # Feature tags
-          "ai:mcp"
+          "ai:agent"
           "audio"
           "audio:midi"
           "audio:production"

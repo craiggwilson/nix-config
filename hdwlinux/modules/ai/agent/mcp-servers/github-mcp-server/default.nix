@@ -1,8 +1,8 @@
 {
   config.substrate.modules.ai.agent.mcp-servers.github-mcp-server = {
     tags = [
+      "ai:agent"
       "programming"
-      "ai:mcp"
     ];
 
     homeManager =

@@ -1,5 +1,9 @@
 {
   config.substrate.modules.ai.agent.skills.google-docs-skill = {
+    tags = [
+      "ai:agent"
+    ];
+
     homeManager =
       { config, pkgs, ... }:
       let

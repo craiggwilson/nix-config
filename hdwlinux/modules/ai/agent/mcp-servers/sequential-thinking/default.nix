@@ -1,8 +1,7 @@
 {
   config.substrate.modules.ai.agent.mcp-servers.sequential-thinking = {
     tags = [
-      "programming"
-      "ai:mcp"
+      "ai:agent"
     ];
 
     homeManager =

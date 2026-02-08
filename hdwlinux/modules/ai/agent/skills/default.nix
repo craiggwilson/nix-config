@@ -1,6 +1,10 @@
 {
   config.substrate.modules.ai.agent.skills = {
-    generic =
+    tags = [
+      "ai:agent"
+    ];
+
+    homeManager =
       { lib, ... }:
       {
         options.hdwlinux.ai.skills = lib.mkOption {
@@ -11,4 +15,3 @@
       };
   };
 }
-

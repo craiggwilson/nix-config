@@ -17,11 +17,24 @@
     { "toolName": "grep-search", "permission": { "type": "allow" } },
     { "toolName": "web-search", "permission": { "type": "allow" } },
     { "toolName": "web-fetch", "permission": { "type": "allow" } },
-    { "toolName": "str-replace-editor", "permission": { "type": "ask-user" } },
+    { "toolName": "str-replace-editor", "permission": { "type": "allow" } },
     { "toolName": "save-file", "permission": { "type": "ask-user" } },
     { "toolName": "remove-files", "permission": { "type": "ask-user" } },
-    { "toolName": "launch-process", "shellInputRegex": "^(cd|ls|pwd|echo|bat|cat|grep|rg)\\s", "permission": { "type": "allow" } },
+    { "toolName": "launch-process", "shellInputRegex": "^(cd|find|ls|pwd|echo|bat|cat|grep|rg|xargs)\\s", "permission": { "type": "allow" } },
     { "toolName": "launch-process", "shellInputRegex": "^(sudo|shutdown|reboot)", "permission": { "type": "deny" } },
     { "toolName": "launch-process", "permission": { "type": "ask-user" } }
-  ]
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.augment/hooks/debug.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -1,9 +1,8 @@
 {
   config.substrate.modules.ai.agent.mcp-servers.mcp-atlassian = {
     tags = [
+      "ai:agent"
       "users:craig:work"
-      "programming"
-      "ai:mcp"
     ];
 
     homeManager =

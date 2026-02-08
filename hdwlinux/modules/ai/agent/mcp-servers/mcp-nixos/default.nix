@@ -6,8 +6,8 @@
   #
   config.substrate.modules.ai.agent.mcp-servers.mcp-nixos = {
     tags = [
+      "ai:agent"
       "programming"
-      "ai:mcp"
     ];
 
     homeManager =

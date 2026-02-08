@@ -1,6 +1,7 @@
 {
   config.substrate.modules.programs.augment = {
     tags = [
+      "ai:agent"
       "programming"
       "users:craig:work"
     ];
