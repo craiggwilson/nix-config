@@ -21,17 +21,13 @@ in
     generic = {
       hdwlinux.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config/hdwlinux";
     };
-    nixos =
-      { pkgs, ... }:
-      {
-        imports = [
-          inputs.disko.nixosModules.disko
-          diskoConfig
-        ];
+    nixos = {
+      imports = [
+        inputs.disko.nixosModules.disko
+        diskoConfig
+      ];
 
-        boot.kernelPackages = pkgs.linuxPackages_6_12;
-
-        system.stateVersion = "23.05";
-      };
+      system.stateVersion = "23.05";
+    };
   };
 }
