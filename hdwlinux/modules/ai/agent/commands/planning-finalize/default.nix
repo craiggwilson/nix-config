@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.commands.planning-finalize = {
-        metadata = {
-          description = "Finalize and wrap up a planning cycle";
-          argument-hint = "[optional-focus-area]";
-        };
-        content = ./prompt.md;
+        description = "Finalize and wrap up a planning cycle";
+        content = ./content.md;
+        extraMeta.argument-hint = "[optional-focus-area]";
       };
     };
   };

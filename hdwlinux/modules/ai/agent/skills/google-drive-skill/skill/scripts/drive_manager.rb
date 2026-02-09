@@ -19,8 +19,8 @@ class DriveManager
   CONTACTS_SCOPE = 'https://www.googleapis.com/auth/contacts'
   GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.modify'
 
-  CREDENTIALS_PATH = File.join(Dir.home, '.ai', 'agent', '.google', 'client_secret.json')
-  TOKEN_PATH = File.join(Dir.home, '.ai', 'agent', '.google', 'token.json')
+  CREDENTIALS_PATH = File.join(Dir.home, '.config', 'google-drive-skill', 'client_secret.json')
+  TOKEN_PATH = File.join(Dir.home, '.local', 'share', 'google-drive-skill', 'token.json')
 
   # Exit codes
   EXIT_SUCCESS = 0
@@ -54,14 +54,53 @@ class DriveManager
       output_json({
         status: 'error',
         error_code: 'AUTH_REQUIRED',
-        message: 'Authorization required. Please use docs_manager.rb auth flow.',
-        auth_url: url
+        message: 'Authorization required. Please visit the URL and enter the code.',
+        auth_url: url,
+        instructions: [
+          '1. Visit the authorization URL',
+          '2. Grant access to Google Drive, Docs, Sheets, Calendar, Contacts, and Gmail',
+          '3. Copy the authorization code',
+          "4. Run: ruby #{__FILE__} auth <code>"
+        ]
       })
       exit EXIT_AUTH_ERROR
     end
 
     credentials.refresh! if credentials.expired?
     credentials
+  end
+
+  # Complete OAuth authorization with code
+  def complete_auth(code)
+    client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
+    token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
+
+    authorizer = Google::Auth::UserAuthorizer.new(
+      client_id,
+      [DRIVE_SCOPE, DOCS_SCOPE, SHEETS_SCOPE, CALENDAR_SCOPE, CONTACTS_SCOPE, GMAIL_SCOPE],
+      token_store
+    )
+
+    user_id = 'default'
+    credentials = authorizer.get_and_store_credentials_from_code(
+      user_id: user_id,
+      code: code,
+      base_url: 'urn:ietf:wg:oauth:2.0:oob'
+    )
+
+    output_json({
+      status: 'success',
+      message: 'Authorization complete. Token stored successfully.',
+      token_path: TOKEN_PATH,
+      scopes: [DRIVE_SCOPE, DOCS_SCOPE, SHEETS_SCOPE, CALENDAR_SCOPE, CONTACTS_SCOPE, GMAIL_SCOPE]
+    })
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'AUTH_FAILED',
+      message: "Authorization failed: #{e.message}"
+    })
+    exit EXIT_AUTH_ERROR
   end
 
   # Upload a file to Google Drive
@@ -328,6 +367,89 @@ class DriveManager
     exit EXIT_API_ERROR
   end
 
+  # List comments on a file
+  def list_comments(file_id:, include_deleted: false, max_results: 100, page_token: nil)
+    results = @drive_service.list_comments(
+      file_id,
+      include_deleted: include_deleted,
+      page_size: max_results,
+      page_token: page_token,
+      fields: 'nextPageToken, comments(id, content, author, createdTime, modifiedTime, resolved, quotedFileContent, replies)'
+    )
+
+    comments = results.comments&.map do |c|
+      {
+        id: c.id,
+        content: c.content,
+        author: {
+          display_name: c.author&.display_name,
+          email: c.author&.email_address,
+          photo_link: c.author&.photo_link
+        },
+        created_time: c.created_time&.to_s,
+        modified_time: c.modified_time&.to_s,
+        resolved: c.resolved,
+        quoted_content: c.quoted_file_content&.value,
+        replies: c.replies&.map { |r| format_reply(r) }
+      }
+    end || []
+
+    output_json({
+      status: 'success',
+      operation: 'list_comments',
+      file_id: file_id,
+      comments: comments,
+      next_page_token: results.next_page_token,
+      count: comments.length
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'list_comments',
+      message: "Google Drive API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  end
+
+  # Get a specific comment by ID
+  def get_comment(file_id:, comment_id:, include_deleted: false)
+    comment = @drive_service.get_comment(
+      file_id,
+      comment_id,
+      include_deleted: include_deleted,
+      fields: 'id, content, author, createdTime, modifiedTime, resolved, quotedFileContent, replies'
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'get_comment',
+      file_id: file_id,
+      comment: {
+        id: comment.id,
+        content: comment.content,
+        author: {
+          display_name: comment.author&.display_name,
+          email: comment.author&.email_address,
+          photo_link: comment.author&.photo_link
+        },
+        created_time: comment.created_time&.to_s,
+        modified_time: comment.modified_time&.to_s,
+        resolved: comment.resolved,
+        quoted_content: comment.quoted_file_content&.value,
+        replies: comment.replies&.map { |r| format_reply(r) }
+      }
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'get_comment',
+      message: "Google Drive API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  end
+
   # Create a folder
   def create_folder(name:, parent_id: nil)
     file_metadata = Google::Apis::DriveV3::File.new(
@@ -548,6 +670,20 @@ class DriveManager
 
   private
 
+  # Helper to format a reply object
+  def format_reply(reply)
+    {
+      id: reply.id,
+      content: reply.content,
+      author: {
+        display_name: reply.author&.display_name,
+        email: reply.author&.email_address
+      },
+      created_time: reply.created_time&.to_s,
+      modified_time: reply.modified_time&.to_s
+    }
+  end
+
   # Detect MIME type from file extension
   def detect_mime_type(file_path)
     ext = File.extname(file_path).downcase
@@ -599,17 +735,20 @@ end
 def usage
   puts <<~USAGE
     Google Drive Manager - File Operations CLI
-    Version: 1.0.0
+    Version: 1.1.0
 
     Usage:
       #{File.basename($PROGRAM_NAME)} <command> [options]
 
     Commands:
+      auth <code>     Complete OAuth authorization with code
       upload          Upload a file to Drive
       download        Download a file from Drive
       list            List files in Drive or folder
       search          Search files with query
       get-metadata    Get file metadata
+      list-comments   List comments on a file
+      get-comment     Get a specific comment by ID
       create-folder   Create a new folder
       move            Move file to folder
       share           Share file with user or make public
@@ -634,8 +773,13 @@ def usage
                           google-docs, doc, document - Google Docs
                           google-sheets, sheet, spreadsheet - Google Sheets
                           google-slides, slides, presentation - Google Slides
+      --comment-id <id>   Comment ID (for get-comment)
+      --include-deleted   Include deleted comments
 
     Examples:
+      # Complete OAuth authorization
+      #{File.basename($PROGRAM_NAME)} auth YOUR_AUTH_CODE
+
       # Upload a file
       #{File.basename($PROGRAM_NAME)} upload --file ./diagram.excalidraw
 
@@ -680,6 +824,15 @@ def usage
 
       # Update file content
       #{File.basename($PROGRAM_NAME)} update --file-id 1abc123 --file ./updated.excalidraw
+
+      # List all comments on a file
+      #{File.basename($PROGRAM_NAME)} list-comments --file-id 1abc123
+
+      # Get a specific comment with replies
+      #{File.basename($PROGRAM_NAME)} get-comment --file-id 1abc123 --comment-id xyz789
+
+      # List comments including deleted ones
+      #{File.basename($PROGRAM_NAME)} list-comments --file-id 1abc123 --include-deleted
 
     Exit Codes:
       0 - Success
@@ -738,6 +891,12 @@ def parse_args(args)
     when '--convert-to'
       options[:convert_to] = args[i + 1]
       i += 2
+    when '--comment-id'
+      options[:comment_id] = args[i + 1]
+      i += 2
+    when '--include-deleted'
+      options[:include_deleted] = true
+      i += 1
     else
       i += 1
     end
@@ -756,6 +915,24 @@ if __FILE__ == $PROGRAM_NAME
 
   if command == '--help' || command == '-h'
     usage
+    exit DriveManager::EXIT_SUCCESS
+  end
+
+  # Handle auth command separately (doesn't require initialized service)
+  if command == 'auth'
+    if ARGV.length < 2
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_CODE',
+        message: 'Authorization code required',
+        usage: "#{File.basename($PROGRAM_NAME)} auth <code>"
+      })
+      exit DriveManager::EXIT_INVALID_ARGS
+    end
+
+    # Create temporary manager just for auth completion
+    temp_manager = DriveManager.allocate
+    temp_manager.complete_auth(ARGV[1])
     exit DriveManager::EXIT_SUCCESS
   end
 
@@ -922,6 +1099,38 @@ if __FILE__ == $PROGRAM_NAME
       file_id: options[:file_id],
       file_path: options[:file],
       name: options[:name]
+    )
+
+  when 'list-comments'
+    unless options[:file_id]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_FILE_ID',
+        message: 'File ID required: --file-id <id>'
+      })
+      exit DriveManager::EXIT_INVALID_ARGS
+    end
+
+    manager.list_comments(
+      file_id: options[:file_id],
+      include_deleted: options[:include_deleted] || false,
+      max_results: options[:max_results] || 100
+    )
+
+  when 'get-comment'
+    unless options[:file_id] && options[:comment_id]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_ARGS',
+        message: 'File ID and comment ID required: --file-id <id> --comment-id <id>'
+      })
+      exit DriveManager::EXIT_INVALID_ARGS
+    end
+
+    manager.get_comment(
+      file_id: options[:file_id],
+      comment_id: options[:comment_id],
+      include_deleted: options[:include_deleted] || false
     )
 
   else

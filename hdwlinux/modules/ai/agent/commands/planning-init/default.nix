@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.commands.planning-init = {
-        metadata = {
-          description = "Initialize a planning cycle for roadmap, project, or task planning";
-          argument-hint = "[roadmap|project|task] [optional-focus-area]";
-        };
-        content = ./prompt.md;
+        description = "Initialize a planning cycle for roadmap, project, or task planning";
+        content = ./content.md;
+        extraMeta.argument-hint = "[roadmap|project|task] [optional-focus-area]";
       };
     };
   };

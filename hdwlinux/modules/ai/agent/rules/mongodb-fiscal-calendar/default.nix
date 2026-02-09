@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.rules.mongodb-fiscal-calendar = {
-        metadata = {
-          description = "MongoDB fiscal year and quarter conventions used during planning.";
-          type = "agent-requested";
-        };
-        content = ./prompt.md;
+        description = "MongoDB fiscal year and quarter conventions used during planning.";
+        content = ./content.md;
+        extraMeta.type = "agent-requested";
       };
     };
   };

@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.commands.planning-codebase-map = {
-        metadata = {
-          description = "Map and document a codebase as part of planning discovery";
-          argument-hint = "[repository-name-or-focus]";
-        };
-        content = ./prompt.md;
+        description = "Map and document a codebase as part of planning discovery";
+        content = ./content.md;
+        extraMeta.argument-hint = "[repository-name-or-focus]";
       };
     };
   };

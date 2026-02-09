@@ -4,14 +4,10 @@
 
     homeManager = {
       hdwlinux.ai.agent.agents.security-architect = {
-        metadata = {
-          name = "security-architect";
-          description = "Expert security architect specializing in secure system design, threat modeling, and compliance. Masters zero-trust architecture, identity management, and security best practices across cloud-native environments.";
-          tools = "Read, Write, Edit, Glob, Grep, Bash, WebFetch, WebSearch";
-          model = "opus4.5";
-          color = "red";
-        };
-        content = ./prompt.md;
+        description = "Expert security architect specializing in secure system design, threat modeling, and compliance. Masters zero-trust architecture, identity management, and security best practices across cloud-native environments.";
+        model = "opus4.5";
+        content = ./content.md;
+        extraMeta.color = "red";
       };
     };
   };

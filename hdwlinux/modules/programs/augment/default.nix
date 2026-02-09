@@ -13,17 +13,49 @@
         ...
       }:
       let
-        # Generate YAML frontmatter from all metadata keys
-        metadataToFrontmatter =
-          metadata: lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key}: ${value}") metadata);
+        # Generate YAML frontmatter from extraMeta attrset (for commands/rules)
+        extraMetaToFrontmatter =
+          extraMeta:
+          lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key}: ${value}") extraMeta);
 
-        # Generate markdown with frontmatter from all metadata
+        # Format tools attrset as comma-separated string (just the tool names)
+        formatTools = tools: lib.concatStringsSep ", " (lib.attrNames tools);
+
+        # Generate agent markdown with formal fields + any extra metadata
+        generateAgentMd =
+          name: agent:
+          let
+            # Build frontmatter from formal fields
+            formalFields = [
+              "name: ${name}"
+              "description: ${agent.description}"
+              "model: ${agent.model}"
+              "tools: ${formatTools agent.tools}"
+            ];
+            # Add any extra metadata fields
+            extraFields = lib.mapAttrsToList (key: value: "${key}: ${value}") agent.extraMeta;
+            allFields = formalFields ++ extraFields;
+            frontmatter = ''
+              ---
+              ${lib.concatStringsSep "\n" allFields}
+              ---
+
+            '';
+            content = builtins.readFile agent.content;
+          in
+          pkgs.writeText "${name}.md" (frontmatter + content);
+
+        # Generate markdown with frontmatter from description + extraMeta (for commands/rules)
         generateMd =
           name: item:
           let
+            # Build frontmatter from description + any extra metadata fields
+            descriptionField = "description: ${item.description}";
+            extraFields = extraMetaToFrontmatter item.extraMeta;
+            allFields = if extraFields == "" then descriptionField else "${descriptionField}\n${extraFields}";
             frontmatter = ''
               ---
-              ${metadataToFrontmatter item.metadata}
+              ${allFields}
               ---
 
             '';
@@ -36,7 +68,7 @@
           mkdir -p $out
           ${lib.concatStringsSep "\n" (
             lib.mapAttrsToList (
-              name: agent: "cp ${generateMd name agent} $out/${name}.md"
+              name: agent: "cp ${generateAgentMd name agent} $out/${name}.md"
             ) config.hdwlinux.ai.agent.agents
           )}
         '';

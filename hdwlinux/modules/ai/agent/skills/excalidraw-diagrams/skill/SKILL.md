@@ -15,22 +15,24 @@ This skill generates Excalidraw diagrams programmatically using Python. Instead 
 
 ## Using the bin/ Directory
 
-**Important**: This skill provides all required executables in the `bin/` directory. Do not rely on system PATH - always use the full path to executables.
+**Important**: This skill provides all required executables in its `bin/` directory. Do not rely on system PATH - always use the full path to executables relative to this skill's installation directory.
+
+The skill installation directory is referred to as `$SKILL_PATH` in all examples below. You must substitute this with the actual path where this skill is installed.
 
 | Tool | Path |
 |------|------|
-| Python | `~/.ai/agent/skills/excalidraw-diagrams/bin/python` |
-| Node.js | `~/.ai/agent/skills/excalidraw-diagrams/bin/node` |
-| npm | `~/.ai/agent/skills/excalidraw-diagrams/bin/npm` |
-| npx | `~/.ai/agent/skills/excalidraw-diagrams/bin/npx` |
+| Python | `$SKILL_PATH/bin/python` |
+| Node.js | `$SKILL_PATH/bin/node` |
+| npm | `$SKILL_PATH/bin/npm` |
+| npx | `$SKILL_PATH/bin/npx` |
 
 When executing scripts:
 ```bash
 # Python scripts
-~/.ai/agent/skills/excalidraw-diagrams/bin/python scripts/excalidraw_generator.py
+$SKILL_PATH/bin/python $SKILL_PATH/scripts/excalidraw_generator.py
 
 # Node.js scripts
-~/.ai/agent/skills/excalidraw-diagrams/bin/node scripts/export_playwright.js
+$SKILL_PATH/bin/node $SKILL_PATH/scripts/export_playwright.js
 ```
 
 ---
@@ -45,7 +47,11 @@ Write a Python script using the generator library and run it:
 #!/usr/bin/env python3
 import sys
 import os
-sys.path.insert(0, os.path.expanduser("~/.ai/agent/skills/excalidraw-diagrams/scripts"))
+
+# Determine the skill path from script location
+SKILL_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(SKILL_PATH, "scripts"))
+
 from excalidraw_generator import Diagram, Flowchart, ArchitectureDiagram
 
 # Create your diagram
@@ -58,15 +64,16 @@ d.save("my_diagram.excalidraw")
 
 Run with:
 ```bash
-bin/python /path/to/your_script.py
+$SKILL_PATH/bin/python /path/to/your_script.py
 ```
 
 ### Method 2: Inline Python Execution
 
 ```bash
-bin/python -c "
+$SKILL_PATH/bin/python -c "
 import sys, os
-sys.path.insert(0, os.path.expanduser('~/.ai/agent/skills/excalidraw-diagrams/scripts'))
+SKILL_PATH = os.environ.get('SKILL_PATH', os.path.dirname(os.path.abspath('.')))
+sys.path.insert(0, os.path.join(SKILL_PATH, 'scripts'))
 from excalidraw_generator import Diagram
 
 d = Diagram()
@@ -386,7 +393,8 @@ Available colors (stroke color, with matching light background):
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser("~/.ai/agent/skills/excalidraw-diagrams/scripts"))
+SKILL_PATH = os.environ.get('SKILL_PATH', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(SKILL_PATH, "scripts"))
 from excalidraw_generator import Diagram
 
 d = Diagram()
@@ -410,7 +418,8 @@ d.save("pipeline.excalidraw")
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser("~/.ai/agent/skills/excalidraw-diagrams/scripts"))
+SKILL_PATH = os.environ.get('SKILL_PATH', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(SKILL_PATH, "scripts"))
 from excalidraw_generator import Flowchart
 
 fc = Flowchart(direction="vertical", spacing=100)
@@ -441,7 +450,8 @@ fc.save("auth_flow.excalidraw")
 
 ```python
 import sys, os
-sys.path.insert(0, os.path.expanduser("~/.ai/agent/skills/excalidraw-diagrams/scripts"))
+SKILL_PATH = os.environ.get('SKILL_PATH', os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(SKILL_PATH, "scripts"))
 from excalidraw_generator import ArchitectureDiagram
 
 arch = ArchitectureDiagram()
@@ -500,12 +510,12 @@ To embed diagrams in presentations or other documents, export them to PNG using 
 
 ```bash
 # First time setup: install dependencies
-cd ~/.ai/agent/skills/excalidraw-diagrams/scripts
-~/.ai/agent/skills/excalidraw-diagrams/bin/npm install
-~/.ai/agent/skills/excalidraw-diagrams/bin/npx playwright install chromium
+cd $SKILL_PATH/scripts
+$SKILL_PATH/bin/npm install
+$SKILL_PATH/bin/npx playwright install chromium
 
 # Export to PNG
-~/.ai/agent/skills/excalidraw-diagrams/bin/node scripts/export_playwright.js diagram.excalidraw output.png
+$SKILL_PATH/bin/node $SKILL_PATH/scripts/export_playwright.js diagram.excalidraw output.png
 ```
 
 ### How It Works

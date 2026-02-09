@@ -10,6 +10,12 @@ allowed-tools: Bash(ruby:*)
 
 # Google Docs Management Skill
 
+## Skill Path
+
+**Important**: All commands in this skill use `$SKILL_PATH` to refer to this skill's installation directory. You must substitute this with the actual path where this skill is installed. The `bin/` directory contains all required executables.
+
+When referencing the `google-drive-skill`, use `$DRIVE_SKILL_PATH` to refer to that skill's installation directory.
+
 ## Purpose
 
 Manage Google Docs documents with comprehensive operations:
@@ -47,7 +53,7 @@ Use this skill when:
 **📋 Discovering Your Documents**:
 To list or search for documents, use the `google-drive-skill`:
 ```bash
-~/.ai/agent/skills/google-drive-skill/bin/ruby ~/.ai/agent/skills/google-drive-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "mimeType='application/vnd.google-apps.document'"
 ```
 
@@ -57,12 +63,12 @@ To list or search for documents, use the `google-drive-skill`:
 
 **Read full document content**:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read <document_id>
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read <document_id>
 ```
 
 **Get document structure (headings)**:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure <document_id>
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure <document_id>
 ```
 
 **Output**:
@@ -79,7 +85,7 @@ To list or search for documents, use the `google-drive-skill`:
 echo '{
   "title": "Project Proposal",
   "content": "Initial plain text content..."
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 ```
 
 **Create document from Markdown**:
@@ -87,7 +93,7 @@ echo '{
 echo '{
   "title": "Project Proposal",
   "markdown": "# Project Proposal\n\n## Overview\n\nThis is **bold** and *italic* text.\n\n- Bullet point 1\n- Bullet point 2\n\n| Column 1 | Column 2 |\n|----------|----------|\n| Data 1   | Data 2   |"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create-from-markdown
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create-from-markdown
 ```
 
 **Supported Markdown Features** (for `create-from-markdown`):
@@ -113,7 +119,7 @@ echo '{
   "document_id": "abc123",
   "text": "This text will be inserted at the beginning.\n\n",
   "index": 1
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert
 ```
 
 **Insert formatted Markdown (RECOMMENDED)**:
@@ -122,7 +128,7 @@ echo '{
   "document_id": "abc123",
   "markdown": "## New Section\n\nThis has **bold** and *italic* formatting.\n\n- Item 1\n- Item 2",
   "index": 1
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-from-markdown
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-from-markdown
 ```
 
 **Append text to end of document**:
@@ -130,7 +136,7 @@ echo '{
 echo '{
   "document_id": "abc123",
   "text": "\n\nThis text will be appended to the end."
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb append
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb append
 ```
 
 **Index Positions**:
@@ -148,7 +154,7 @@ echo '{
   "document_id": "abc123",
   "find": "old text",
   "replace": "new text"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 ```
 
 **Case-sensitive replacement**:
@@ -158,7 +164,7 @@ echo '{
   "find": "IMPORTANT",
   "replace": "CRITICAL",
   "match_case": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 ```
 
 **Replace all occurrences**:
@@ -175,7 +181,7 @@ echo '{
   "start_index": 1,
   "end_index": 20,
   "bold": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 ```
 
 **Multiple formatting options**:
@@ -187,7 +193,7 @@ echo '{
   "bold": true,
   "italic": true,
   "underline": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 ```
 
 **Formatting Options**:
@@ -203,7 +209,7 @@ echo '{
 echo '{
   "document_id": "abc123",
   "index": 500
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb page-break
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb page-break
 ```
 
 **Use Cases**:
@@ -219,20 +225,20 @@ echo '{
   "document_id": "abc123",
   "start_index": 100,
   "end_index": 200
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb delete
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb delete
 ```
 
 **Clear entire document**:
 ```bash
 # Read document first to get end index
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read abc123
 
 # Then delete all content (start at 1, end at last index - 1)
 echo '{
   "document_id": "abc123",
   "start_index": 1,
   "end_index": 500
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb delete
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb delete
 ```
 
 ### 8. Insert Images
@@ -242,7 +248,7 @@ echo '{
 echo '{
   "document_id": "abc123",
   "image_url": "https://storage.googleapis.com/bucket/image.png"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-image
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-image
 ```
 
 **Insert image with specific size**:
@@ -252,7 +258,7 @@ echo '{
   "image_url": "https://storage.googleapis.com/bucket/image.png",
   "width": 400,
   "height": 300
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-image
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-image
 ```
 
 **Insert image at specific position**:
@@ -261,7 +267,7 @@ echo '{
   "document_id": "abc123",
   "image_url": "https://storage.googleapis.com/bucket/image.png",
   "index": 100
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-image
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-image
 ```
 
 **Image URL Requirements**:
@@ -284,7 +290,7 @@ echo '{
   "document_id": "abc123",
   "rows": 3,
   "cols": 4
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-table
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-table
 ```
 
 **Insert table with data**:
@@ -298,7 +304,7 @@ echo '{
     ["Row 1 Col 1", "Row 1 Col 2"],
     ["Row 2 Col 1", "Row 2 Col 2"]
   ]
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-table
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-table
 ```
 
 **Insert table at specific position**:
@@ -309,7 +315,7 @@ echo '{
   "cols": 3,
   "index": 100,
   "data": [["A", "B", "C"], ["1", "2", "3"]]
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-table
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-table
 ```
 
 **Note**: Tables can also be created via Markdown in `create-from-markdown`:
@@ -323,7 +329,7 @@ echo '{
 
 ### User Says: "Read the content of this Google Doc: abc123"
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read abc123
 ```
 
 ### User Says: "Create a new document called 'Meeting Notes' with the text 'Attendees: John, Sarah'"
@@ -331,7 +337,7 @@ echo '{
 echo '{
   "title": "Meeting Notes",
   "content": "Attendees: John, Sarah"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 ```
 
 ### User Says: "Add 'Next Steps' section to the end of document abc123"
@@ -339,7 +345,7 @@ echo '{
 echo '{
   "document_id": "abc123",
   "text": "\n\n## Next Steps\n\n- Review proposals\n- Schedule follow-up"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb append
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb append
 ```
 
 ### User Says: "Replace all instances of 'Q3' with 'Q4' in document abc123"
@@ -348,7 +354,7 @@ echo '{
   "document_id": "abc123",
   "find": "Q3",
   "replace": "Q4"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 ```
 
 ### User Says: "Make the first 50 characters of document abc123 bold"
@@ -358,7 +364,7 @@ echo '{
   "start_index": 1,
   "end_index": 50,
   "bold": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 ```
 
 ## Understanding Document Index Positions
@@ -397,11 +403,11 @@ For file management operations (upload, download, share, search, organize), use 
 
 ```bash
 # Step 1: Create document (returns document_id)
-echo '{"title":"Report"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+echo '{"title":"Report"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 # Returns: {"document_id": "abc123"}
 
 # Step 2: Add content
-echo '{"document_id":"abc123","text":"# Report\n\nContent here"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert
+echo '{"document_id":"abc123","text":"# Report\n\nContent here"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert
 
 # Step 3: Use google-drive-skill to organize and share
 # See google-drive-skill for move, share, download operations
@@ -411,7 +417,7 @@ echo '{"document_id":"abc123","text":"# Report\n\nContent here"}' | ~/.ai/agent/
 
 Use the `google-drive-skill` download command with `--export-as pdf`:
 ```bash
-~/.ai/agent/skills/google-drive-skill/bin/ruby ~/.ai/agent/skills/google-drive-skill/scripts/drive_manager.rb download --file-id abc123 --output ./report.pdf --export-as pdf
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb download --file-id abc123 --output ./report.pdf --export-as pdf
 ```
 
 ### Excalidraw Diagrams Workflow
@@ -445,7 +451,7 @@ For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` ski
 
 ### Scripts
 
-**`~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb`**
+**`$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb`**
 - Comprehensive Google Docs API wrapper
 - All document operations: read, create, insert, append, replace, format, delete
 - Document structure analysis (headings)
@@ -470,7 +476,7 @@ For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` ski
 **Output Format**:
 - JSON with `status: 'success'` or `status: 'error'`
 - Document operations return document_id and revision_id
-- See script help: `~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb --help`
+- See script help: `$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb --help`
 
 ### References
 
@@ -572,57 +578,57 @@ For creating and managing Excalidraw diagrams, see the `excalidraw-diagrams` ski
 
 **Read document**:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read <document_id>
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read <document_id>
 ```
 
 **Create document from Markdown (RECOMMENDED)**:
 ```bash
-echo '{"title":"My Doc","markdown":"# Heading\n\nParagraph with **bold**."}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create-from-markdown
+echo '{"title":"My Doc","markdown":"# Heading\n\nParagraph with **bold**."}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create-from-markdown
 ```
 
 **Create document (plain text)**:
 ```bash
-echo '{"title":"My Doc","content":"Initial text"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+echo '{"title":"My Doc","content":"Initial text"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 ```
 
 **Insert formatted Markdown**:
 ```bash
-echo '{"document_id":"abc123","markdown":"## Section\n\n- Item 1\n- Item 2"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-from-markdown
+echo '{"document_id":"abc123","markdown":"## Section\n\n- Item 1\n- Item 2"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-from-markdown
 ```
 
 **Insert plain text at beginning**:
 ```bash
-echo '{"document_id":"abc123","text":"New text","index":1}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert
+echo '{"document_id":"abc123","text":"New text","index":1}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert
 ```
 
 **Append to end**:
 ```bash
-echo '{"document_id":"abc123","text":"Appended text"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb append
+echo '{"document_id":"abc123","text":"Appended text"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb append
 ```
 
 **Find and replace**:
 ```bash
-echo '{"document_id":"abc123","find":"old","replace":"new"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+echo '{"document_id":"abc123","find":"old","replace":"new"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 ```
 
 **Format text**:
 ```bash
-echo '{"document_id":"abc123","start_index":1,"end_index":50,"bold":true}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+echo '{"document_id":"abc123","start_index":1,"end_index":50,"bold":true}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 ```
 
 **Get document structure**:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure <document_id>
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure <document_id>
 ```
 
 **Insert table**:
 ```bash
-echo '{"document_id":"abc123","rows":3,"cols":2,"data":[["A","B"],["1","2"],["3","4"]]}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-table
+echo '{"document_id":"abc123","rows":3,"cols":2,"data":[["A","B"],["1","2"],["3","4"]]}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-table
 ```
 
 **Insert image from URL**:
 ```bash
-echo '{"document_id":"abc123","image_url":"https://example.com/image.png"}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-image
+echo '{"document_id":"abc123","image_url":"https://example.com/image.png"}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-image
 ```
 
 ## Example Workflow: Creating and Editing a Report
@@ -632,7 +638,7 @@ echo '{"document_id":"abc123","image_url":"https://example.com/image.png"}' | ~/
    echo '{
      "title": "Q4 Report",
      "markdown": "# Q4 Report\n\n## Executive Summary\n\nRevenue increased **25%** over Q3 targets.\n\n## Key Metrics\n\n| Metric | Q3 | Q4 |\n|--------|-----|-----|\n| Revenue | $1M | $1.25M |\n| Users | 10K | 15K |\n\n## Next Steps\n\n- [ ] Finalize budget\n- [ ] Schedule review meeting\n- [x] Complete analysis"
-   }' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create-from-markdown
+   }' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create-from-markdown
    # Returns: {"document_id": "abc123"}
    ```
 
@@ -641,7 +647,7 @@ echo '{"document_id":"abc123","image_url":"https://example.com/image.png"}' | ~/
    echo '{
      "document_id": "abc123",
      "markdown": "\n\n## Appendix\n\nAdditional *details* and **notes** here."
-   }' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert-from-markdown
+   }' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert-from-markdown
    ```
 
 3. **Replace text if needed**:
@@ -650,12 +656,12 @@ echo '{"document_id":"abc123","image_url":"https://example.com/image.png"}' | ~/
      "document_id": "abc123",
      "find": "Q3",
      "replace": "Q4"
-   }' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+   }' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
    ```
 
 4. **Share with team** (use `google-drive-skill`):
    ```bash
-   ~/.ai/agent/skills/google-drive-skill/bin/ruby ~/.ai/agent/skills/google-drive-skill/scripts/drive_manager.rb share --file-id abc123 --email team@company.com --role writer
+   $DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb share --file-id abc123 --email team@company.com --role writer
    ```
 
 ## Version History

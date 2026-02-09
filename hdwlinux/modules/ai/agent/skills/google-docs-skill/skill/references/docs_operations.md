@@ -46,7 +46,7 @@ Complete reference for all Google Docs operations available in the docs_manager.
 
 **Example**:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read 1abc-xyz-document-id-123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read 1abc-xyz-document-id-123
 ```
 
 ---
@@ -99,7 +99,7 @@ Complete reference for all Google Docs operations available in the docs_manager.
 
 **Example**:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure 1abc-xyz-document-id-123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure 1abc-xyz-document-id-123
 ```
 
 ---
@@ -145,10 +145,10 @@ Complete reference for all Google Docs operations available in the docs_manager.
 **Examples**:
 ```bash
 # Insert at beginning
-echo '{"document_id":"abc123","text":"# Title\n\n","index":1}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert
+echo '{"document_id":"abc123","text":"# Title\n\n","index":1}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert
 
 # Insert at specific position
-echo '{"document_id":"abc123","text":"New paragraph\n\n","index":500}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb insert
+echo '{"document_id":"abc123","text":"New paragraph\n\n","index":500}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb insert
 ```
 
 ---
@@ -195,13 +195,13 @@ echo '{"document_id":"abc123","text":"New paragraph\n\n","index":500}' | ~/.ai/a
 echo '{
   "document_id": "abc123",
   "text": "\n\n## Next Steps\n\n- Review document\n- Get feedback"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb append
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb append
 
 # Append signature
 echo '{
   "document_id": "abc123",
   "text": "\n\n---\n\nPrepared by: [Name]\nDate: [Date]"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb append
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb append
 ```
 
 ---
@@ -260,7 +260,7 @@ echo '{
   "find": "q3 2024",
   "replace": "Q4 2024",
   "match_case": false
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 
 # Case-sensitive replacement
 echo '{
@@ -268,14 +268,14 @@ echo '{
   "find": "DRAFT",
   "replace": "FINAL",
   "match_case": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 
 # Delete text (replace with empty)
 echo '{
   "document_id": "abc123",
   "find": "[REMOVE THIS]",
   "replace": ""
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 ```
 
 ---
@@ -331,7 +331,7 @@ echo '{
   "start_index": 1,
   "end_index": 20,
   "bold": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 
 # Bold and italic
 echo '{
@@ -340,7 +340,7 @@ echo '{
   "end_index": 150,
   "bold": true,
   "italic": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 
 # Underline only
 echo '{
@@ -348,7 +348,7 @@ echo '{
   "start_index": 200,
   "end_index": 225,
   "underline": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 ```
 
 ---
@@ -393,7 +393,7 @@ echo '{
 echo '{
   "document_id": "abc123",
   "index": 1000
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb page-break
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb page-break
 ```
 
 ---
@@ -438,13 +438,13 @@ echo '{
 # Empty document
 echo '{
   "title": "Meeting Notes"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 
 # Document with content
 echo '{
   "title": "Project Proposal",
   "content": "# Project Proposal\n\n## Overview\n\nThis proposal outlines..."
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 ```
 
 ---
@@ -492,14 +492,14 @@ echo '{
   "document_id": "abc123",
   "start_index": 500,
   "end_index": 600
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb delete
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb delete
 
 # Clear most of document (read first to get end index)
 echo '{
   "document_id": "abc123",
   "start_index": 1,
   "end_index": 5000
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb delete
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb delete
 ```
 
 ---

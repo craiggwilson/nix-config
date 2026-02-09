@@ -5,10 +5,10 @@
     ];
 
     homeManager =
-      { pkgs, ... }:
+      { lib, pkgs, ... }:
       {
         hdwlinux.ai.agent.mcpServers.nixos.stdio = {
-          command = "${pkgs.mcp-nixos}/bin/mcp-nixos";
+          command = lib.getExe pkgs.mcp-nixos;
           args = [ ];
         };
       };

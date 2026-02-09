@@ -168,7 +168,7 @@ text = "Hello World\nSecond line"
 **Method 2: Use Structure Command**
 ```bash
 # Get heading positions
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure abc123
 
 # Output shows start_index and end_index for each heading
 # Use these as reference points for nearby text
@@ -177,7 +177,7 @@ text = "Hello World\nSecond line"
 **Method 3: Read Document**
 ```bash
 # Read document to see current content
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read abc123
 
 # Count characters to desired position
 # Or use returned content for reference
@@ -194,7 +194,7 @@ echo '{"document_id":"abc","text":"New start","index":1}' | insert
 **Insert After Heading**:
 ```bash
 # First get structure to find heading end
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure abc
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure abc
 
 # If heading ends at 50, insert at 51
 echo '{"document_id":"abc","text":"Content","index":51}' | insert
@@ -220,7 +220,7 @@ echo '{"document_id":"abc","text":"End content"}' | append
 
 ```bash
 # Step 1: Read to see title
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read abc123
 
 # Step 2: Calculate title length (assume "Project Proposal" = 16 chars)
 # Index 1-16 for title
@@ -231,14 +231,14 @@ echo '{
   "start_index": 1,
   "end_index": 16,
   "bold": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 ```
 
 ### Workflow 2: Format Multiple Headings
 
 ```bash
 # Step 1: Get structure
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure abc123
 
 # Output shows all headings with positions
 # Example: {"level":1,"text":"Introduction","start_index":1,"end_index":13}
@@ -249,7 +249,7 @@ echo '{
   "start_index": 1,
   "end_index": 13,
   "bold": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 
 # Repeat for other headings
 ```
@@ -258,7 +258,7 @@ echo '{
 
 ```bash
 # Step 1: Read document
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read abc123
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read abc123
 
 # Step 2: Find keyword positions manually or use replace
 # Option A: Manual formatting
@@ -267,7 +267,7 @@ echo '{
   "start_index": 100,
   "end_index": 110,
   "bold": true
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb format
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb format
 
 # Option B: Replace with formatted text (not directly supported)
 # Better to identify positions first, then format

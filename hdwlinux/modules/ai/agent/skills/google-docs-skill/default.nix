@@ -27,8 +27,8 @@
             chmod +x $out/bin/ruby
           '';
 
-          security.secrets.entries.googleApiOauth = {
-            path = "${config.home.homeDirectory}/.ai/agent/.google/client_secret.json";
+          security.secrets.entries.googleDocsApiOauth = {
+            path = "${config.home.homeDirectory}/.config/google-docs-skill/client_secret.json";
             reference = "op://Work/google-api-oauth/client_secret.json";
             mode = "0600";
           };

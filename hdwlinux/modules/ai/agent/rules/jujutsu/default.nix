@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.rules.jujutsu = {
-        metadata = {
-          description = "Version control using Jujutsu (jj)";
-          type = "always_apply";
-        };
-        content = ./prompt.md;
+        description = "Version control using Jujutsu (jj)";
+        content = ./content.md;
+        extraMeta.type = "always_apply";
       };
     };
   };

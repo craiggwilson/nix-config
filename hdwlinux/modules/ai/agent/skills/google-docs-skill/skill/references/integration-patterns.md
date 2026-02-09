@@ -9,7 +9,7 @@ Complete workflows combining google-drive, google-sheets, and google-docs skills
 **Workflow**:
 ```bash
 # Step 1: Find the source spreadsheet
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "Sales Q4 2024" \
   --mime-type "application/vnd.google-apps.spreadsheet"
 
@@ -17,23 +17,23 @@ Complete workflows combining google-drive, google-sheets, and google-docs skills
 echo '{
   "spreadsheet_id": "SPREADSHEET_ID_FROM_STEP1",
   "range": "Q4 Data!A1:F100"
-}' | ~/.ai/agent/skills/google-sheets/scripts/sheets_manager.rb read
+}' | $SHEETS_SKILL_PATH/bin/ruby $SHEETS_SKILL_PATH/scripts/sheets_manager.rb read
 
 # Step 3: Process data with Augment (analyze trends, calculate metrics)
 
 # Step 4: Create a new document for the report
 echo '{
   "title": "Q4 2024 Sales Analysis Report"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 
 # Step 5: Write report sections
 echo '{
   "document_id": "DOC_ID_FROM_STEP4",
   "text": "# Q4 2024 Sales Analysis\n\n## Executive Summary\n\n[Augment-generated insights]"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb append
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb append
 
 # Step 6: Share the report
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb share \
   --file-id "DOC_ID_FROM_STEP4" \
   --email "stakeholder@company.com" \
   --role "reader"
@@ -50,16 +50,16 @@ echo '{
 **Workflow**:
 ```bash
 # Step 1: Create project folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb create-folder \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb create-folder \
   --name "Project Alpha" \
   --parent-folder-id "root"
 
 # Step 2: Create subfolders
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb create-folder \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb create-folder \
   --name "Documents" \
   --parent-folder-id "PROJECT_FOLDER_ID_FROM_STEP1"
 
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb create-folder \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb create-folder \
   --name "Spreadsheets" \
   --parent-folder-id "PROJECT_FOLDER_ID_FROM_STEP1"
 
@@ -67,13 +67,13 @@ echo '{
 echo '{
   "title": "Project Alpha - Requirements",
   "parent_folder_id": "DOCUMENTS_FOLDER_ID"
-}' | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb create
+}' | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb create
 
 # Step 4: Create tracking spreadsheet
 # (Use google-sheets create operation with parent_folder_id)
 
 # Step 5: Share entire project folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb share \
   --file-id "PROJECT_FOLDER_ID_FROM_STEP1" \
   --email "team@company.com" \
   --role "writer"
@@ -90,7 +90,7 @@ echo '{
 **Workflow**:
 ```bash
 # Step 1: Find all matching documents
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "Status Report" \
   --mime-type "application/vnd.google-apps.document"
 
@@ -99,14 +99,14 @@ echo '{
 
 for DOC_ID in $(jq -r '.files[].id' search_results.json); do
   # Read current content
-  CONTENT=$(~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read "$DOC_ID")
+  CONTENT=$($SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read "$DOC_ID")
 
   # Update with new information
   echo "{
     \"document_id\": \"$DOC_ID\",
     \"find_text\": \"Status: Pending\",
     \"replace_text\": \"Status: Completed\"
-  }" | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+  }" | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 done
 ```
 
@@ -121,20 +121,20 @@ done
 **Workflow**:
 ```bash
 # Step 1: Find all department spreadsheets
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "Department Budget 2024"
 
 # Step 2: Create master consolidation sheet
 echo '{
   "title": "Master Budget 2024 - All Departments"
-}' | ~/.ai/agent/skills/google-sheets/scripts/sheets_manager.rb create
+}' | $SHEETS_SKILL_PATH/bin/ruby $SHEETS_SKILL_PATH/scripts/sheets_manager.rb create
 
 # Step 3: Read data from each department sheet
 for SHEET_ID in $(jq -r '.files[].id' search_results.json); do
   echo "{
     \"spreadsheet_id\": \"$SHEET_ID\",
     \"range\": \"Budget!A2:E100\"
-  }" | ~/.ai/agent/skills/google-sheets/scripts/sheets_manager.rb read >> consolidated_data.json
+  }" | $SHEETS_SKILL_PATH/bin/ruby $SHEETS_SKILL_PATH/scripts/sheets_manager.rb read >> consolidated_data.json
 done
 
 # Step 4: Write consolidated data to master sheet
@@ -142,7 +142,7 @@ echo '{
   "spreadsheet_id": "MASTER_SHEET_ID",
   "range": "Consolidated!A2",
   "values": [/* combined data from step 3 */]
-}' | ~/.ai/agent/skills/google-sheets/scripts/sheets_manager.rb write
+}' | $SHEETS_SKILL_PATH/bin/ruby $SHEETS_SKILL_PATH/scripts/sheets_manager.rb write
 ```
 
 **Expected Output**: Single master spreadsheet with data from all departments.
@@ -156,33 +156,33 @@ echo '{
 **Workflow**:
 ```bash
 # Step 1: Find template document
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "Invoice Template"
 
 # Step 2: Copy template for new document
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb copy \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb copy \
   --file-id "TEMPLATE_ID" \
   --name "Invoice #1234 - Acme Corp"
 
 # Step 3: Read template content
 NEW_DOC_ID=$(jq -r '.id' copy_result.json)
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read "$NEW_DOC_ID"
+$SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read "$NEW_DOC_ID"
 
 # Step 4: Replace placeholders with actual data
 echo "{
   \"document_id\": \"$NEW_DOC_ID\",
   \"find_text\": \"{{CLIENT_NAME}}\",
   \"replace_text\": \"Acme Corporation\"
-}" | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}" | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 
 echo "{
   \"document_id\": \"$NEW_DOC_ID\",
   \"find_text\": \"{{INVOICE_NUMBER}}\",
   \"replace_text\": \"#1234\"
-}" | ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb replace
+}" | $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb replace
 
 # Step 5: Move to appropriate folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb move \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb move \
   --file-id "$NEW_DOC_ID" \
   --destination-folder-id "INVOICES_FOLDER_ID"
 ```
@@ -201,13 +201,13 @@ echo "{
 TRACKING_SHEET_ID="your_tracking_sheet_id"
 
 # Step 2: Search for data source documents
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "Survey Results 2024"
 
 # Step 3: Extract data from each source
 for DOC_ID in $(jq -r '.files[].id' search_results.json); do
   # Read document
-  CONTENT=$(~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb read "$DOC_ID")
+  CONTENT=$($SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb read "$DOC_ID")
 
   # Parse content with Augment to extract structured data
   # (Augment processes CONTENT and formats for spreadsheet)
@@ -217,7 +217,7 @@ for DOC_ID in $(jq -r '.files[].id' search_results.json); do
     \"spreadsheet_id\": \"$TRACKING_SHEET_ID\",
     \"range\": \"Data!A:F\",
     \"values\": [[/* extracted data */]]
-  }" | ~/.ai/agent/skills/google-sheets/scripts/sheets_manager.rb append
+  }" | $SHEETS_SKILL_PATH/bin/ruby $SHEETS_SKILL_PATH/scripts/sheets_manager.rb append
 done
 ```
 
@@ -245,11 +245,11 @@ Always use the ID (long alphanumeric string) from search/list results, not the f
 **Solution**:
 ```bash
 # Check current permissions
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb list-permissions \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb list-permissions \
   --file-id "FILE_ID"
 
 # Add yourself as writer if needed
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb share \
   --file-id "FILE_ID" \
   --email "your-email@gmail.com" \
   --role "writer"
@@ -262,11 +262,11 @@ Always use the ID (long alphanumeric string) from search/list results, not the f
 **Solution**: Use more specific query with operators:
 ```bash
 # Combine multiple criteria
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "name contains 'Budget' and mimeType='application/vnd.google-apps.spreadsheet'"
 
 # Search in specific folder
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "'FOLDER_ID' in parents"
 ```
 
@@ -289,7 +289,7 @@ Always use the ID (long alphanumeric string) from search/list results, not the f
 
 Use google-drive with mimeType filter:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "mimeType='application/vnd.google-apps.spreadsheet'" \
   --max-results 50
 ```
@@ -298,7 +298,7 @@ Use google-drive with mimeType filter:
 
 Use google-drive with mimeType filter:
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "mimeType='application/vnd.google-apps.document'" \
   --max-results 50
 ```
@@ -306,7 +306,7 @@ Use google-drive with mimeType filter:
 ### Finding Recently Modified Files
 
 ```bash
-~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+$DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
   --query "modifiedTime > '2024-01-01T00:00:00'"
 ```
 

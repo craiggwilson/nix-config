@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.commands.planning-research = {
-        metadata = {
-          description = "Conduct focused research as part of planning discovery";
-          argument-hint = "[research-topic]";
-        };
-        content = ./prompt.md;
+        description = "Conduct focused research as part of planning discovery";
+        content = ./content.md;
+        extraMeta.argument-hint = "[research-topic]";
       };
     };
   };

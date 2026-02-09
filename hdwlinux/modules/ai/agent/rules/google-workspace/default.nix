@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.rules.google-workspace = {
-        metadata = {
-          description = "Google Workspace access configuration";
-          type = "agent-requested";
-        };
-        content = ./prompt.md;
+        description = "Google Workspace access configuration";
+        content = ./content.md;
+        extraMeta.type = "agent-requested";
       };
     };
   };

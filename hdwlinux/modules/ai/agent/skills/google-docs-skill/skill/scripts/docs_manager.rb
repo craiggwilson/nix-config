@@ -23,8 +23,8 @@ class DocsManager
   CONTACTS_SCOPE = Google::Apis::PeopleV1::AUTH_CONTACTS
   GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.modify'
 
-  CREDENTIALS_PATH = File.join(Dir.home, '.ai', 'agent', '.google', 'client_secret.json')
-  TOKEN_PATH = File.join(Dir.home, '.ai', 'agent', '.google', 'token.json')
+  CREDENTIALS_PATH = File.join(Dir.home, '.config', 'google-docs-skill', 'client_secret.json')
+  TOKEN_PATH = File.join(Dir.home, '.local', 'share', 'google-docs-skill', 'token.json')
 
   # Exit codes
   EXIT_SUCCESS = 0

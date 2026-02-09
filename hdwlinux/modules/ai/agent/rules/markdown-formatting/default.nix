@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.rules.markdown-formatting = {
-        metadata = {
-          description = "Markdown formatting standards for all generated documents";
-          type = "always_apply";
-        };
-        content = ./prompt.md;
+        description = "Markdown formatting standards for all generated documents";
+        content = ./content.md;
+        extraMeta.type = "always_apply";
       };
     };
   };

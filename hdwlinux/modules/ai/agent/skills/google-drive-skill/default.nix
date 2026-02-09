@@ -27,9 +27,8 @@
             chmod +x $out/bin/ruby
           '';
 
-          # Shared OAuth credentials with google-docs-skill
-          security.secrets.entries.googleApiOauth = {
-            path = "${config.home.homeDirectory}/.ai/agent/.google/client_secret.json";
+          security.secrets.entries.googleDriveApiOauth = {
+            path = "${config.home.homeDirectory}/.config/google-drive-skill/client_secret.json";
             reference = "op://Work/google-api-oauth/client_secret.json";
             mode = "0600";
           };

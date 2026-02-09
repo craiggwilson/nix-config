@@ -27,10 +27,8 @@
       in
       {
         config = lib.mkIf hasSecrets {
-          home.packages = [ mcpPackage ];
-
           hdwlinux.ai.agent.mcpServers.atlassian.stdio = {
-            command = "mcp-atlassian";
+            command = lib.getExe mcpPackage;
             args = [ ];
           };
         };

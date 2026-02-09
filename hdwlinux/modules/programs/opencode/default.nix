@@ -12,11 +12,6 @@
         ...
       }:
       let
-        # Helper to get metadata value with default
-        getMeta =
-          item: key: default:
-          item.metadata.${key} or default;
-
         # Transform MCP servers to OpenCode format
         mcpConfig = lib.mapAttrs (
           name: server:
@@ -37,16 +32,28 @@
             throw "Unknown MCP server type for ${name}"
         ) config.hdwlinux.ai.agent.mcpServers;
 
+        # Format tools attrset for OpenCode frontmatter (lowercase names, boolean values)
+        # "allow" -> true, "ask"/"deny" -> false
+        formatTools =
+          tools:
+          let
+            toolLines = lib.mapAttrsToList (
+              name: perm: "  ${lib.toLower name}: ${if perm == "allow" then "true" else "false"}"
+            ) tools;
+          in
+          lib.concatStringsSep "\n" toolLines;
+
         # Generate agent markdown with OpenCode-compatible frontmatter
         generateAgentMd =
           name: agent:
           let
+            toolsSection = if agent.tools == { } then "" else "tools:\n${formatTools agent.tools}\n";
             frontmatter = ''
               ---
-              description: ${getMeta agent "description" ""}
-              mode: subagent
-              model: ${getMeta agent "model" "opus4.5"}
-              ---
+              description: ${agent.description}
+              mode: ${agent.mode}
+              model: ${agent.model}
+              ${toolsSection}---
 
             '';
             content = builtins.readFile agent.content;
@@ -59,7 +66,7 @@
           let
             frontmatter = ''
               ---
-              description: ${getMeta command "description" ""}
+              description: ${command.description}
               ---
 
             '';
@@ -117,6 +124,10 @@
           "$schema" = "https://opencode.ai/config.json";
           mcp = mcpConfig;
           instructions = ruleInstructions;
+          permission = config.hdwlinux.ai.agent.tools;
+          keybinds = {
+            "app_exit" = "ctrl+q";
+          };
         };
 
       in

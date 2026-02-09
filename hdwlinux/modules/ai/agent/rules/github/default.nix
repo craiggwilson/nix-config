@@ -4,11 +4,9 @@
 
     homeManager = {
       hdwlinux.ai.agent.rules.github = {
-        metadata = {
-          description = "GitHub access configuration";
-          type = "agent_requested";
-        };
-        content = ./prompt.md;
+        description = "GitHub access configuration";
+        content = ./content.md;
+        extraMeta.type = "agent_requested";
       };
     };
   };

@@ -141,12 +141,12 @@ All three Google skills use standardized exit codes:
 1. Verify file ID is correct (long alphanumeric string, not file name)
 2. Check file exists with search:
    ```bash
-   ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb search \
+   $DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb search \
      --query "name='Your File Name'"
    ```
 3. Verify you have access to the file:
    ```bash
-   ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb list-permissions \
+   $DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb list-permissions \
      --file-id "FILE_ID"
    ```
 4. If file is shared, ensure it's shared with your authenticated account
@@ -171,13 +171,13 @@ All three Google skills use standardized exit codes:
 **Solution Steps**:
 1. Check current permissions:
    ```bash
-   ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb list-permissions \
+   $DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb list-permissions \
      --file-id "FILE_ID"
    ```
 2. If you're not the owner, request permission from file owner
 3. If you are the owner but using different account, share to authenticated account:
    ```bash
-   ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/drive_manager.rb share \
+   $DRIVE_SKILL_PATH/bin/ruby $DRIVE_SKILL_PATH/scripts/drive_manager.rb share \
      --file-id "FILE_ID" \
      --email "your-authenticated-email@gmail.com" \
      --role "writer"
@@ -204,7 +204,7 @@ All three Google skills use standardized exit codes:
 1. Get spreadsheet metadata to see available sheets:
    ```bash
    echo '{"spreadsheet_id":"SPREADSHEET_ID"}' | \
-     ~/.ai/agent/skills/google-sheets/scripts/sheets_manager.rb metadata
+     $SHEETS_SKILL_PATH/bin/ruby $SHEETS_SKILL_PATH/scripts/sheets_manager.rb metadata
    ```
 2. Use exact sheet name (case-sensitive) from metadata
 3. Verify A1 notation syntax: `SheetName!A1:B10`
@@ -233,7 +233,7 @@ All three Google skills use standardized exit codes:
 **Solution Steps**:
 1. Read document to get current structure:
    ```bash
-   ~/.ai/agent/skills/google-docs-skill/bin/ruby ~/.ai/agent/skills/google-docs-skill/scripts/docs_manager.rb structure "DOCUMENT_ID"
+   $SKILL_PATH/bin/ruby $SKILL_PATH/scripts/docs_manager.rb structure "DOCUMENT_ID"
    ```
 2. Use `append` operation instead of `insert` for adding to end
 3. Calculate correct indices based on content length

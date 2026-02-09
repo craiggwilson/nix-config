@@ -72,10 +72,8 @@
         };
 
         config = lib.mkIf hasSecrets {
-          home.packages = [ mcpPackage ];
-
           hdwlinux.ai.agent.mcpServers.google-workspace.stdio = {
-            command = "workspace-mcp";
+            command = lib.getExe mcpPackage;
             args = [ ];
           };
         };

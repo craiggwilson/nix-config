@@ -1,15 +1,60 @@
 {
-  # Base module that defines all AI agent options
   config.substrate.modules.ai.agent.options = {
+    tags = [
+      "ai:agent"
+    ];
     homeManager =
       { lib, ... }:
       let
-        # Common type for agents, commands, and rules
-        # Each has flexible metadata (attrsOf str) and content (path)
+        toolPermission = lib.types.enum [
+          "allow"
+          "ask"
+          "deny"
+        ];
+
+        toolPermissionWithSubs = lib.types.either toolPermission (lib.types.attrsOf toolPermission);
+
+        agentType = lib.types.submodule {
+          options = {
+            description = lib.mkOption {
+              description = "A description of what this agent does.";
+              type = lib.types.str;
+            };
+            mode = lib.mkOption {
+              description = "The mode of the agent, primary or subagent";
+              type = lib.types.str;
+              default = "subagent";
+            };
+            model = lib.mkOption {
+              description = "The model to use for this agent.";
+              type = lib.types.str;
+              default = "opus4.5";
+            };
+            tools = lib.mkOption {
+              description = "Tools with their permission levels. Key is tool name, value is permission.";
+              type = lib.types.attrsOf toolPermission;
+              default = { };
+            };
+            extraMeta = lib.mkOption {
+              description = "Additional flexible key-value metadata for agent-specific fields.";
+              type = lib.types.attrsOf lib.types.str;
+              default = { };
+            };
+            content = lib.mkOption {
+              description = "Path to the markdown file containing the agent's prompt.";
+              type = lib.types.path;
+            };
+          };
+        };
+
         itemType = lib.types.submodule {
           options = {
-            metadata = lib.mkOption {
-              description = "Flexible key-value metadata. Each coding agent interprets relevant keys.";
+            description = lib.mkOption {
+              description = "A description of what this item does.";
+              type = lib.types.str;
+            };
+            extraMeta = lib.mkOption {
+              description = "Additional flexible key-value metadata. Each coding agent interprets relevant keys.";
               type = lib.types.attrsOf lib.types.str;
               default = { };
             };
@@ -20,7 +65,6 @@
           };
         };
 
-        # MCP server type - tagged union for stdio or http servers
         mcpServerType = lib.types.attrTag {
           stdio = lib.mkOption {
             description = "A stdio-based MCP server that communicates via stdin/stdout.";
@@ -60,7 +104,7 @@
         options.hdwlinux.ai.agent = {
           agents = lib.mkOption {
             description = "Agent (subagent) definitions for AI assistants.";
-            type = lib.types.attrsOf itemType;
+            type = lib.types.attrsOf agentType;
             default = { };
           };
 
@@ -87,6 +131,58 @@
             type = lib.types.attrsOf lib.types.path;
             default = { };
           };
+
+          tools = lib.mkOption {
+            description = ''
+              Global tool permissions. Key is tool name, value is either:
+              - A simple permission: "allow", "ask", or "deny"
+              - An attrset of command patterns to permissions for fine-grained control
+              Example: { bash = { "git log*" = "allow"; "rm*" = "deny"; }; read = "allow"; }
+            '';
+            type = lib.types.attrsOf toolPermissionWithSubs;
+            default = { };
+          };
+        };
+
+        config.hdwlinux.ai.agent.tools = {
+          bash = {
+            "*" = "ask";
+            "bat*" = "allow";
+            "cat*" = "allow";
+            "cd*" = "allow";
+            "echo*" = "allow";
+            "find*" = "allow";
+            "grep*" = "allow";
+            "head*" = "allow";
+            "jj*" = "allow";
+            "ls*" = "allow";
+            "nix*" = "allow";
+            "pwd*" = "allow";
+            "reboot*" = "deny";
+            "rg*" = "allow";
+            "rm*" = "ask";
+            "shutdown*" = "deny";
+            "sudo*" = "deny";
+            "tail*" = "allow";
+            "xargs*" = "allow";
+          };
+          edit = "allow";
+          external_directory = "ask";
+          glob = "allow";
+          grep = "allow";
+          list = "allow";
+          question = "allow";
+          read = {
+            "*" = "allow";
+            "*.env" = "deny";
+            "*.env.*" = "deny";
+          };
+          skill = "allow";
+          task = "allow";
+          todoread = "allow";
+          todowrite = "allow";
+          webfetch = "allow";
+          websearch = "allow";
         };
       };
   };

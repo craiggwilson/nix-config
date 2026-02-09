@@ -5,7 +5,7 @@
     ];
 
     homeManager =
-      { pkgs, ... }:
+      { lib, pkgs, ... }:
       let
         mcpPackage = pkgs.writeShellScriptBin "sequential-thinking" ''
           export PATH="${pkgs.nodejs}/bin:${pkgs.nodePackages.npm}/bin:$PATH"
@@ -13,10 +13,10 @@
         '';
       in
       {
-        home.packages = [ mcpPackage ];
+        home.packages = [ ];
 
         hdwlinux.ai.agent.mcpServers.sequential-thinking.stdio = {
-          command = "sequential-thinking";
+          command = lib.getExe mcpPackage;
           args = [ ];
         };
       };
