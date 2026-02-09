@@ -15,7 +15,7 @@
       in
       {
         hdwlinux = {
-          ai.skills.google-docs-skill = pkgs.runCommand "google-docs-skill" { } ''
+          ai.agent.skills.google-docs-skill = pkgs.runCommand "google-docs-skill" { } ''
             mkdir -p $out/bin
             cp -r ${./skill}/* $out/
             chmod +x $out/scripts/*.rb

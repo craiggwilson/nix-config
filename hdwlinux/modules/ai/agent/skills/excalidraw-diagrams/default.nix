@@ -11,7 +11,7 @@
         nodejs = pkgs.nodejs;
       in
       {
-        hdwlinux.ai.skills.excalidraw-diagrams = pkgs.runCommand "excalidraw-diagrams-skill" { } ''
+        hdwlinux.ai.agent.skills.excalidraw-diagrams = pkgs.runCommand "excalidraw-diagrams-skill" { } ''
           mkdir -p $out/bin
           cp -r ${./skill}/* $out/
 

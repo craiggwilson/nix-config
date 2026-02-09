@@ -15,7 +15,7 @@
       in
       {
         hdwlinux = {
-          ai.skills.google-drive-skill = pkgs.runCommand "google-drive-skill" { } ''
+          ai.agent.skills.google-drive-skill = pkgs.runCommand "google-drive-skill" { } ''
             mkdir -p $out/bin
             cp -r ${./skill}/* $out/
             chmod +x $out/scripts/*.rb
