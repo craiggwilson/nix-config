@@ -2,7 +2,6 @@
   config.substrate.modules.programs.opencode = {
     tags = [
       "ai:agent"
-      "programming"
     ];
 
     homeManager =

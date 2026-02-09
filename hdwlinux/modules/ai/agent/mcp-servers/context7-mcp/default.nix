@@ -2,7 +2,6 @@
   config.substrate.modules.ai.agent.mcp-servers.context7-mcp = {
     tags = [
       "ai:agent"
-      "programming"
     ];
 
     homeManager =

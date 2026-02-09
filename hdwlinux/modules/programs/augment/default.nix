@@ -2,7 +2,6 @@
   config.substrate.modules.programs.augment = {
     tags = [
       "ai:agent"
-      "programming"
       "users:craig:work"
     ];
 
@@ -85,7 +84,7 @@
             }
           else
             throw "Unknown MCP server type for ${name}"
-        ) config.hdwlinux.ai.agent.mcpServers;
+        ) (lib.filterAttrs (n: _: n != "augment-context-engine") config.hdwlinux.ai.agent.mcpServers);
 
       in
       {
