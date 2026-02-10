@@ -21,6 +21,8 @@
 
     import-tree.url = "github:vic/import-tree";
 
+    jail-nix.url = "sourcehut:~alexdavid/jail.nix";
+
     kolide-launcher = {
       url = "github:/kolide/nix-agent/main";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -77,6 +79,7 @@
         (inputs.import-tree ./modules)
         inputs.hdwlinux-private.substrateModules.nix-private
         inputs.substrate.substrateModules.home-manager
+        inputs.substrate.substrateModules.jail
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.types

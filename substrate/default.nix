@@ -17,6 +17,7 @@ in
   };
   substrateModules = {
     home-manager = import ./extensions/home-manager;
+    jail = import ./extensions/jail;
     shells = import ./extensions/shells;
     tags = import ./extensions/tags;
     types = import ./extensions/types;

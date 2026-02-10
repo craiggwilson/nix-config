@@ -203,6 +203,21 @@
         "type": "github"
       }
     },
+    "jail-nix": {
+      "locked": {
+        "lastModified": 1770418571,
+        "narHash": "sha256-EzQUbe1gwW/xpJoMuMeblWcjAEF+F92cz/enz0Mz/qo=",
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "rev": "c141cf8cc68617625b4a28a7d8ce0a35904815d5",
+        "type": "sourcehut"
+      },
+      "original": {
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "type": "sourcehut"
+      }
+    },
     "kolide-launcher": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -429,6 +444,7 @@
         "hdwlinux-private": "hdwlinux-private",
         "home-manager": "home-manager",
         "import-tree": "import-tree_2",
+        "jail-nix": "jail-nix",
         "kolide-launcher": "kolide-launcher",
         "musnix": "musnix",
         "niri-scratchpad": "niri-scratchpad",

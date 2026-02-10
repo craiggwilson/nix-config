@@ -27,8 +27,9 @@
     extraArgsGenerators = lib.mkOption {
       type = lib.types.listOf (lib.types.functionTo lib.types.attrs);
       description = ''
-        Function to compute extra specialArgs for NixOS configurations. hostcfg will be null for standalone home-manager and usercfg will be null for nixos.
-        Receives: { hostcfg, usercfg }
+        Function to compute extra specialArgs for NixOS configurations.
+        hostcfg will be null for standalone home-manager and usercfg will be null for nixos.
+        Receives: { hostcfg, usercfg, pkgs, inputs }
         Returns: attrset merged into specialArgs
       '';
       default = [ ];

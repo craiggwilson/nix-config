@@ -29,15 +29,33 @@ let
   extractClassModules =
     class: mods:
     let
-      extractClass = c: lib.flatten (lib.map (m: if m ? ${c} && m.${c} != null then [ m.${c} ] else [ ]) mods);
+      extractClass =
+        c: lib.flatten (lib.map (m: if m ? ${c} && m.${c} != null then [ m.${c} ] else [ ]) mods);
       classModules = extractClass class;
       genericModules = if class != "generic" then extractClass "generic" else [ ];
     in
     genericModules ++ classModules;
 
   extraArgsGenerator =
-    { hostcfg, usercfg }:
-    lib.mergeAttrsList (lib.map (f: f { inherit hostcfg usercfg; }) settings.extraArgsGenerators);
+    {
+      hostcfg,
+      usercfg,
+      pkgs,
+      inputs,
+    }:
+    lib.mergeAttrsList (
+      lib.map (
+        f:
+        f {
+          inherit
+            hostcfg
+            usercfg
+            pkgs
+            inputs
+            ;
+        }
+      ) settings.extraArgsGenerators
+    );
 
   hasClass = class: builtins.elem class settings.supportedClasses;
 in

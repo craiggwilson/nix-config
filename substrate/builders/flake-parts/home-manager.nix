@@ -22,8 +22,9 @@ in
           overlays = allOverlays;
         };
         extraArgs = slib.extraArgsGenerator {
-          inherit usercfg;
+          inherit usercfg inputs;
           hostcfg = null;
+          pkgs = userPkgs;
         };
       in
       inputs.home-manager.lib.homeManagerConfiguration {

@@ -60,7 +60,14 @@ in
                     usercfg
                   ]
                 );
-                _module.args = slib.extraArgsGenerator { inherit hostcfg usercfg; };
+                _module.args = slib.extraArgsGenerator {
+                  inherit
+                    hostcfg
+                    usercfg
+                    pkgs
+                    inputs
+                    ;
+                };
               };
             in
             {
@@ -92,7 +99,7 @@ in
       inherit (hostcfg) system;
       specialArgs =
         (slib.extraArgsGenerator {
-          inherit hostcfg;
+          inherit hostcfg pkgs inputs;
           usercfg = null;
         })
         // {

@@ -1,7 +1,6 @@
 # Flake-parts adapter for substrate
 # Provides core flake outputs and imports optional modules for nixos/home-manager
 {
-  lib,
   config,
   inputs,
   ...
