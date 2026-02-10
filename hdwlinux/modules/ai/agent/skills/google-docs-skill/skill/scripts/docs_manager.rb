@@ -380,6 +380,943 @@ class DocsManager
     exit EXIT_OPERATION_FAILED
   end
 
+  # Advanced text styling (colors, fonts, sizes, strikethrough, links, etc.)
+  def style_text(document_id:, start_index:, end_index:, bold: nil, italic: nil, underline: nil,
+                 strikethrough: nil, small_caps: nil, font_family: nil, font_size: nil,
+                 foreground_color: nil, background_color: nil, link_url: nil,
+                 baseline_offset: nil)
+    text_style = {}
+    fields = []
+
+    # Basic formatting
+    unless bold.nil?
+      text_style[:bold] = bold
+      fields << 'bold'
+    end
+    unless italic.nil?
+      text_style[:italic] = italic
+      fields << 'italic'
+    end
+    unless underline.nil?
+      text_style[:underline] = underline
+      fields << 'underline'
+    end
+    unless strikethrough.nil?
+      text_style[:strikethrough] = strikethrough
+      fields << 'strikethrough'
+    end
+    unless small_caps.nil?
+      text_style[:small_caps] = small_caps
+      fields << 'smallCaps'
+    end
+
+    # Font family
+    if font_family
+      text_style[:weighted_font_family] = {
+        font_family: font_family,
+        weight: 400
+      }
+      fields << 'weightedFontFamily'
+    end
+
+    # Font size (in points)
+    if font_size
+      text_style[:font_size] = {
+        magnitude: font_size,
+        unit: 'PT'
+      }
+      fields << 'fontSize'
+    end
+
+    # Foreground color (text color)
+    if foreground_color
+      text_style[:foreground_color] = {
+        color: { rgb_color: parse_color(foreground_color) }
+      }
+      fields << 'foregroundColor'
+    end
+
+    # Background color (highlight)
+    if background_color
+      text_style[:background_color] = {
+        color: { rgb_color: parse_color(background_color) }
+      }
+      fields << 'backgroundColor'
+    end
+
+    # Hyperlink
+    if link_url
+      text_style[:link] = { url: link_url }
+      fields << 'link'
+    end
+
+    # Baseline offset (superscript/subscript)
+    if baseline_offset
+      text_style[:baseline_offset] = baseline_offset.upcase # SUPERSCRIPT, SUBSCRIPT, NONE
+      fields << 'baselineOffset'
+    end
+
+    requests = [
+      {
+        update_text_style: {
+          range: {
+            start_index: start_index,
+            end_index: end_index
+          },
+          text_style: text_style,
+          fields: fields.join(',')
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'style_text',
+      document_id: document_id,
+      range: { start: start_index, end: end_index },
+      styling: text_style.transform_keys(&:to_s)
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'style_text',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'STYLE_TEXT_FAILED',
+      operation: 'style_text',
+      message: "Failed to style text: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Insert hyperlink (convenience method)
+  def insert_link(document_id:, start_index:, end_index:, url:)
+    style_text(
+      document_id: document_id,
+      start_index: start_index,
+      end_index: end_index,
+      link_url: url
+    )
+  end
+
+  # Create bullet or numbered list
+  def create_list(document_id:, start_index:, end_index:, list_type: 'BULLET')
+    # list_type can be: BULLET_DISC_CIRCLE_SQUARE, BULLET_DIAMONDX_ARROW3D_SQUARE,
+    # NUMBERED_DECIMAL_ALPHA_ROMAN, NUMBERED_DECIMAL_NESTED, etc.
+    # Or use shortcuts: 'BULLET' or 'NUMBERED'
+
+    preset = case list_type.upcase
+             when 'BULLET'
+               'BULLET_DISC_CIRCLE_SQUARE'
+             when 'NUMBERED'
+               'NUMBERED_DECIMAL_ALPHA_ROMAN'
+             else
+               list_type
+             end
+
+    requests = [
+      {
+        create_paragraph_bullets: {
+          range: {
+            start_index: start_index,
+            end_index: end_index
+          },
+          bullet_preset: preset
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'create_list',
+      document_id: document_id,
+      range: { start: start_index, end: end_index },
+      list_type: preset
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'create_list',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'CREATE_LIST_FAILED',
+      operation: 'create_list',
+      message: "Failed to create list: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Remove bullets from paragraphs
+  def delete_list(document_id:, start_index:, end_index:)
+    requests = [
+      {
+        delete_paragraph_bullets: {
+          range: {
+            start_index: start_index,
+            end_index: end_index
+          }
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'delete_list',
+      document_id: document_id,
+      range: { start: start_index, end: end_index }
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'delete_list',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'DELETE_LIST_FAILED',
+      operation: 'delete_list',
+      message: "Failed to delete list: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Update paragraph style (alignment, indentation, spacing, line height)
+  def style_paragraph(document_id:, start_index:, end_index:, alignment: nil,
+                      indent_first_line: nil, indent_start: nil, indent_end: nil,
+                      space_above: nil, space_below: nil, line_spacing: nil,
+                      heading_style: nil)
+    paragraph_style = {}
+    fields = []
+
+    # Alignment: START, CENTER, END, JUSTIFIED
+    if alignment
+      paragraph_style[:alignment] = alignment.upcase
+      fields << 'alignment'
+    end
+
+    # First line indent (in points)
+    if indent_first_line
+      paragraph_style[:indent_first_line] = { magnitude: indent_first_line, unit: 'PT' }
+      fields << 'indentFirstLine'
+    end
+
+    # Left indent (in points)
+    if indent_start
+      paragraph_style[:indent_start] = { magnitude: indent_start, unit: 'PT' }
+      fields << 'indentStart'
+    end
+
+    # Right indent (in points)
+    if indent_end
+      paragraph_style[:indent_end] = { magnitude: indent_end, unit: 'PT' }
+      fields << 'indentEnd'
+    end
+
+    # Space above paragraph (in points)
+    if space_above
+      paragraph_style[:space_above] = { magnitude: space_above, unit: 'PT' }
+      fields << 'spaceAbove'
+    end
+
+    # Space below paragraph (in points)
+    if space_below
+      paragraph_style[:space_below] = { magnitude: space_below, unit: 'PT' }
+      fields << 'spaceBelow'
+    end
+
+    # Line spacing (percentage, e.g., 100 = single, 200 = double)
+    if line_spacing
+      paragraph_style[:line_spacing] = line_spacing
+      fields << 'lineSpacing'
+    end
+
+    # Named heading style: NORMAL_TEXT, HEADING_1, HEADING_2, etc.
+    if heading_style
+      paragraph_style[:named_style_type] = heading_style.upcase
+      fields << 'namedStyleType'
+    end
+
+    requests = [
+      {
+        update_paragraph_style: {
+          range: {
+            start_index: start_index,
+            end_index: end_index
+          },
+          paragraph_style: paragraph_style,
+          fields: fields.join(',')
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'style_paragraph',
+      document_id: document_id,
+      range: { start: start_index, end: end_index },
+      styling: paragraph_style.transform_keys(&:to_s)
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'style_paragraph',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'STYLE_PARAGRAPH_FAILED',
+      operation: 'style_paragraph',
+      message: "Failed to style paragraph: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Insert a table row
+  def insert_table_row(document_id:, table_start_index:, row_index:, insert_below: true)
+    requests = [
+      {
+        insert_table_row: {
+          table_cell_location: {
+            table_start_location: { index: table_start_index },
+            row_index: row_index,
+            column_index: 0
+          },
+          insert_below: insert_below
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'insert_table_row',
+      document_id: document_id,
+      table_start_index: table_start_index,
+      row_index: row_index,
+      insert_below: insert_below
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'insert_table_row',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'INSERT_TABLE_ROW_FAILED',
+      operation: 'insert_table_row',
+      message: "Failed to insert table row: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Insert a table column
+  def insert_table_column(document_id:, table_start_index:, column_index:, insert_right: true)
+    requests = [
+      {
+        insert_table_column: {
+          table_cell_location: {
+            table_start_location: { index: table_start_index },
+            row_index: 0,
+            column_index: column_index
+          },
+          insert_right: insert_right
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'insert_table_column',
+      document_id: document_id,
+      table_start_index: table_start_index,
+      column_index: column_index,
+      insert_right: insert_right
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'insert_table_column',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'INSERT_TABLE_COLUMN_FAILED',
+      operation: 'insert_table_column',
+      message: "Failed to insert table column: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Delete a table row
+  def delete_table_row(document_id:, table_start_index:, row_index:)
+    requests = [
+      {
+        delete_table_row: {
+          table_cell_location: {
+            table_start_location: { index: table_start_index },
+            row_index: row_index,
+            column_index: 0
+          }
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'delete_table_row',
+      document_id: document_id,
+      table_start_index: table_start_index,
+      row_index: row_index
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'delete_table_row',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'DELETE_TABLE_ROW_FAILED',
+      operation: 'delete_table_row',
+      message: "Failed to delete table row: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Delete a table column
+  def delete_table_column(document_id:, table_start_index:, column_index:)
+    requests = [
+      {
+        delete_table_column: {
+          table_cell_location: {
+            table_start_location: { index: table_start_index },
+            row_index: 0,
+            column_index: column_index
+          }
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'delete_table_column',
+      document_id: document_id,
+      table_start_index: table_start_index,
+      column_index: column_index
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'delete_table_column',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'DELETE_TABLE_COLUMN_FAILED',
+      operation: 'delete_table_column',
+      message: "Failed to delete table column: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Merge table cells
+  def merge_table_cells(document_id:, table_start_index:, row_start:, row_end:, column_start:, column_end:)
+    requests = [
+      {
+        merge_table_cells: {
+          table_range: {
+            table_cell_location: {
+              table_start_location: { index: table_start_index },
+              row_index: row_start,
+              column_index: column_start
+            },
+            row_span: row_end - row_start + 1,
+            column_span: column_end - column_start + 1
+          }
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'merge_table_cells',
+      document_id: document_id,
+      table_start_index: table_start_index,
+      merged_range: {
+        row_start: row_start,
+        row_end: row_end,
+        column_start: column_start,
+        column_end: column_end
+      }
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'merge_table_cells',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'MERGE_TABLE_CELLS_FAILED',
+      operation: 'merge_table_cells',
+      message: "Failed to merge table cells: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Unmerge table cells
+  def unmerge_table_cells(document_id:, table_start_index:, row_start:, row_end:, column_start:, column_end:)
+    requests = [
+      {
+        unmerge_table_cells: {
+          table_range: {
+            table_cell_location: {
+              table_start_location: { index: table_start_index },
+              row_index: row_start,
+              column_index: column_start
+            },
+            row_span: row_end - row_start + 1,
+            column_span: column_end - column_start + 1
+          }
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'unmerge_table_cells',
+      document_id: document_id,
+      table_start_index: table_start_index,
+      unmerged_range: {
+        row_start: row_start,
+        row_end: row_end,
+        column_start: column_start,
+        column_end: column_end
+      }
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'unmerge_table_cells',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'UNMERGE_TABLE_CELLS_FAILED',
+      operation: 'unmerge_table_cells',
+      message: "Failed to unmerge table cells: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Create a header
+  def create_header(document_id:, section_index: nil)
+    request = { create_header: { type: 'DEFAULT' } }
+    request[:create_header][:section_break_location] = { index: section_index } if section_index
+
+    requests = [request]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    header_id = result.replies.first.create_header.header_id
+
+    output_json({
+      status: 'success',
+      operation: 'create_header',
+      document_id: document_id,
+      header_id: header_id
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'create_header',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'CREATE_HEADER_FAILED',
+      operation: 'create_header',
+      message: "Failed to create header: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Create a footer
+  def create_footer(document_id:, section_index: nil)
+    request = { create_footer: { type: 'DEFAULT' } }
+    request[:create_footer][:section_break_location] = { index: section_index } if section_index
+
+    requests = [request]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    footer_id = result.replies.first.create_footer.footer_id
+
+    output_json({
+      status: 'success',
+      operation: 'create_footer',
+      document_id: document_id,
+      footer_id: footer_id
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'create_footer',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'CREATE_FOOTER_FAILED',
+      operation: 'create_footer',
+      message: "Failed to create footer: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Insert text into header or footer
+  def insert_header_footer_text(document_id:, segment_id:, text:, index: 0)
+    requests = [
+      {
+        insert_text: {
+          location: {
+            segment_id: segment_id,
+            index: index
+          },
+          text: text
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'insert_header_footer_text',
+      document_id: document_id,
+      segment_id: segment_id,
+      text_length: text.length
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'insert_header_footer_text',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'INSERT_HEADER_FOOTER_TEXT_FAILED',
+      operation: 'insert_header_footer_text',
+      message: "Failed to insert header/footer text: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Create a named range (bookmark)
+  def create_named_range(document_id:, name:, start_index:, end_index:)
+    requests = [
+      {
+        create_named_range: {
+          name: name,
+          range: {
+            start_index: start_index,
+            end_index: end_index
+          }
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    named_range_id = result.replies.first.create_named_range.named_range_id
+
+    output_json({
+      status: 'success',
+      operation: 'create_named_range',
+      document_id: document_id,
+      name: name,
+      named_range_id: named_range_id,
+      range: { start: start_index, end: end_index }
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'create_named_range',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'CREATE_NAMED_RANGE_FAILED',
+      operation: 'create_named_range',
+      message: "Failed to create named range: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Delete a named range
+  def delete_named_range(document_id:, name: nil, named_range_id: nil)
+    request = { delete_named_range: {} }
+    if named_range_id
+      request[:delete_named_range][:named_range_id] = named_range_id
+    elsif name
+      request[:delete_named_range][:name] = name
+    else
+      raise ArgumentError, 'Either name or named_range_id must be provided'
+    end
+
+    requests = [request]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'delete_named_range',
+      document_id: document_id,
+      name: name,
+      named_range_id: named_range_id
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'delete_named_range',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'DELETE_NAMED_RANGE_FAILED',
+      operation: 'delete_named_range',
+      message: "Failed to delete named range: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Insert section break
+  def insert_section_break(document_id:, index:, section_type: 'NEXT_PAGE')
+    # section_type: CONTINUOUS, NEXT_PAGE
+    requests = [
+      {
+        insert_section_break: {
+          location: { index: index },
+          section_type: section_type.upcase
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'insert_section_break',
+      document_id: document_id,
+      inserted_at: index,
+      section_type: section_type
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'insert_section_break',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'INSERT_SECTION_BREAK_FAILED',
+      operation: 'insert_section_break',
+      message: "Failed to insert section break: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
+  # Update document style (margins, page size)
+  def update_document_style(document_id:, margin_top: nil, margin_bottom: nil,
+                            margin_left: nil, margin_right: nil,
+                            page_width: nil, page_height: nil)
+    document_style = {}
+    fields = []
+
+    if margin_top
+      document_style[:margin_top] = { magnitude: margin_top, unit: 'PT' }
+      fields << 'marginTop'
+    end
+    if margin_bottom
+      document_style[:margin_bottom] = { magnitude: margin_bottom, unit: 'PT' }
+      fields << 'marginBottom'
+    end
+    if margin_left
+      document_style[:margin_left] = { magnitude: margin_left, unit: 'PT' }
+      fields << 'marginLeft'
+    end
+    if margin_right
+      document_style[:margin_right] = { magnitude: margin_right, unit: 'PT' }
+      fields << 'marginRight'
+    end
+    if page_width
+      document_style[:page_size] ||= {}
+      document_style[:page_size][:width] = { magnitude: page_width, unit: 'PT' }
+      fields << 'pageSize'
+    end
+    if page_height
+      document_style[:page_size] ||= {}
+      document_style[:page_size][:height] = { magnitude: page_height, unit: 'PT' }
+      fields << 'pageSize' unless fields.include?('pageSize')
+    end
+
+    requests = [
+      {
+        update_document_style: {
+          document_style: document_style,
+          fields: fields.uniq.join(',')
+        }
+      }
+    ]
+
+    result = @docs_service.batch_update_document(
+      document_id,
+      Google::Apis::DocsV1::BatchUpdateDocumentRequest.new(requests: requests)
+    )
+
+    output_json({
+      status: 'success',
+      operation: 'update_document_style',
+      document_id: document_id,
+      styling: document_style.transform_keys(&:to_s)
+    })
+  rescue Google::Apis::Error => e
+    output_json({
+      status: 'error',
+      error_code: 'API_ERROR',
+      operation: 'update_document_style',
+      message: "Google Docs API error: #{e.message}"
+    })
+    exit EXIT_API_ERROR
+  rescue StandardError => e
+    output_json({
+      status: 'error',
+      error_code: 'UPDATE_DOCUMENT_STYLE_FAILED',
+      operation: 'update_document_style',
+      message: "Failed to update document style: #{e.message}"
+    })
+    exit EXIT_OPERATION_FAILED
+  end
+
   # Insert page break
   def insert_page_break(document_id:, index:)
     requests = [
@@ -866,13 +1803,28 @@ class DocsManager
       )
     end
 
+    # Insert tables (in reverse order to preserve indices)
+    # Adjust table indices by the offset as well
+    tables = parsed[:tables] || []
+    tables.reverse.each do |table_info|
+      adjusted_index = table_info[:insert_index] + offset
+      insert_table_internal(
+        document_id: document_id,
+        rows: table_info[:num_rows],
+        cols: table_info[:num_cols],
+        index: adjusted_index,
+        data: table_info[:rows]
+      )
+    end
+
     output_json({
       status: 'success',
       operation: 'insert_from_markdown',
       document_id: document_id,
       inserted_at: index,
       text_length: plain_text.length,
-      formats_applied: parsed[:formats].length
+      formats_applied: parsed[:formats].length,
+      tables_inserted: tables.length
     })
   rescue Google::Apis::Error => e
     output_json({
@@ -893,6 +1845,67 @@ class DocsManager
   end
 
   private
+
+  # Parse color string to RGB hash
+  # Accepts: hex (#RRGGBB or #RGB), rgb(r,g,b), or named colors
+  def parse_color(color_string)
+    return color_string if color_string.is_a?(Hash)
+
+    color = color_string.to_s.strip.downcase
+
+    # Named colors
+    named_colors = {
+      'black' => { red: 0, green: 0, blue: 0 },
+      'white' => { red: 1, green: 1, blue: 1 },
+      'red' => { red: 1, green: 0, blue: 0 },
+      'green' => { red: 0, green: 1, blue: 0 },
+      'blue' => { red: 0, green: 0, blue: 1 },
+      'yellow' => { red: 1, green: 1, blue: 0 },
+      'cyan' => { red: 0, green: 1, blue: 1 },
+      'magenta' => { red: 1, green: 0, blue: 1 },
+      'gray' => { red: 0.5, green: 0.5, blue: 0.5 },
+      'grey' => { red: 0.5, green: 0.5, blue: 0.5 },
+      'orange' => { red: 1, green: 0.647, blue: 0 },
+      'purple' => { red: 0.5, green: 0, blue: 0.5 },
+      'pink' => { red: 1, green: 0.753, blue: 0.796 }
+    }
+
+    return named_colors[color] if named_colors[color]
+
+    # Hex color (#RRGGBB or #RGB)
+    if color.start_with?('#')
+      hex = color[1..]
+      if hex.length == 3
+        r = hex[0] * 2
+        g = hex[1] * 2
+        b = hex[2] * 2
+      else
+        r = hex[0..1]
+        g = hex[2..3]
+        b = hex[4..5]
+      end
+      return {
+        red: r.to_i(16) / 255.0,
+        green: g.to_i(16) / 255.0,
+        blue: b.to_i(16) / 255.0
+      }
+    end
+
+    # rgb(r, g, b) format
+    if color.start_with?('rgb(')
+      match = color.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/)
+      if match
+        return {
+          red: match[1].to_i / 255.0,
+          green: match[2].to_i / 255.0,
+          blue: match[3].to_i / 255.0
+        }
+      end
+    end
+
+    # Default to black if parsing fails
+    { red: 0, green: 0, blue: 0 }
+  end
 
   # Parse markdown and return plain text with formatting info
   def parse_markdown(markdown)
@@ -1113,12 +2126,15 @@ class DocsManager
         update_text_style: {
           range: { start_index: fmt[:start], end_index: fmt[:end] },
           text_style: {
-            font_family: 'Courier New',
+            weighted_font_family: {
+              font_family: 'Courier New',
+              weight: 400
+            },
             background_color: {
               color: { rgb_color: { red: 0.95, green: 0.95, blue: 0.95 } }
             }
           },
-          fields: 'fontFamily,backgroundColor'
+          fields: 'weightedFontFamily,backgroundColor'
         }
       }
     end
@@ -1187,6 +2203,24 @@ def usage
       insert-from-markdown     Insert formatted markdown into existing doc (JSON via stdin)
       delete                   Delete content range (JSON via stdin)
       insert-image             Insert inline image from URL (JSON via stdin)
+      style-text               Advanced text styling (colors, fonts, links) (JSON via stdin)
+      insert-link              Insert hyperlink on text range (JSON via stdin)
+      create-list              Create bullet or numbered list (JSON via stdin)
+      delete-list              Remove list formatting from paragraphs (JSON via stdin)
+      style-paragraph          Style paragraphs (alignment, spacing, headings) (JSON via stdin)
+      insert-table-row         Add row to existing table (JSON via stdin)
+      insert-table-column      Add column to existing table (JSON via stdin)
+      delete-table-row         Remove row from table (JSON via stdin)
+      delete-table-column      Remove column from table (JSON via stdin)
+      merge-table-cells        Merge range of table cells (JSON via stdin)
+      unmerge-table-cells      Unmerge previously merged cells (JSON via stdin)
+      create-header            Create document header (JSON via stdin)
+      create-footer            Create document footer (JSON via stdin)
+      insert-header-footer-text Insert text into header/footer (JSON via stdin)
+      create-named-range       Create bookmark/named range (JSON via stdin)
+      delete-named-range       Delete named range (JSON via stdin)
+      insert-section-break     Insert section break (JSON via stdin)
+      update-document-style    Update document margins/page size (JSON via stdin)
 
     JSON Input Formats:
 
@@ -1238,6 +2272,132 @@ def usage
           "document_id": "abc123",
           "start_index": 1,
           "end_index": 10
+        }
+
+      Style Text (advanced formatting):
+        {
+          "document_id": "abc123",
+          "start_index": 1,
+          "end_index": 10,
+          "foreground_color": "#FF0000",   # Optional: hex, rgb(), or name
+          "background_color": "#FFFF00",   # Optional
+          "font_family": "Arial",          # Optional
+          "font_size": 14,                 # Optional: points
+          "strikethrough": true,           # Optional
+          "link_url": "https://...",       # Optional
+          "superscript": false,            # Optional
+          "subscript": false               # Optional
+        }
+
+      Insert Link:
+        {
+          "document_id": "abc123",
+          "start_index": 1,
+          "end_index": 10,
+          "url": "https://example.com"
+        }
+
+      Create List:
+        {
+          "document_id": "abc123",
+          "start_index": 1,
+          "end_index": 50,
+          "list_type": "BULLET"            # BULLET or NUMBERED
+        }
+
+      Delete List:
+        {
+          "document_id": "abc123",
+          "start_index": 1,
+          "end_index": 50
+        }
+
+      Style Paragraph:
+        {
+          "document_id": "abc123",
+          "start_index": 1,
+          "end_index": 50,
+          "alignment": "CENTER",           # Optional: START, CENTER, END, JUSTIFIED
+          "heading": "HEADING_1",          # Optional: NORMAL, HEADING_1-6, TITLE, SUBTITLE
+          "indent_start": 36,              # Optional: points
+          "indent_end": 0,                 # Optional: points
+          "indent_first_line": 18,         # Optional: points
+          "space_above": 12,               # Optional: points
+          "space_below": 12,               # Optional: points
+          "line_spacing": 1.5              # Optional: multiplier
+        }
+
+      Insert/Delete Table Row/Column:
+        {
+          "document_id": "abc123",
+          "table_start_index": 5,          # Index where table starts
+          "row_index": 0,                  # For row operations
+          "column_index": 0,               # For column operations
+          "insert_below": true             # For insert-table-row only
+        }
+
+      Merge Table Cells:
+        {
+          "document_id": "abc123",
+          "table_start_index": 5,
+          "row_index": 0,
+          "column_index": 0,
+          "row_span": 2,
+          "column_span": 2
+        }
+
+      Unmerge Table Cells:
+        {
+          "document_id": "abc123",
+          "table_start_index": 5,
+          "row_index": 0,
+          "column_index": 0
+        }
+
+      Create Header/Footer:
+        {
+          "document_id": "abc123",
+          "type": "DEFAULT"                # Optional: DEFAULT or FIRST_PAGE
+        }
+
+      Insert Header/Footer Text:
+        {
+          "document_id": "abc123",
+          "segment_id": "kix.abc123",      # Header/footer segment ID
+          "text": "Header text",
+          "index": 0                       # Optional, default 0
+        }
+
+      Create Named Range:
+        {
+          "document_id": "abc123",
+          "name": "bookmark1",
+          "start_index": 1,
+          "end_index": 10
+        }
+
+      Delete Named Range:
+        {
+          "document_id": "abc123",
+          "name": "bookmark1"              # Or use named_range_id
+        }
+
+      Insert Section Break:
+        {
+          "document_id": "abc123",
+          "index": 50,
+          "section_type": "NEXT_PAGE"      # Optional: NEXT_PAGE or CONTINUOUS
+        }
+
+      Update Document Style:
+        {
+          "document_id": "abc123",
+          "margin_top": 72,                # Optional: points (72 = 1 inch)
+          "margin_bottom": 72,             # Optional
+          "margin_left": 72,               # Optional
+          "margin_right": 72,              # Optional
+          "page_width": 612,               # Optional: points (612 = 8.5 inches)
+          "page_height": 792               # Optional: points (792 = 11 inches)
         }
 
     Examples:
@@ -1532,12 +2692,381 @@ if __FILE__ == $PROGRAM_NAME
       data: input[:data]
     )
 
+  when 'style-text'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:start_index] && input[:end_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, start_index, end_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.style_text(
+      document_id: input[:document_id],
+      start_index: input[:start_index],
+      end_index: input[:end_index],
+      bold: input[:bold],
+      italic: input[:italic],
+      underline: input[:underline],
+      strikethrough: input[:strikethrough],
+      small_caps: input[:small_caps],
+      font_family: input[:font_family],
+      font_size: input[:font_size],
+      foreground_color: input[:foreground_color],
+      background_color: input[:background_color],
+      link_url: input[:link_url],
+      baseline_offset: input[:baseline_offset]
+    )
+
+  when 'insert-link'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:start_index] && input[:end_index] && input[:url]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, start_index, end_index, url'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.insert_link(
+      document_id: input[:document_id],
+      start_index: input[:start_index],
+      end_index: input[:end_index],
+      url: input[:url]
+    )
+
+  when 'create-list'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:start_index] && input[:end_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, start_index, end_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.create_list(
+      document_id: input[:document_id],
+      start_index: input[:start_index],
+      end_index: input[:end_index],
+      list_type: input[:list_type] || 'BULLET'
+    )
+
+  when 'delete-list'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:start_index] && input[:end_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, start_index, end_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.delete_list(
+      document_id: input[:document_id],
+      start_index: input[:start_index],
+      end_index: input[:end_index]
+    )
+
+  when 'style-paragraph'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:start_index] && input[:end_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, start_index, end_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.style_paragraph(
+      document_id: input[:document_id],
+      start_index: input[:start_index],
+      end_index: input[:end_index],
+      alignment: input[:alignment],
+      indent_first_line: input[:indent_first_line],
+      indent_start: input[:indent_start],
+      indent_end: input[:indent_end],
+      space_above: input[:space_above],
+      space_below: input[:space_below],
+      line_spacing: input[:line_spacing],
+      heading_style: input[:heading_style]
+    )
+
+  when 'insert-table-row'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:table_start_index] && input[:row_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, table_start_index, row_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.insert_table_row(
+      document_id: input[:document_id],
+      table_start_index: input[:table_start_index],
+      row_index: input[:row_index],
+      insert_below: input[:insert_below].nil? ? true : input[:insert_below]
+    )
+
+  when 'insert-table-column'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:table_start_index] && input[:column_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, table_start_index, column_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.insert_table_column(
+      document_id: input[:document_id],
+      table_start_index: input[:table_start_index],
+      column_index: input[:column_index],
+      insert_right: input[:insert_right].nil? ? true : input[:insert_right]
+    )
+
+  when 'delete-table-row'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:table_start_index] && input[:row_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, table_start_index, row_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.delete_table_row(
+      document_id: input[:document_id],
+      table_start_index: input[:table_start_index],
+      row_index: input[:row_index]
+    )
+
+  when 'delete-table-column'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:table_start_index] && input[:column_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, table_start_index, column_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.delete_table_column(
+      document_id: input[:document_id],
+      table_start_index: input[:table_start_index],
+      column_index: input[:column_index]
+    )
+
+  when 'merge-table-cells'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:table_start_index] &&
+           input[:row_start] && input[:row_end] &&
+           input[:column_start] && input[:column_end]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, table_start_index, row_start, row_end, column_start, column_end'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.merge_table_cells(
+      document_id: input[:document_id],
+      table_start_index: input[:table_start_index],
+      row_start: input[:row_start],
+      row_end: input[:row_end],
+      column_start: input[:column_start],
+      column_end: input[:column_end]
+    )
+
+  when 'unmerge-table-cells'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:table_start_index] &&
+           input[:row_start] && input[:row_end] &&
+           input[:column_start] && input[:column_end]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, table_start_index, row_start, row_end, column_start, column_end'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.unmerge_table_cells(
+      document_id: input[:document_id],
+      table_start_index: input[:table_start_index],
+      row_start: input[:row_start],
+      row_end: input[:row_end],
+      column_start: input[:column_start],
+      column_end: input[:column_end]
+    )
+
+  when 'create-header'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required field: document_id'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.create_header(
+      document_id: input[:document_id],
+      section_index: input[:section_index]
+    )
+
+  when 'create-footer'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required field: document_id'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.create_footer(
+      document_id: input[:document_id],
+      section_index: input[:section_index]
+    )
+
+  when 'insert-header-footer-text'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:segment_id] && input[:text]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, segment_id, text'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.insert_header_footer_text(
+      document_id: input[:document_id],
+      segment_id: input[:segment_id],
+      text: input[:text],
+      index: input[:index] || 0
+    )
+
+  when 'create-named-range'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:name] && input[:start_index] && input[:end_index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, name, start_index, end_index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.create_named_range(
+      document_id: input[:document_id],
+      name: input[:name],
+      start_index: input[:start_index],
+      end_index: input[:end_index]
+    )
+
+  when 'delete-named-range'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && (input[:name] || input[:named_range_id])
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, and either name or named_range_id'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.delete_named_range(
+      document_id: input[:document_id],
+      name: input[:name],
+      named_range_id: input[:named_range_id]
+    )
+
+  when 'insert-section-break'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id] && input[:index]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required fields: document_id, index'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.insert_section_break(
+      document_id: input[:document_id],
+      index: input[:index],
+      section_type: input[:section_type] || 'NEXT_PAGE'
+    )
+
+  when 'update-document-style'
+    input = JSON.parse(STDIN.read, symbolize_names: true)
+
+    unless input[:document_id]
+      puts JSON.pretty_generate({
+        status: 'error',
+        error_code: 'MISSING_REQUIRED_FIELDS',
+        message: 'Required field: document_id'
+      })
+      exit DocsManager::EXIT_INVALID_ARGS
+    end
+
+    manager.update_document_style(
+      document_id: input[:document_id],
+      margin_top: input[:margin_top],
+      margin_bottom: input[:margin_bottom],
+      margin_left: input[:margin_left],
+      margin_right: input[:margin_right],
+      page_width: input[:page_width],
+      page_height: input[:page_height]
+    )
+
   else
     puts JSON.pretty_generate({
       status: 'error',
       error_code: 'INVALID_COMMAND',
       message: "Unknown command: #{command}",
-      valid_commands: ['auth', 'read', 'structure', 'insert', 'append', 'replace', 'format', 'page-break', 'create', 'create-from-markdown', 'insert-from-markdown', 'delete', 'insert-image']
+      valid_commands: [
+        'auth', 'read', 'structure', 'insert', 'append', 'replace', 'format', 'page-break',
+        'create', 'create-from-markdown', 'insert-from-markdown', 'delete', 'insert-image',
+        'style-text', 'insert-link', 'create-list', 'delete-list', 'style-paragraph',
+        'insert-table-row', 'insert-table-column', 'delete-table-row', 'delete-table-column',
+        'merge-table-cells', 'unmerge-table-cells',
+        'create-header', 'create-footer', 'insert-header-footer-text',
+        'create-named-range', 'delete-named-range', 'insert-section-break', 'update-document-style'
+      ]
     })
     usage
     exit DocsManager::EXIT_INVALID_ARGS

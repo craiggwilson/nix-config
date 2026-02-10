@@ -165,6 +165,7 @@
             "sudo*" = "deny";
             "tail*" = "allow";
             "xargs*" = "allow";
+            "*/skills/*/bin/*" = "allow";
           };
           edit = "allow";
           external_directory = "ask";
