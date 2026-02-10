@@ -44,6 +44,11 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    opencode = {
+      url = "github:anomalyco/opencode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     opnix = {
       url = "github:craiggwilson/opnix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -176,6 +181,7 @@
           {
             "users:craig:personal" = [
               #"audio:midi"
+              "ai:llm"
               "audio:production"
               "filesystem:nfs"
               "flatpaks"
@@ -215,6 +221,7 @@
 
           # Feature tags
           "ai:agent"
+          "ai:llm"
           "audio"
           "audio:midi"
           "audio:production"

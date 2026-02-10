@@ -6,9 +6,11 @@
 
     homeManager =
       {
+        inputs,
         config,
         lib,
         pkgs,
+        hasTag,
         ...
       }:
       let
@@ -121,6 +123,18 @@
 
         providers =
           { }
+          // (lib.optionalAttrs (config.hdwlinux.services ? llama-cpp) {
+            "llama.cpp" = {
+              npm = "@ai-sdk/openai-compatible";
+              name = "LLaMA C++ (local)";
+              options = {
+                baseURL = "http://${config.hdwlinux.services.llama-cpp.host}:${lib.toString config.hdwlinux.services.llama-cpp.port}/v1";
+              };
+              models = lib.mapAttrs (
+                _: v: { name = v.name; } // (v.settings.opencode or { })
+              ) config.hdwlinux.ai.llm.models;
+            };
+          })
           // (lib.optionalAttrs (config.hdwlinux.services ? augment-openai-proxy) {
             augment = {
               npm = "@ai-sdk/openai-compatible";
@@ -130,35 +144,35 @@
               };
               models = {
                 "claude-opus-4.6" = {
-                  name = "Claude Opus 4.6 (Augment)";
+                  name = "Claude Opus 4.6";
                   limit = {
                     context = 200000;
                     output = 32000;
                   };
                 };
                 "claude-opus-4.5" = {
-                  name = "Claude Opus 4.5 (Augment)";
+                  name = "Claude Opus 4.5";
                   limit = {
                     context = 200000;
                     output = 32000;
                   };
                 };
                 "claude-sonnet-4.5" = {
-                  name = "Claude Sonnet 4.5 (Augment)";
+                  name = "Claude Sonnet 4.5";
                   limit = {
                     context = 200000;
                     output = 16000;
                   };
                 };
                 "claude-sonnet-4" = {
-                  name = "Claude Sonnet 4 (Augment)";
+                  name = "Claude Sonnet 4";
                   limit = {
                     context = 200000;
                     output = 16000;
                   };
                 };
                 "claude-haiku-4.5" = {
-                  name = "Claude Haiku 4.5 (Augment)";
+                  name = "Claude Haiku 4.5";
                   limit = {
                     context = 200000;
                     output = 8000;
@@ -178,11 +192,12 @@
           keybinds = {
             "app_exit" = "ctrl+q";
           };
-        };
+        }
+        // lib.optionalAttrs (hasTag "ai:llm") { provider = providers; };
 
       in
       {
-        home.packages = [ pkgs.opencode ];
+        home.packages = [ inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode ];
 
         home.file = {
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;

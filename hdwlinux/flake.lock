@@ -416,6 +416,26 @@
         "type": "github"
       }
     },
+    "opencode": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1770835674,
+        "narHash": "sha256-Z7aLQQJzC7rBJG+Q2G6WHgvazUXHfnRBupxTT1nmtrI=",
+        "owner": "anomalyco",
+        "repo": "opencode",
+        "rev": "e3471526f4c71b2c4ee00117e125e179da01e6e2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anomalyco",
+        "repo": "opencode",
+        "type": "github"
+      }
+    },
     "opnix": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -454,6 +474,7 @@
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-stable": "nixpkgs-stable",
         "nur": "nur",
+        "opencode": "opencode",
         "opnix": "opnix",
         "rust-overlay": "rust-overlay",
         "spicetify-nix": "spicetify-nix",
