@@ -141,10 +141,10 @@
         "import-tree": "import-tree"
       },
       "locked": {
-        "lastModified": 1770418160,
-        "narHash": "sha256-fACJzMqt8rgYmKulylkcLlYTbPwDmUmAfH9wCkZi8Gw=",
-        "rev": "084c0b6c7b86627288c81977948d45eb18bfd38d",
-        "revCount": 89,
+        "lastModified": 1770920997,
+        "narHash": "sha256-QMkpNIyI0l0a3Ddx2AFGxR3FFdzMUCFLV9wQzkKQTBc=",
+        "rev": "a76892f29281720f4cb22b9db847b087d594d9da",
+        "revCount": 90,
         "type": "git",
         "url": "file:///home/craig/Projects/github.com/craiggwilson/nix-private"
       },
