@@ -119,9 +119,59 @@
           )}
         '';
 
+        providers =
+          { }
+          // (lib.optionalAttrs (config.hdwlinux.services ? augment-openai-proxy) {
+            augment = {
+              npm = "@ai-sdk/openai-compatible";
+              name = "Augment Code";
+              options = {
+                baseURL = "http://localhost:${lib.toString config.hdwlinux.services.augment-openai-proxy.port}/v1";
+              };
+              models = {
+                "claude-opus-4.6" = {
+                  name = "Claude Opus 4.6 (Augment)";
+                  limit = {
+                    context = 200000;
+                    output = 32000;
+                  };
+                };
+                "claude-opus-4.5" = {
+                  name = "Claude Opus 4.5 (Augment)";
+                  limit = {
+                    context = 200000;
+                    output = 32000;
+                  };
+                };
+                "claude-sonnet-4.5" = {
+                  name = "Claude Sonnet 4.5 (Augment)";
+                  limit = {
+                    context = 200000;
+                    output = 16000;
+                  };
+                };
+                "claude-sonnet-4" = {
+                  name = "Claude Sonnet 4 (Augment)";
+                  limit = {
+                    context = 200000;
+                    output = 16000;
+                  };
+                };
+                "claude-haiku-4.5" = {
+                  name = "Claude Haiku 4.5 (Augment)";
+                  limit = {
+                    context = 200000;
+                    output = 8000;
+                  };
+                };
+              };
+            };
+          });
+
         # OpenCode configuration
         opencodeConfig = {
           "$schema" = "https://opencode.ai/config.json";
+          provider = providers;
           mcp = mcpConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;

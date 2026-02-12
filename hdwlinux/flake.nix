@@ -90,6 +90,7 @@
         packages = [
           ./packages/atlas-cli.nix
           ./packages/auggie.nix
+          ./packages/augment-openai-proxy.nix
           ./packages/code42-aat.nix
           ./packages/context7-mcp.nix
           ./packages/engflow_auth.nix
