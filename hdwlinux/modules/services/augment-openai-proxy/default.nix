@@ -27,7 +27,7 @@
         config.systemd.user.services.augment-openai-proxy = {
           Unit = {
             Description = "OpenAI-compatible API proxy for Augment Code backends";
-            Documentation = [ "https://github.com/hletrd/augment-opencode" ];
+            Documentation = [ "https://github.com/craiggwilson/augment-opencode" ];
           };
           Install = {
             WantedBy = [ "default.target" ];
