@@ -1,5 +1,5 @@
 # Default paths
-HM_TOKEN_PATH="$HOME/.config/opnix/token"
+HM_TOKEN_PATH="${XDG_CONFIG_HOME}/opnix/token"
 NIXOS_TOKEN_PATH="/etc/opnix-token"
 
 scope="home-manager"

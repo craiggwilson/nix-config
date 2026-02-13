@@ -178,7 +178,7 @@
 
           outputDir = lib.mkOption {
             type = lib.types.str;
-            default = "${config.home.homeDirectory}/.config/hdwlinux/secrets";
+            default = "${config.xdg.configHome}/hdwlinux/secrets";
             description = "Directory to store secrets.";
           };
 
@@ -346,7 +346,7 @@
               programs.onepassword-secrets = {
                 enable = true;
                 secrets = lib.mapAttrs (_: v: builtins.removeAttrs v [ "source" ]) opEntries;
-                tokenFile = "${config.home.homeDirectory}/.config/opnix/token";
+                tokenFile = "${config.xdg.configHome}/opnix/token";
               };
             })
 

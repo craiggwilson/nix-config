@@ -28,7 +28,7 @@
           '';
 
           security.secrets.entries.googleDriveApiOauth = {
-            path = "${config.home.homeDirectory}/.config/google-drive-skill/client_secret.json";
+            path = "${config.xdg.configHome}/google-drive-skill/client_secret.json";
             reference = "op://Work/google-api-oauth/client_secret.json";
             mode = "0600";
           };

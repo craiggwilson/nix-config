@@ -28,7 +28,7 @@
           '';
 
           security.secrets.entries.googleDocsApiOauth = {
-            path = "${config.home.homeDirectory}/.config/google-docs-skill/client_secret.json";
+            path = "${config.xdg.configHome}/google-docs-skill/client_secret.json";
             reference = "op://Work/google-api-oauth/client_secret.json";
             mode = "0600";
           };
