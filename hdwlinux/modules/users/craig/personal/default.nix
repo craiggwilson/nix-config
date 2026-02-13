@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.users.craig.onedrive = {
+  config.substrate.modules.users.craig.personal = {
     tags = [ "users:craig:personal" ];
 
     homeManager =
@@ -43,3 +43,4 @@
       };
   };
 }
+

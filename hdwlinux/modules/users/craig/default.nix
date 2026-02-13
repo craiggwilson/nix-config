@@ -56,7 +56,7 @@ in
       };
 
     homeManager =
-      { config, ... }:
+      { config, hasTag, ... }:
       {
         hdwlinux = {
           user = {
@@ -71,6 +71,11 @@ in
           security.secrets.entries.personalSshKey = {
             path = "${config.home.homeDirectory}/.ssh/id_rsa";
             reference = "op://Craig/SSH Key - Craig/private key";
+            mode = "0600";
+          };
+
+          security.secrets.entries.githubApiToken = lib.mkIf (hasTag "programming") {
+            reference = "op://Craig/Github/api_token";
             mode = "0600";
           };
         };
