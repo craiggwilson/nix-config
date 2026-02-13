@@ -1,0 +1,42 @@
+{
+  "name": "@opencode/augment-provider",
+  "version": "0.1.0",
+  "description": "OpenCode provider implementation using Augment AI SDK",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "opencode",
+    "augment",
+    "ai",
+    "llm",
+    "provider"
+  ],
+  "author": "Craig Wilson",
+  "license": "MIT",
+  "dependencies": {
+    "@ai-sdk/provider": "^2.0.0",
+    "@augmentcode/auggie-sdk": "^0.1.15"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
+}
+

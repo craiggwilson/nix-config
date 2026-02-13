@@ -135,33 +135,30 @@
               ) config.hdwlinux.ai.llm.models;
             };
           })
-          // (lib.optionalAttrs (config.hdwlinux.services ? augment-openai-proxy) {
+          // (lib.optionalAttrs (hasTag "users:craig:work") {
             augment = {
-              npm = "@ai-sdk/openai-compatible";
+              npm = "file://${pkgs.hdwlinux.opencode-augment}/lib/node_modules/@opencode/augment-provider";
               name = "Augment Code";
-              options = {
-                baseURL = "http://localhost:${lib.toString config.hdwlinux.services.augment-openai-proxy.port}/v1";
-              };
               models = {
-                "claude-opus-4.6" = {
+                "claude-haiku-4-5" = {
+                  name = "Claude Haiku 4.5";
+                  limit = {
+                    context = 200000;
+                    output = 8000;
+                  };
+                };
+                "claude-opus-4-6" = {
                   name = "Claude Opus 4.6";
                   limit = {
                     context = 200000;
                     output = 32000;
                   };
                 };
-                "claude-opus-4.5" = {
+                "claude-opus-4-5" = {
                   name = "Claude Opus 4.5";
                   limit = {
                     context = 200000;
                     output = 32000;
-                  };
-                };
-                "claude-sonnet-4.5" = {
-                  name = "Claude Sonnet 4.5";
-                  limit = {
-                    context = 200000;
-                    output = 16000;
                   };
                 };
                 "claude-sonnet-4" = {
@@ -171,11 +168,25 @@
                     output = 16000;
                   };
                 };
-                "claude-haiku-4.5" = {
-                  name = "Claude Haiku 4.5";
+                "claude-sonnet-4-5" = {
+                  name = "Claude Sonnet 4.5";
                   limit = {
                     context = 200000;
-                    output = 8000;
+                    output = 16000;
+                  };
+                };
+                "gpt-5-1" = {
+                  name = "GPT 5.1";
+                  limit = {
+                    context = 400000;
+                    output = 32000;
+                  };
+                };
+                "gpt-5-2" = {
+                  name = "GPT 5.2";
+                  limit = {
+                    context = 400000;
+                    output = 32000;
                   };
                 };
               };
