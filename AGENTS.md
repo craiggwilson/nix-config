@@ -20,7 +20,7 @@ jj git push        # Push to remote
 ### Related Repositories
 
 - **`nix-private`** (sibling repository): Contains private/sensitive substrateModules imported via `inputs.hdwlinux-private.substrateModules.nix-private`
-- Clone location: `~/Projects/github.com/craiggwilson/nix-private`
+- Clone location: `~/Projects/hdwlinux/nix-private`
 
 ---
 

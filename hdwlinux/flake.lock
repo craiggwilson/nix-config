@@ -146,11 +146,11 @@
         "rev": "a76892f29281720f4cb22b9db847b087d594d9da",
         "revCount": 90,
         "type": "git",
-        "url": "file:///home/craig/Projects/github.com/craiggwilson/nix-private"
+        "url": "file:///home/craig/Projects/hdwlinux/nix-private"
       },
       "original": {
         "type": "git",
-        "url": "file:///home/craig/Projects/github.com/craiggwilson/nix-private"
+        "url": "file:///home/craig/Projects/hdwlinux/nix-private"
       }
     },
     "home-manager": {

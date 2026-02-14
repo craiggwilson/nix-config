@@ -2,7 +2,7 @@
   description = "HDW Linux";
 
   inputs = {
-    hdwlinux-private.url = "git+file:///home/craig/Projects/github.com/craiggwilson/nix-private";
+    hdwlinux-private.url = "git+file:///home/craig/Projects/hdwlinux/nix-private";
 
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";

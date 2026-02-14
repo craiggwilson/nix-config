@@ -1,11 +1,11 @@
 {
   "model": "opus4.5",
   "indexingAllowDirs": [
-    "/home/craig/Projects/github.com/craiggwilson/nix-config",
-    "/home/craig/Projects/github.com/10gen/mms",
-    "/home/craig/Projects/github.com/10gen/mms-automation",
-    "/home/craig/Projects/github.com/10gen",
-    "/home/craig/Projects/github.com/xgen-cloud/gosre",
+    "/home/craig/Projects/hdwlinux/nix-config",
+    "/home/craig/Projects/hdwlinux/nix-private",
+    "/home/craig/Projects/atlas/mms",
+    "/home/craig/Projects/atlas/mms-automation",
+    "/home/craig/Projects/atlas/gosre",
     "/home/craig/Projects/planning/DataPlaneAvailability",
     "/home/craig/Projects/planning/MVCP"
   ],

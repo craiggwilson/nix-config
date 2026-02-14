@@ -20,7 +20,7 @@ in
     tags = [ "host:${hostname}" ];
 
     generic = {
-      hdwlinux.flake = "/home/craig/Projects/github.com/craiggwilson/nix-config/hdwlinux";
+      hdwlinux.flake = "/home/craig/Projects/hdwlinux/nix-config/hdwlinux";
     };
 
     nixos = {
