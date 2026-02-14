@@ -1,0 +1,15 @@
+{
+  "name": "opencode-integration-tests",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "bun test --timeout 30000",
+    "test:full-flow": "bun test integration/full-flow.test.ts --timeout 30000",
+    "test:status": "bun test integration/cross-plugin-status.test.ts --timeout 30000",
+    "test:discovered": "bun test integration/discovered-work.test.ts --timeout 30000"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}

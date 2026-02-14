@@ -3,7 +3,7 @@
  *
  * Central dispatcher for work execution.
  * Reads planning issues from storage and coordinates specialist subagents.
-  */
+ */
 
 import { ConfigManager, IssueStorage } from "opencode-planner-core";
 import type {
@@ -17,6 +17,12 @@ import type {
   WorkExecutorConfig,
   SubagentSelection,
 } from "./types.js";
+import {
+  ResearchPipeline,
+  POCPipeline,
+  ImplementationPipeline,
+  ReviewPipeline,
+} from "./pipelines/index.js";
 
 const DEFAULT_CONFIG: WorkExecutorConfig = {
   riskPosture: "medium",
@@ -203,87 +209,29 @@ export class WorkExecutorOrchestrator {
    * Execute a research task
    */
   async executeResearch(issueId: string): Promise<ResearchResult> {
-    const issue = await this.storage.getIssue(issueId);
-    if (!issue) {
-      throw new Error(`Issue ${issueId} not found`);
-    }
-
-    // TODO: Parse research question from issue description
-    // TODO: Spawn domain experts to investigate
-    // TODO: Produce research report
-    // TODO: Create follow-up implementation tasks if needed
-    // TODO: Update beads issue with findings
-
-    return {
-      issueId,
-      question: "",
-      summary: "",
-      options: [],
-      recommendation: "",
-      reasoning: "",
-    };
+    const pipeline = new ResearchPipeline(this.storage);
+    return pipeline.execute(issueId);
   }
 
   /**
    * Execute a POC task
    */
   async executePOC(issueId: string): Promise<POCResult> {
-    const issue = await this.storage.getIssue(issueId);
-    if (!issue) {
-      throw new Error(`Issue ${issueId} not found`);
-    }
-
-    // TODO: Parse hypothesis from issue description
-    // TODO: Spawn appropriate experts for minimal design
-    // TODO: Implement POC with focus on speed
-    // TODO: Validate hypothesis
-    // TODO: Produce "Keep/Refine/Discard" recommendation
-    // TODO: File discovered work issues
-    // TODO: Update beads issue with outcome
-
-    return {
-      issueId,
-      hypothesis: "",
-      outcome: "discard",
-      findings: "",
-      recommendation: "",
-      discoveredWork: [],
-    };
+    const pipeline = new POCPipeline(this.storage);
+    return pipeline.execute(issueId);
   }
 
   /**
    * Execute an implementation task
    */
   async executeImplementation(issueId: string): Promise<ImplementationResult> {
-    const issue = await this.storage.getIssue(issueId);
-    if (!issue) {
-      throw new Error(`Issue ${issueId} not found`);
-    }
-
-    // TODO: Analyze requirements and existing code
-    // TODO: Design step (spawn experts as needed)
-    // TODO: Implementation step (spawn language expert)
-    // TODO: Testing step (run tests)
-    // TODO: Code review step (spawn code-reviewer-agent)
-    // TODO: Security review step (spawn security-reviewer-agent)
-    // TODO: File discovered work issues
-    // TODO: Update beads issue with status
-
-    return {
-      issueId,
-      status: "completed",
-      changes: {
-        filesModified: 0,
-        linesAdded: 0,
-        linesRemoved: 0,
-      },
-      testsRun: 0,
-      testsPassed: 0,
-      testsFailed: 0,
-      codeReviewFindings: [],
-      securityReviewFindings: [],
-      discoveredWork: [],
-    };
+    const pipeline = new ImplementationPipeline(this.storage, {
+      alwaysRunSecurityReview: this.config.alwaysRunSecurityReview,
+      maxFilesPerCommit: this.config.autonomousEditLimits.maxFilesPerCommit,
+      requiresApprovalForPublicAPIs: this.config.autonomousEditLimits.requiresApprovalForPublicAPIs,
+      requiresApprovalForDependencyChanges: this.config.autonomousEditLimits.requiresApprovalForDependencyChanges,
+    });
+    return pipeline.execute(issueId);
   }
 
   /**
@@ -293,24 +241,8 @@ export class WorkExecutorOrchestrator {
     issueId: string;
     mode: ReviewMode;
   }): Promise<ReviewResult> {
-    const issue = await this.storage.getIssue(input.issueId);
-    if (!issue) {
-      throw new Error(`Issue ${input.issueId} not found`);
-    }
-
-    // TODO: Fetch target code/PR
-    // TODO: Spawn appropriate reviewer subagent(s)
-    // TODO: Produce review findings
-    // TODO: Create follow-up issues for findings
-    // TODO: Attach review to beads issue
-
-    return {
-      issueId: input.issueId,
-      mode: input.mode,
-      findings: [],
-      summary: "",
-      followUpIssues: [],
-    };
+    const pipeline = new ReviewPipeline(this.storage);
+    return pipeline.execute(input.issueId, input.mode);
   }
 
   /**

@@ -11,6 +11,8 @@ export { IssueStorage } from "./beads.js";
 export type { IssueQuery, DependencyNode, IssueRecord } from "./beads.js";
 export type { IssueStorageBackend } from "./storage-backend.js";
 
+export { BeadsIssueStorageBackend, createBeadsBackend } from "./backends/index.js";
+
 export { PlanningPlugin, createOpenCodePlugin } from "./plugin.js";
 export type { PluginContext, CommandDefinition, ToolDefinition } from "./plugin.js";
 
@@ -34,3 +36,6 @@ export {
   getRequiredSkillsForAgent,
 } from "./skills.js";
 export type { Skill } from "./skills.js";
+
+export { SubagentDispatcher } from "./orchestration/index.js";
+export type { SubagentTask, SubagentResult } from "./orchestration/index.js";
