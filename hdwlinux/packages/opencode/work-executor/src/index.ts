@@ -5,13 +5,10 @@
  */
 
 import type { Plugin } from "@opencode-ai/plugin";
-import { WorkExecutorOrchestrator } from "./orchestrator.js";
-import { ConfigManager, IssueStorage } from "opencode-planner-core";
+import { getRegistry } from "../../core/src/plugin-registry.js";
 
 export const WorkExecutorPlugin: Plugin = async (ctx) => {
-  const storage = new IssueStorage();
-  const configManager = new ConfigManager();
-  const orchestrator = new WorkExecutorOrchestrator(storage, configManager);
+  const { workExecutor: orchestrator } = getRegistry();
 
   await orchestrator.initialize();
 
@@ -66,5 +63,5 @@ export const WorkExecutorPlugin: Plugin = async (ctx) => {
   };
 };
 
-export { WorkExecutorOrchestrator };
+export { WorkExecutorOrchestrator } from "./orchestrator.js";
 export * from "./types.js";

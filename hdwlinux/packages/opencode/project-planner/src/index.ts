@@ -5,13 +5,10 @@
  */
 
 import type { Plugin } from "@opencode-ai/plugin";
-import { ProjectPlannerOrchestrator } from "./orchestrator.js";
-import { ConfigManager, IssueStorage } from "opencode-planner-core";
+import { getRegistry } from "../../core/src/plugin-registry.js";
 
 export const ProjectPlannerPlugin: Plugin = async (ctx) => {
-  const storage = new IssueStorage();
-  const configManager = new ConfigManager();
-  const orchestrator = new ProjectPlannerOrchestrator(storage, configManager);
+  const { projectPlanner: orchestrator } = getRegistry();
 
   await orchestrator.initialize();
 
@@ -66,5 +63,5 @@ export const ProjectPlannerPlugin: Plugin = async (ctx) => {
   };
 };
 
-export { ProjectPlannerOrchestrator };
+export { ProjectPlannerOrchestrator } from "./orchestrator.js";
 export * from "./types.js";

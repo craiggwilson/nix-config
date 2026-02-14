@@ -13,4 +13,6 @@ export { AGENTS, getAgent, getAgentsByCategory, getAgentsByCapability, getAllAge
 export type { Agent } from "./agents.js";
 export { SKILLS, getSkill, getSkillsByCategory, getSkillsByOperation, getAllSkillNames, skillExists, getRequiredSkillsForAgent, } from "./skills.js";
 export type { Skill } from "./skills.js";
+export { createRegistry, getRegistry, resetRegistry } from "./plugin-registry.js";
+export type { PluginRegistry, PluginRegistryOptions } from "./plugin-registry.js";
 //# sourceMappingURL=index.d.ts.map

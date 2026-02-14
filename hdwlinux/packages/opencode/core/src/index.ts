@@ -39,3 +39,6 @@ export type { Skill } from "./skills.js";
 
 export { SubagentDispatcher } from "./orchestration/index.js";
 export type { SubagentTask, SubagentResult } from "./orchestration/index.js";
+
+export { createRegistry, getRegistry, resetRegistry } from "./plugin-registry.js";
+export type { PluginRegistry, PluginRegistryOptions } from "./plugin-registry.js";

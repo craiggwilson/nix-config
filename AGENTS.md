@@ -296,13 +296,22 @@ Key goals:
    - **SubagentDispatcher integration**: uses dispatcher in `executeWork` for agent selection; passes dispatcher to all pipeline constructors
    - Tests in `work-executor/tests/orchestrator.test.ts` (original + 3 new dispatcher tests)
 
+10. **Plugin Registry & Initialization Wiring** (`core/src/plugin-registry.ts`)
+    - `createRegistry()` — builds shared `IssueStorage`, `ConfigManager`, `SubagentDispatcher`, and all three orchestrators
+    - Wires delegate chain: program-planner → project-planner → work-executor
+    - `getRegistry()` / `resetRegistry()` — singleton access for plugins sharing one process
+    - Accepts optional `IssueStorageBackend`, config dir, and custom dispatcher
+    - All three plugin `index.ts` files updated to use `getRegistry()` instead of creating independent instances
+    - **10 tests** in `core/tests/plugin-registry.test.ts` (shared storage, singleton, delegate wiring, full chain, isolation)
+
 ### Test Summary
 
-**123 tests pass** across 11 test files:
+**133 tests pass** across 12 test files:
 - `core/tests/beads.test.ts` - IssueStorage + backend delegation (15 tests)
 - `core/tests/beads-backend.test.ts` - BeadsIssueStorageBackend (22 tests)
 - `core/tests/config.test.ts` - ConfigManager
 - `core/tests/subagent-dispatcher.test.ts` - SubagentDispatcher (17 tests)
+- `core/tests/plugin-registry.test.ts` - PluginRegistry wiring (10 tests)
 - `work-executor/tests/orchestrator.test.ts` - WorkExecutorOrchestrator + dispatcher (original + 3 new)
 - `work-executor/tests/pipelines.test.ts` - Execution pipelines + dispatcher (32 tests)
 - `program-planner/tests/program-orchestrator.test.ts` - ProgramPlannerOrchestrator + dispatcher/delegation (original + 5 new)
@@ -312,16 +321,6 @@ Key goals:
 - `tests/integration/discovered-work.test.ts` - Discovered work
 
 Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun test --timeout 30000"`
-
-### Current jj History
-
-```
-vrmopqrl  opencode: wire backend delegation, subagent dispatch, pipeline enrichment, and cross-plugin delegation
-wzyowskw  opencode: add storage backend, subagent orchestration, execution pipelines, and integration tests
-ttqowson  opencode: sync dist files and work-executor tests
-yxtlnxxs  opencode: introduce IssueStorage abstraction and decouple beads
-puqzkupx  opencode-plugins: code review, agents/skills, and nix packaging
-```
 
 ---
 
@@ -342,15 +341,6 @@ puqzkupx  opencode-plugins: code review, agents/skills, and nix packaging
    - Stages still return placeholder data (empty file lists, zero metrics, etc.)
    - Next: connect to actual codebase analysis, code generation, test execution via real agent dispatch
 
-4. **End-to-end cross-plugin delegation**
-   - Delegate interfaces and setter methods are in place
-   - Program planner can delegate to project planner; project planner can delegate to work executor
-   - Next: wire delegates in plugin initialization (index.ts files) so the full chain works at runtime
-
-5. **Plugin initialization wiring**
-   - Each plugin's `index.ts` creates its own storage and orchestrator independently
-   - Next: share storage instance across plugins and wire delegates during plugin initialization
-
 ---
 
 ## Relevant Files
@@ -362,6 +352,7 @@ puqzkupx  opencode-plugins: code review, agents/skills, and nix packaging
 - `src/backends/index.ts` - Backend exports
 - `src/orchestration/subagent-dispatcher.ts` - SubagentDispatcher
 - `src/orchestration/index.ts` - Orchestration exports
+- `src/plugin-registry.ts` - PluginRegistry (shared init + delegate wiring)
 - `src/agents.ts` - Agent registry (AGENTS)
 - `src/skills.ts` - Skills registry
 - `src/config.ts` - ConfigManager
