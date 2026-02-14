@@ -155,20 +155,28 @@
             "grep*" = "allow";
             "head*" = "allow";
             "jj*" = "allow";
+            "jq*" = "allow";
             "ls*" = "allow";
             "nix*" = "allow";
             "pwd*" = "allow";
             "reboot*" = "deny";
             "rg*" = "allow";
             "rm*" = "ask";
+            "sed*" = "allow";
             "shutdown*" = "deny";
             "sudo*" = "deny";
             "tail*" = "allow";
             "xargs*" = "allow";
             "*/skills/*/bin/*" = "allow";
           };
-          edit = "allow";
-          external_directory = "ask";
+          edit = {
+            "*" = "ask";
+            "/home/craig/Projects/*" = "allow";
+          };
+          external_directory = {
+            "*" = "ask";
+            "/home/craig/Projects/*" = "allow";
+          };
           glob = "allow";
           grep = "allow";
           list = "allow";
