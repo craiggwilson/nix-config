@@ -208,7 +208,10 @@
 
       in
       {
-        home.packages = [ inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode ];
+        home.packages = [
+          inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+          pkgs.beads
+        ];
 
         home.file = {
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;

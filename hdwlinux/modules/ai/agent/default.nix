@@ -137,7 +137,7 @@
               Global tool permissions. Key is tool name, value is either:
               - A simple permission: "allow", "ask", or "deny"
               - An attrset of command patterns to permissions for fine-grained control
-              Example: { bash = { "git log*" = "allow"; "rm*" = "deny"; }; read = "allow"; }
+              Example: { bash = { "git log *" = "allow"; "rm *" = "deny"; }; read = "allow"; }
             '';
             type = lib.types.attrsOf toolPermissionWithSubs;
             default = { };
@@ -147,26 +147,27 @@
         config.hdwlinux.ai.agent.tools = {
           bash = {
             "*" = "ask";
-            "bat*" = "allow";
-            "cat*" = "allow";
-            "cd*" = "allow";
-            "echo*" = "allow";
-            "find*" = "allow";
-            "grep*" = "allow";
-            "head*" = "allow";
-            "jj*" = "allow";
-            "jq*" = "allow";
-            "ls*" = "allow";
-            "nix*" = "allow";
-            "pwd*" = "allow";
-            "reboot*" = "deny";
-            "rg*" = "allow";
-            "rm*" = "ask";
-            "sed*" = "allow";
-            "shutdown*" = "deny";
-            "sudo*" = "deny";
-            "tail*" = "allow";
-            "xargs*" = "allow";
+            "bat *" = "allow";
+            "cat *" = "allow";
+            "cd *" = "allow";
+            "echo *" = "allow";
+            "find *" = "allow";
+            "grep *" = "allow";
+            "head *" = "allow";
+            "jj *" = "allow";
+            "jq *" = "allow";
+            "ls *" = "allow";
+            "nix *" = "allow";
+            "pwd *" = "allow";
+            "reboot *" = "deny";
+            "rg *" = "allow";
+            "rm *" = "ask";
+            "sed *" = "allow";
+            "shutdown *" = "deny";
+            "sort *" = "allow";
+            "sudo *" = "deny";
+            "tail *" = "allow";
+            "xargs *" = "allow";
             "*/skills/*/bin/*" = "allow";
           };
           edit = {
