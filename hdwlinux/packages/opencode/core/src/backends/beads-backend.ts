@@ -1,129 +1,283 @@
 /**
- * BeadsIssueStorageBackend - Mock implementation of IssueStorageBackend.
+ * Beads-backed IssueStorageBackend
  *
- * This backend will eventually call opencode-beads tools via the OpenCode SDK.
- * For now, it provides a mock in-memory implementation that demonstrates the
- * interface contract.
+ * When constructed with a ShellExecutor, delegates to the `bd` CLI
+ * (the beads issue tracker). When constructed without one, falls back
+ * to an in-memory mock for unit tests.
  */
 
 import type { IssueStorageBackend } from "../storage-backend.js";
 import type { IssueQuery, IssueRecord } from "../beads.js";
 
+// ── Shell executor ──────────────────────────────────────────────
+
 /**
- * Mock in-memory storage for the beads backend.
- * In the real implementation, this would be replaced by SDK tool calls.
+ * Runs a shell command and returns stdout.
+ * In production this wraps Bun's `$` API; in tests it can be mocked.
  */
-interface BeadsBackendOptions {
-  /**
-   * Optional initial issues to seed the backend with.
-   */
-  initialIssues?: IssueRecord[];
+export type ShellExecutor = (command: string) => Promise<string>;
+
+// ── Status mapping ──────────────────────────────────────────────
+
+/** beads status → our canonical status */
+const BEADS_TO_INTERNAL_STATUS: Record<string, string> = {
+  open: "todo",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  deferred: "todo",
+  closed: "done",
+  tombstone: "done",
+  pinned: "todo",
+};
+
+/** our canonical status → beads status */
+const INTERNAL_TO_BEADS_STATUS: Record<string, string> = {
+  todo: "open",
+  in_progress: "in_progress",
+  blocked: "blocked",
+  done: "closed",
+};
+
+function toInternalStatus(beadsStatus: string): string {
+  return BEADS_TO_INTERNAL_STATUS[beadsStatus] ?? beadsStatus;
 }
 
-/**
- * BeadsIssueStorageBackend implements IssueStorageBackend with a mock
- * in-memory implementation. This serves as a scaffold for future integration
- * with the OpenCode SDK's beads tools.
- */
-export class BeadsIssueStorageBackend implements IssueStorageBackend {
-  private cache: Map<string, IssueRecord> = new Map();
-  private seq = 0;
+function toBeadsStatus(internalStatus: string): string {
+  return INTERNAL_TO_BEADS_STATUS[internalStatus] ?? internalStatus;
+}
 
-  constructor(options?: BeadsBackendOptions) {
+// ── Type mapping ────────────────────────────────────────────────
+
+const VALID_BEADS_TYPES = new Set([
+  "bug",
+  "feature",
+  "task",
+  "epic",
+  "chore",
+]);
+
+function toBeadsType(type: string): string {
+  if (VALID_BEADS_TYPES.has(type)) return type;
+  return "task";
+}
+
+// ── JSON parsing helpers ────────────────────────────────────────
+
+/** Shape of a beads issue as returned by `bd show --json` / `bd list --json` */
+interface BeadsIssueJson {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  priority: number;
+  /** beads uses `issue_type` in JSON output */
+  issue_type: string;
+  labels?: string[];
+  assignee?: string;
+  parent?: string;
+  dependencies?: string[];
+  dependency_count?: number;
+  dependent_count?: number;
+  created_at?: string;
+  created_by?: string;
+  updated_at?: string;
+  closed_at?: string;
+  close_reason?: string;
+}
+
+function beadsJsonToIssueRecord(raw: BeadsIssueJson): IssueRecord {
+  return {
+    id: raw.id,
+    type: raw.issue_type,
+    title: raw.title,
+    description: raw.description,
+    status: toInternalStatus(raw.status),
+    priority: raw.priority,
+    labels: raw.labels ?? [],
+    parent: raw.parent,
+    assignee: raw.assignee,
+    dependencies: raw.dependencies ?? [],
+  };
+}
+
+/** Safely parse JSON from bd CLI output, stripping any leading non-JSON text */
+function parseBeadsJson<T>(output: string): T {
+  const trimmed = output.trim();
+  const jsonStart = trimmed.search(/[\[{]/);
+  if (jsonStart === -1) {
+    throw new Error(`No JSON found in bd output: ${trimmed.slice(0, 200)}`);
+  }
+  return JSON.parse(trimmed.slice(jsonStart));
+}
+
+/** Escape a string for safe use in single-quoted shell arguments */
+function shellEscape(s: string): string {
+  return s.replace(/'/g, "'\\''");
+}
+
+// Exported for tests
+export {
+  toInternalStatus,
+  toBeadsStatus,
+  toBeadsType,
+  beadsJsonToIssueRecord,
+  parseBeadsJson,
+  shellEscape,
+};
+export type { BeadsIssueJson };
+
+// ── Backend implementation ──────────────────────────────────────
+
+export class BeadsIssueStorageBackend implements IssueStorageBackend {
+  private executor?: ShellExecutor;
+
+  // In-memory fallback (used when no executor is provided)
+  private mockStore: Map<string, IssueRecord> = new Map();
+  private mockSeq = 0;
+
+  constructor(options?: {
+    executor?: ShellExecutor;
+    initialIssues?: Partial<IssueRecord>[];
+  }) {
+    this.executor = options?.executor;
+
     if (options?.initialIssues) {
       for (const issue of options.initialIssues) {
-        this.cache.set(issue.id, issue);
+        if (issue.id && issue.type && issue.title) {
+          this.mockStore.set(issue.id, {
+            id: issue.id,
+            type: issue.type,
+            title: issue.title,
+            description: issue.description,
+            status: issue.status ?? "todo",
+            priority: issue.priority ?? 3,
+            labels: issue.labels ?? [],
+            parent: issue.parent,
+            assignee: issue.assignee,
+            dependencies: issue.dependencies ?? [],
+          });
+        }
       }
     }
   }
 
-  /**
-   * Query issues with filters.
-   *
-   * TODO: In the real implementation, this would call the opencode-beads
-   * query tool via the OpenCode SDK:
-   *   await sdk.callTool("opencode-beads", "query", { filters });
-   */
+  /** Whether this backend is using the real bd CLI */
+  get isLive(): boolean {
+    return !!this.executor;
+  }
+
+  /** Number of issues in the mock store (for tests) */
+  get size(): number {
+    return this.mockStore.size;
+  }
+
+  /** Clear the mock store (for tests) */
+  clearCache(): void {
+    this.mockStore.clear();
+    this.mockSeq = 0;
+  }
+
+  // ── query ───────────────────────────────────────────────────
+
   async query(filters: IssueQuery): Promise<IssueRecord[]> {
-    // TODO: Replace with OpenCode SDK tool call:
-    // const result = await sdk.callTool("opencode-beads", "beads-query", {
-    //   labels: filters.labels,
-    //   status: filters.status,
-    //   priority: filters.priority,
-    //   parent: filters.parent,
-    //   type: filters.type,
-    //   assignee: filters.assignee,
-    // });
-    // return result.issues;
+    if (this.executor) {
+      return this.queryViaCli(filters);
+    }
+    return this.queryMock(filters);
+  }
 
-    const results: IssueRecord[] = [];
+  private async queryViaCli(filters: IssueQuery): Promise<IssueRecord[]> {
+    const args: string[] = ["bd", "list", "--json"];
 
-    for (const issue of this.cache.values()) {
-      if (filters.labels && filters.labels.length > 0) {
-        const labels = issue.labels || [];
-        if (!filters.labels.some((l) => labels.includes(l))) {
-          continue;
-        }
+    if (filters.status?.length) {
+      for (const s of filters.status) {
+        args.push("--status", toBeadsStatus(s));
       }
-
-      if (filters.status && filters.status.length > 0) {
-        const status = issue.status || "todo";
-        if (!filters.status.includes(status)) {
-          continue;
-        }
+    }
+    if (filters.type?.length) {
+      for (const t of filters.type) {
+        args.push("--type", toBeadsType(t));
       }
-
-      if (filters.priority && filters.priority.length > 0) {
-        const priority = issue.priority;
-        if (priority === undefined || !filters.priority.includes(priority)) {
-          continue;
-        }
+    }
+    if (filters.labels?.length) {
+      for (const l of filters.labels) {
+        args.push("--label", l);
       }
-
-      if (filters.parent && issue.parent !== filters.parent) {
-        continue;
+    }
+    if (filters.priority?.length) {
+      for (const p of filters.priority) {
+        args.push("--priority", String(p));
       }
+    }
+    if (filters.parent) {
+      args.push("--parent", filters.parent);
+    }
+    if (filters.assignee) {
+      args.push("--assignee", filters.assignee);
+    }
 
-      if (filters.type && filters.type.length > 0) {
-        if (!filters.type.includes(issue.type)) {
-          continue;
-        }
-      }
+    const output = await this.executor!(args.join(" "));
+    const raw = parseBeadsJson<BeadsIssueJson[]>(output);
+    return raw.map(beadsJsonToIssueRecord);
+  }
 
-      if (filters.assignee && issue.assignee !== filters.assignee) {
-        continue;
-      }
+  private queryMock(filters: IssueQuery): IssueRecord[] {
+    let results = Array.from(this.mockStore.values());
 
-      results.push(issue);
+    if (filters.labels?.length) {
+      results = results.filter((r) =>
+        filters.labels!.some((l) => r.labels?.includes(l))
+      );
+    }
+    if (filters.status?.length) {
+      results = results.filter((r) =>
+        filters.status!.includes(r.status ?? "todo")
+      );
+    }
+    if (filters.priority?.length) {
+      results = results.filter((r) =>
+        filters.priority!.includes(r.priority ?? 3)
+      );
+    }
+    if (filters.parent) {
+      results = results.filter((r) => r.parent === filters.parent);
+    }
+    if (filters.type?.length) {
+      results = results.filter((r) => filters.type!.includes(r.type));
+    }
+    if (filters.assignee) {
+      results = results.filter((r) => r.assignee === filters.assignee);
     }
 
     return results;
   }
 
-  /**
-   * Get a single issue by ID.
-   *
-   * TODO: In the real implementation, this would call the opencode-beads
-   * get tool via the OpenCode SDK:
-   *   await sdk.callTool("opencode-beads", "beads-get", { issueId });
-   */
-  async getIssue(issueId: string): Promise<IssueRecord | null> {
-    // TODO: Replace with OpenCode SDK tool call:
-    // const result = await sdk.callTool("opencode-beads", "beads-get", {
-    //   issueId,
-    // });
-    // return result.issue || null;
+  // ── getIssue ────────────────────────────────────────────────
 
-    return this.cache.get(issueId) || null;
+  async getIssue(issueId: string): Promise<IssueRecord | null> {
+    if (this.executor) {
+      return this.getIssueViaCli(issueId);
+    }
+    return this.mockStore.get(issueId) ?? null;
   }
 
-  /**
-   * Create a new issue.
-   *
-   * TODO: In the real implementation, this would call the opencode-beads
-   * create tool via the OpenCode SDK:
-   *   await sdk.callTool("opencode-beads", "beads-create", { ...input });
-   */
+  private async getIssueViaCli(issueId: string): Promise<IssueRecord | null> {
+    try {
+      const output = await this.executor!(
+        `bd show '${shellEscape(issueId)}' --json`
+      );
+      // bd show returns an array with one element
+      const raw = parseBeadsJson<BeadsIssueJson | BeadsIssueJson[]>(output);
+      const issue = Array.isArray(raw) ? raw[0] : raw;
+      if (!issue) return null;
+      return beadsJsonToIssueRecord(issue);
+    } catch {
+      return null;
+    }
+  }
+
+  // ── createIssue ─────────────────────────────────────────────
+
   async createIssue(input: {
     type: string;
     title: string;
@@ -133,48 +287,82 @@ export class BeadsIssueStorageBackend implements IssueStorageBackend {
     parent?: string;
     assignee?: string;
   }): Promise<{ id: string }> {
-    // TODO: Replace with OpenCode SDK tool call:
-    // const result = await sdk.callTool("opencode-beads", "beads-create", {
-    //   type: input.type,
-    //   title: input.title,
-    //   description: input.description,
-    //   labels: input.labels,
-    //   priority: input.priority,
-    //   parent: input.parent,
-    //   assignee: input.assignee,
-    // });
-    // return { id: result.id };
-
     if (!input.type || !input.title) {
       throw new Error("type and title are required");
     }
 
-    const id = `BEADS-${Date.now()}-${++this.seq}`;
+    if (this.executor) {
+      return this.createIssueViaCli(input);
+    }
+    return this.createIssueMock(input);
+  }
 
-    const issue: IssueRecord = {
+  private async createIssueViaCli(input: {
+    type: string;
+    title: string;
+    description?: string;
+    labels?: string[];
+    priority?: number;
+    parent?: string;
+    assignee?: string;
+  }): Promise<{ id: string }> {
+    const args: string[] = [
+      "bd",
+      "create",
+      `'${shellEscape(input.title)}'`,
+      "-t",
+      toBeadsType(input.type),
+    ];
+
+    if (input.priority !== undefined) {
+      args.push("-p", String(input.priority));
+    }
+    if (input.description) {
+      args.push("-d", `'${shellEscape(input.description)}'`);
+    }
+    if (input.parent) {
+      args.push("--parent", input.parent);
+    }
+    if (input.labels?.length) {
+      args.push("-l", `'${input.labels.join(",")}'`);
+    }
+    args.push("--json");
+
+    const output = await this.executor!(args.join(" "));
+    const raw = parseBeadsJson<BeadsIssueJson | BeadsIssueJson[]>(output);
+    const issue = Array.isArray(raw) ? raw[0] : raw;
+    return { id: issue.id };
+  }
+
+  private createIssueMock(input: {
+    type: string;
+    title: string;
+    description?: string;
+    labels?: string[];
+    priority?: number;
+    parent?: string;
+    assignee?: string;
+  }): { id: string } {
+    this.mockSeq++;
+    const id = `BEADS-${Date.now()}-${this.mockSeq}`;
+    const record: IssueRecord = {
       id,
       type: input.type,
       title: input.title,
       description: input.description,
-      labels: input.labels,
-      priority: input.priority,
+      status: "todo",
+      priority: input.priority ?? 3,
+      labels: input.labels ?? [],
       parent: input.parent,
       assignee: input.assignee,
-      status: "todo",
       dependencies: [],
     };
-
-    this.cache.set(id, issue);
+    this.mockStore.set(id, record);
     return { id };
   }
 
-  /**
-   * Update an existing issue.
-   *
-   * TODO: In the real implementation, this would call the opencode-beads
-   * update tool via the OpenCode SDK:
-   *   await sdk.callTool("opencode-beads", "beads-update", { issueId, ...updates });
-   */
+  // ── updateIssue ─────────────────────────────────────────────
+
   async updateIssue(
     issueId: string,
     updates: {
@@ -186,51 +374,122 @@ export class BeadsIssueStorageBackend implements IssueStorageBackend {
       labels?: string[];
     }
   ): Promise<void> {
-    // TODO: Replace with OpenCode SDK tool call:
-    // await sdk.callTool("opencode-beads", "beads-update", {
-    //   issueId,
-    //   title: updates.title,
-    //   description: updates.description,
-    //   status: updates.status,
-    //   priority: updates.priority,
-    //   assignee: updates.assignee,
-    //   labels: updates.labels,
-    // });
+    if (this.executor) {
+      return this.updateIssueViaCli(issueId, updates);
+    }
+    return this.updateIssueMock(issueId, updates);
+  }
 
-    const issue = this.cache.get(issueId);
-    if (!issue) {
+  private async updateIssueViaCli(
+    issueId: string,
+    updates: {
+      title?: string;
+      description?: string;
+      status?: string;
+      priority?: number;
+      assignee?: string;
+      labels?: string[];
+    }
+  ): Promise<void> {
+    const args: string[] = ["bd", "update", `'${shellEscape(issueId)}'`];
+    let hasUpdateArgs = false;
+
+    if (updates.status) {
+      args.push("--status", toBeadsStatus(updates.status));
+      hasUpdateArgs = true;
+    }
+    if (updates.priority !== undefined) {
+      args.push("--priority", String(updates.priority));
+      hasUpdateArgs = true;
+    }
+    if (updates.title) {
+      args.push("--title", `'${shellEscape(updates.title)}'`);
+      hasUpdateArgs = true;
+    }
+    if (updates.description) {
+      args.push("--description", `'${shellEscape(updates.description)}'`);
+      hasUpdateArgs = true;
+    }
+
+    if (hasUpdateArgs) {
+      args.push("--json");
+      await this.executor!(args.join(" "));
+    }
+
+    // Labels are managed separately via bd label add/remove
+    if (updates.labels) {
+      const current = await this.getIssueViaCli(issueId);
+      const currentLabels = new Set(current?.labels ?? []);
+      const newLabels = new Set(updates.labels);
+
+      for (const label of newLabels) {
+        if (!currentLabels.has(label)) {
+          await this.executor!(
+            `bd label add '${shellEscape(issueId)}' '${shellEscape(label)}'`
+          );
+        }
+      }
+
+      for (const label of currentLabels) {
+        if (!newLabels.has(label)) {
+          await this.executor!(
+            `bd label remove '${shellEscape(issueId)}' '${shellEscape(label)}'`
+          );
+        }
+      }
+    }
+  }
+
+  private updateIssueMock(
+    issueId: string,
+    updates: {
+      title?: string;
+      description?: string;
+      status?: string;
+      priority?: number;
+      assignee?: string;
+      labels?: string[];
+    }
+  ): void {
+    const existing = this.mockStore.get(issueId);
+    if (!existing) {
       throw new Error(`Issue not found: ${issueId}`);
     }
 
-    if (updates.title !== undefined) issue.title = updates.title;
-    if (updates.description !== undefined) issue.description = updates.description;
-    if (updates.status !== undefined) issue.status = updates.status;
-    if (updates.priority !== undefined) issue.priority = updates.priority;
-    if (updates.assignee !== undefined) issue.assignee = updates.assignee;
-    if (updates.labels !== undefined) issue.labels = updates.labels;
+    if (updates.title !== undefined) existing.title = updates.title;
+    if (updates.description !== undefined) existing.description = updates.description;
+    if (updates.status !== undefined) existing.status = updates.status;
+    if (updates.priority !== undefined) existing.priority = updates.priority;
+    if (updates.assignee !== undefined) existing.assignee = updates.assignee;
+    if (updates.labels !== undefined) existing.labels = updates.labels;
   }
 
-  /**
-   * Create a dependency between two issues.
-   *
-   * TODO: In the real implementation, this would call the opencode-beads
-   * deps tool via the OpenCode SDK:
-   *   await sdk.callTool("opencode-beads", "beads-deps", { inwardId, outwardId, reason });
-   */
+  // ── createDependency ────────────────────────────────────────
+
   async createDependency(
     inwardId: string,
     outwardId: string,
     reason?: string
   ): Promise<void> {
-    // TODO: Replace with OpenCode SDK tool call:
-    // await sdk.callTool("opencode-beads", "beads-deps", {
-    //   action: "create",
-    //   inwardId,
-    //   outwardId,
-    //   reason,
-    // });
+    if (this.executor) {
+      return this.createDependencyViaCli(inwardId, outwardId, reason);
+    }
+    return this.createDependencyMock(inwardId, outwardId);
+  }
 
-    const inward = this.cache.get(inwardId);
+  private async createDependencyViaCli(
+    inwardId: string,
+    outwardId: string,
+    reason?: string
+  ): Promise<void> {
+    const depType = reason ?? "blocks";
+    await this.executor!(
+      `bd dep add '${shellEscape(inwardId)}' '${shellEscape(outwardId)}' --type '${shellEscape(depType)}'`
+    );
+  }
+
+  private createDependencyMock(inwardId: string, outwardId: string): void {
+    const inward = this.mockStore.get(inwardId);
     if (!inward) {
       throw new Error(`Issue not found: ${inwardId}`);
     }
@@ -243,33 +502,24 @@ export class BeadsIssueStorageBackend implements IssueStorageBackend {
       inward.dependencies.push(outwardId);
     }
   }
+}
 
-  /**
-   * Clear the in-memory cache.
-   * This is useful for testing.
-   */
-  clearCache(): void {
-    this.cache.clear();
-    this.seq = 0;
-  }
+// ── Factory functions ─────────────────────────────────────────
 
-  /**
-   * Get the number of issues in the cache.
-   * This is useful for testing.
-   */
-  get size(): number {
-    return this.cache.size;
-  }
+/**
+ * Create a mock (in-memory) beads backend for tests.
+ */
+export function createBeadsBackend(options?: {
+  initialIssues?: Partial<IssueRecord>[];
+}): BeadsIssueStorageBackend {
+  return new BeadsIssueStorageBackend(options);
 }
 
 /**
- * Factory function to create a BeadsIssueStorageBackend.
- *
- * @param options - Optional configuration for the backend
- * @returns A new BeadsIssueStorageBackend instance
+ * Create a real beads backend that delegates to the `bd` CLI.
  */
-export function createBeadsBackend(
-  options?: BeadsBackendOptions
+export function createBeadsCliBackend(
+  executor: ShellExecutor
 ): BeadsIssueStorageBackend {
-  return new BeadsIssueStorageBackend(options);
+  return new BeadsIssueStorageBackend({ executor });
 }

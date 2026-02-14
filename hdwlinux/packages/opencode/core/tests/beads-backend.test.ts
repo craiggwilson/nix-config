@@ -2,11 +2,22 @@
  * Tests for BeadsIssueStorageBackend
  *
  * These tests verify that the backend correctly implements the
- * IssueStorageBackend interface.
+ * IssueStorageBackend interface, both in mock mode and CLI-backed mode.
  */
 
 import { test, expect, describe, beforeEach } from "bun:test";
-import { createBeadsBackend, BeadsIssueStorageBackend } from "../src/backends/beads-backend.js";
+import {
+  createBeadsBackend,
+  createBeadsCliBackend,
+  BeadsIssueStorageBackend,
+  toInternalStatus,
+  toBeadsStatus,
+  toBeadsType,
+  beadsJsonToIssueRecord,
+  parseBeadsJson,
+  shellEscape,
+} from "../src/backends/beads-backend.js";
+import type { ShellExecutor, BeadsIssueJson } from "../src/backends/beads-backend.js";
 import type { IssueStorageBackend } from "../src/storage-backend.js";
 
 describe("BeadsIssueStorageBackend", () => {
@@ -308,5 +319,355 @@ describe("BeadsIssueStorageBackend", () => {
     expect(backend.size).toBe(0);
     const results = await backend.query({});
     expect(results.length).toBe(0);
+  });
+});
+
+// ── Helper function tests ─────────────────────────────────────
+
+describe("Status mapping", () => {
+  test("toInternalStatus maps beads statuses correctly", () => {
+    expect(toInternalStatus("open")).toBe("todo");
+    expect(toInternalStatus("in_progress")).toBe("in_progress");
+    expect(toInternalStatus("blocked")).toBe("blocked");
+    expect(toInternalStatus("closed")).toBe("done");
+    expect(toInternalStatus("deferred")).toBe("todo");
+    expect(toInternalStatus("tombstone")).toBe("done");
+    expect(toInternalStatus("pinned")).toBe("todo");
+  });
+
+  test("toInternalStatus passes through unknown statuses", () => {
+    expect(toInternalStatus("custom_status")).toBe("custom_status");
+  });
+
+  test("toBeadsStatus maps internal statuses correctly", () => {
+    expect(toBeadsStatus("todo")).toBe("open");
+    expect(toBeadsStatus("in_progress")).toBe("in_progress");
+    expect(toBeadsStatus("blocked")).toBe("blocked");
+    expect(toBeadsStatus("done")).toBe("closed");
+  });
+
+  test("toBeadsStatus passes through unknown statuses", () => {
+    expect(toBeadsStatus("custom")).toBe("custom");
+  });
+});
+
+describe("Type mapping", () => {
+  test("toBeadsType maps valid types", () => {
+    expect(toBeadsType("bug")).toBe("bug");
+    expect(toBeadsType("feature")).toBe("feature");
+    expect(toBeadsType("task")).toBe("task");
+    expect(toBeadsType("epic")).toBe("epic");
+    expect(toBeadsType("chore")).toBe("chore");
+  });
+
+  test("toBeadsType defaults unknown types to task", () => {
+    expect(toBeadsType("story")).toBe("task");
+    expect(toBeadsType("spike")).toBe("task");
+  });
+});
+
+describe("JSON parsing", () => {
+  test("beadsJsonToIssueRecord converts correctly", () => {
+    const raw: BeadsIssueJson = {
+      id: "nix-config-abc",
+      title: "Test Issue",
+      description: "A description",
+      status: "open",
+      priority: 2,
+      issue_type: "task",
+      labels: ["frontend", "urgent"],
+      assignee: "agent:executor",
+      parent: "nix-config-parent",
+      dependencies: ["nix-config-dep1"],
+    };
+
+    const record = beadsJsonToIssueRecord(raw);
+
+    expect(record.id).toBe("nix-config-abc");
+    expect(record.title).toBe("Test Issue");
+    expect(record.status).toBe("todo"); // open → todo
+    expect(record.priority).toBe(2);
+    expect(record.type).toBe("task");
+    expect(record.labels).toEqual(["frontend", "urgent"]);
+    expect(record.parent).toBe("nix-config-parent");
+    expect(record.dependencies).toEqual(["nix-config-dep1"]);
+  });
+
+  test("beadsJsonToIssueRecord handles missing optional fields", () => {
+    const raw: BeadsIssueJson = {
+      id: "nix-config-abc",
+      title: "Minimal",
+      status: "in_progress",
+      priority: 1,
+      issue_type: "bug",
+    };
+
+    const record = beadsJsonToIssueRecord(raw);
+
+    expect(record.labels).toEqual([]);
+    expect(record.dependencies).toEqual([]);
+    expect(record.parent).toBeUndefined();
+    expect(record.assignee).toBeUndefined();
+  });
+
+  test("parseBeadsJson parses clean JSON", () => {
+    const result = parseBeadsJson<{ id: string }>('{"id": "test-123"}');
+    expect(result.id).toBe("test-123");
+  });
+
+  test("parseBeadsJson strips leading non-JSON text", () => {
+    const result = parseBeadsJson<{ id: string }>(
+      'Created issue successfully\n{"id": "test-123"}'
+    );
+    expect(result.id).toBe("test-123");
+  });
+
+  test("parseBeadsJson parses arrays", () => {
+    const result = parseBeadsJson<Array<{ id: string }>>(
+      '[{"id": "a"}, {"id": "b"}]'
+    );
+    expect(result.length).toBe(2);
+  });
+
+  test("parseBeadsJson throws on non-JSON output", () => {
+    expect(() => parseBeadsJson("no json here")).toThrow("No JSON found");
+  });
+});
+
+describe("shellEscape", () => {
+  test("escapes single quotes", () => {
+    expect(shellEscape("it's a test")).toBe("it'\\''s a test");
+  });
+
+  test("passes through safe strings", () => {
+    expect(shellEscape("hello world")).toBe("hello world");
+  });
+});
+
+// ── CLI-backed backend tests (mock executor) ──────────────────
+
+describe("BeadsIssueStorageBackend (CLI-backed)", () => {
+  let commands: string[];
+  let mockResponses: Map<string, string>;
+  let cliBackend: BeadsIssueStorageBackend;
+
+  function mockExecutor(command: string): Promise<string> {
+    commands.push(command);
+    // Find a matching response by checking if the command starts with a key
+    for (const [pattern, response] of mockResponses) {
+      if (command.includes(pattern)) {
+        return Promise.resolve(response);
+      }
+    }
+    return Promise.resolve("[]");
+  }
+
+  beforeEach(() => {
+    commands = [];
+    mockResponses = new Map();
+    cliBackend = createBeadsCliBackend(mockExecutor);
+  });
+
+  test("isLive returns true for CLI-backed backend", () => {
+    expect(cliBackend.isLive).toBe(true);
+  });
+
+  test("isLive returns false for mock backend", () => {
+    const mock = createBeadsBackend();
+    expect(mock.isLive).toBe(false);
+  });
+
+  test("query calls bd list --json", async () => {
+    mockResponses.set("bd list", "[]");
+
+    await cliBackend.query({});
+
+    expect(commands.length).toBe(1);
+    expect(commands[0]).toContain("bd list --json");
+  });
+
+  test("query passes status filter", async () => {
+    mockResponses.set("bd list", "[]");
+
+    await cliBackend.query({ status: ["todo"] });
+
+    expect(commands[0]).toContain("--status open");
+  });
+
+  test("query passes type filter", async () => {
+    mockResponses.set("bd list", "[]");
+
+    await cliBackend.query({ type: ["bug"] });
+
+    expect(commands[0]).toContain("--type bug");
+  });
+
+  test("query passes label filter", async () => {
+    mockResponses.set("bd list", "[]");
+
+    await cliBackend.query({ labels: ["frontend"] });
+
+    expect(commands[0]).toContain("--label frontend");
+  });
+
+  test("query passes parent filter", async () => {
+    mockResponses.set("bd list", "[]");
+
+    await cliBackend.query({ parent: "epic-123" });
+
+    expect(commands[0]).toContain("--parent epic-123");
+  });
+
+  test("query parses JSON response into IssueRecords", async () => {
+    mockResponses.set("bd list", JSON.stringify([
+      {
+        id: "nix-config-abc",
+        title: "Test Task",
+        status: "open",
+        priority: 2,
+        issue_type: "task",
+        labels: ["test"],
+      },
+    ]));
+
+    const results = await cliBackend.query({});
+
+    expect(results.length).toBe(1);
+    expect(results[0].id).toBe("nix-config-abc");
+    expect(results[0].status).toBe("todo");
+  });
+
+  test("getIssue calls bd show --json", async () => {
+    mockResponses.set("bd show", JSON.stringify([{
+      id: "nix-config-abc",
+      title: "Test",
+      status: "in_progress",
+      priority: 1,
+      issue_type: "task",
+    }]));
+
+    const issue = await cliBackend.getIssue("nix-config-abc");
+
+    expect(commands[0]).toContain("bd show");
+    expect(commands[0]).toContain("nix-config-abc");
+    expect(issue?.status).toBe("in_progress");
+  });
+
+  test("getIssue returns null on error", async () => {
+    // Override executor to throw for this test
+    const failingBackend = createBeadsCliBackend(async () => {
+      throw new Error("bd: issue not found");
+    });
+    const issue = await failingBackend.getIssue("nonexistent");
+    expect(issue).toBeNull();
+  });
+
+  test("createIssue calls bd create --json", async () => {
+    mockResponses.set("bd create", JSON.stringify({
+      id: "nix-config-new",
+      title: "New Task",
+      status: "open",
+      priority: 2,
+      issue_type: "task",
+    }));
+
+    const result = await cliBackend.createIssue({
+      type: "task",
+      title: "New Task",
+      priority: 2,
+    });
+
+    expect(result.id).toBe("nix-config-new");
+    expect(commands[0]).toContain("bd create");
+    expect(commands[0]).toContain("-t task");
+    expect(commands[0]).toContain("-p 2");
+  });
+
+  test("createIssue passes labels", async () => {
+    mockResponses.set("bd create", JSON.stringify({
+      id: "nix-config-new",
+      title: "Labeled",
+      status: "open",
+      priority: 1,
+      issue_type: "task",
+    }));
+
+    await cliBackend.createIssue({
+      type: "task",
+      title: "Labeled",
+      labels: ["frontend", "urgent"],
+    });
+
+    expect(commands[0]).toContain("-l 'frontend,urgent'");
+  });
+
+  test("createIssue passes parent", async () => {
+    mockResponses.set("bd create", JSON.stringify({
+      id: "nix-config-child",
+      title: "Child",
+      status: "open",
+      priority: 1,
+      issue_type: "task",
+    }));
+
+    await cliBackend.createIssue({
+      type: "task",
+      title: "Child",
+      parent: "nix-config-parent",
+    });
+
+    expect(commands[0]).toContain("--parent nix-config-parent");
+  });
+
+  test("createIssue still validates type and title", async () => {
+    await expect(
+      cliBackend.createIssue({ type: "", title: "Test" })
+    ).rejects.toThrow("type and title are required");
+  });
+
+  test("updateIssue calls bd update --json", async () => {
+    mockResponses.set("bd update", JSON.stringify([{
+      id: "nix-config-abc",
+      title: "Updated",
+      status: "in_progress",
+      priority: 1,
+      issue_type: "task",
+    }]));
+
+    await cliBackend.updateIssue("nix-config-abc", {
+      status: "in_progress",
+      priority: 1,
+    });
+
+    expect(commands[0]).toContain("bd update");
+    expect(commands[0]).toContain("--status in_progress");
+    expect(commands[0]).toContain("--priority 1");
+  });
+
+  test("updateIssue maps internal status to beads status", async () => {
+    mockResponses.set("bd update", "{}");
+
+    await cliBackend.updateIssue("nix-config-abc", { status: "done" });
+
+    expect(commands[0]).toContain("--status closed");
+  });
+
+  test("createDependency calls bd dep add", async () => {
+    mockResponses.set("bd dep add", "");
+
+    await cliBackend.createDependency("issue-a", "issue-b", "blocks");
+
+    expect(commands[0]).toContain("bd dep add");
+    expect(commands[0]).toContain("issue-a");
+    expect(commands[0]).toContain("issue-b");
+    expect(commands[0]).toContain("--type 'blocks'");
+  });
+
+  test("createDependency defaults to blocks type", async () => {
+    mockResponses.set("bd dep add", "");
+
+    await cliBackend.createDependency("issue-a", "issue-b");
+
+    expect(commands[0]).toContain("--type 'blocks'");
   });
 });

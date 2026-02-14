@@ -2,4 +2,9 @@
  * Storage backends for IssueStorage.
  */
 
-export { BeadsIssueStorageBackend, createBeadsBackend } from "./beads-backend.js";
+export {
+  BeadsIssueStorageBackend,
+  createBeadsBackend,
+  createBeadsCliBackend,
+} from "./beads-backend.js";
+export type { ShellExecutor } from "./beads-backend.js";

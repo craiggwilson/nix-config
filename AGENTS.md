@@ -251,10 +251,16 @@ Key goals:
    - Methods: `query`, `getIssue`, `createIssue`, `updateIssue`, `createDependency`
 
 3. **BeadsIssueStorageBackend** (`core/src/backends/beads-backend.ts`)
-   - Mock implementation of `IssueStorageBackend`
-   - Factory function `createBeadsBackend()`
-   - TODO comments marking where OpenCode SDK tool calls will go
-   - **22 tests** in `core/tests/beads-backend.test.ts`
+   - Dual-mode: in-memory mock (no executor) or real `bd` CLI (with `ShellExecutor`)
+   - `ShellExecutor` type: `(command: string) => Promise<string>` — injectable shell runner
+   - Factory functions: `createBeadsBackend()` (mock), `createBeadsCliBackend(executor)` (real)
+   - Status mapping: beads `open`↔`todo`, `in_progress`↔`in_progress`, `blocked`↔`blocked`, `closed`↔`done`
+   - Type mapping: `issue_type` field in beads JSON → `type` in IssueRecord
+   - JSON parsing: handles `bd show` returning arrays, `bd create` returning objects, leading non-JSON text
+   - CLI command mapping: `query`→`bd list`, `getIssue`→`bd show`, `createIssue`→`bd create`, `updateIssue`→`bd update`, `createDependency`→`bd dep add`
+   - Label management via `bd label add/remove` with diff computation
+   - **49 tests** in `core/tests/beads-backend.test.ts` (22 mock + 27 CLI-backed with mock executor)
+   - **7 live integration tests** in `tests/integration/beads-live.test.ts` (auto-skip when no `bd` database)
 
 4. **SubagentDispatcher** (`core/src/orchestration/subagent-dispatcher.ts`)
    - `selectAgents(issue)` - selects agents based on labels (kafka→kafka-expert, security→security-architect, etc.)
@@ -263,6 +269,15 @@ Key goals:
    - Label-to-agent mappings for: kafka, flink, mongodb, go, java, nix, terraform, aws, security, distributed-systems
    - **Wired into all three orchestrators** - each creates a dispatcher and uses it for agent selection/dispatch
    - **17 tests** in `core/tests/subagent-dispatcher.test.ts`
+
+4b. **SDK-based Subagent Dispatch** (`core/src/orchestration/sdk-dispatch.ts`)
+    - `createSdkExecutionHandler(options)` — factory for real `executionHandler` using OpenCode SDK session API
+    - `OpenCodeClient` interface — narrow mock-friendly subset of the SDK client
+    - Dispatch flow: create child session → send prompt with agent name → parse response → extract findings/recommendations
+    - `buildPrompt(agentName, task)` — constructs structured prompts with agent description, task context, and instructions
+    - `extractInsights(text)` — parses markdown-structured agent output into findings and recommendations
+    - Timeout support, recursive delegation prevention (disables `task` and `delegate` tools)
+    - **15 tests** in `core/tests/sdk-dispatch.test.ts` (handler lifecycle, error handling, prompt building, insight extraction)
 
 5. **Execution Pipelines** (`work-executor/src/pipelines/`)
    - `ResearchPipeline` - 5 stages: parseQuestion → gatherContext → analyzeOptions → synthesizeRecommendation → createFollowUps
@@ -306,11 +321,12 @@ Key goals:
 
 ### Test Summary
 
-**133 tests pass** across 12 test files:
+**189 tests pass** across 14 test files:
 - `core/tests/beads.test.ts` - IssueStorage + backend delegation (15 tests)
-- `core/tests/beads-backend.test.ts` - BeadsIssueStorageBackend (22 tests)
+- `core/tests/beads-backend.test.ts` - BeadsIssueStorageBackend mock + CLI-backed (49 tests)
 - `core/tests/config.test.ts` - ConfigManager
 - `core/tests/subagent-dispatcher.test.ts` - SubagentDispatcher (17 tests)
+- `core/tests/sdk-dispatch.test.ts` - SDK-based subagent dispatch (15 tests)
 - `core/tests/plugin-registry.test.ts` - PluginRegistry wiring (10 tests)
 - `work-executor/tests/orchestrator.test.ts` - WorkExecutorOrchestrator + dispatcher (original + 3 new)
 - `work-executor/tests/pipelines.test.ts` - Execution pipelines + dispatcher (32 tests)
@@ -319,6 +335,7 @@ Key goals:
 - `tests/integration/full-flow.test.ts` - End-to-end flow
 - `tests/integration/cross-plugin-status.test.ts` - Status aggregation
 - `tests/integration/discovered-work.test.ts` - Discovered work
+- `tests/integration/beads-live.test.ts` - Live beads CLI integration (7 tests, auto-skip without `bd`)
 
 Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun test --timeout 30000"`
 
@@ -326,17 +343,7 @@ Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun tes
 
 ## Not Yet Done / Next Steps
 
-1. **Beads-backed storage backend**
-   - `BeadsIssueStorageBackend` exists as mock; needs real implementation using OpenCode SDK tool calls to `opencode-beads`
-   - `IssueStorage` now supports backend delegation (constructor accepts `IssueStorageBackend`)
-   - Next: implement a real backend that calls `opencode-beads` tools via the OpenCode SDK
-
-2. **Real subagent invocation**
-   - SubagentDispatcher is wired into all orchestrators and pipelines
-   - Currently uses mock execution (returns stub results)
-   - Next: implement actual subagent invocation via OpenCode Task tool in the `executionHandler`
-
-3. **Flesh out pipeline stage implementations**
+1. **Flesh out pipeline stage implementations**
    - Pipelines now use dispatcher for agent selection/dispatch in relevant stages
    - Stages still return placeholder data (empty file lists, zero metrics, etc.)
    - Next: connect to actual codebase analysis, code generation, test execution via real agent dispatch
@@ -351,6 +358,7 @@ Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun tes
 - `src/backends/beads-backend.ts` - BeadsIssueStorageBackend mock
 - `src/backends/index.ts` - Backend exports
 - `src/orchestration/subagent-dispatcher.ts` - SubagentDispatcher
+- `src/orchestration/sdk-dispatch.ts` - SDK-based subagent dispatch (createSdkExecutionHandler)
 - `src/orchestration/index.ts` - Orchestration exports
 - `src/plugin-registry.ts` - PluginRegistry (shared init + delegate wiring)
 - `src/agents.ts` - Agent registry (AGENTS)
@@ -383,3 +391,30 @@ Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun tes
 - `integration/full-flow.test.ts` - End-to-end flow
 - `integration/cross-plugin-status.test.ts` - Status aggregation
 - `integration/discovered-work.test.ts` - Discovered work
+- `integration/beads-live.test.ts` - Live beads CLI integration (auto-skip without `bd`)
+
+## Landing the Plane (Session Completion)
+
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+
+**MANDATORY WORKFLOW:**
+
+1. **File issues for remaining work** - Create issues for anything that needs follow-up
+2. **Run quality gates** (if code changed) - Tests, linters, builds
+3. **Update issue status** - Close finished work, update in-progress items
+4. **PUSH TO REMOTE** - This is MANDATORY:
+   ```bash
+   git pull --rebase
+   bd sync
+   git push
+   git status  # MUST show "up to date with origin"
+   ```
+5. **Clean up** - Clear stashes, prune remote branches
+6. **Verify** - All changes committed AND pushed
+7. **Hand off** - Provide context for next session
+
+**CRITICAL RULES:**
+- Work is NOT complete until `git push` succeeds
+- NEVER stop before pushing - that leaves work stranded locally
+- NEVER say "ready to push when you are" - YOU must push
+- If push fails, resolve and retry until it succeeds

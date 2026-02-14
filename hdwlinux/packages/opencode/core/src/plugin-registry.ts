@@ -14,6 +14,10 @@ import { IssueStorage } from "./beads.js";
 import type { IssueStorageBackend } from "./storage-backend.js";
 import { ConfigManager } from "./config.js";
 import { SubagentDispatcher } from "./orchestration/subagent-dispatcher.js";
+import { createSdkExecutionHandler } from "./orchestration/sdk-dispatch.js";
+import type { OpenCodeClient } from "./orchestration/sdk-dispatch.js";
+import { createBeadsCliBackend } from "./backends/beads-backend.js";
+import type { ShellExecutor } from "./backends/beads-backend.js";
 import { ProgramPlannerOrchestrator } from "../../program-planner/src/orchestrator.js";
 import type { ProjectPlannerDelegate } from "../../program-planner/src/orchestrator.js";
 import { ProjectPlannerOrchestrator } from "../../project-planner/src/orchestrator.js";
@@ -27,6 +31,20 @@ export interface PluginRegistryOptions {
   configDir?: string;
   /** Optional pre-built SubagentDispatcher. */
   dispatcher?: SubagentDispatcher;
+  /**
+   * Shell executor for the beads CLI backend.
+   * When provided (and no explicit backend), creates a BeadsCliBackend
+   * that delegates to the `bd` CLI.
+   */
+  shellExecutor?: ShellExecutor;
+  /**
+   * OpenCode SDK client for real subagent dispatch.
+   * When provided (and no explicit dispatcher), creates a dispatcher
+   * with an SDK-backed executionHandler.
+   */
+  client?: OpenCodeClient;
+  /** Parent session ID for subagent child sessions. */
+  parentSessionId?: string;
 }
 
 export interface PluginRegistry {
@@ -47,11 +65,30 @@ let _instance: PluginRegistry | null = null;
  *   program-planner  →  project-planner  →  work-executor
  */
 export function createRegistry(options?: PluginRegistryOptions): PluginRegistry {
-  const storage = new IssueStorage(options?.backend);
+  // Storage: explicit backend > shell executor > in-memory
+  let backend = options?.backend;
+  if (!backend && options?.shellExecutor) {
+    backend = createBeadsCliBackend(options.shellExecutor);
+  }
+
+  const storage = new IssueStorage(backend);
   const configManager = options?.configDir
     ? new ConfigManager(options.configDir)
     : new ConfigManager();
-  const dispatcher = options?.dispatcher ?? new SubagentDispatcher();
+
+  // Dispatcher: explicit > SDK-backed > default mock
+  let dispatcher = options?.dispatcher;
+  if (!dispatcher && options?.client) {
+    dispatcher = new SubagentDispatcher({
+      executionHandler: createSdkExecutionHandler({
+        client: options.client,
+        parentSessionId: options.parentSessionId,
+      }),
+    });
+  }
+  if (!dispatcher) {
+    dispatcher = new SubagentDispatcher();
+  }
 
   const programPlanner = new ProgramPlannerOrchestrator(storage, configManager, { dispatcher });
   const projectPlanner = new ProjectPlannerOrchestrator(storage, configManager, { dispatcher });
