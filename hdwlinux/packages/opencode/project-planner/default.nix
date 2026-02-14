@@ -36,7 +36,7 @@ pkgs.stdenv.mkDerivation {
 
   meta = {
     description = "OpenCode Project Planner - Project-level planning plugin";
-    homepage = "https://github.com/craiggwilson/nix-config";
+    homepage = "https://hdwlinux/nix-config";
     license = lib.licenses.mit;
     platforms = lib.platforms.all;
   };

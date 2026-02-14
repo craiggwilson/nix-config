@@ -7,8 +7,8 @@
 export { ConfigManager } from "./config.js";
 export type { ConfigSchema } from "./config.js";
 
-export { BeadsHelper } from "./beads.js";
-export type { BeadsQuery, DependencyNode, BeadsIssue } from "./beads.js";
+export { IssueStorage } from "./beads.js";
+export type { IssueQuery, DependencyNode, IssueRecord } from "./beads.js";
 
 export { PlanningPlugin, createOpenCodePlugin } from "./plugin.js";
 export type { PluginContext, CommandDefinition, ToolDefinition } from "./plugin.js";

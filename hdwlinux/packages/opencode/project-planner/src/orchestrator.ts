@@ -2,11 +2,10 @@
  * Project Planner Orchestrator
  *
  * Central dispatcher for project planning commands.
- * Reads/writes beads and coordinates subagents.
- */
+ * Reads/writes planning issues and coordinates subagents.
+  */
 
-import { BeadsClient } from "opencode-beads";
-import { ConfigManager } from "opencode-planner-core";
+import { ConfigManager, IssueStorage } from "opencode-planner-core";
 import type {
   ProjectEpic,
   BacklogItem,
@@ -25,12 +24,12 @@ const DEFAULT_CONFIG: ProjectPlannerConfig = {
 };
 
 export class ProjectPlannerOrchestrator {
-  private beads: BeadsClient;
+  private storage: IssueStorage;
   private config: ProjectPlannerConfig;
   private configManager: ConfigManager;
 
-  constructor(beads: BeadsClient, configManager: ConfigManager) {
-    this.beads = beads;
+  constructor(storage: IssueStorage, configManager: ConfigManager) {
+    this.storage = storage;
     this.configManager = configManager;
     this.config = configManager.load("project-planner", DEFAULT_CONFIG);
   }
@@ -39,12 +38,8 @@ export class ProjectPlannerOrchestrator {
    * Initialize the orchestrator
    */
   async initialize(): Promise<void> {
-    // Validate beads is available
-    try {
-      await this.beads.show("test");
-    } catch {
-      // Beads might not have any issues yet, that's ok
-    }
+    // No-op for now; a future implementation can validate
+    // connectivity to the underlying storage backend.
   }
 
   /**
@@ -68,8 +63,8 @@ ${input.repoName}
 Initialized
 `.trim();
 
-    // Create beads epic for the project
-    const projectIssue = await this.beads.create({
+    // Create project epic in storage
+    const projectIssue = await this.storage.createIssue({
       type: "epic",
       title: projectName,
       description,
@@ -99,7 +94,7 @@ Initialized
     programId?: string;
   }): Promise<{ createdItems: string[]; dependencies: Array<[string, string]> }> {
     // Fetch project issue
-    const project = await this.beads.show(input.projectId);
+    const project = await this.storage.getIssue(input.projectId);
     if (!project) {
       throw new Error(`Project ${input.projectId} not found`);
     }
@@ -117,7 +112,7 @@ Initialized
     ];
 
     for (const item of backlogItems) {
-      const issue = await this.beads.create({
+      const issue = await this.storage.createIssue({
         type: item.type,
         title: item.title,
         description: `Backlog item for ${project.title}`,
@@ -148,14 +143,14 @@ Initialized
     autoAssign?: boolean;
   }): Promise<SprintPlan> {
     // Fetch project issue
-    const project = await this.beads.show(input.projectId);
+    const project = await this.storage.getIssue(input.projectId);
     if (!project) {
       throw new Error(`Project ${input.projectId} not found`);
     }
 
     // TODO: Spawn sprint-planner-agent to select tasks
     // For now, create a sprint epic or apply labels
-    const sprintEpic = await this.beads.create({
+    const sprintEpic = await this.storage.createIssue({
       type: "epic",
       title: input.sprintName,
       description: `Sprint from ${input.startDate} to ${input.endDate}`,
@@ -191,7 +186,7 @@ Initialized
    * Get status of a project
    */
   async getProjectStatus(projectId: string): Promise<ProjectStatus> {
-    const project = await this.beads.show(projectId);
+    const project = await this.storage.getIssue(projectId);
     if (!project) {
       throw new Error(`Project ${projectId} not found`);
     }
@@ -201,8 +196,8 @@ Initialized
     const repoName = repoLabel ? repoLabel.substring(5) : "";
 
     // Fetch all backlog items
-    const children = await this.beads.show(projectId, { includeChildren: true });
-    const backlogItems = children?.children || [];
+    const children = await this.storage.getChildren(projectId);
+    const backlogItems = children.map((child) => child.id);
 
     // Aggregate statuses
     const backlogStatuses = {
@@ -213,7 +208,7 @@ Initialized
     };
 
     for (const itemId of backlogItems) {
-      const item = await this.beads.show(itemId);
+      const item = await this.storage.getIssue(itemId);
       if (item) {
         const status = item.status || "todo";
         if (status === "done") backlogStatuses.done++;
@@ -275,8 +270,8 @@ Initialized
    * List all projects
    */
   async listProjects(): Promise<ProjectEpic[]> {
-    // Query beads for all issues with label "project"
-    const issues = await this.beads.query({ labels: ["project"] });
+    // Query storage for all issues with label "project"
+    const issues = await this.storage.query({ labels: ["project"] });
 
     const projects: ProjectEpic[] = issues.map((issue: any) => {
       const repoLabel = (issue.labels || []).find((l: string) => l.startsWith("repo:"));

@@ -48,7 +48,7 @@ in
   opencode-plugins-suite = buildWorkspace // {
     meta = {
       description = "OpenCode Planning & Execution Plugin Suite (built workspace)";
-      homepage = "https://github.com/craiggwilson/nix-config";
+      homepage = "https://hdwlinux/nix-config";
       license = lib.licenses.mit;
     };
   };

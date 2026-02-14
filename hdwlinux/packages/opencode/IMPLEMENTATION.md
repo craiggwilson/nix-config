@@ -75,17 +75,17 @@ opencode/
 1. ✅ Define plugin interface
 2. ✅ Create orchestrator scaffolding
 3. ✅ Implement configuration management
-4. 🔄 Implement beads CLI integration
+4. 🔄 Implement storage abstraction for issues (initially in-memory)
 5. 🔄 Create basic command handlers
 
 **Deliverable**: Plugins load and respond to commands (with TODO stubs)
 
-### Phase 2: Beads Integration
+### Phase 2: Storage Backend Integration (Beads via Tools)
 
-**Goal**: Full beads read/write capability
+**Goal**: Full read/write capability against a real backend (typically beads), without coupling orchestrators to a specific implementation.
 
 **Tasks**:
-1. Implement BeadsHelper methods:
+1. Implement an `IssueStorage` backend that calls `opencode-beads` tools via the OpenCode SDK:
    - `query()` - Filter issues by labels, status, priority, etc.
    - `findReady()` - Find tasks with no blocking dependencies
    - `analyzeDependencies()` - Detect cycles, critical path, blockers
@@ -96,7 +96,7 @@ opencode/
    - `createDependency()` - Create dependencies
    - `search()` - Search by title/description
 
-2. Implement orchestrator methods:
+2. Implement orchestrator methods (using the storage abstraction only):
    - Program planner: `createProgram()`, `planProgram()`, `getProgramStatus()`, etc.
    - Project planner: `initProject()`, `planProject()`, `planSprint()`, etc.
    - Work executor: `claimWork()`, `executeWork()`, `executeResearch()`, etc.
@@ -142,28 +142,28 @@ opencode/
 
 ## Key Implementation Details
 
-### Beads Integration
+### Storage Abstraction and Beads Integration
 
-All plugins use beads as the canonical state store. The BeadsHelper class provides:
+All plugins use a storage abstraction focused on planning issues. The default implementation can be backed by beads via tools provided by the `opencode-beads` plugin.
 
 ```typescript
 // Query issues
-const issues = await beads.query({
+const issues = await storage.query({
   labels: ["program"],
   status: ["todo", "in_progress"],
-  priority: [1, 2]
+  priority: [1, 2],
 });
 
 // Create issues
-const issue = await beads.createIssue({
+const issue = await storage.createIssue({
   type: "epic",
   title: "Platform Modernization",
   labels: ["program", "program:modernization"],
-  priority: 1
+  priority: 1,
 });
 
 // Manage dependencies
-await beads.createDependency("PROJ-123", "PROJ-456", "needs");
+await storage.createDependency("PROJ-123", "PROJ-456", "needs");
 ```
 
 ### Command Handling
@@ -225,7 +225,7 @@ Plugins support both global and per-repo configuration:
 
 ## Next Steps
 
-1. **Implement BeadsHelper methods** - Start with query and CRUD operations
+1. **Implement IssueStorage methods** - Start with query and CRUD operations, then wire a real backend that calls `opencode-beads` tools via the OpenCode SDK
 2. **Implement orchestrator methods** - Add full logic to command handlers
 3. **Create integration tests** - Test plugin loading and command execution
 4. **Implement subagent coordination** - Add subagent spawning and result handling
@@ -237,7 +237,7 @@ Plugins support both global and per-repo configuration:
 
 Test individual components:
 - ConfigManager loading and merging
-- BeadsHelper query building
+- IssueStorage query building
 - Orchestrator command parsing
 - Type validation
 

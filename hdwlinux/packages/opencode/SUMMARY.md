@@ -157,10 +157,10 @@ See [QUICKSTART.md](QUICKSTART.md) for detailed steps.
 
 ## Next Steps
 
-### Phase 1: Beads Integration (Current)
-- Implement BeadsClient wrapper
-- Connect to beads CLI
-- Test CRUD operations
+### Phase 1: Storage Abstraction (Current)
+- Implement issue-focused storage abstraction (IssueStorage)
+- Back it with an in-memory cache for now
+- Define how it will call beads tools via the OpenCode SDK in a future phase
 
 ### Phase 2: Subagent Coordination
 - Implement subagent spawning
@@ -187,10 +187,10 @@ See [QUICKSTART.md](QUICKSTART.md) for detailed steps.
 
 ## Key Design Decisions
 
-1. **Beads as Single Source of Truth**
-   - All planning and work state in beads
-   - Enables collaboration and auditability
-   - Integrates with existing beads ecosystem
+1. **Beads as Single Source of Truth (via Tools)**
+   - All planning and work state modeled as issues that can be stored in beads
+   - Access to beads goes through tools exposed by the `opencode-beads` plugin
+   - Allows swapping or extending the backend without changing orchestrator logic
 
 2. **Hierarchical Structure**
    - Programs → Projects → Backlog Items → Work

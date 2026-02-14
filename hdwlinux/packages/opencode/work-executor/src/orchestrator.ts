@@ -2,11 +2,10 @@
  * Work Executor Orchestrator
  *
  * Central dispatcher for work execution.
- * Reads beads issues and coordinates specialist subagents.
- */
+ * Reads planning issues from storage and coordinates specialist subagents.
+  */
 
-import { BeadsClient } from "opencode-beads";
-import { ConfigManager } from "opencode-planner-core";
+import { ConfigManager, IssueStorage } from "opencode-planner-core";
 import type {
   WorkItem,
   ResearchResult,
@@ -34,12 +33,12 @@ const DEFAULT_CONFIG: WorkExecutorConfig = {
 };
 
 export class WorkExecutorOrchestrator {
-  private beads: BeadsClient;
+  private storage: IssueStorage;
   private config: WorkExecutorConfig;
   private configManager: ConfigManager;
 
-  constructor(beads: BeadsClient, configManager: ConfigManager) {
-    this.beads = beads;
+  constructor(storage: IssueStorage, configManager: ConfigManager) {
+    this.storage = storage;
     this.configManager = configManager;
     this.config = configManager.load("work-executor", DEFAULT_CONFIG);
   }
@@ -48,12 +47,8 @@ export class WorkExecutorOrchestrator {
    * Initialize the orchestrator
    */
   async initialize(): Promise<void> {
-    // Validate beads is available
-    try {
-      await this.beads.show("test");
-    } catch {
-      // Beads might not have any issues yet, that's ok
-    }
+    // No-op for now; a future implementation can validate
+    // connectivity to the underlying storage backend.
   }
 
   /**
@@ -110,7 +105,7 @@ export class WorkExecutorOrchestrator {
    * Execute a research task
    */
   async executeResearch(issueId: string): Promise<ResearchResult> {
-    const issue = await this.beads.show(issueId);
+    const issue = await this.storage.getIssue(issueId);
     if (!issue) {
       throw new Error(`Issue ${issueId} not found`);
     }
@@ -135,7 +130,7 @@ export class WorkExecutorOrchestrator {
    * Execute a POC task
    */
   async executePOC(issueId: string): Promise<POCResult> {
-    const issue = await this.beads.show(issueId);
+    const issue = await this.storage.getIssue(issueId);
     if (!issue) {
       throw new Error(`Issue ${issueId} not found`);
     }
@@ -162,7 +157,7 @@ export class WorkExecutorOrchestrator {
    * Execute an implementation task
    */
   async executeImplementation(issueId: string): Promise<ImplementationResult> {
-    const issue = await this.beads.show(issueId);
+    const issue = await this.storage.getIssue(issueId);
     if (!issue) {
       throw new Error(`Issue ${issueId} not found`);
     }
@@ -200,7 +195,7 @@ export class WorkExecutorOrchestrator {
     issueId: string;
     mode: ReviewMode;
   }): Promise<ReviewResult> {
-    const issue = await this.beads.show(input.issueId);
+    const issue = await this.storage.getIssue(input.issueId);
     if (!issue) {
       throw new Error(`Issue ${input.issueId} not found`);
     }

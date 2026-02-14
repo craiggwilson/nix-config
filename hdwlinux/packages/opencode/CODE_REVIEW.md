@@ -65,9 +65,9 @@ This document captures the code review findings and improvements needed for prod
 
 ### 2. Type Safety
 
-**Issue**: Some `any` types used in BeadsHelper
+**Issue**: Some `any` types used in the storage helper
 **Severity**: Low
-**Fix**: Define proper types for beads issues
+**Fix**: Define proper types for stored issues and avoid `any` where possible
 
 ### 3. Input Validation
 
@@ -107,7 +107,7 @@ TODO comments should be replaced with focused "Future Work" comments that indica
 ### Unit Tests
 
 - ✅ ConfigManager tests
-- ✅ BeadsHelper tests
+- ✅ IssueStorage tests
 - ⏳ Orchestrator tests (Phase 4)
 - ⏳ Command handler tests (Phase 4)
 
@@ -115,7 +115,7 @@ TODO comments should be replaced with focused "Future Work" comments that indica
 
 - ⏳ Plugin loading tests (Phase 4)
 - ⏳ Command execution tests (Phase 4)
-- ⏳ Beads integration tests (Phase 4)
+- ⏳ Storage/beads integration tests (Phase 4)
 
 ### End-to-End Tests
 

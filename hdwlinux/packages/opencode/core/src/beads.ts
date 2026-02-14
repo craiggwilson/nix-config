@@ -1,10 +1,12 @@
 /**
- * Beads Query and Manipulation Helpers
+ * Issue query and manipulation helpers.
+ *
+ * This module defines a storage abstraction for planning issues.
+ * The underlying implementation can be backed by beads (via tools
+ * exposed by the opencode-beads plugin) or by another system.
  */
 
-import { BeadsClient } from "opencode-beads";
-
-export interface BeadsQuery {
+export interface IssueQuery {
   labels?: string[];
   status?: string[];
   priority?: number[];
@@ -21,7 +23,7 @@ export interface DependencyNode {
   dependencies: string[];
 }
 
-export interface BeadsIssue {
+export interface IssueRecord {
   id: string;
   type: string;
   title: string;
@@ -34,57 +36,72 @@ export interface BeadsIssue {
   dependencies?: string[];
 }
 
-export class BeadsHelper {
-  private cache: Map<string, BeadsIssue> = new Map();
-
-  constructor(private beads: BeadsClient) {}
+/**
+ * In-memory issue storage and helper utilities.
+ *
+ * NOTE: The current implementation uses only an in-memory cache.
+ * A future backend can call opencode-beads tools via the OpenCode SDK.
+ */
+export class IssueStorage {
+  private cache: Map<string, IssueRecord> = new Map();
 
   /**
-   * Query beads with filters
+   * Query issues with filters.
    */
-  async query(filters: BeadsQuery): Promise<BeadsIssue[]> {
-    const conditions: string[] = [];
+  async query(filters: IssueQuery): Promise<IssueRecord[]> {
+    // TODO: In a real backend, translate filters into a query and
+    // execute it via tools (for example, opencode-beads).
+    // For now, filter the in-memory cache.
 
-    if (filters.labels && filters.labels.length > 0) {
-      const labelConditions = filters.labels.map((label) => `label:"${label}"`).join(" OR ");
-      conditions.push(`(${labelConditions})`);
+    const results: IssueRecord[] = [];
+
+    for (const issue of this.cache.values()) {
+      if (filters.labels && filters.labels.length > 0) {
+        const labels = issue.labels || [];
+        if (!filters.labels.some((l) => labels.includes(l))) {
+          continue;
+        }
+      }
+
+      if (filters.status && filters.status.length > 0) {
+        const status = issue.status || "";
+        if (!filters.status.includes(status)) {
+          continue;
+        }
+      }
+
+      if (filters.priority && filters.priority.length > 0) {
+        const priority = issue.priority;
+        if (priority === undefined || !filters.priority.includes(priority)) {
+          continue;
+        }
+      }
+
+      if (filters.parent && issue.parent !== filters.parent) {
+        continue;
+      }
+
+      if (filters.type && filters.type.length > 0) {
+        if (!filters.type.includes(issue.type)) {
+          continue;
+        }
+      }
+
+      if (filters.assignee && issue.assignee !== filters.assignee) {
+        continue;
+      }
+
+      results.push(issue);
     }
 
-    if (filters.status && filters.status.length > 0) {
-      const statusConditions = filters.status.map((status) => `status:"${status}"`).join(" OR ");
-      conditions.push(`(${statusConditions})`);
-    }
-
-    if (filters.priority && filters.priority.length > 0) {
-      const priorityConditions = filters.priority.map((p) => `priority:${p}`).join(" OR ");
-      conditions.push(`(${priorityConditions})`);
-    }
-
-    if (filters.parent) {
-      conditions.push(`parent:"${filters.parent}"`);
-    }
-
-    if (filters.type && filters.type.length > 0) {
-      const typeConditions = filters.type.map((t) => `type:"${t}"`).join(" OR ");
-      conditions.push(`(${typeConditions})`);
-    }
-
-    if (filters.assignee) {
-      conditions.push(`assignee:"${filters.assignee}"`);
-    }
-
-    const jql = conditions.length > 0 ? conditions.join(" AND ") : "";
-
-    // TODO: Execute JQL query via beads CLI
-    // For now, return empty array
-    return [];
+    return results;
   }
 
   /**
    * Find ready tasks (no blocking dependencies)
    */
-  async findReady(projectId?: string): Promise<BeadsIssue[]> {
-    const filters: BeadsQuery = {
+  async findReady(projectId?: string): Promise<IssueRecord[]> {
+    const filters: IssueQuery = {
       status: ["todo"],
     };
 
@@ -95,7 +112,7 @@ export class BeadsHelper {
     const items = await this.query(filters);
 
     // Filter out items with blocking dependencies
-    const ready: BeadsIssue[] = [];
+    const ready: IssueRecord[] = [];
     for (const item of items) {
       const deps = await this.getDependencies(item.id);
       const hasBlockingDeps = deps.some((depId) => {
@@ -183,9 +200,9 @@ export class BeadsHelper {
   }
 
   /**
-   * Get all children of an issue
+   * Get all children of an issue.
    */
-  async getChildren(parentId: string): Promise<BeadsIssue[]> {
+  async getChildren(parentId: string): Promise<IssueRecord[]> {
     return this.query({ parent: parentId });
   }
 
@@ -198,12 +215,12 @@ export class BeadsHelper {
       return issue.dependencies;
     }
 
-    // TODO: Fetch from beads if not in cache
+    // TODO: Fetch from storage backend if not in cache
     return [];
   }
 
   /**
-   * Create a new issue with proper structure
+   * Create a new issue with proper structure.
    */
   async createIssue(input: {
     type: string;
@@ -214,16 +231,15 @@ export class BeadsHelper {
     parent?: string;
     assignee?: string;
   }): Promise<{ id: string }> {
-    // Validate input
     if (!input.type || !input.title) {
       throw new Error("type and title are required");
     }
 
-    // TODO: Create issue via beads CLI
-    // For now, generate a mock ID
+    // TODO: Create issue via storage backend.
+    // For now, generate a mock ID and store only in the in-memory cache.
     const id = `${input.type.toUpperCase()}-${Date.now()}`;
 
-    const issue: BeadsIssue = {
+    const issue: IssueRecord = {
       id,
       type: input.type,
       title: input.title,
@@ -239,7 +255,7 @@ export class BeadsHelper {
   }
 
   /**
-   * Update an issue
+   * Update an issue in the in-memory cache.
    */
   async updateIssue(
     issueId: string,
@@ -252,12 +268,11 @@ export class BeadsHelper {
       labels?: string[];
     }
   ): Promise<void> {
-    const issue = this.cache.get(issueId);
+     const issue = this.cache.get(issueId);
     if (!issue) {
       throw new Error(`Issue not found: ${issueId}`);
     }
 
-    // Update cache
     if (updates.title) issue.title = updates.title;
     if (updates.description) issue.description = updates.description;
     if (updates.status) issue.status = updates.status;
@@ -265,18 +280,18 @@ export class BeadsHelper {
     if (updates.assignee) issue.assignee = updates.assignee;
     if (updates.labels) issue.labels = updates.labels;
 
-    // TODO: Update via beads CLI
+    // TODO: Update via storage backend.
   }
 
   /**
-   * Create a dependency between two issues
+   * Create a dependency between two issues.
    */
   async createDependency(
     inwardId: string,
     outwardId: string,
     reason?: string
   ): Promise<void> {
-    const inward = this.cache.get(inwardId);
+     const inward = this.cache.get(inwardId);
     if (!inward) {
       throw new Error(`Issue not found: ${inwardId}`);
     }
@@ -289,16 +304,16 @@ export class BeadsHelper {
       inward.dependencies.push(outwardId);
     }
 
-    // TODO: Create dependency via beads CLI
+    // TODO: Create dependency via storage backend.
   }
 
   /**
-   * Search issues by title/description
+   * Search issues by title/description in the in-memory cache.
    */
-  async search(query: string): Promise<BeadsIssue[]> {
-    // TODO: Execute search via beads CLI
-    // For now, search cache
-    const results: BeadsIssue[] = [];
+  async search(query: string): Promise<IssueRecord[]> {
+    // TODO: Execute search via storage backend.
+    // For now, search cache only.
+    const results: IssueRecord[] = [];
     const lowerQuery = query.toLowerCase();
 
     for (const issue of this.cache.values()) {
@@ -314,21 +329,21 @@ export class BeadsHelper {
   }
 
   /**
-   * Clear cache
+   * Clear cache.
    */
   clearCache(): void {
     this.cache.clear();
   }
 
   /**
-   * Get issue from cache or beads
+   * Get issue from cache or storage backend.
    */
-  async getIssue(issueId: string): Promise<BeadsIssue | null> {
+  async getIssue(issueId: string): Promise<IssueRecord | null> {
     if (this.cache.has(issueId)) {
       return this.cache.get(issueId) || null;
     }
 
-    // TODO: Fetch from beads if not in cache
+    // TODO: Fetch from storage backend if not in cache.
     return null;
   }
 }

@@ -2,11 +2,10 @@
  * Program Planner Orchestrator
  *
  * Central dispatcher for program planning commands.
- * Reads/writes beads and coordinates subagents.
- */
+ * Reads/writes planning issues and coordinates subagents.
+  */
 
-import { BeadsClient } from "opencode-beads";
-import { ConfigManager } from "opencode-planner-core";
+import { ConfigManager, IssueStorage } from "opencode-planner-core";
 import type {
   Program,
   ProjectEpic,
@@ -23,12 +22,12 @@ const DEFAULT_CONFIG: ProgramPlannerConfig = {
 };
 
 export class ProgramPlannerOrchestrator {
-  private beads: BeadsClient;
+  private storage: IssueStorage;
   private config: ProgramPlannerConfig;
   private configManager: ConfigManager;
 
-  constructor(beads: BeadsClient, configManager: ConfigManager) {
-    this.beads = beads;
+  constructor(storage: IssueStorage, configManager: ConfigManager) {
+    this.storage = storage;
     this.configManager = configManager;
     this.config = configManager.load("program-planner", DEFAULT_CONFIG);
   }
@@ -37,12 +36,8 @@ export class ProgramPlannerOrchestrator {
    * Initialize the orchestrator
    */
   async initialize(): Promise<void> {
-    // Validate beads is available
-    try {
-      await this.beads.show("test");
-    } catch {
-      // Beads might not have any issues yet, that's ok
-    }
+    // No-op for now; a future implementation can validate
+    // connectivity to the underlying storage backend.
   }
 
   /**
@@ -79,8 +74,8 @@ ${input.metrics.map((m) => `- ${m}`).join("\n")}
 ${input.constraints.map((c) => `- ${c}`).join("\n")}
 `.trim();
 
-    // Create beads epic for the program
-    const programIssue = await this.beads.create({
+    // Create program issue in storage
+    const programIssue = await this.storage.createIssue({
       type: "epic",
       title: input.name,
       description,
@@ -106,7 +101,7 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
     repos?: string[];
   }): Promise<{ createdEpics: string[]; dependencies: Array<[string, string]> }> {
     // Fetch program issue
-    const program = await this.beads.show(input.programId);
+    const program = await this.storage.getIssue(input.programId);
     if (!program) {
       throw new Error(`Program ${input.programId} not found`);
     }
@@ -118,7 +113,7 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
     // For now, create placeholder project epics for each repo
     if (input.repos && input.repos.length > 0) {
       for (const repo of input.repos) {
-        const projectEpic = await this.beads.create({
+        const projectEpic = await this.storage.createIssue({
           type: "epic",
           title: `${repo} - ${program.title}`,
           description: `Project epic for ${repo} as part of ${program.title}`,
@@ -147,14 +142,14 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
    * Get status of a program
    */
   async getProgramStatus(programId: string): Promise<ProgramStatus> {
-    const program = await this.beads.show(programId);
+    const program = await this.storage.getIssue(programId);
     if (!program) {
       throw new Error(`Program ${programId} not found`);
     }
 
     // Fetch all child project epics
-    const children = await this.beads.show(programId, { includeChildren: true });
-    const projectEpics = children?.children || [];
+    const children = await this.storage.getChildren(programId);
+    const projectEpics = children.map((child) => child.id);
 
     // Aggregate statuses
     const projectStatuses = {
@@ -165,7 +160,7 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
     };
 
     for (const epicId of projectEpics) {
-      const epic = await this.beads.show(epicId);
+       const epic = await this.storage.getIssue(epicId);
       if (epic) {
         const status = epic.status || "todo";
         if (status === "done") projectStatuses.done++;
@@ -251,7 +246,7 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
    */
   async listPrograms(): Promise<Program[]> {
     // Query beads for all issues with label "program"
-    const issues = await this.beads.query({ labels: ["program"] });
+    const issues = await this.storage.query({ labels: ["program"] });
 
     const programs: Program[] = issues.map((issue: any) => ({
       id: issue.id,

@@ -38,7 +38,7 @@ pkgs.buildNpmPackage {
 
   meta = {
     description = "OpenCode provider implementation using Augment AI SDK";
-    homepage = "https://github.com/craiggwilson/nix-config";
+    homepage = "https://hdwlinux/nix-config";
     license = lib.licenses.mit;
     mainProgram = "opencode-augment";
   };

@@ -6,13 +6,12 @@
 
 import type { Plugin } from "@opencode-ai/plugin";
 import { ProjectPlannerOrchestrator } from "./orchestrator.js";
-import { BeadsClient } from "opencode-beads";
-import { ConfigManager } from "opencode-planner-core";
+import { ConfigManager, IssueStorage } from "opencode-planner-core";
 
 export const ProjectPlannerPlugin: Plugin = async (ctx) => {
-  const beads = new BeadsClient();
+  const storage = new IssueStorage();
   const configManager = new ConfigManager();
-  const orchestrator = new ProjectPlannerOrchestrator(beads, configManager);
+  const orchestrator = new ProjectPlannerOrchestrator(storage, configManager);
 
   await orchestrator.initialize();
 
