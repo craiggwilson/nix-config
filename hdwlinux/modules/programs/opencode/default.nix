@@ -54,7 +54,6 @@
               ---
               description: ${agent.description}
               mode: ${agent.mode}
-              model: ${agent.model}
               ${toolsSection}---
 
             '';

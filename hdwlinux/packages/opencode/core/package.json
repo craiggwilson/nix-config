@@ -1,0 +1,29 @@
+{
+  "name": "opencode-planner-core",
+  "version": "0.1.0",
+  "description": "Shared utilities and helpers for OpenCode planning plugins",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./config": "./dist/config.js",
+    "./beads": "./dist/beads.js",
+    "./agents": "./dist/agents.js",
+    "./skills": "./dist/skills.js",
+    "./plugin": "./dist/plugin.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/**/*.test.js",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "opencode-beads": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "opencode-project-planner",
+  "version": "0.1.0",
+  "description": "Project-level planning and sprint management plugin for OpenCode",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/**/*.test.js",
+    "lint": "eslint src/",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "opencode-beads": "workspace:*",
+    "opencode-planner-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

@@ -102,6 +102,7 @@
           ./packages/evergreen.nix
           ./packages/falcon-sensor.nix
           ./packages/fern.nix
+          ./packages/opencode
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
           ./packages/opencode-augment

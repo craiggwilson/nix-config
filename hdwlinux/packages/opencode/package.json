@@ -1,0 +1,19 @@
+{
+  "name": "opencode-plugins-suite",
+  "version": "0.1.0",
+  "description": "OpenCode planning and execution plugin suite",
+  "private": true,
+  "workspaces": [
+    "core",
+    "program-planner",
+    "project-planner",
+    "work-executor"
+  ],
+  "scripts": {
+    "build": "bun run --recursive build",
+    "dev": "bun run --recursive dev",
+    "test": "bun run --recursive test",
+    "lint": "bun run --recursive lint",
+    "format": "bun run --recursive format"
+  }
+}
