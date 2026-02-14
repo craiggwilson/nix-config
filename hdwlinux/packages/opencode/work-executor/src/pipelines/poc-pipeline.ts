@@ -213,6 +213,9 @@ export class POCPipeline {
     try {
       let approach = "";
       const risks: string[] = [];
+      const components: string[] = [];
+      const dependencies: string[] = [];
+      let estimatedEffort: "hours" | "day" | "days" = "hours";
 
       // Use dispatcher to get domain expert input for design
       if (this.dispatcher) {
@@ -226,17 +229,59 @@ export class POCPipeline {
               description: this.state.issue.description,
               labels: this.state.issue.labels,
             },
-            instructions: `Design minimal POC to test hypothesis: ${this.state.parsedHypothesis.hypothesis}`,
+            instructions: [
+              `Design minimal POC to test hypothesis: ${this.state.parsedHypothesis.hypothesis}`,
+              "",
+              `Success criteria: ${this.state.parsedHypothesis.successCriteria.join("; ")}`,
+              this.state.parsedHypothesis.timeboxHours
+                ? `Timebox: ${this.state.parsedHypothesis.timeboxHours} hours`
+                : "",
+              "",
+              "## Instructions",
+              "Design the simplest possible POC that can validate or invalidate the hypothesis.",
+              "",
+              "## Recommendations",
+              "- First bullet: overall approach description",
+              "- Components needed (prefix with 'Component:')",
+              "- Dependencies required (prefix with 'Dependency:')",
+              "- Effort estimate (prefix with 'Effort:' hours/day/days)",
+              "",
+              "## Findings",
+              "- Risks and potential blockers (prefix with 'Risk:')",
+              "- Existing code that can be leveraged",
+            ].filter(Boolean).join("\n"),
           });
           this.state.agentResults = results;
 
           for (const result of results) {
             if (result.status === "failed") continue;
             if (result.recommendations?.length) {
-              approach = result.recommendations[0];
+              for (const rec of result.recommendations) {
+                const lower = rec.toLowerCase();
+                if (lower.startsWith("component:")) {
+                  components.push(rec.replace(/^component:\s*/i, ""));
+                } else if (lower.startsWith("dependency:")) {
+                  dependencies.push(rec.replace(/^dependency:\s*/i, ""));
+                } else if (lower.startsWith("effort:")) {
+                  const effortStr = rec.replace(/^effort:\s*/i, "").toLowerCase();
+                  if (effortStr.includes("days")) estimatedEffort = "days";
+                  else if (effortStr.includes("day")) estimatedEffort = "day";
+                } else if (!approach) {
+                  approach = rec;
+                }
+              }
             }
-            if (result.findings?.length) {
-              risks.push(...result.findings);
+            for (const finding of result.findings || []) {
+              const lower = finding.toLowerCase();
+              if (lower.startsWith("risk:") || lower.includes("risk") || lower.includes("blocker")) {
+                risks.push(finding.replace(/^risk:\s*/i, ""));
+              } else if (lower.includes("component") || lower.includes("module")) {
+                components.push(finding);
+              } else if (lower.includes("depend") || lower.includes("require")) {
+                dependencies.push(finding);
+              } else {
+                risks.push(finding);
+              }
             }
           }
         }
@@ -244,9 +289,9 @@ export class POCPipeline {
 
       const design: MinimalDesign = {
         approach,
-        components: [],
-        dependencies: [],
-        estimatedEffort: "hours",
+        components,
+        dependencies,
+        estimatedEffort,
         risks,
       };
 
@@ -274,6 +319,9 @@ export class POCPipeline {
 
     try {
       const notes: string[] = [];
+      const filesCreated: string[] = [];
+      const filesModified: string[] = [];
+      const testsCreated: string[] = [];
 
       // Use dispatcher to get language expert guidance for implementation
       if (this.dispatcher) {
@@ -287,11 +335,49 @@ export class POCPipeline {
               description: this.state.issue.description,
               labels: this.state.issue.labels,
             },
-            instructions: `Implement minimal POC for: ${this.state.parsedHypothesis!.hypothesis}`,
+            instructions: [
+              `Implement minimal POC for: ${this.state.parsedHypothesis!.hypothesis}`,
+              "",
+              `Approach: ${this.state.minimalDesign.approach || "not specified"}`,
+              this.state.minimalDesign.components.length > 0
+                ? `Components: ${this.state.minimalDesign.components.join(", ")}`
+                : "",
+              this.state.minimalDesign.dependencies.length > 0
+                ? `Dependencies: ${this.state.minimalDesign.dependencies.join(", ")}`
+                : "",
+              "",
+              "## Instructions",
+              "Implement the minimal POC. Focus on speed over polish.",
+              "Create basic tests to validate the hypothesis.",
+              "",
+              "## Findings",
+              "- Files created (prefix with 'Created:')",
+              "- Files modified (prefix with 'Modified:')",
+              "- Tests created (prefix with 'Test:')",
+              "",
+              "## Recommendations",
+              "- Implementation notes and observations",
+            ].filter(Boolean).join("\n"),
           });
 
           for (const result of results) {
             if (result.status === "failed") continue;
+            for (const finding of result.findings || []) {
+              const lower = finding.toLowerCase();
+              if (lower.startsWith("created:")) {
+                filesCreated.push(finding.replace(/^created:\s*/i, ""));
+              } else if (lower.startsWith("modified:")) {
+                filesModified.push(finding.replace(/^modified:\s*/i, ""));
+              } else if (lower.startsWith("test:")) {
+                testsCreated.push(finding.replace(/^test:\s*/i, ""));
+              } else if (lower.includes("file") || lower.includes("path")) {
+                // Heuristic: extract file paths from findings
+                const pathMatch = finding.match(/[`']?([a-zA-Z0-9_/.-]+\.[a-zA-Z]+)[`']?/);
+                if (pathMatch) {
+                  filesModified.push(pathMatch[1]);
+                }
+              }
+            }
             if (result.recommendations?.length) {
               notes.push(...result.recommendations.map((r) => `[${result.agentName}] ${r}`));
             }
@@ -300,9 +386,9 @@ export class POCPipeline {
       }
 
       const artifact: ImplementationArtifact = {
-        filesCreated: [],
-        filesModified: [],
-        testsCreated: [],
+        filesCreated,
+        filesModified,
+        testsCreated,
         notes,
       };
 
@@ -329,16 +415,81 @@ export class POCPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Run tests and collect results
-      // - Evaluate each success criterion
-      // - Gather evidence for each criterion
-
-      const criteriaResults = this.state.parsedHypothesis.successCriteria.map((criterion) => ({
+      const observations: string[] = [];
+      let criteriaResults = this.state.parsedHypothesis.successCriteria.map((criterion) => ({
         criterion,
-        passed: false, // Would be determined by actual validation
+        passed: false,
         evidence: "Validation pending",
       }));
+
+      // Use dispatcher to validate the POC against success criteria
+      if (this.dispatcher) {
+        const agents = this.dispatcher.selectAgents(this.state.issue);
+        if (agents.length > 0) {
+          const criteriaList = this.state.parsedHypothesis.successCriteria
+            .map((c, i) => `${i + 1}. ${c}`)
+            .join("\n");
+
+          const implNotes = this.state.implementationArtifact.notes.join("\n");
+          const filesList = [
+            ...this.state.implementationArtifact.filesCreated.map((f) => `Created: ${f}`),
+            ...this.state.implementationArtifact.filesModified.map((f) => `Modified: ${f}`),
+            ...this.state.implementationArtifact.testsCreated.map((f) => `Test: ${f}`),
+          ].join("\n");
+
+          const results = await this.dispatcher.dispatchParallel(agents, {
+            issueId: this.state.issueId,
+            taskType: "analyze",
+            context: {
+              title: this.state.parsedHypothesis.hypothesis,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+            },
+            instructions: [
+              `Validate POC for hypothesis: ${this.state.parsedHypothesis.hypothesis}`,
+              "",
+              "## Success Criteria",
+              criteriaList,
+              "",
+              filesList ? `## Files\n${filesList}` : "",
+              implNotes ? `## Implementation Notes\n${implNotes}` : "",
+              "",
+              "## Instructions",
+              "Run tests if available. Evaluate each success criterion.",
+              "",
+              "## Findings",
+              "- For each criterion, report: 'Criterion N: PASS|FAIL - evidence'",
+              "- General observations about the POC",
+              "",
+              "## Recommendations",
+              "- Suggestions for improvement",
+            ].filter(Boolean).join("\n"),
+          });
+
+          // Parse validation results from agent findings
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            for (const finding of result.findings || []) {
+              const criterionMatch = finding.match(/criterion\s+(\d+):\s*(pass|fail)\s*[-–—]\s*(.*)/i);
+              if (criterionMatch) {
+                const idx = parseInt(criterionMatch[1], 10) - 1;
+                if (idx >= 0 && idx < criteriaResults.length) {
+                  criteriaResults[idx] = {
+                    ...criteriaResults[idx],
+                    passed: criterionMatch[2].toLowerCase() === "pass",
+                    evidence: criterionMatch[3].trim(),
+                  };
+                }
+              } else {
+                observations.push(finding);
+              }
+            }
+            for (const rec of result.recommendations || []) {
+              observations.push(`[${result.agentName}] ${rec}`);
+            }
+          }
+        }
+      }
 
       const overallPassed = criteriaResults.every((r) => r.passed);
 
@@ -348,7 +499,7 @@ export class POCPipeline {
         data: {
           criteriaResults,
           overallPassed,
-          observations: [],
+          observations,
         },
       };
     } catch (error: any) {

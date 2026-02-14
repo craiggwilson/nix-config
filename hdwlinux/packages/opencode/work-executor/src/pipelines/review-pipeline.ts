@@ -180,10 +180,57 @@ export class ReviewPipeline {
         targetRef = filesMatch[1].trim();
       }
 
-      // TODO: In a real implementation, this would:
-      // - Fetch PR diff from GitHub/GitLab
-      // - Fetch commit changes
-      // - Read specified files from codebase
+      const files: FetchedTarget["files"] = [];
+
+      // Use dispatcher to fetch target files from the codebase
+      if (this.dispatcher) {
+        const fileRefs = targetType === "files" ? targetRef : "";
+        const results = await this.dispatcher.dispatchParallel(["codebase-analyst"], {
+          issueId: this.state.issueId,
+          taskType: "analyze",
+          context: {
+            title: this.state.issue.title,
+            description: this.state.issue.description,
+            labels: this.state.issue.labels,
+          },
+          instructions: [
+            `Fetch target for review: ${this.state.issue.title}`,
+            "",
+            `Target type: ${targetType}`,
+            `Target ref: ${targetRef}`,
+            fileRefs ? `Files to review: ${fileRefs}` : "",
+            "",
+            "## Instructions",
+            targetType === "pr"
+              ? "Fetch the PR diff and changed files."
+              : targetType === "commit"
+              ? "Fetch the commit diff and changed files."
+              : targetType === "files"
+              ? "Read the specified files from the codebase."
+              : "Identify the relevant files for this issue.",
+            "",
+            "## Findings",
+            "- Files found (format: 'FilePath: path/to/file')",
+            "- File content summaries",
+            "",
+            "## Recommendations",
+            "- Areas to focus the review on",
+          ].filter(Boolean).join("\n"),
+        });
+
+        for (const result of results) {
+          if (result.status === "failed") continue;
+          for (const finding of result.findings || []) {
+            const fileMatch = finding.match(/^filepath:\s*(.+)/i);
+            if (fileMatch) {
+              files.push({
+                path: fileMatch[1].trim(),
+                content: "", // Content fetched by the agent in its session
+              });
+            }
+          }
+        }
+      }
 
       return {
         stage: "fetchTarget",
@@ -191,7 +238,7 @@ export class ReviewPipeline {
         data: {
           targetType,
           targetRef,
-          files: [],
+          files,
           metadata: {
             title: this.state.issue.title,
             description: this.state.issue.description,
@@ -217,11 +264,16 @@ export class ReviewPipeline {
     }
 
     try {
-      const result: AnalysisResult = {
+      const analysisResult: AnalysisResult = {
         codeQuality: { issues: [] },
         security: { vulnerabilities: [] },
         patterns: { violations: [] },
       };
+
+      // Build file context for the review
+      const fileContext = this.state.fetchedTarget.files.length > 0
+        ? `Files to review:\n${this.state.fetchedTarget.files.map((f) => `- ${f.path}`).join("\n")}`
+        : `Target: ${this.state.fetchedTarget.targetType} - ${this.state.fetchedTarget.targetRef}`;
 
       // Use dispatcher to run appropriate reviewer agents based on mode
       if (this.dispatcher) {
@@ -233,6 +285,14 @@ export class ReviewPipeline {
           reviewAgents.push("security-reviewer-agent");
         }
 
+        // Also add domain-specific agents based on labels
+        const domainAgents = this.dispatcher.selectAgents(this.state.issue);
+        for (const agent of domainAgents) {
+          if (!reviewAgents.includes(agent)) {
+            reviewAgents.push(agent);
+          }
+        }
+
         if (reviewAgents.length > 0) {
           const results = await this.dispatcher.dispatchParallel(reviewAgents, {
             issueId: this.state.issueId,
@@ -242,16 +302,94 @@ export class ReviewPipeline {
               description: this.state.issue.description,
               labels: this.state.issue.labels,
             },
-            instructions: `Perform ${this.state.mode} review for: ${this.state.issue.title}`,
+            instructions: [
+              `Perform ${this.state.mode} review for: ${this.state.issue.title}`,
+              "",
+              fileContext,
+              "",
+              "## Instructions",
+              "Review the code thoroughly. Report issues in structured format.",
+              "",
+              "## Findings",
+              "- Code quality issues (format: 'CodeQuality|type|severity(info/warning/error)|location|message[|suggestion]')",
+              "- Security vulnerabilities (format: 'Security|type|severity(low/medium/high/critical)|location|description|remediation')",
+              "- Pattern violations (format: 'Pattern|pattern_name|location|message')",
+              "",
+              "## Recommendations",
+              "- Overall assessment and improvement suggestions",
+            ].join("\n"),
           });
           this.state.agentResults = results;
+
+          // Parse agent results into structured analysis
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            for (const finding of result.findings || []) {
+              const parts = finding.split("|").map((p) => p.trim());
+
+              if (parts[0]?.toLowerCase() === "codequality" && parts.length >= 5) {
+                const severity = (["info", "warning", "error"].includes(parts[2]) ? parts[2] : "info") as "info" | "warning" | "error";
+                analysisResult.codeQuality.issues.push({
+                  type: parts[1] || "general",
+                  severity,
+                  location: parts[3] || "unknown",
+                  message: parts[4] || finding,
+                  suggestion: parts[5],
+                });
+              } else if (parts[0]?.toLowerCase() === "security" && parts.length >= 6) {
+                const severity = (["low", "medium", "high", "critical"].includes(parts[2]) ? parts[2] : "medium") as "low" | "medium" | "high" | "critical";
+                analysisResult.security.vulnerabilities.push({
+                  type: parts[1] || "general",
+                  severity,
+                  location: parts[3] || "unknown",
+                  description: parts[4] || finding,
+                  remediation: parts[5] || "Review and remediate",
+                });
+              } else if (parts[0]?.toLowerCase() === "pattern" && parts.length >= 4) {
+                analysisResult.patterns.violations.push({
+                  pattern: parts[1] || "unknown",
+                  location: parts[2] || "unknown",
+                  message: parts[3] || finding,
+                });
+              } else {
+                // Unstructured finding — classify by agent name and keywords
+                const lower = finding.toLowerCase();
+                if (result.agentName === "security-reviewer-agent" || lower.includes("vulnerab") || lower.includes("security")) {
+                  const severity = (lower.includes("critical") ? "critical" : lower.includes("high") ? "high" : lower.includes("low") ? "low" : "medium") as "low" | "medium" | "high" | "critical";
+                  analysisResult.security.vulnerabilities.push({
+                    type: "general",
+                    severity,
+                    location: "unknown",
+                    description: finding,
+                    remediation: "Review and remediate",
+                  });
+                } else if (lower.includes("pattern") || lower.includes("convention") || lower.includes("style")) {
+                  analysisResult.patterns.violations.push({
+                    pattern: "general",
+                    location: "unknown",
+                    message: finding,
+                  });
+                } else {
+                  const severity: "info" | "warning" | "error" =
+                    lower.includes("error") || lower.includes("bug") || lower.includes("critical") ? "error" :
+                    lower.includes("warning") || lower.includes("should") ? "warning" : "info";
+                  analysisResult.codeQuality.issues.push({
+                    type: "general",
+                    severity,
+                    location: "unknown",
+                    message: finding,
+                  });
+                }
+              }
+            }
+          }
         }
       }
 
       return {
         stage: "analyze",
         status: "completed",
-        data: result,
+        data: analysisResult,
       };
     } catch (error: any) {
       return {

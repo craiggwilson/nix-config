@@ -196,6 +196,8 @@ export class ResearchPipeline {
 
     try {
       let codebaseFindings: string[] = [];
+      let documentationFindings: string[] = [];
+      let existingPatterns: string[] = [];
 
       // Use dispatcher to gather context from multiple agents in parallel
       if (this.dispatcher) {
@@ -210,12 +212,47 @@ export class ResearchPipeline {
               labels: this.state.issue.labels,
               parent: this.state.issue.parent,
             },
-            instructions: `Gather context for research question: ${this.state.parsedQuestion.question}`,
+            instructions: [
+              `Gather context for research question: ${this.state.parsedQuestion.question}`,
+              "",
+              "Scope: " + (this.state.parsedQuestion.scope.join(", ") || "general"),
+              "Constraints: " + (this.state.parsedQuestion.constraints.join("; ") || "none"),
+              "",
+              "Please provide:",
+              "## Findings",
+              "- Relevant code patterns, files, and existing implementations",
+              "- Documentation references and prior art",
+              "",
+              "## Recommendations",
+              "- Existing patterns that could be reused or extended",
+              "- Relevant documentation or design docs found",
+            ].join("\n"),
           });
           this.state.agentResults = results;
-          codebaseFindings = results
-            .filter((r) => r.status !== "failed")
-            .flatMap((r) => r.findings || []);
+
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            // Classify findings: documentation-related vs codebase
+            for (const finding of result.findings || []) {
+              const lower = finding.toLowerCase();
+              if (lower.includes("doc") || lower.includes("readme") || lower.includes("spec") || lower.includes("design")) {
+                documentationFindings.push(finding);
+              } else if (lower.includes("pattern") || lower.includes("convention") || lower.includes("existing")) {
+                existingPatterns.push(finding);
+              } else {
+                codebaseFindings.push(finding);
+              }
+            }
+            // Recommendations about patterns go to existingPatterns
+            for (const rec of result.recommendations || []) {
+              const lower = rec.toLowerCase();
+              if (lower.includes("pattern") || lower.includes("reuse") || lower.includes("existing") || lower.includes("convention")) {
+                existingPatterns.push(rec);
+              } else if (lower.includes("doc") || lower.includes("reference")) {
+                documentationFindings.push(rec);
+              }
+            }
+          }
         }
       }
 
@@ -226,8 +263,8 @@ export class ResearchPipeline {
         status: "completed",
         data: {
           codebaseFindings,
-          documentationFindings: [],
-          existingPatterns: [],
+          documentationFindings,
+          existingPatterns,
           relatedIssues: relatedIssues.filter((i) => i.id !== this.state!.issueId),
         },
       };
@@ -251,6 +288,19 @@ export class ResearchPipeline {
     try {
       const options: AnalyzedOption[] = [];
 
+      // Build rich context from gathered data
+      const contextSummary = [
+        this.state.gatheredContext.codebaseFindings.length > 0
+          ? "Codebase findings:\n" + this.state.gatheredContext.codebaseFindings.map((f) => `- ${f}`).join("\n")
+          : "",
+        this.state.gatheredContext.existingPatterns.length > 0
+          ? "Existing patterns:\n" + this.state.gatheredContext.existingPatterns.map((p) => `- ${p}`).join("\n")
+          : "",
+        this.state.gatheredContext.relatedIssues.length > 0
+          ? "Related issues:\n" + this.state.gatheredContext.relatedIssues.map((i) => `- ${i.title}`).join("\n")
+          : "",
+      ].filter(Boolean).join("\n\n");
+
       // Use dispatcher to dispatch domain experts for option analysis
       if (this.dispatcher) {
         const agents = this.dispatcher.selectAgents(this.state.issue);
@@ -263,21 +313,60 @@ export class ResearchPipeline {
               description: this.state.issue.description,
               labels: this.state.issue.labels,
             },
-            instructions: `Analyze options for: ${this.state.parsedQuestion.question}. Provide pros, cons, effort, and risk for each option.`,
+            instructions: [
+              `Analyze options for: ${this.state.parsedQuestion.question}`,
+              "",
+              contextSummary ? `## Context\n${contextSummary}` : "",
+              "",
+              "## Instructions",
+              "For each viable option/approach, provide:",
+              "## Findings",
+              "- Pros and cons of each approach (prefix with 'Pro:' or 'Con:')",
+              "- Risk factors (prefix with 'Risk:')",
+              "",
+              "## Recommendations",
+              "- Each recommended option as a separate bullet",
+              "- Include effort estimate (prefix with 'Effort:' low/medium/high)",
+            ].filter(Boolean).join("\n"),
           });
 
-          // Incorporate agent recommendations into options
           for (const result of results) {
             if (result.status === "failed") continue;
+
+            // Build options from recommendations
             if (result.recommendations && result.recommendations.length > 0) {
               for (const rec of result.recommendations) {
+                const pros: string[] = [];
+                const cons: string[] = [];
+                let effort: "low" | "medium" | "high" = "medium";
+                let risk: "low" | "medium" | "high" = "medium";
+
+                // Parse structured info from findings for this agent
+                for (const finding of result.findings || []) {
+                  const lower = finding.toLowerCase();
+                  if (lower.startsWith("pro:") || lower.includes("advantage") || lower.includes("benefit")) {
+                    pros.push(finding.replace(/^pro:\s*/i, ""));
+                  } else if (lower.startsWith("con:") || lower.includes("disadvantage") || lower.includes("drawback")) {
+                    cons.push(finding.replace(/^con:\s*/i, ""));
+                  } else if (lower.startsWith("risk:") || lower.includes("risk")) {
+                    const riskLevel = lower.includes("high") ? "high" : lower.includes("low") ? "low" : "medium";
+                    risk = riskLevel;
+                  }
+                }
+
+                // Parse effort from recommendation text
+                const effortMatch = rec.match(/effort:\s*(low|medium|high)/i);
+                if (effortMatch) {
+                  effort = effortMatch[1].toLowerCase() as "low" | "medium" | "high";
+                }
+
                 options.push({
-                  name: `${result.agentName}: ${rec.substring(0, 50)}`,
+                  name: `${result.agentName}: ${rec.substring(0, 60)}`,
                   description: rec,
-                  pros: [],
-                  cons: [],
-                  effort: "medium",
-                  risk: "medium",
+                  pros,
+                  cons,
+                  effort,
+                  risk,
                 });
               }
             }
@@ -308,11 +397,6 @@ export class ResearchPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Weigh options against constraints and desired outcome
-      // - Consider risk tolerance from config
-      // - Produce a clear recommendation with reasoning
-
       const recommendation: SynthesizedRecommendation = {
         recommendation: "",
         reasoning: "",
@@ -320,11 +404,76 @@ export class ResearchPipeline {
         alternativeConsiderations: [],
       };
 
-      // If we have options, pick the best one
-      if (this.state.analyzedOptions.length > 0) {
+      // Build options summary for synthesis prompt
+      const optionsSummary = this.state.analyzedOptions.map((opt, i) => {
+        const parts = [`${i + 1}. ${opt.name}: ${opt.description}`];
+        if (opt.pros.length > 0) parts.push(`   Pros: ${opt.pros.join("; ")}`);
+        if (opt.cons.length > 0) parts.push(`   Cons: ${opt.cons.join("; ")}`);
+        parts.push(`   Effort: ${opt.effort}, Risk: ${opt.risk}`);
+        return parts.join("\n");
+      }).join("\n");
+
+      if (this.dispatcher && this.state.analyzedOptions.length > 0) {
+        // Use a general-purpose agent to synthesize across all options
+        const results = await this.dispatcher.dispatchParallel(["codebase-analyst"], {
+          issueId: this.state.issueId,
+          taskType: "analyze",
+          context: {
+            title: this.state.parsedQuestion!.question,
+            description: this.state.issue.description,
+            labels: this.state.issue.labels,
+          },
+          instructions: [
+            `Synthesize a recommendation for: ${this.state.parsedQuestion!.question}`,
+            "",
+            `Desired outcome: ${this.state.parsedQuestion!.desiredOutcome}`,
+            this.state.parsedQuestion!.constraints.length > 0
+              ? `Constraints: ${this.state.parsedQuestion!.constraints.join("; ")}`
+              : "",
+            "",
+            "## Options analyzed:",
+            optionsSummary || "(no options identified)",
+            "",
+            "## Instructions",
+            "## Recommendations",
+            "- Provide a single clear recommendation as the first bullet",
+            "- Explain the reasoning",
+            "",
+            "## Findings",
+            "- Alternative considerations or caveats",
+            "- Confidence assessment (prefix with 'Confidence:' low/medium/high)",
+          ].filter(Boolean).join("\n"),
+        });
+
+        for (const result of results) {
+          if (result.status === "failed") continue;
+          if (result.recommendations?.length) {
+            recommendation.recommendation = result.recommendations[0];
+            if (result.recommendations.length > 1) {
+              recommendation.reasoning = result.recommendations.slice(1).join(" ");
+            }
+          }
+          for (const finding of result.findings || []) {
+            const lower = finding.toLowerCase();
+            if (lower.startsWith("confidence:") || lower.includes("confidence")) {
+              if (lower.includes("high")) recommendation.confidence = "high";
+              else if (lower.includes("low")) recommendation.confidence = "low";
+            } else {
+              recommendation.alternativeConsiderations.push(finding);
+            }
+          }
+        }
+      }
+
+      // Fallback: if dispatcher didn't produce a recommendation, pick the best option
+      if (!recommendation.recommendation && this.state.analyzedOptions.length > 0) {
         const bestOption = this.state.analyzedOptions[0];
         recommendation.recommendation = `Recommend: ${bestOption.name}`;
         recommendation.reasoning = bestOption.description;
+        // Add other options as alternatives
+        for (const opt of this.state.analyzedOptions.slice(1)) {
+          recommendation.alternativeConsiderations.push(`${opt.name}: ${opt.description}`);
+        }
       }
 
       return {

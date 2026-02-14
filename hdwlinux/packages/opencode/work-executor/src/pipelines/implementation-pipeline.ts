@@ -238,7 +238,11 @@ export class ImplementationPipeline {
         ? criteriaMatch[1].split("\n").map((c) => c.replace(/^[-*]\s*/, "").trim()).filter(Boolean)
         : ["Feature is implemented and tested"];
 
-      let patterns: string[] = [];
+      const patterns: string[] = [];
+      const relevantFiles: string[] = [];
+      const testFiles: string[] = [];
+      const dependencies: string[] = [];
+      let estimatedComplexity: "low" | "medium" | "high" = "medium";
 
       // Use dispatcher to analyze codebase for relevant context
       if (this.dispatcher) {
@@ -253,12 +257,60 @@ export class ImplementationPipeline {
               labels: this.state.issue.labels,
               parent: this.state.issue.parent,
             },
-            instructions: `Analyze requirements and existing code for: ${title}`,
+            instructions: [
+              `Analyze requirements and existing code for: ${title}`,
+              "",
+              `Requirements: ${requirements.join("; ")}`,
+              `Acceptance criteria: ${acceptanceCriteria.join("; ")}`,
+              "",
+              "## Instructions",
+              "Search the codebase for relevant files, patterns, and test files.",
+              "",
+              "## Findings",
+              "- Relevant source files (prefix with 'File:')",
+              "- Relevant test files (prefix with 'TestFile:')",
+              "- Code patterns found (prefix with 'Pattern:')",
+              "- Dependencies needed (prefix with 'Dependency:')",
+              "- Complexity estimate (prefix with 'Complexity:' low/medium/high)",
+              "",
+              "## Recommendations",
+              "- Approach suggestions and existing code to leverage",
+            ].join("\n"),
           });
           this.state.agentResults = results;
-          patterns = results
-            .filter((r) => r.status !== "failed")
-            .flatMap((r) => r.findings || []);
+
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            for (const finding of result.findings || []) {
+              const lower = finding.toLowerCase();
+              if (lower.startsWith("file:")) {
+                relevantFiles.push(finding.replace(/^file:\s*/i, ""));
+              } else if (lower.startsWith("testfile:")) {
+                testFiles.push(finding.replace(/^testfile:\s*/i, ""));
+              } else if (lower.startsWith("pattern:")) {
+                patterns.push(finding.replace(/^pattern:\s*/i, ""));
+              } else if (lower.startsWith("dependency:")) {
+                dependencies.push(finding.replace(/^dependency:\s*/i, ""));
+              } else if (lower.startsWith("complexity:")) {
+                const c = finding.replace(/^complexity:\s*/i, "").toLowerCase();
+                if (c.includes("high")) estimatedComplexity = "high";
+                else if (c.includes("low")) estimatedComplexity = "low";
+              } else {
+                // Heuristic: extract file paths from general findings
+                const pathMatch = finding.match(/[`']?([a-zA-Z0-9_/.-]+\.[a-zA-Z]+)[`']?/);
+                if (pathMatch) {
+                  const path = pathMatch[1];
+                  if (path.includes("test") || path.includes("spec")) {
+                    testFiles.push(path);
+                  } else {
+                    relevantFiles.push(path);
+                  }
+                } else {
+                  patterns.push(finding);
+                }
+              }
+            }
+          }
         }
       }
 
@@ -269,12 +321,12 @@ export class ImplementationPipeline {
           requirements,
           acceptanceCriteria,
           existingCode: {
-            relevantFiles: [],
+            relevantFiles,
             patterns,
-            testFiles: [],
+            testFiles,
           },
-          dependencies: [],
-          estimatedComplexity: "medium",
+          dependencies,
+          estimatedComplexity,
         },
       };
     } catch (error: any) {
@@ -296,8 +348,24 @@ export class ImplementationPipeline {
 
     try {
       let approach = "";
+      const components: Array<{ name: string; responsibility: string; interfaces: string[] }> = [];
+      let dataFlow = "";
+      let testStrategy = "";
       const risks: string[] = [];
       const mitigations: string[] = [];
+
+      // Build context from requirements analysis
+      const reqContext = [
+        `Requirements: ${this.state.analyzedRequirements.requirements.join("; ")}`,
+        `Acceptance criteria: ${this.state.analyzedRequirements.acceptanceCriteria.join("; ")}`,
+        this.state.analyzedRequirements.existingCode.patterns.length > 0
+          ? `Existing patterns: ${this.state.analyzedRequirements.existingCode.patterns.join("; ")}`
+          : "",
+        this.state.analyzedRequirements.existingCode.relevantFiles.length > 0
+          ? `Relevant files: ${this.state.analyzedRequirements.existingCode.relevantFiles.join(", ")}`
+          : "",
+        `Estimated complexity: ${this.state.analyzedRequirements.estimatedComplexity}`,
+      ].filter(Boolean).join("\n");
 
       // Use dispatcher to get architecture/domain expert input
       if (this.dispatcher) {
@@ -311,16 +379,56 @@ export class ImplementationPipeline {
               description: this.state.issue.description,
               labels: this.state.issue.labels,
             },
-            instructions: `Design implementation approach for: ${this.state.issue.title}`,
+            instructions: [
+              `Design implementation approach for: ${this.state.issue.title}`,
+              "",
+              reqContext,
+              "",
+              "## Instructions",
+              "Produce a design with components, data flow, and test strategy.",
+              "",
+              "## Recommendations",
+              "- First bullet: overall approach",
+              "- Components (prefix with 'Component: name - responsibility')",
+              "- Data flow description (prefix with 'DataFlow:')",
+              "- Test strategy (prefix with 'TestStrategy:')",
+              "- Risk mitigations (prefix with 'Mitigation:')",
+              "",
+              "## Findings",
+              "- Risks and concerns (prefix with 'Risk:')",
+              "- Existing code that should be leveraged",
+            ].join("\n"),
           });
 
           for (const result of results) {
             if (result.status === "failed") continue;
-            if (result.recommendations?.length && !approach) {
-              approach = result.recommendations[0];
+            for (const rec of result.recommendations || []) {
+              const lower = rec.toLowerCase();
+              if (lower.startsWith("component:")) {
+                const parts = rec.replace(/^component:\s*/i, "").split(/\s*[-–—]\s*/);
+                components.push({
+                  name: parts[0]?.trim() || rec,
+                  responsibility: parts[1]?.trim() || "",
+                  interfaces: [],
+                });
+              } else if (lower.startsWith("dataflow:")) {
+                dataFlow = rec.replace(/^dataflow:\s*/i, "");
+              } else if (lower.startsWith("teststrategy:")) {
+                testStrategy = rec.replace(/^teststrategy:\s*/i, "");
+              } else if (lower.startsWith("mitigation:")) {
+                mitigations.push(rec.replace(/^mitigation:\s*/i, ""));
+              } else if (!approach) {
+                approach = rec;
+              }
             }
-            if (result.findings?.length) {
-              risks.push(...result.findings);
+            for (const finding of result.findings || []) {
+              const lower = finding.toLowerCase();
+              if (lower.startsWith("risk:") || lower.includes("risk")) {
+                risks.push(finding.replace(/^risk:\s*/i, ""));
+              } else {
+                // General findings may inform the design
+                risks.push(finding);
+              }
             }
           }
         }
@@ -328,9 +436,9 @@ export class ImplementationPipeline {
 
       const design: DesignArtifact = {
         approach,
-        components: [],
-        dataFlow: "",
-        testStrategy: "",
+        components,
+        dataFlow,
+        testStrategy,
         risks,
         mitigations,
       };
@@ -358,18 +466,108 @@ export class ImplementationPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Spawn language expert to implement
-      // - Create tests alongside implementation
-      // - Follow existing patterns from analysis
+      const filesCreated: string[] = [];
+      const filesModified: string[] = [];
+      const testsCreated: string[] = [];
+      const notes: string[] = [];
+      let linesAdded = 0;
+      let linesRemoved = 0;
+
+      // Build design context for the implementation agent
+      const designContext = [
+        `Approach: ${this.state.design.approach || "not specified"}`,
+        this.state.design.components.length > 0
+          ? `Components:\n${this.state.design.components.map((c) => `- ${c.name}: ${c.responsibility}`).join("\n")}`
+          : "",
+        this.state.design.dataFlow ? `Data flow: ${this.state.design.dataFlow}` : "",
+        this.state.design.testStrategy ? `Test strategy: ${this.state.design.testStrategy}` : "",
+        this.state.analyzedRequirements?.existingCode.relevantFiles.length
+          ? `Relevant files: ${this.state.analyzedRequirements.existingCode.relevantFiles.join(", ")}`
+          : "",
+        this.state.analyzedRequirements?.existingCode.patterns.length
+          ? `Existing patterns: ${this.state.analyzedRequirements.existingCode.patterns.join("; ")}`
+          : "",
+      ].filter(Boolean).join("\n");
+
+      if (this.dispatcher) {
+        // Select language/domain experts for implementation
+        const agents = this.dispatcher.selectAgents(this.state.issue);
+        // Filter to language and analysis agents for implementation
+        const implAgents = agents.filter((a) => {
+          const agent = this.state!.agentResults?.find((r) => r.agentName === a);
+          return true; // Use all selected agents
+        });
+
+        if (implAgents.length > 0) {
+          const results = await this.dispatcher.dispatchSmart(implAgents, {
+            issueId: this.state.issueId,
+            taskType: "implement",
+            context: {
+              title: this.state.issue.title,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+            },
+            instructions: [
+              `Implement: ${this.state.issue.title}`,
+              "",
+              designContext,
+              "",
+              `Requirements: ${this.state.analyzedRequirements?.requirements.join("; ") || "see description"}`,
+              `Acceptance criteria: ${this.state.analyzedRequirements?.acceptanceCriteria.join("; ") || "see description"}`,
+              "",
+              "## Instructions",
+              "Implement the feature following the design. Create tests alongside the implementation.",
+              "Follow existing patterns found in the codebase.",
+              "",
+              "## Findings",
+              "- Files created (prefix with 'Created:')",
+              "- Files modified (prefix with 'Modified:')",
+              "- Tests created (prefix with 'Test:')",
+              "- Lines added/removed (prefix with 'Lines: +N -M')",
+              "",
+              "## Recommendations",
+              "- Implementation notes and decisions made",
+            ].join("\n"),
+          });
+
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            for (const finding of result.findings || []) {
+              const lower = finding.toLowerCase();
+              if (lower.startsWith("created:")) {
+                filesCreated.push(finding.replace(/^created:\s*/i, ""));
+              } else if (lower.startsWith("modified:")) {
+                filesModified.push(finding.replace(/^modified:\s*/i, ""));
+              } else if (lower.startsWith("test:")) {
+                testsCreated.push(finding.replace(/^test:\s*/i, ""));
+              } else if (lower.startsWith("lines:")) {
+                const lineMatch = finding.match(/\+(\d+)\s*-(\d+)/);
+                if (lineMatch) {
+                  linesAdded += parseInt(lineMatch[1], 10);
+                  linesRemoved += parseInt(lineMatch[2], 10);
+                }
+              } else {
+                // Try to extract file paths from general findings
+                const pathMatch = finding.match(/[`']?([a-zA-Z0-9_/.-]+\.[a-zA-Z]+)[`']?/);
+                if (pathMatch) {
+                  filesModified.push(pathMatch[1]);
+                }
+              }
+            }
+            for (const rec of result.recommendations || []) {
+              notes.push(`[${result.agentName}] ${rec}`);
+            }
+          }
+        }
+      }
 
       const artifact: ImplementationArtifact = {
-        filesCreated: [],
-        filesModified: [],
-        linesAdded: 0,
-        linesRemoved: 0,
-        testsCreated: [],
-        notes: [],
+        filesCreated,
+        filesModified,
+        linesAdded,
+        linesRemoved,
+        testsCreated,
+        notes,
       };
 
       return {
@@ -395,17 +593,90 @@ export class ImplementationPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Run test suite
-      // - Collect coverage metrics
-      // - Report failures
+      let testsRun = 0;
+      let testsPassed = 0;
+      let testsFailed = 0;
+      const testResults: Array<{ name: string; passed: boolean; duration: number; error?: string }> = [];
+      let coverage: { lines: number; branches: number; functions: number } | undefined;
+
+      if (this.dispatcher) {
+        const testFiles = [
+          ...this.state.implementation.testsCreated,
+          ...this.state.analyzedRequirements?.existingCode.testFiles || [],
+        ];
+
+        const results = await this.dispatcher.dispatchParallel(["codebase-analyst"], {
+          issueId: this.state.issueId,
+          taskType: "analyze",
+          context: {
+            title: this.state.issue.title,
+            description: this.state.issue.description,
+            labels: this.state.issue.labels,
+          },
+          instructions: [
+            `Run tests and validate implementation for: ${this.state.issue.title}`,
+            "",
+            this.state.implementation.filesCreated.length > 0
+              ? `Files created: ${this.state.implementation.filesCreated.join(", ")}`
+              : "",
+            this.state.implementation.filesModified.length > 0
+              ? `Files modified: ${this.state.implementation.filesModified.join(", ")}`
+              : "",
+            testFiles.length > 0
+              ? `Test files: ${testFiles.join(", ")}`
+              : "",
+            "",
+            "## Instructions",
+            "Run the test suite. Report results for each test.",
+            "",
+            "## Findings",
+            "- Test results (format: 'TestResult: name | pass/fail | duration_ms [| error]')",
+            "- Coverage (format: 'Coverage: lines% branches% functions%')",
+            "",
+            "## Recommendations",
+            "- Suggestions for additional tests or fixes",
+          ].filter(Boolean).join("\n"),
+        });
+
+        for (const result of results) {
+          if (result.status === "failed") continue;
+          for (const finding of result.findings || []) {
+            const lower = finding.toLowerCase();
+            // Parse test results
+            const testMatch = finding.match(/testresult:\s*(.+?)\s*\|\s*(pass|fail)\s*\|\s*(\d+)/i);
+            if (testMatch) {
+              const passed = testMatch[2].toLowerCase() === "pass";
+              const duration = parseInt(testMatch[3], 10);
+              const errorMatch = finding.match(/\|\s*(\d+)\s*\|\s*(.+)$/);
+              testResults.push({
+                name: testMatch[1].trim(),
+                passed,
+                duration,
+                error: !passed && errorMatch ? errorMatch[2].trim() : undefined,
+              });
+              testsRun++;
+              if (passed) testsPassed++;
+              else testsFailed++;
+            }
+            // Parse coverage
+            const covMatch = finding.match(/coverage:\s*(\d+(?:\.\d+)?)%?\s*(\d+(?:\.\d+)?)%?\s*(\d+(?:\.\d+)?)%?/i);
+            if (covMatch) {
+              coverage = {
+                lines: parseFloat(covMatch[1]),
+                branches: parseFloat(covMatch[2]),
+                functions: parseFloat(covMatch[3]),
+              };
+            }
+          }
+        }
+      }
 
       const testResult: TestResult = {
-        testsRun: 0,
-        testsPassed: 0,
-        testsFailed: 0,
-        testResults: [],
-        coverage: undefined,
+        testsRun,
+        testsPassed,
+        testsFailed,
+        testResults,
+        coverage,
       };
 
       return {
@@ -431,10 +702,16 @@ export class ImplementationPipeline {
     }
 
     try {
+      const findings: ReviewFinding[] = [];
       const suggestedImprovements: string[] = [];
 
       // Use dispatcher to run code-reviewer-agent
       if (this.dispatcher) {
+        const filesList = [
+          ...this.state.implementation.filesCreated.map((f) => `Created: ${f}`),
+          ...this.state.implementation.filesModified.map((f) => `Modified: ${f}`),
+        ].join("\n");
+
         const results = await this.dispatcher.dispatchParallel(["code-reviewer-agent"], {
           issueId: this.state.issueId,
           taskType: "review",
@@ -443,21 +720,66 @@ export class ImplementationPipeline {
             description: this.state.issue.description,
             labels: this.state.issue.labels,
           },
-          instructions: `Review code changes for: ${this.state.issue.title}`,
+          instructions: [
+            `Review code changes for: ${this.state.issue.title}`,
+            "",
+            filesList ? `## Changed Files\n${filesList}` : "",
+            this.state.implementation.notes.length > 0
+              ? `## Implementation Notes\n${this.state.implementation.notes.join("\n")}`
+              : "",
+            "",
+            "## Instructions",
+            "Review the code for correctness, style, and quality.",
+            "",
+            "## Findings",
+            "- Issues found (format: 'severity|category|description[|location][|suggestion]')",
+            "  severity: info, warning, error",
+            "",
+            "## Recommendations",
+            "- Suggested improvements",
+          ].filter(Boolean).join("\n"),
         });
 
         for (const result of results) {
           if (result.status === "failed") continue;
+          for (const finding of result.findings || []) {
+            // Try to parse structured finding format
+            const parts = finding.split("|").map((p) => p.trim());
+            if (parts.length >= 3) {
+              const severity = (["info", "warning", "error"].includes(parts[0]) ? parts[0] : "info") as "info" | "warning" | "error";
+              findings.push({
+                severity,
+                category: parts[1] || "code-quality",
+                description: parts[2] || finding,
+                location: parts[3],
+                suggestion: parts[4],
+              });
+            } else {
+              // Unstructured finding — classify by keywords
+              const lower = finding.toLowerCase();
+              const severity: "info" | "warning" | "error" =
+                lower.includes("error") || lower.includes("bug") || lower.includes("critical") ? "error" :
+                lower.includes("warning") || lower.includes("should") || lower.includes("consider") ? "warning" : "info";
+              findings.push({
+                severity,
+                category: "code-quality",
+                description: finding,
+              });
+            }
+          }
           if (result.recommendations?.length) {
             suggestedImprovements.push(...result.recommendations);
           }
         }
       }
 
+      const hasErrors = findings.some((f) => f.severity === "error");
       const review: CodeReviewResult = {
-        findings: [],
-        approved: true,
-        summary: "Code review completed",
+        findings,
+        approved: !hasErrors,
+        summary: findings.length > 0
+          ? `Code review found ${findings.length} issue(s): ${findings.filter((f) => f.severity === "error").length} errors, ${findings.filter((f) => f.severity === "warning").length} warnings`
+          : "Code review completed — no issues found",
         suggestedImprovements,
       };
 
@@ -484,8 +806,17 @@ export class ImplementationPipeline {
     }
 
     try {
+      const findings: ReviewFinding[] = [];
+      const vulnerabilities: Array<{ type: string; severity: "low" | "medium" | "high" | "critical"; description: string; remediation: string }> = [];
+      const recommendations: string[] = [];
+
       // Use dispatcher to run security-reviewer-agent
       if (this.dispatcher) {
+        const filesList = [
+          ...this.state.implementation.filesCreated.map((f) => `Created: ${f}`),
+          ...this.state.implementation.filesModified.map((f) => `Modified: ${f}`),
+        ].join("\n");
+
         const results = await this.dispatcher.dispatchParallel(["security-reviewer-agent"], {
           issueId: this.state.issueId,
           taskType: "review",
@@ -494,23 +825,89 @@ export class ImplementationPipeline {
             description: this.state.issue.description,
             labels: this.state.issue.labels,
           },
-          instructions: `Security review for: ${this.state.issue.title}`,
+          instructions: [
+            `Security review for: ${this.state.issue.title}`,
+            "",
+            filesList ? `## Changed Files\n${filesList}` : "",
+            "",
+            "## Instructions",
+            "Review for security vulnerabilities: injection, auth issues, data exposure, etc.",
+            "",
+            "## Findings",
+            "- Vulnerabilities (format: 'severity|description[|location][|remediation]')",
+            "  severity: low, medium, high, critical",
+            "",
+            "## Recommendations",
+            "- Security best practices and hardening suggestions",
+          ].filter(Boolean).join("\n"),
         });
 
-        // Agent results would populate findings in a real implementation
+        for (const result of results) {
+          if (result.status === "failed") continue;
+          for (const finding of result.findings || []) {
+            const parts = finding.split("|").map((p) => p.trim());
+            if (parts.length >= 2) {
+              const severity = (["low", "medium", "high", "critical"].includes(parts[0]) ? parts[0] : "medium") as "low" | "medium" | "high" | "critical";
+              const desc = parts[1] || finding;
+              vulnerabilities.push({
+                type: parts[2] || "general",
+                severity,
+                description: desc,
+                remediation: parts[3] || "Review and remediate",
+              });
+              // Also add as a ReviewFinding
+              const reviewSeverity: "info" | "warning" | "error" =
+                severity === "critical" || severity === "high" ? "error" :
+                severity === "medium" ? "warning" : "info";
+              findings.push({
+                severity: reviewSeverity,
+                category: "security",
+                description: desc,
+                location: parts[2],
+                suggestion: parts[3],
+              });
+            } else {
+              // Unstructured finding
+              const lower = finding.toLowerCase();
+              const severity = (lower.includes("critical") ? "critical" :
+                lower.includes("high") ? "high" :
+                lower.includes("low") ? "low" : "medium") as "low" | "medium" | "high" | "critical";
+              vulnerabilities.push({
+                type: "general",
+                severity,
+                description: finding,
+                remediation: "Review and remediate",
+              });
+              const reviewSeverity: "info" | "warning" | "error" =
+                severity === "critical" || severity === "high" ? "error" :
+                severity === "medium" ? "warning" : "info";
+              findings.push({
+                severity: reviewSeverity,
+                category: "security",
+                description: finding,
+              });
+            }
+          }
+          if (result.recommendations?.length) {
+            recommendations.push(...result.recommendations);
+          }
+        }
       }
 
-      const review: SecurityReviewResult = {
-        findings: [],
-        approved: true,
-        summary: "Security review completed",
-        vulnerabilities: [],
+      const hasCritical = vulnerabilities.some((v) => v.severity === "critical" || v.severity === "high");
+      const secReview: SecurityReviewResult = {
+        findings,
+        approved: !hasCritical,
+        summary: vulnerabilities.length > 0
+          ? `Security review found ${vulnerabilities.length} vulnerability(ies): ${vulnerabilities.filter((v) => v.severity === "critical" || v.severity === "high").length} high/critical`
+          : "Security review passed — no vulnerabilities found",
+        vulnerabilities,
       };
 
       return {
         stage: "securityReview",
         status: "completed",
-        data: review,
+        data: secReview,
       };
     } catch (error: any) {
       return {

@@ -285,6 +285,11 @@ Key goals:
    - `ImplementationPipeline` - 7 stages: analyzeRequirements → design → implement → test → codeReview → securityReview → wrapUp
    - `ReviewPipeline` - 4 stages: fetchTarget → analyze → produceFindings → createFollowUps
    - **All pipelines accept optional SubagentDispatcher** and use it in relevant stages for agent selection and dispatch
+   - **All stages wired to dispatcher**: every stage sends rich context prompts and parses agent results into structured output types
+     - Research: classifies findings into codebase/docs/patterns; parses pros/cons/effort/risk; uses dispatcher for synthesis
+     - POC: populates components/dependencies; extracts file paths; evaluates success criteria via agents
+     - Implementation: extracts files/patterns/testFiles; populates components/dataFlow/testStrategy; implement and test stages use dispatcher; code/security review parse structured findings with severity classification
+     - Review: fetchTarget uses codebase-analyst; analyze parses CodeQuality/Security/Pattern findings with fallback heuristic classification
    - Orchestrator passes dispatcher to all pipeline constructors
    - **32 tests** in `work-executor/tests/pipelines.test.ts` (22 original + 10 dispatcher integration)
 
@@ -343,10 +348,11 @@ Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun tes
 
 ## Not Yet Done / Next Steps
 
-1. **Flesh out pipeline stage implementations**
-   - Pipelines now use dispatcher for agent selection/dispatch in relevant stages
-   - Stages still return placeholder data (empty file lists, zero metrics, etc.)
-   - Next: connect to actual codebase analysis, code generation, test execution via real agent dispatch
+1. **End-to-end integration with real OpenCode SDK**
+   - Pipeline stages are fully wired to the dispatcher with structured prompts and result parsing
+   - Real execution requires a live OpenCode SDK client (via `createSdkExecutionHandler`)
+   - Next: test with a real OpenCode session to validate prompt quality and result parsing accuracy
+   - May need prompt tuning based on actual agent output formats
 
 ---
 
