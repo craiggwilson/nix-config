@@ -217,7 +217,7 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
 
       if (status.blockedItems.length > 0) {
         // Increase priority if blocked to unblock faster
-        suggestedPriority = Math.min(0, suggestedPriority - 1);
+        suggestedPriority = Math.max(1, suggestedPriority - 1);
       }
 
       if (status.progressPercentage > 80) {

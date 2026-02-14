@@ -44,6 +44,7 @@ export interface IssueRecord {
  */
 export class IssueStorage {
   private cache: Map<string, IssueRecord> = new Map();
+  private seq = 0;
 
   /**
    * Query issues with filters.
@@ -64,7 +65,7 @@ export class IssueStorage {
       }
 
       if (filters.status && filters.status.length > 0) {
-        const status = issue.status || "";
+        const status = issue.status || "todo";
         if (!filters.status.includes(status)) {
           continue;
         }
@@ -125,7 +126,13 @@ export class IssueStorage {
       }
     }
 
-    return ready.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    // Sort by ascending priority (1 = highest) and then by id for stability.
+    return ready.sort((a, b) => {
+      const pa = a.priority ?? Number.MAX_SAFE_INTEGER;
+      const pb = b.priority ?? Number.MAX_SAFE_INTEGER;
+      if (pa !== pb) return pa - pb;
+      return a.id.localeCompare(b.id);
+    });
   }
 
   /**
@@ -237,7 +244,9 @@ export class IssueStorage {
 
     // TODO: Create issue via storage backend.
     // For now, generate a mock ID and store only in the in-memory cache.
-    const id = `${input.type.toUpperCase()}-${Date.now()}`;
+    // Use a neutral ISSUE- prefix and simple counter so IDs are clearly
+    // stubbed and unique within this process.
+    const id = `ISSUE-${Date.now()}-${++this.seq}`;
 
     const issue: IssueRecord = {
       id,

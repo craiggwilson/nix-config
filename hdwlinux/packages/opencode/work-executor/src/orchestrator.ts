@@ -61,15 +61,56 @@ export class WorkExecutorOrchestrator {
     type?: string;
     priority?: number;
   }): Promise<{ workItemId: string; title: string }> {
-    // TODO: Query beads for ready items (no blocking dependencies)
-    // TODO: Apply filters
-    // TODO: Select best candidate (highest priority, oldest created)
-    // TODO: Set status to in_progress and assignee to agent:work-executor
+    // Use storage to find ready items (no blocking dependencies) and
+    // select the best candidate according to simple heuristics.
 
-    // For now, return empty
+    const projectParent = filters?.project;
+    const readyItems = await this.storage.findReady(projectParent);
+
+    const narrowed = readyItems.filter((item) => {
+      if (filters?.labels && filters.labels.length > 0) {
+        const labels = item.labels || [];
+        if (!filters.labels.some((l) => labels.includes(l))) {
+          return false;
+        }
+      }
+
+      if (filters?.type && filters.type.length > 0) {
+        if (!filters.type.includes(item.type)) {
+          return false;
+        }
+      }
+
+      if (filters?.priority !== undefined) {
+        if (item.priority !== filters.priority) {
+          return false;
+        }
+      }
+
+      // TODO: When program-level context is modeled explicitly in
+      // IssueRecord (for example via labels), filter by program here.
+
+      return true;
+    });
+
+    if (narrowed.length === 0) {
+      return {
+        workItemId: "",
+        title: "",
+      };
+    }
+
+    // findReady already returns items sorted by priority, so take first.
+    const candidate = narrowed[0];
+
+    await this.storage.updateIssue(candidate.id, {
+      status: "in_progress",
+      assignee: "agent:work-executor",
+    });
+
     return {
-      workItemId: "",
-      title: "",
+      workItemId: candidate.id,
+      title: candidate.title,
     };
   }
 
@@ -88,17 +129,74 @@ export class WorkExecutorOrchestrator {
     }>;
   }> {
     const mode = input.mode || "full";
+    const results: Array<{
+      issueId: string;
+      status: "completed" | "partial" | "failed";
+      result?: unknown;
+      error?: string;
+    }> = [];
 
-    // TODO: For each issue:
-    // 1. Fetch issue details
-    // 2. Determine work type (research, poc, implementation, review)
-    // 3. Select appropriate subagents based on labels/domain
-    // 4. Run execution pipeline
-    // 5. Update beads with status and discovered work
+    for (const issueId of input.issueIds) {
+      try {
+        const issue = await this.storage.getIssue(issueId);
+        if (!issue) {
+          results.push({
+            issueId,
+            status: "failed",
+            error: "Issue not found",
+          });
+          continue;
+        }
 
-    return {
-      results: [],
-    };
+        const workType = this.inferWorkType(issue.labels || []);
+
+        if (mode === "research-only" && workType !== "research") {
+          results.push({
+            issueId,
+            status: "partial",
+            result: { skipped: true, reason: "Mode research-only" },
+          });
+          continue;
+        }
+
+        if (mode === "poc-only" && workType !== "poc") {
+          results.push({
+            issueId,
+            status: "partial",
+            result: { skipped: true, reason: "Mode poc-only" },
+          });
+          continue;
+        }
+
+        let result: unknown;
+
+        if (workType === "research") {
+          result = await this.executeResearch(issueId);
+        } else if (workType === "poc") {
+          result = await this.executePOC(issueId);
+        } else if (workType === "review") {
+          // Default to code review; caller can use work-review for
+          // explicit control over review mode.
+          result = await this.performReview({ issueId, mode: "code-review" });
+        } else {
+          result = await this.executeImplementation(issueId);
+        }
+
+        results.push({
+          issueId,
+          status: "completed",
+          result,
+        });
+      } catch (error: any) {
+        results.push({
+          issueId,
+          status: "failed",
+          error: error?.message || String(error),
+        });
+      }
+    }
+
+    return { results };
   }
 
   /**
@@ -340,12 +438,25 @@ export class WorkExecutorOrchestrator {
     // TODO: Determine if code review needed
     // TODO: Determine if security review needed
 
-    return {
-      domains: [],
-      requiresDistributedSystems: false,
-      requiresSecurity: false,
-      requiresCodeReview: false,
-      requiresSecurityReview: this.config.alwaysRunSecurityReview,
-    };
+      return {
+        domains: [],
+        requiresDistributedSystems: false,
+        requiresSecurity: false,
+        requiresCodeReview: false,
+        requiresSecurityReview: this.config.alwaysRunSecurityReview,
+      };
+  }
+
+  /**
+   * Infer work type from issue labels.
+   *
+   * Falls back to "implementation" if no specific work-type label is
+   * present so that generic tasks still execute.
+   */
+  private inferWorkType(labels: string[]): "research" | "poc" | "implementation" | "review" {
+    if (labels.includes("research")) return "research";
+    if (labels.includes("poc")) return "poc";
+    if (labels.includes("review") || labels.includes("security-review")) return "review";
+    return "implementation";
   }
 }

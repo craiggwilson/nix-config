@@ -247,18 +247,49 @@ Initialized
     }>;
     suggestedNext?: string;
   }> {
-    // TODO: Query beads for ready items (no blocking dependencies)
-    // TODO: Filter by project
-    // TODO: Sort by priority
-    // TODO: Suggest next item to start
+    const project = await this.storage.getIssue(projectId);
+    if (!project) {
+      throw new Error(`Project ${projectId} not found`);
+    }
 
-    // For now, return empty list
-    const readyItems: Array<{
-      id: string;
-      title: string;
-      priority: number;
-      estimatedEffort?: string;
-    }> = [];
+    // Manually compute "ready" items for this project based on
+    // children and their dependencies.
+    const children = await this.storage.getChildren(projectId);
+
+    // Debug logging was used during development; keep this minimal and
+    // easy to remove once focus logic stabilises.
+    const ready: typeof children = [];
+
+    for (const child of children) {
+      const status = child.status || "todo";
+      if (status !== "todo") {
+        continue;
+      }
+
+      const deps = await this.storage.getDependencies(child.id);
+      const hasBlockingDeps = deps.some((depId) => {
+        const dep = children.find((c) => c.id === depId) || null;
+        return dep && dep.status !== "done";
+      });
+
+      if (!hasBlockingDeps) {
+        ready.push(child);
+      }
+    }
+
+    ready.sort((a, b) => {
+      const pa = a.priority ?? Number.MAX_SAFE_INTEGER;
+      const pb = b.priority ?? Number.MAX_SAFE_INTEGER;
+      if (pa !== pb) return pa - pb;
+      return a.id.localeCompare(b.id);
+    });
+
+    const readyItems = ready.map((item) => ({
+      id: item.id,
+      title: item.title,
+      priority: item.priority || 0,
+      estimatedEffort: undefined,
+    }));
 
     return {
       readyItems,
