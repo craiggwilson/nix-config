@@ -6,6 +6,7 @@
  */
 
 import { ConfigManager, IssueStorage } from "opencode-planner-core";
+import { SubagentDispatcher } from "../../core/src/orchestration/subagent-dispatcher.js";
 import type {
   WorkItem,
   ResearchResult,
@@ -42,11 +43,17 @@ export class WorkExecutorOrchestrator {
   private storage: IssueStorage;
   private config: WorkExecutorConfig;
   private configManager: ConfigManager;
+  private dispatcher: SubagentDispatcher;
 
-  constructor(storage: IssueStorage, configManager: ConfigManager) {
+  constructor(
+    storage: IssueStorage,
+    configManager: ConfigManager,
+    options?: { dispatcher?: SubagentDispatcher },
+  ) {
     this.storage = storage;
     this.configManager = configManager;
     this.config = configManager.load("work-executor", DEFAULT_CONFIG);
+    this.dispatcher = options?.dispatcher || new SubagentDispatcher();
   }
 
   /**
@@ -154,6 +161,9 @@ export class WorkExecutorOrchestrator {
           continue;
         }
 
+        // Use dispatcher to select agents based on issue labels
+        const selectedAgents = this.dispatcher.selectAgents(issue);
+
         const workType = this.inferWorkType(issue.labels || []);
 
         if (mode === "research-only" && workType !== "research") {
@@ -209,7 +219,7 @@ export class WorkExecutorOrchestrator {
    * Execute a research task
    */
   async executeResearch(issueId: string): Promise<ResearchResult> {
-    const pipeline = new ResearchPipeline(this.storage);
+    const pipeline = new ResearchPipeline(this.storage, { dispatcher: this.dispatcher });
     return pipeline.execute(issueId);
   }
 
@@ -217,7 +227,7 @@ export class WorkExecutorOrchestrator {
    * Execute a POC task
    */
   async executePOC(issueId: string): Promise<POCResult> {
-    const pipeline = new POCPipeline(this.storage);
+    const pipeline = new POCPipeline(this.storage, { dispatcher: this.dispatcher });
     return pipeline.execute(issueId);
   }
 
@@ -230,6 +240,7 @@ export class WorkExecutorOrchestrator {
       maxFilesPerCommit: this.config.autonomousEditLimits.maxFilesPerCommit,
       requiresApprovalForPublicAPIs: this.config.autonomousEditLimits.requiresApprovalForPublicAPIs,
       requiresApprovalForDependencyChanges: this.config.autonomousEditLimits.requiresApprovalForDependencyChanges,
+      dispatcher: this.dispatcher,
     });
     return pipeline.execute(issueId);
   }
@@ -241,7 +252,7 @@ export class WorkExecutorOrchestrator {
     issueId: string;
     mode: ReviewMode;
   }): Promise<ReviewResult> {
-    const pipeline = new ReviewPipeline(this.storage);
+    const pipeline = new ReviewPipeline(this.storage, { dispatcher: this.dispatcher });
     return pipeline.execute(input.issueId, input.mode);
   }
 

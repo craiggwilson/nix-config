@@ -11,6 +11,7 @@
  */
 
 import type { IssueStorage, IssueRecord } from "opencode-planner-core";
+import type { SubagentDispatcher, SubagentResult } from "../../../core/src/orchestration/subagent-dispatcher.js";
 import type { ReviewResult, ReviewFinding, DiscoveredWorkItem, ReviewMode } from "../types.js";
 
 export interface ReviewStageResult<T> {
@@ -81,15 +82,18 @@ export interface ReviewPipelineState {
   analysisResult?: AnalysisResult;
   producedFindings?: ProducedFindings;
   followUpIssues?: DiscoveredWorkItem[];
+  agentResults?: SubagentResult[];
   stages: ReviewStageResult<unknown>[];
 }
 
 export class ReviewPipeline {
   private storage: IssueStorage;
+  private dispatcher?: SubagentDispatcher;
   private state: ReviewPipelineState | null = null;
 
-  constructor(storage: IssueStorage) {
+  constructor(storage: IssueStorage, options?: { dispatcher?: SubagentDispatcher }) {
     this.storage = storage;
+    this.dispatcher = options?.dispatcher;
   }
 
   /**
@@ -219,18 +223,29 @@ export class ReviewPipeline {
         patterns: { violations: [] },
       };
 
-      // TODO: In a real implementation, this would:
-      // - Spawn code-reviewer-agent for code quality (if mode includes code-review)
-      // - Spawn security-reviewer-agent for security (if mode includes security-review)
-      // - Run static analysis tools
-      // - Check for pattern violations
+      // Use dispatcher to run appropriate reviewer agents based on mode
+      if (this.dispatcher) {
+        const reviewAgents: string[] = [];
+        if (this.state.mode === "code-review" || this.state.mode === "both") {
+          reviewAgents.push("code-reviewer-agent");
+        }
+        if (this.state.mode === "security-review" || this.state.mode === "both") {
+          reviewAgents.push("security-reviewer-agent");
+        }
 
-      if (this.state.mode === "code-review" || this.state.mode === "both") {
-        // Would spawn code-reviewer-agent here
-      }
-
-      if (this.state.mode === "security-review" || this.state.mode === "both") {
-        // Would spawn security-reviewer-agent here
+        if (reviewAgents.length > 0) {
+          const results = await this.dispatcher.dispatchParallel(reviewAgents, {
+            issueId: this.state.issueId,
+            taskType: "review",
+            context: {
+              title: this.state.issue.title,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+            },
+            instructions: `Perform ${this.state.mode} review for: ${this.state.issue.title}`,
+          });
+          this.state.agentResults = results;
+        }
       }
 
       return {

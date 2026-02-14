@@ -13,6 +13,7 @@
  */
 
 import type { IssueStorage, IssueRecord } from "opencode-planner-core";
+import type { SubagentDispatcher, SubagentResult } from "../../../core/src/orchestration/subagent-dispatcher.js";
 import type { POCResult, DiscoveredWorkItem } from "../types.js";
 
 export interface POCStageResult<T> {
@@ -70,15 +71,18 @@ export interface POCPipelineState {
   validationResult?: ValidationResult;
   recommendation?: POCRecommendation;
   discoveredWork?: DiscoveredWorkItem[];
+  agentResults?: SubagentResult[];
   stages: POCStageResult<unknown>[];
 }
 
 export class POCPipeline {
   private storage: IssueStorage;
+  private dispatcher?: SubagentDispatcher;
   private state: POCPipelineState | null = null;
 
-  constructor(storage: IssueStorage) {
+  constructor(storage: IssueStorage, options?: { dispatcher?: SubagentDispatcher }) {
     this.storage = storage;
+    this.dispatcher = options?.dispatcher;
   }
 
   /**
@@ -207,17 +211,43 @@ export class POCPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Spawn appropriate domain experts based on scope
-      // - Have them propose minimal design to test hypothesis
-      // - Focus on speed over completeness
+      let approach = "";
+      const risks: string[] = [];
+
+      // Use dispatcher to get domain expert input for design
+      if (this.dispatcher) {
+        const agents = this.dispatcher.selectAgents(this.state.issue);
+        if (agents.length > 0) {
+          const results = await this.dispatcher.dispatchSmart(agents, {
+            issueId: this.state.issueId,
+            taskType: "design",
+            context: {
+              title: this.state.parsedHypothesis.hypothesis,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+            },
+            instructions: `Design minimal POC to test hypothesis: ${this.state.parsedHypothesis.hypothesis}`,
+          });
+          this.state.agentResults = results;
+
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            if (result.recommendations?.length) {
+              approach = result.recommendations[0];
+            }
+            if (result.findings?.length) {
+              risks.push(...result.findings);
+            }
+          }
+        }
+      }
 
       const design: MinimalDesign = {
-        approach: "",
+        approach,
         components: [],
         dependencies: [],
         estimatedEffort: "hours",
-        risks: [],
+        risks,
       };
 
       return {
@@ -243,16 +273,37 @@ export class POCPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Spawn language expert to implement the POC
-      // - Focus on speed and minimal viable implementation
-      // - Create basic tests to validate functionality
+      const notes: string[] = [];
+
+      // Use dispatcher to get language expert guidance for implementation
+      if (this.dispatcher) {
+        const agents = this.dispatcher.selectAgents(this.state.issue);
+        if (agents.length > 0) {
+          const results = await this.dispatcher.dispatchSmart(agents, {
+            issueId: this.state.issueId,
+            taskType: "implement",
+            context: {
+              title: this.state.parsedHypothesis!.hypothesis,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+            },
+            instructions: `Implement minimal POC for: ${this.state.parsedHypothesis!.hypothesis}`,
+          });
+
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            if (result.recommendations?.length) {
+              notes.push(...result.recommendations.map((r) => `[${result.agentName}] ${r}`));
+            }
+          }
+        }
+      }
 
       const artifact: ImplementationArtifact = {
         filesCreated: [],
         filesModified: [],
         testsCreated: [],
-        notes: [],
+        notes,
       };
 
       return {

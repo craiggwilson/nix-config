@@ -6,6 +6,8 @@
   */
 
 import { ConfigManager, IssueStorage } from "opencode-planner-core";
+import { SubagentDispatcher } from "../../core/src/orchestration/subagent-dispatcher.js";
+import type { SubagentResult } from "../../core/src/orchestration/subagent-dispatcher.js";
 import type {
   ProjectEpic,
   BacklogItem,
@@ -14,6 +16,24 @@ import type {
   SprintPlan,
   ProjectPlannerConfig,
 } from "./types.js";
+
+/**
+ * Delegate interface for cross-plugin delegation to work executor.
+ * When provided, executeSprint() will delegate execution of ready tasks.
+ */
+export interface WorkExecutorDelegate {
+  executeWork(input: {
+    issueIds: string[];
+    mode?: string;
+  }): Promise<{
+    results: Array<{
+      issueId: string;
+      status: string;
+      result?: unknown;
+      error?: string;
+    }>;
+  }>;
+}
 
 const DEFAULT_CONFIG: ProjectPlannerConfig = {
   sprintStyle: "labels",
@@ -27,11 +47,25 @@ export class ProjectPlannerOrchestrator {
   private storage: IssueStorage;
   private config: ProjectPlannerConfig;
   private configManager: ConfigManager;
+  private dispatcher: SubagentDispatcher;
+  private workExecutorDelegate?: WorkExecutorDelegate;
 
-  constructor(storage: IssueStorage, configManager: ConfigManager) {
+  constructor(
+    storage: IssueStorage,
+    configManager: ConfigManager,
+    options?: { dispatcher?: SubagentDispatcher },
+  ) {
     this.storage = storage;
     this.configManager = configManager;
     this.config = configManager.load("project-planner", DEFAULT_CONFIG);
+    this.dispatcher = options?.dispatcher || new SubagentDispatcher();
+  }
+
+  /**
+   * Set a delegate for cross-plugin delegation to work executor.
+   */
+  setWorkExecutorDelegate(delegate: WorkExecutorDelegate): void {
+    this.workExecutorDelegate = delegate;
   }
 
   /**
@@ -102,8 +136,25 @@ Initialized
     const createdItems: string[] = [];
     const dependencies: Array<[string, string]> = [];
 
-    // TODO: Spawn backlog-decomposer-agent to propose features/tasks/chores
-    // For now, create placeholder backlog items
+    // Use dispatcher to analyze the project and get decomposition recommendations
+    const agents = this.dispatcher.selectAgents(project);
+    let agentRecommendations = "";
+    if (agents.length > 0) {
+      const results = await this.dispatcher.dispatchSmart(agents, {
+        issueId: input.projectId,
+        taskType: "analyze",
+        context: {
+          title: project.title,
+          description: project.description,
+          labels: project.labels,
+          parent: project.parent,
+        },
+        instructions: "Analyze project and recommend decomposition into backlog items.",
+      });
+      agentRecommendations = this.summarizeAgentResults(results);
+    }
+
+    // Create placeholder backlog items (enriched with agent recommendations)
     const backlogItems = [
       { title: "Setup and initialization", type: "task", priority: 1 },
       { title: "Core implementation", type: "feature", priority: 1 },
@@ -112,10 +163,14 @@ Initialized
     ];
 
     for (const item of backlogItems) {
+      const itemDescription = agentRecommendations
+        ? `Backlog item for ${project.title}\n\n## Agent Recommendations\n${agentRecommendations}`
+        : `Backlog item for ${project.title}`;
+
       const issue = await this.storage.createIssue({
         type: item.type,
         title: item.title,
-        description: `Backlog item for ${project.title}`,
+        description: itemDescription,
         labels: [`project:${this.slugify(project.title)}`],
         priority: item.priority,
         parent: input.projectId,
@@ -148,19 +203,37 @@ Initialized
       throw new Error(`Project ${input.projectId} not found`);
     }
 
-    // TODO: Spawn sprint-planner-agent to select tasks
-    // For now, create a sprint epic or apply labels
+    // Use dispatcher for sprint planning analysis
+    const agents = this.dispatcher.selectAgents(project);
+    let sprintAnalysis = "";
+    if (agents.length > 0) {
+      const results = await this.dispatcher.dispatchSmart(agents, {
+        issueId: input.projectId,
+        taskType: "analyze",
+        context: {
+          title: `Sprint planning: ${input.sprintName}`,
+          description: `Sprint from ${input.startDate} to ${input.endDate}, capacity: ${input.capacity || "unset"}`,
+          labels: project.labels,
+          parent: project.parent,
+        },
+        instructions: "Analyze project backlog and recommend tasks for the sprint.",
+      });
+      sprintAnalysis = this.summarizeAgentResults(results);
+    }
+
+    const sprintDescription = sprintAnalysis
+      ? `Sprint from ${input.startDate} to ${input.endDate}\n\n## Agent Analysis\n${sprintAnalysis}`
+      : `Sprint from ${input.startDate} to ${input.endDate}`;
+
     const sprintEpic = await this.storage.createIssue({
       type: "epic",
       title: input.sprintName,
-      description: `Sprint from ${input.startDate} to ${input.endDate}`,
+      description: sprintDescription,
       labels: ["sprint", `sprint:${this.slugify(input.sprintName)}`],
       priority: 1,
       parent: input.projectId,
     });
 
-    // TODO: Select tasks based on priority and capacity
-    // For now, return empty plan
     const selectedItems: Array<{
       id: string;
       title: string;
@@ -464,6 +537,60 @@ Initialized
     } catch (error) {
       console.error("Error listing projects:", error);
     }
+  }
+
+  /**
+   * Execute ready tasks in a sprint by delegating to work executor.
+   * Requires a work executor delegate to be set.
+   */
+  async executeSprint(input: {
+    projectId: string;
+    mode?: string;
+  }): Promise<{
+    executedCount: number;
+    results: Array<{ issueId: string; status: string; error?: string }>;
+  }> {
+    if (!this.workExecutorDelegate) {
+      return { executedCount: 0, results: [] };
+    }
+
+    const focus = await this.getProjectFocus(input.projectId);
+    if (focus.readyItems.length === 0) {
+      return { executedCount: 0, results: [] };
+    }
+
+    const issueIds = focus.readyItems.map((item) => item.id);
+    const delegateResult = await this.workExecutorDelegate.executeWork({
+      issueIds,
+      mode: input.mode,
+    });
+
+    return {
+      executedCount: delegateResult.results.length,
+      results: delegateResult.results.map((r) => ({
+        issueId: r.issueId,
+        status: r.status,
+        error: r.error,
+      })),
+    };
+  }
+
+  /**
+   * Summarize results from dispatched agents into a readable string.
+   */
+  private summarizeAgentResults(results: SubagentResult[]): string {
+    const parts: string[] = [];
+    for (const result of results) {
+      if (result.status === "failed") continue;
+      const header = `### ${result.agentName}`;
+      const findings = (result.findings || []).map((f) => `- ${f}`).join("\n");
+      const recommendations = (result.recommendations || []).map((r) => `- ${r}`).join("\n");
+      const sections: string[] = [header];
+      if (findings) sections.push(`**Findings:**\n${findings}`);
+      if (recommendations) sections.push(`**Recommendations:**\n${recommendations}`);
+      parts.push(sections.join("\n"));
+    }
+    return parts.join("\n\n");
   }
 
   /**

@@ -35,11 +35,13 @@ export interface IssueRecord {
 /**
  * In-memory issue storage and helper utilities.
  *
- * NOTE: The current implementation uses only an in-memory cache.
- * A future backend can call opencode-beads tools via the OpenCode SDK.
+ * Optionally delegates to an IssueStorageBackend when one is provided.
+ * Without a backend, uses only an in-memory cache.
  */
 export declare class IssueStorage {
     private cache;
+    private backend?;
+    constructor(backend?: import("./storage-backend.js").IssueStorageBackend);
     /**
      * Query issues with filters.
      */

@@ -6,6 +6,8 @@
  * exposed by the opencode-beads plugin) or by another system.
  */
 
+import type { IssueStorageBackend } from "./storage-backend.js";
+
 export interface IssueQuery {
   labels?: string[];
   status?: string[];
@@ -37,22 +39,37 @@ export interface IssueRecord {
 }
 
 /**
- * In-memory issue storage and helper utilities.
+ * Issue storage with optional backend delegation.
  *
- * NOTE: The current implementation uses only an in-memory cache.
- * A future backend can call opencode-beads tools via the OpenCode SDK.
+ * When constructed without a backend, all data lives in an in-memory
+ * cache (original behavior). When a backend is provided, mutating
+ * operations delegate to it first, then update the local cache so
+ * that cache-only helpers (search, findReady, analyzeDependencies,
+ * etc.) continue to work.
  */
 export class IssueStorage {
   private cache: Map<string, IssueRecord> = new Map();
   private seq = 0;
+  private backend?: IssueStorageBackend;
+
+  constructor(backend?: IssueStorageBackend) {
+    this.backend = backend;
+  }
 
   /**
    * Query issues with filters.
+   *
+   * When a backend is present, delegates to it and populates the
+   * cache with the results so that cache-only helpers work.
    */
   async query(filters: IssueQuery): Promise<IssueRecord[]> {
-    // TODO: In a real backend, translate filters into a query and
-    // execute it via tools (for example, opencode-beads).
-    // For now, filter the in-memory cache.
+    if (this.backend) {
+      const results = await this.backend.query(filters);
+      for (const issue of results) {
+        this.cache.set(issue.id, issue);
+      }
+      return results;
+    }
 
     const results: IssueRecord[] = [];
 
@@ -214,20 +231,24 @@ export class IssueStorage {
   }
 
   /**
-   * Get all dependencies of an issue
+   * Get all dependencies of an issue.
+   *
+   * Uses getIssue (which can fetch from backend on cache miss).
    */
   async getDependencies(issueId: string): Promise<string[]> {
-    const issue = this.cache.get(issueId);
+    const issue = await this.getIssue(issueId);
     if (issue && issue.dependencies) {
       return issue.dependencies;
     }
 
-    // TODO: Fetch from storage backend if not in cache
     return [];
   }
 
   /**
    * Create a new issue with proper structure.
+   *
+   * When a backend is present, delegates creation to it and uses the
+   * returned ID. The issue is always stored in the local cache.
    */
   async createIssue(input: {
     type: string;
@@ -242,11 +263,14 @@ export class IssueStorage {
       throw new Error("type and title are required");
     }
 
-    // TODO: Create issue via storage backend.
-    // For now, generate a mock ID and store only in the in-memory cache.
-    // Use a neutral ISSUE- prefix and simple counter so IDs are clearly
-    // stubbed and unique within this process.
-    const id = `ISSUE-${Date.now()}-${++this.seq}`;
+    let id: string;
+
+    if (this.backend) {
+      const result = await this.backend.createIssue(input);
+      id = result.id;
+    } else {
+      id = `ISSUE-${Date.now()}-${++this.seq}`;
+    }
 
     const issue: IssueRecord = {
       id,
@@ -264,7 +288,10 @@ export class IssueStorage {
   }
 
   /**
-   * Update an issue in the in-memory cache.
+   * Update an issue.
+   *
+   * When a backend is present, delegates the update to it first,
+   * then applies the same changes to the local cache.
    */
   async updateIssue(
     issueId: string,
@@ -277,7 +304,11 @@ export class IssueStorage {
       labels?: string[];
     }
   ): Promise<void> {
-     const issue = this.cache.get(issueId);
+    if (this.backend) {
+      await this.backend.updateIssue(issueId, updates);
+    }
+
+    const issue = this.cache.get(issueId);
     if (!issue) {
       throw new Error(`Issue not found: ${issueId}`);
     }
@@ -288,19 +319,24 @@ export class IssueStorage {
     if (updates.priority !== undefined) issue.priority = updates.priority;
     if (updates.assignee) issue.assignee = updates.assignee;
     if (updates.labels) issue.labels = updates.labels;
-
-    // TODO: Update via storage backend.
   }
 
   /**
    * Create a dependency between two issues.
+   *
+   * When a backend is present, delegates to it first, then updates
+   * the local cache.
    */
   async createDependency(
     inwardId: string,
     outwardId: string,
     reason?: string
   ): Promise<void> {
-     const inward = this.cache.get(inwardId);
+    if (this.backend) {
+      await this.backend.createDependency(inwardId, outwardId, reason);
+    }
+
+    const inward = this.cache.get(inwardId);
     if (!inward) {
       throw new Error(`Issue not found: ${inwardId}`);
     }
@@ -312,16 +348,15 @@ export class IssueStorage {
     if (!inward.dependencies.includes(outwardId)) {
       inward.dependencies.push(outwardId);
     }
-
-    // TODO: Create dependency via storage backend.
   }
 
   /**
-   * Search issues by title/description in the in-memory cache.
+   * Search issues by title/description in the local cache.
+   *
+   * This method always operates on the cache. Populate the cache
+   * first via query() or getIssue() when using a backend.
    */
   async search(query: string): Promise<IssueRecord[]> {
-    // TODO: Execute search via storage backend.
-    // For now, search cache only.
     const results: IssueRecord[] = [];
     const lowerQuery = query.toLowerCase();
 
@@ -352,7 +387,14 @@ export class IssueStorage {
       return this.cache.get(issueId) || null;
     }
 
-    // TODO: Fetch from storage backend if not in cache.
+    if (this.backend) {
+      const issue = await this.backend.getIssue(issueId);
+      if (issue) {
+        this.cache.set(issue.id, issue);
+      }
+      return issue;
+    }
+
     return null;
   }
 }

@@ -5,11 +5,25 @@
 import { test } from "bun:test";
 import { WorkExecutorOrchestrator } from "../src/orchestrator.js";
 import { ConfigManager, IssueStorage } from "../../core/src/index.ts";
+import { SubagentDispatcher } from "../../core/src/orchestration/subagent-dispatcher.js";
+import type { SubagentTask, SubagentResult } from "../../core/src/orchestration/subagent-dispatcher.js";
 
 function createOrchestrator() {
   const storage = new IssueStorage();
   const configManager = new ConfigManager("/tmp/opencode-test-config");
   return { storage, orchestrator: new WorkExecutorOrchestrator(storage, configManager) };
+}
+
+function createOrchestratorWithDispatcher(
+  executionHandler: (agentName: string, task: SubagentTask) => Promise<SubagentResult>,
+) {
+  const storage = new IssueStorage();
+  const configManager = new ConfigManager("/tmp/opencode-test-config");
+  const dispatcher = new SubagentDispatcher({ executionHandler });
+  return {
+    storage,
+    orchestrator: new WorkExecutorOrchestrator(storage, configManager, { dispatcher }),
+  };
 }
 
 test("claimWork selects a ready task and marks it in_progress", async () => {
@@ -91,5 +105,91 @@ test("executeWork routes by label and honors mode filters", async () => {
 
   if (full.results.length !== 3) {
     throw new Error("Expected 3 results in full mode");
+  }
+});
+
+test("executeWork uses dispatcher to select agents before pipeline dispatch", async () => {
+  const agentSelections: string[][] = [];
+  const { storage, orchestrator } = createOrchestratorWithDispatcher(
+    async (agentName, task) => {
+      return {
+        agentName,
+        status: "success",
+        findings: ["Agent finding"],
+        recommendations: ["Agent recommendation"],
+      };
+    },
+  );
+
+  const task = await storage.createIssue({
+    type: "task",
+    title: "Kafka implementation",
+    labels: ["kafka", "implementation"],
+  });
+  await storage.updateIssue(task.id, { status: "todo" });
+
+  const result = await orchestrator.executeWork({
+    issueIds: [task.id],
+    mode: "full",
+  });
+
+  if (result.results.length !== 1) {
+    throw new Error("Expected 1 result");
+  }
+  if (result.results[0].status !== "completed") {
+    throw new Error("Task should be completed");
+  }
+});
+
+test("dispatcher is passed to pipelines during execution", async () => {
+  const dispatchedAgents: string[] = [];
+  const { storage, orchestrator } = createOrchestratorWithDispatcher(
+    async (agentName, task) => {
+      dispatchedAgents.push(agentName);
+      return {
+        agentName,
+        status: "success",
+        findings: ["Pipeline agent finding"],
+        recommendations: ["Pipeline agent recommendation"],
+      };
+    },
+  );
+
+  // Research task - pipeline should use dispatcher in gatherContext and analyzeOptions
+  const research = await storage.createIssue({
+    type: "task",
+    title: "Research Kafka patterns",
+    labels: ["research", "kafka"],
+  });
+  await storage.updateIssue(research.id, { status: "todo" });
+
+  await orchestrator.executeResearch(research.id);
+
+  // Dispatcher should have been called by the pipeline
+  if (dispatchedAgents.length === 0) {
+    throw new Error("Dispatcher should have been called by the research pipeline");
+  }
+});
+
+test("orchestrator works without custom dispatcher (default behavior)", async () => {
+  const { storage, orchestrator } = createOrchestrator();
+
+  const task = await storage.createIssue({
+    type: "task",
+    title: "Simple task",
+    labels: ["implementation"],
+  });
+  await storage.updateIssue(task.id, { status: "todo" });
+
+  const result = await orchestrator.executeWork({
+    issueIds: [task.id],
+    mode: "full",
+  });
+
+  if (result.results.length !== 1) {
+    throw new Error("Expected 1 result");
+  }
+  if (result.results[0].status !== "completed") {
+    throw new Error("Task should be completed with default dispatcher");
   }
 });

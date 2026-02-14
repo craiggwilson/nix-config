@@ -243,6 +243,8 @@ Key goals:
    - `IssueStorage` class with in-memory Map-based store
    - Methods: `query`, `findReady`, `getChildren`, `getDependencies`, `createIssue`, `updateIssue`, `createDependency`, `search`, `getIssue`, `clearCache`, `analyzeDependencies`
    - Stable stub ID format: `ISSUE-<timestamp>-<seq>`
+   - **Backend delegation**: constructor accepts optional `IssueStorageBackend`; when provided, delegates `query`, `getIssue`, `createIssue`, `updateIssue`, `createDependency` to backend while keeping cache in sync
+   - **15 tests** in `core/tests/beads.test.ts` (4 original + 11 backend delegation)
 
 2. **IssueStorageBackend interface** (`core/src/storage-backend.ts`)
    - Pluggable backend interface for future beads-backed implementation
@@ -259,6 +261,7 @@ Key goals:
    - `dispatchParallel()` / `dispatchSequential()` - parallel and sequential agent dispatch
    - `dispatchSmart()` - automatic parallelization based on agent category independence
    - Label-to-agent mappings for: kafka, flink, mongodb, go, java, nix, terraform, aws, security, distributed-systems
+   - **Wired into all three orchestrators** - each creates a dispatcher and uses it for agent selection/dispatch
    - **17 tests** in `core/tests/subagent-dispatcher.test.ts`
 
 5. **Execution Pipelines** (`work-executor/src/pipelines/`)
@@ -266,8 +269,9 @@ Key goals:
    - `POCPipeline` - 6 stages: parseHypothesis → minimalDesign → implement → validate → produceRecommendation → fileDiscoveredWork
    - `ImplementationPipeline` - 7 stages: analyzeRequirements → design → implement → test → codeReview → securityReview → wrapUp
    - `ReviewPipeline` - 4 stages: fetchTarget → analyze → produceFindings → createFollowUps
-   - Orchestrator updated to use pipeline classes
-   - **22 tests** in `work-executor/tests/pipelines.test.ts`
+   - **All pipelines accept optional SubagentDispatcher** and use it in relevant stages for agent selection and dispatch
+   - Orchestrator passes dispatcher to all pipeline constructors
+   - **32 tests** in `work-executor/tests/pipelines.test.ts` (22 original + 10 dispatcher integration)
 
 6. **Cross-Plugin Integration Tests** (`tests/integration/`)
    - `full-flow.test.ts` - End-to-end program → project → work flow
@@ -277,27 +281,32 @@ Key goals:
 
 7. **Program Planner Orchestrator** (`program-planner/src/orchestrator.ts`)
    - `createProgram`, `planProgram`, `getProgramStatus`, `rebalancePrograms`, `listPrograms`
-   - Tests in `program-planner/tests/program-orchestrator.test.ts`
+   - **SubagentDispatcher integration**: uses dispatcher in `createProgram` and `planProgram` to enrich descriptions with agent analysis
+   - **Cross-plugin delegation**: `ProjectPlannerDelegate` interface, `setProjectPlannerDelegate()` method; `planProgram` delegates to project planner when delegate is set
+   - Tests in `program-planner/tests/program-orchestrator.test.ts` (original + 5 new dispatcher/delegation tests)
 
 8. **Project Planner Orchestrator** (`project-planner/src/orchestrator.ts`)
    - `initProject`, `planProject`, `planSprint`, `getProjectStatus`, `getProjectFocus`, `listProjects`
-   - Tests in `project-planner/tests/project-focus.test.ts`
+   - **SubagentDispatcher integration**: uses dispatcher in `planProject` and `planSprint` to enrich descriptions with agent analysis
+   - **Cross-plugin delegation**: `WorkExecutorDelegate` interface, `setWorkExecutorDelegate()` method; new `executeSprint()` method delegates ready tasks to work executor
+   - Tests in `project-planner/tests/project-focus.test.ts` (original + 5 new dispatcher/delegation tests)
 
 9. **Work Executor Orchestrator** (`work-executor/src/orchestrator.ts`)
    - `claimWork`, `executeWork`, `executeResearch`, `executePOC`, `executeImplementation`, `performReview`
-   - Tests in `work-executor/tests/orchestrator.test.ts`
+   - **SubagentDispatcher integration**: uses dispatcher in `executeWork` for agent selection; passes dispatcher to all pipeline constructors
+   - Tests in `work-executor/tests/orchestrator.test.ts` (original + 3 new dispatcher tests)
 
 ### Test Summary
 
-**91 tests pass** across 11 test files:
-- `core/tests/beads.test.ts` - IssueStorage basic behavior
+**123 tests pass** across 11 test files:
+- `core/tests/beads.test.ts` - IssueStorage + backend delegation (15 tests)
 - `core/tests/beads-backend.test.ts` - BeadsIssueStorageBackend (22 tests)
 - `core/tests/config.test.ts` - ConfigManager
 - `core/tests/subagent-dispatcher.test.ts` - SubagentDispatcher (17 tests)
-- `work-executor/tests/orchestrator.test.ts` - WorkExecutorOrchestrator
-- `work-executor/tests/pipelines.test.ts` - Execution pipelines (22 tests)
-- `program-planner/tests/program-orchestrator.test.ts` - ProgramPlannerOrchestrator
-- `project-planner/tests/project-focus.test.ts` - ProjectPlannerOrchestrator
+- `work-executor/tests/orchestrator.test.ts` - WorkExecutorOrchestrator + dispatcher (original + 3 new)
+- `work-executor/tests/pipelines.test.ts` - Execution pipelines + dispatcher (32 tests)
+- `program-planner/tests/program-orchestrator.test.ts` - ProgramPlannerOrchestrator + dispatcher/delegation (original + 5 new)
+- `project-planner/tests/project-focus.test.ts` - ProjectPlannerOrchestrator + dispatcher/delegation (original + 5 new)
 - `tests/integration/full-flow.test.ts` - End-to-end flow
 - `tests/integration/cross-plugin-status.test.ts` - Status aggregation
 - `tests/integration/discovered-work.test.ts` - Discovered work
@@ -307,6 +316,7 @@ Run all tests: `nix-shell -p bun --run "cd hdwlinux/packages/opencode && bun tes
 ### Current jj History
 
 ```
+vrmopqrl  opencode: wire backend delegation, subagent dispatch, pipeline enrichment, and cross-plugin delegation
 wzyowskw  opencode: add storage backend, subagent orchestration, execution pipelines, and integration tests
 ttqowson  opencode: sync dist files and work-executor tests
 yxtlnxxs  opencode: introduce IssueStorage abstraction and decouple beads
@@ -319,24 +329,27 @@ puqzkupx  opencode-plugins: code review, agents/skills, and nix packaging
 
 1. **Beads-backed storage backend**
    - `BeadsIssueStorageBackend` exists as mock; needs real implementation using OpenCode SDK tool calls to `opencode-beads`
-   - Refactor `IssueStorage` to optionally delegate to a configured backend
+   - `IssueStorage` now supports backend delegation (constructor accepts `IssueStorageBackend`)
+   - Next: implement a real backend that calls `opencode-beads` tools via the OpenCode SDK
 
-2. **Wire SubagentDispatcher into orchestrators**
-   - Orchestrators have dispatcher but don't yet use it for real agent selection/dispatch
-   - Implement actual subagent invocation via OpenCode Task tool
+2. **Real subagent invocation**
+   - SubagentDispatcher is wired into all orchestrators and pipelines
+   - Currently uses mock execution (returns stub results)
+   - Next: implement actual subagent invocation via OpenCode Task tool in the `executionHandler`
 
 3. **Flesh out pipeline stage implementations**
-   - Pipelines have structure but stages are still mostly stubs
-   - Connect to actual codebase analysis, code generation, test execution
+   - Pipelines now use dispatcher for agent selection/dispatch in relevant stages
+   - Stages still return placeholder data (empty file lists, zero metrics, etc.)
+   - Next: connect to actual codebase analysis, code generation, test execution via real agent dispatch
 
-4. **Cross-plugin delegation**
-   - Program planner should delegate to project planner
-   - Project planner should delegate to work executor
-   - Currently each operates independently
+4. **End-to-end cross-plugin delegation**
+   - Delegate interfaces and setter methods are in place
+   - Program planner can delegate to project planner; project planner can delegate to work executor
+   - Next: wire delegates in plugin initialization (index.ts files) so the full chain works at runtime
 
-5. **Real discovered work creation**
-   - Pipelines should create actual discovered work issues during execution
-   - Link via dependencies with `discovered-from` pattern
+5. **Plugin initialization wiring**
+   - Each plugin's `index.ts` creates its own storage and orchestrator independently
+   - Next: share storage instance across plugins and wire delegates during plugin initialization
 
 ---
 

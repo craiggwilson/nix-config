@@ -12,6 +12,7 @@
  */
 
 import type { IssueStorage, IssueRecord } from "opencode-planner-core";
+import type { SubagentDispatcher, SubagentResult } from "../../../core/src/orchestration/subagent-dispatcher.js";
 import type { ResearchResult, DiscoveredWorkItem } from "../types.js";
 
 export interface ResearchStageResult<T> {
@@ -59,15 +60,18 @@ export interface ResearchPipelineState {
   analyzedOptions?: AnalyzedOption[];
   synthesizedRecommendation?: SynthesizedRecommendation;
   followUpTasks?: DiscoveredWorkItem[];
+  agentResults?: SubagentResult[];
   stages: ResearchStageResult<unknown>[];
 }
 
 export class ResearchPipeline {
   private storage: IssueStorage;
+  private dispatcher?: SubagentDispatcher;
   private state: ResearchPipelineState | null = null;
 
-  constructor(storage: IssueStorage) {
+  constructor(storage: IssueStorage, options?: { dispatcher?: SubagentDispatcher }) {
     this.storage = storage;
+    this.dispatcher = options?.dispatcher;
   }
 
   /**
@@ -191,20 +195,37 @@ export class ResearchPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Spawn codebase-analyst to search for relevant code
-      // - Search documentation for related topics
-      // - Find existing patterns in the codebase
-      // - Query for related issues
+      let codebaseFindings: string[] = [];
 
-      // For now, return placeholder data that would be populated by subagents
+      // Use dispatcher to gather context from multiple agents in parallel
+      if (this.dispatcher) {
+        const agents = this.dispatcher.selectAgents(this.state.issue);
+        if (agents.length > 0) {
+          const results = await this.dispatcher.dispatchParallel(agents, {
+            issueId: this.state.issueId,
+            taskType: "research",
+            context: {
+              title: this.state.parsedQuestion.question,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+              parent: this.state.issue.parent,
+            },
+            instructions: `Gather context for research question: ${this.state.parsedQuestion.question}`,
+          });
+          this.state.agentResults = results;
+          codebaseFindings = results
+            .filter((r) => r.status !== "failed")
+            .flatMap((r) => r.findings || []);
+        }
+      }
+
       const relatedIssues = await this.storage.search(this.state.parsedQuestion.question);
 
       return {
         stage: "gatherContext",
         status: "completed",
         data: {
-          codebaseFindings: [],
+          codebaseFindings,
           documentationFindings: [],
           existingPatterns: [],
           relatedIssues: relatedIssues.filter((i) => i.id !== this.state!.issueId),
@@ -228,13 +249,41 @@ export class ResearchPipeline {
     }
 
     try {
-      // TODO: In a real implementation, this would:
-      // - Spawn domain experts based on scope labels
-      // - Have each expert propose and analyze options
-      // - Aggregate findings into structured options
-
-      // For now, return placeholder structure
       const options: AnalyzedOption[] = [];
+
+      // Use dispatcher to dispatch domain experts for option analysis
+      if (this.dispatcher) {
+        const agents = this.dispatcher.selectAgents(this.state.issue);
+        if (agents.length > 0) {
+          const results = await this.dispatcher.dispatchSmart(agents, {
+            issueId: this.state.issueId,
+            taskType: "analyze",
+            context: {
+              title: this.state.parsedQuestion.question,
+              description: this.state.issue.description,
+              labels: this.state.issue.labels,
+            },
+            instructions: `Analyze options for: ${this.state.parsedQuestion.question}. Provide pros, cons, effort, and risk for each option.`,
+          });
+
+          // Incorporate agent recommendations into options
+          for (const result of results) {
+            if (result.status === "failed") continue;
+            if (result.recommendations && result.recommendations.length > 0) {
+              for (const rec of result.recommendations) {
+                options.push({
+                  name: `${result.agentName}: ${rec.substring(0, 50)}`,
+                  description: rec,
+                  pros: [],
+                  cons: [],
+                  effort: "medium",
+                  risk: "medium",
+                });
+              }
+            }
+          }
+        }
+      }
 
       return {
         stage: "analyzeOptions",

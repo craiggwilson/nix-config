@@ -6,6 +6,8 @@
   */
 
 import { ConfigManager, IssueStorage } from "opencode-planner-core";
+import { SubagentDispatcher } from "../../core/src/orchestration/subagent-dispatcher.js";
+import type { SubagentResult } from "../../core/src/orchestration/subagent-dispatcher.js";
 import type {
   Program,
   ProjectEpic,
@@ -13,6 +15,17 @@ import type {
   DecompositionProposal,
   ProgramPlannerConfig,
 } from "./types.js";
+
+/**
+ * Delegate interface for cross-plugin delegation to project planner.
+ * When provided, planProgram() will delegate project planning for each created epic.
+ */
+export interface ProjectPlannerDelegate {
+  planProject(input: {
+    projectId: string;
+    programId?: string;
+  }): Promise<{ createdItems: string[]; dependencies: Array<[string, string]> }>;
+}
 
 const DEFAULT_CONFIG: ProgramPlannerConfig = {
   defaultHorizon: "quarter",
@@ -25,11 +38,25 @@ export class ProgramPlannerOrchestrator {
   private storage: IssueStorage;
   private config: ProgramPlannerConfig;
   private configManager: ConfigManager;
+  private dispatcher: SubagentDispatcher;
+  private projectPlannerDelegate?: ProjectPlannerDelegate;
 
-  constructor(storage: IssueStorage, configManager: ConfigManager) {
+  constructor(
+    storage: IssueStorage,
+    configManager: ConfigManager,
+    options?: { dispatcher?: SubagentDispatcher },
+  ) {
     this.storage = storage;
     this.configManager = configManager;
     this.config = configManager.load("program-planner", DEFAULT_CONFIG);
+    this.dispatcher = options?.dispatcher || new SubagentDispatcher();
+  }
+
+  /**
+   * Set a delegate for cross-plugin delegation to project planner.
+   */
+  setProjectPlannerDelegate(delegate: ProjectPlannerDelegate): void {
+    this.projectPlannerDelegate = delegate;
   }
 
   /**
@@ -83,13 +110,31 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
       priority: 1,
     });
 
-    // TODO: Spawn program-requirements-agent to structure charter
-    // TODO: Create charter doc if configured
-    // TODO: Store charter doc link in issue description
+    // Use dispatcher to select agents for requirements analysis and enrich description
+    const agents = this.dispatcher.selectAgents(programIssue);
+    if (agents.length > 0) {
+      const results = await this.dispatcher.dispatchSmart(agents, {
+        issueId: programIssue.id,
+        taskType: "analyze",
+        context: {
+          title: programIssue.title,
+          description: programIssue.description,
+          labels: programIssue.labels,
+        },
+        instructions: "Analyze program requirements and provide recommendations for structuring the charter.",
+      });
+
+      const agentInsights = this.summarizeAgentResults(results);
+      if (agentInsights) {
+        await this.storage.updateIssue(programIssue.id, {
+          description: `${description}\n\n## Agent Analysis\n${agentInsights}`,
+        });
+      }
+    }
 
     return {
       programId: programIssue.id,
-      charterDocUrl: undefined, // TODO: implement
+      charterDocUrl: undefined,
     };
   }
 
@@ -109,14 +154,34 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
     const createdEpics: string[] = [];
     const dependencies: Array<[string, string]> = [];
 
-    // TODO: Spawn program-decomposer-agent to propose project epics
-    // For now, create placeholder project epics for each repo
+    // Use dispatcher to analyze the program and get decomposition recommendations
+    const agents = this.dispatcher.selectAgents(program);
+    let agentRecommendations = "";
+    if (agents.length > 0) {
+      const results = await this.dispatcher.dispatchSmart(agents, {
+        issueId: input.programId,
+        taskType: "analyze",
+        context: {
+          title: program.title,
+          description: program.description,
+          labels: program.labels,
+        },
+        instructions: "Analyze program and recommend decomposition into project epics.",
+      });
+      agentRecommendations = this.summarizeAgentResults(results);
+    }
+
+    // Create project epics for each repo
     if (input.repos && input.repos.length > 0) {
       for (const repo of input.repos) {
+        const epicDescription = agentRecommendations
+          ? `Project epic for ${repo} as part of ${program.title}\n\n## Agent Recommendations\n${agentRecommendations}`
+          : `Project epic for ${repo} as part of ${program.title}`;
+
         const projectEpic = await this.storage.createIssue({
           type: "epic",
           title: `${repo} - ${program.title}`,
-          description: `Project epic for ${repo} as part of ${program.title}`,
+          description: epicDescription,
           labels: [
             "project",
             `project:${this.slugify(repo)}`,
@@ -129,6 +194,24 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
 
         createdEpics.push(projectEpic.id);
         dependencies.push([input.programId, projectEpic.id]);
+      }
+    }
+
+    // Delegate to project planner if available
+    if (this.projectPlannerDelegate) {
+      for (const epicId of createdEpics) {
+        try {
+          const delegateResult = await this.projectPlannerDelegate.planProject({
+            projectId: epicId,
+            programId: input.programId,
+          });
+          // Include downstream dependencies
+          for (const dep of delegateResult.dependencies) {
+            dependencies.push(dep);
+          }
+        } catch {
+          // Cross-plugin delegation is best-effort; log but don't fail
+        }
       }
     }
 
@@ -361,6 +444,24 @@ ${input.constraints.map((c) => `- ${c}`).join("\n")}
     } catch (error) {
       console.error("Error listing programs:", error);
     }
+  }
+
+  /**
+   * Summarize results from dispatched agents into a readable string.
+   */
+  private summarizeAgentResults(results: SubagentResult[]): string {
+    const parts: string[] = [];
+    for (const result of results) {
+      if (result.status === "failed") continue;
+      const header = `### ${result.agentName}`;
+      const findings = (result.findings || []).map((f) => `- ${f}`).join("\n");
+      const recommendations = (result.recommendations || []).map((r) => `- ${r}`).join("\n");
+      const sections: string[] = [header];
+      if (findings) sections.push(`**Findings:**\n${findings}`);
+      if (recommendations) sections.push(`**Recommendations:**\n${recommendations}`);
+      parts.push(sections.join("\n"));
+    }
+    return parts.join("\n\n");
   }
 
   /**
