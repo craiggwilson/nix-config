@@ -8,13 +8,11 @@ in
 {
   substrate.users = {
     "${name}@personal" = {
-      inherit name;
       tags = [
         "users:${name}:personal"
       ];
     };
     "${name}@work" = {
-      inherit name;
       tags = [
         "users:${name}:work"
       ];
