@@ -161,8 +161,6 @@
             "pwd *" = "allow";
             "reboot *" = "deny";
             "rg *" = "allow";
-            "rm *" = "ask";
-            "sed *" = "allow";
             "shutdown *" = "deny";
             "sort *" = "allow";
             "sudo *" = "deny";
