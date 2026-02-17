@@ -1,0 +1,275 @@
+/**
+ * project_status tool - Show project progress and blockers
+ */
+
+import { tool } from "@opencode-ai/plugin"
+import * as fs from "node:fs/promises"
+import * as path from "node:path"
+
+import type { ToolDeps, ProjectToolContext, BeadsIssue } from "../lib/types.js"
+
+interface ProjectStatusArgs {
+  projectId?: string
+  format?: "summary" | "detailed" | "tree"
+}
+
+/**
+ * Create the project_status tool
+ */
+export function createProjectStatus(deps: ToolDeps) {
+  const { config, beads, focus, repoRoot, log } = deps
+
+  return tool({
+    description: `Show detailed project status including progress and blockers.
+
+If no projectId is provided, uses the currently focused project.`,
+
+    args: {
+      projectId: tool.schema
+        .string()
+        .optional()
+        .describe("Project ID (default: focused project)"),
+      format: tool.schema
+        .enum(["summary", "detailed", "tree"])
+        .optional()
+        .describe("Output format: summary, detailed, or tree view"),
+    },
+
+    async execute(args: ProjectStatusArgs, _ctx: ProjectToolContext): Promise<string> {
+      const { format = "summary" } = args
+
+      // Resolve project ID
+      const projectId = args.projectId || focus.getProjectId()
+
+      if (!projectId) {
+        return "No project specified and no project is currently focused.\n\nUse `project_list` to see available projects, then `project_focus(projectId)` to set context."
+      }
+
+      await log.info(`Getting status for project: ${projectId}`)
+
+      // Find project directory
+      const projectDir = await findProjectDir(projectId, config, repoRoot)
+
+      if (!projectDir) {
+        return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+      }
+
+      // Load project metadata
+      const metadata = await loadProjectMetadata(projectDir)
+
+      if (!metadata) {
+        return `Project '${projectId}' has invalid metadata.`
+      }
+
+      // Get beads status
+      const status = await beads.getProjectStatus(projectId, projectDir)
+      const issues = await beads.listIssues(projectDir)
+      const readyIssues = await beads.getReadyIssues(projectId, projectDir)
+
+      // Build output based on format
+      const lines: string[] = []
+
+      // Header
+      lines.push(`## ${metadata.name}`)
+      lines.push("")
+      lines.push(`**ID:** ${projectId}`)
+      lines.push(`**Type:** ${metadata.type || "project"}`)
+      lines.push(`**Status:** ${metadata.status}`)
+
+      if (metadata.description) {
+        lines.push(`**Description:** ${metadata.description}`)
+      }
+
+      lines.push("")
+
+      // Progress
+      if (status) {
+        const percentage =
+          status.total > 0 ? Math.round((status.completed / status.total) * 100) : 0
+
+        lines.push("### Progress")
+        lines.push("")
+        lines.push(`${renderProgressBar(percentage)} ${percentage}%`)
+        lines.push("")
+        lines.push(`| Status | Count |`)
+        lines.push(`|--------|-------|`)
+        lines.push(`| Total | ${status.total} |`)
+        lines.push(`| Completed | ${status.completed} |`)
+        lines.push(`| In Progress | ${status.inProgress} |`)
+        lines.push(`| Blocked | ${status.blocked} |`)
+        lines.push("")
+      }
+
+      // Ready issues
+      if (readyIssues.length > 0) {
+        lines.push("### Ready to Work (No Blockers)")
+        lines.push("")
+        for (const issue of readyIssues.slice(0, 5)) {
+          const priority = issue.priority !== undefined ? `P${issue.priority}` : ""
+          lines.push(`- **${issue.id}**: ${issue.title} ${priority}`)
+        }
+        if (readyIssues.length > 5) {
+          lines.push(`- ... and ${readyIssues.length - 5} more`)
+        }
+        lines.push("")
+      }
+
+      // Blockers
+      if (status && status.blockers.length > 0) {
+        lines.push("### Blockers")
+        lines.push("")
+        for (const blocker of status.blockers.slice(0, 5)) {
+          lines.push(`- **${blocker.issueId}**: ${blocker.title}`)
+          lines.push(`  Blocked by: ${blocker.blockedBy.join(", ")}`)
+        }
+        if (status.blockers.length > 5) {
+          lines.push(`- ... and ${status.blockers.length - 5} more`)
+        }
+        lines.push("")
+      }
+
+      // Tree view
+      if (format === "tree" && issues.length > 0) {
+        lines.push("### Issue Hierarchy")
+        lines.push("")
+        lines.push("```")
+        lines.push(renderIssueTree(issues))
+        lines.push("```")
+        lines.push("")
+      }
+
+      // Detailed view
+      if (format === "detailed" && issues.length > 0) {
+        lines.push("### All Issues")
+        lines.push("")
+        for (const issue of issues) {
+          const statusIcon =
+            issue.status === "closed"
+              ? "✅"
+              : issue.status === "in_progress"
+                ? "🔄"
+                : "⬜"
+          const priority = issue.priority !== undefined ? `P${issue.priority}` : ""
+          lines.push(`${statusIcon} **${issue.id}**: ${issue.title} ${priority}`)
+          if (issue.assignee) {
+            lines.push(`   Assignee: ${issue.assignee}`)
+          }
+          if (issue.blockedBy && issue.blockedBy.length > 0) {
+            lines.push(`   Blocked by: ${issue.blockedBy.join(", ")}`)
+          }
+        }
+        lines.push("")
+      }
+
+      // Actions
+      lines.push("---")
+      lines.push("")
+      lines.push("**Actions:**")
+      lines.push("- `issue_claim(issueId)` - Start work on an issue")
+      lines.push("- `issue_create(title)` - Add a new issue")
+      lines.push("- `project_plan` - Continue planning")
+
+      return lines.join("\n")
+    },
+  })
+}
+
+/**
+ * Find project directory by ID
+ */
+async function findProjectDir(
+  projectId: string,
+  config: ToolDeps["config"],
+  repoRoot: string
+): Promise<string | null> {
+  // Check local first
+  const localDir = path.join(config.getLocalProjectsDir(repoRoot), projectId)
+  try {
+    await fs.access(localDir)
+    return localDir
+  } catch {
+    // Not in local
+  }
+
+  // Check global
+  const globalDir = path.join(config.getGlobalProjectsDir(), projectId)
+  try {
+    await fs.access(globalDir)
+    return globalDir
+  } catch {
+    // Not in global
+  }
+
+  return null
+}
+
+/**
+ * Load project metadata
+ */
+async function loadProjectMetadata(
+  projectDir: string
+): Promise<Record<string, unknown> | null> {
+  try {
+    const content = await fs.readFile(path.join(projectDir, "project.json"), "utf8")
+    return JSON.parse(content)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Render ASCII progress bar
+ */
+function renderProgressBar(percentage: number): string {
+  const width = 20
+  const filled = Math.round((percentage / 100) * width)
+  const empty = width - filled
+  return `[${"█".repeat(filled)}${"░".repeat(empty)}]`
+}
+
+/**
+ * Render issue tree
+ */
+function renderIssueTree(issues: BeadsIssue[]): string {
+  // Build parent-child relationships
+  const children = new Map<string, BeadsIssue[]>()
+  const roots: BeadsIssue[] = []
+
+  for (const issue of issues) {
+    if (issue.parent) {
+      const siblings = children.get(issue.parent) || []
+      siblings.push(issue)
+      children.set(issue.parent, siblings)
+    } else {
+      roots.push(issue)
+    }
+  }
+
+  // Render tree
+  const lines: string[] = []
+
+  function renderNode(issue: BeadsIssue, prefix: string, isLast: boolean): void {
+    const connector = isLast ? "└── " : "├── "
+    const statusIcon =
+      issue.status === "closed"
+        ? "✓"
+        : issue.status === "in_progress"
+          ? "●"
+          : "○"
+
+    lines.push(`${prefix}${connector}${statusIcon} ${issue.id}: ${issue.title}`)
+
+    const childIssues = children.get(issue.id) || []
+    const childPrefix = prefix + (isLast ? "    " : "│   ")
+
+    for (let i = 0; i < childIssues.length; i++) {
+      renderNode(childIssues[i], childPrefix, i === childIssues.length - 1)
+    }
+  }
+
+  for (let i = 0; i < roots.length; i++) {
+    renderNode(roots[i], "", i === roots.length - 1)
+  }
+
+  return lines.join("\n")
+}
