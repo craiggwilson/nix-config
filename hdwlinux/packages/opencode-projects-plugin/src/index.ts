@@ -36,8 +36,29 @@ export { ConfigManager } from "./lib/config.js"
 export { FocusManager } from "./lib/focus.js"
 export { BeadsIssueStorage } from "./lib/beads-issue-storage.js"
 export { InMemoryIssueStorage } from "./lib/inmemory-issue-storage.js"
+export { InterviewManager } from "./lib/interview-manager.js"
+export { ArtifactManager } from "./lib/artifact-manager.js"
+export { PlanningDelegator } from "./lib/planning-delegator.js"
 export type { IssueStorage, Issue, ProjectStatus } from "./lib/issue-storage.js"
 export type { ProjectMetadata, CreateProjectOptions } from "./lib/project-manager.js"
+export type { InterviewSession, InterviewSummary, InterviewExchange } from "./lib/interview-manager.js"
+export type {
+  ArtifactType,
+  ArtifactMetadata,
+  RoadmapContent,
+  ArchitectureContent,
+  RisksContent,
+  SuccessCriteriaContent,
+  Milestone,
+  Risk,
+  SuccessCriterion,
+} from "./lib/artifact-manager.js"
+export type {
+  PlanningPhase,
+  AgentInfo,
+  DelegationRequest,
+  DelegationResult,
+} from "./lib/planning-delegator.js"
 
 /**
  * Main plugin export
@@ -60,13 +81,14 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
   // Detect if we're in a repository
   const repoRoot = worktree || directory
 
-  // Create ProjectManager
+  // Create ProjectManager with client for delegation
   const projectManager = new ProjectManager({
     config,
     issueStorage,
     focus,
     log,
     repoRoot,
+    client: typedClient,
   })
 
   // Check beads availability

@@ -11,7 +11,8 @@ import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
 interface ProjectPlanArgs {
   projectId?: string
   phase?: "discovery" | "refinement" | "breakdown"
-  focus?: string
+  topic?: string
+  action?: "start" | "continue" | "complete" | "list"
 }
 
 /**
@@ -21,14 +22,20 @@ export function createProjectPlan(deps: ToolDepsV2) {
   const { projectManager, log } = deps
 
   return tool({
-    description: `Continue or refine project planning.
+    description: `Continue or refine project planning through conversational interviews.
+
+Actions:
+- start: Begin a new planning interview
+- continue: Resume the current interview (default)
+- complete: Mark the current interview as complete
+- list: Show all interview sessions
 
 Phases:
 - discovery: Initial exploration and requirements gathering
 - refinement: Refine scope, risks, and architecture
 - breakdown: Break down into actionable issues
 
-This tool loads existing planning artifacts and continues the conversation.`,
+This tool manages interview sessions and loads existing planning artifacts.`,
 
     args: {
       projectId: tool.schema
@@ -39,14 +46,18 @@ This tool loads existing planning artifacts and continues the conversation.`,
         .enum(["discovery", "refinement", "breakdown"])
         .optional()
         .describe("Planning phase to focus on"),
-      focus: tool.schema
+      topic: tool.schema
         .string()
         .optional()
-        .describe("Specific area to focus on (e.g., 'security', 'performance')"),
+        .describe("Specific topic to focus on (e.g., 'security', 'performance')"),
+      action: tool.schema
+        .enum(["start", "continue", "complete", "list"])
+        .optional()
+        .describe("Action to perform (default: continue)"),
     },
 
     async execute(args: ProjectPlanArgs, _ctx: ProjectToolContext): Promise<string> {
-      const { phase, focus: focusArea } = args
+      const { phase, topic, action = "continue" } = args
 
       // Resolve project ID
       const projectId = args.projectId || projectManager.getFocusedProjectId()
@@ -55,7 +66,7 @@ This tool loads existing planning artifacts and continues the conversation.`,
         return "No project specified and no project is currently focused.\n\nUse `project_create` to start a new project, or `project_focus(projectId)` to set context."
       }
 
-      await log.info(`Continuing planning for project: ${projectId}, phase: ${phase || "auto"}`)
+      await log.info(`Planning for project: ${projectId}, action: ${action}`)
 
       // Get project directory
       const projectDir = await projectManager.getProjectDir(projectId)
@@ -64,107 +75,271 @@ This tool loads existing planning artifacts and continues the conversation.`,
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
       }
 
-      // Load existing planning artifacts
-      const artifacts = await loadPlanningArtifacts(projectDir)
+      // Handle different actions
+      switch (action) {
+        case "list":
+          return await handleListInterviews(projectManager, projectId)
 
-      // Load interview history
-      const interviews = await loadInterviews(projectDir)
+        case "complete":
+          return await handleCompleteInterview(projectManager, projectId)
 
-      // Determine current phase based on artifacts
-      const currentPhase = determinePhase(artifacts, interviews)
-      const targetPhase = phase || currentPhase
+        case "start":
+          return await handleStartInterview(projectManager, projectId, phase, topic, projectDir)
 
-      // Build context for planning continuation
-      const lines: string[] = []
-
-      lines.push(`## Planning: ${projectId}`)
-      lines.push("")
-      lines.push(`**Current Phase:** ${currentPhase}`)
-      lines.push(`**Target Phase:** ${targetPhase}`)
-
-      if (focusArea) {
-        lines.push(`**Focus Area:** ${focusArea}`)
+        case "continue":
+        default:
+          return await handleContinueInterview(projectManager, projectId, phase, topic, projectDir)
       }
-
-      lines.push("")
-
-      // Show existing artifacts
-      if (Object.keys(artifacts).length > 0) {
-        lines.push("### Existing Artifacts")
-        lines.push("")
-        for (const [name, exists] of Object.entries(artifacts)) {
-          lines.push(`- ${exists ? "✅" : "⬜"} ${name}`)
-        }
-        lines.push("")
-      }
-
-      // Show interview summary
-      if (interviews.length > 0) {
-        lines.push("### Interview History")
-        lines.push("")
-        lines.push(`${interviews.length} interview session(s) recorded.`)
-        lines.push("")
-      }
-
-      // Phase-specific guidance
-      lines.push("---")
-      lines.push("")
-
-      switch (targetPhase) {
-        case "discovery":
-          lines.push("### Discovery Phase")
-          lines.push("")
-          lines.push("Let's continue exploring the project scope and requirements.")
-          lines.push("")
-          if (!artifacts.roadmap) {
-            lines.push("**Questions to explore:**")
-            lines.push("1. What are the key milestones and deliverables?")
-            lines.push("2. Who are the stakeholders and what are their priorities?")
-            lines.push("3. What are the known constraints and dependencies?")
-          } else {
-            lines.push("We have a roadmap. Let's validate and refine it.")
-            lines.push("")
-            lines.push("**Questions:**")
-            lines.push("1. Are there any changes to the timeline or priorities?")
-            lines.push("2. Have new risks or dependencies emerged?")
-          }
-          break
-
-        case "refinement":
-          lines.push("### Refinement Phase")
-          lines.push("")
-          lines.push("Let's refine the technical approach and identify risks.")
-          lines.push("")
-          lines.push("**Areas to address:**")
-          if (!artifacts.architecture) {
-            lines.push("1. What is the high-level architecture?")
-          }
-          if (!artifacts.risks) {
-            lines.push("2. What are the key risks and mitigations?")
-          }
-          if (!artifacts["success-criteria"]) {
-            lines.push("3. How will we measure success?")
-          }
-          break
-
-        case "breakdown":
-          lines.push("### Breakdown Phase")
-          lines.push("")
-          lines.push("Let's break down the work into actionable issues.")
-          lines.push("")
-          lines.push("I'll help you create beads issues with:")
-          lines.push("- Clear titles and descriptions")
-          lines.push("- Priority assignments (P0-P3)")
-          lines.push("- Dependency relationships")
-          lines.push("- Hierarchical structure (epics → tasks → subtasks)")
-          lines.push("")
-          lines.push("**What area should we break down first?**")
-          break
-      }
-
-      return lines.join("\n")
     },
   })
+}
+
+/**
+ * List all interview sessions
+ */
+async function handleListInterviews(
+  projectManager: ToolDepsV2["projectManager"],
+  projectId: string
+): Promise<string> {
+  const interviews = await projectManager.listInterviews(projectId)
+
+  if (interviews.length === 0) {
+    return `No interview sessions found for project '${projectId}'.\n\nUse \`project_plan(action='start')\` to begin a planning interview.`
+  }
+
+  const lines: string[] = ["## Interview Sessions", ""]
+
+  for (const interview of interviews) {
+    const statusIcon =
+      interview.status === "active"
+        ? "🟢"
+        : interview.status === "completed"
+          ? "✅"
+          : "⚪"
+
+    lines.push(
+      `- ${statusIcon} **${interview.id}** - ${interview.phase}${interview.topic ? ` (${interview.topic})` : ""}`
+    )
+    lines.push(`  ${interview.exchangeCount} exchanges, last updated ${interview.lastUpdatedAt}`)
+  }
+
+  lines.push("")
+  lines.push("---")
+  lines.push("")
+  lines.push("Use `project_plan(action='continue')` to resume the most recent active session.")
+
+  return lines.join("\n")
+}
+
+/**
+ * Complete the current interview
+ */
+async function handleCompleteInterview(
+  projectManager: ToolDepsV2["projectManager"],
+  projectId: string
+): Promise<string> {
+  const completed = await projectManager.completeInterview(projectId)
+
+  if (!completed) {
+    return "No active interview session to complete."
+  }
+
+  return "## Interview Completed\n\nThe current interview session has been marked as complete.\n\nUse `project_plan(action='start')` to begin a new session."
+}
+
+/**
+ * Start a new interview session
+ */
+async function handleStartInterview(
+  projectManager: ToolDepsV2["projectManager"],
+  projectId: string,
+  phase: "discovery" | "refinement" | "breakdown" | undefined,
+  topic: string | undefined,
+  projectDir: string
+): Promise<string> {
+  // Determine phase from artifacts if not specified
+  const effectivePhase = phase || (await determinePhase(projectDir))
+
+  const session = await projectManager.startInterview(projectId, effectivePhase, topic)
+
+  if (!session) {
+    return "Failed to start interview session."
+  }
+
+  const lines: string[] = []
+
+  lines.push(`## Interview Started: ${effectivePhase}`)
+  lines.push("")
+  lines.push(`**Session ID:** ${session.id}`)
+
+  if (topic) {
+    lines.push(`**Topic:** ${topic}`)
+  }
+
+  lines.push("")
+  lines.push("---")
+  lines.push("")
+
+  // Add phase-specific opening questions
+  lines.push(getPhaseQuestions(effectivePhase, topic))
+
+  return lines.join("\n")
+}
+
+/**
+ * Continue an existing interview or start a new one
+ */
+async function handleContinueInterview(
+  projectManager: ToolDepsV2["projectManager"],
+  projectId: string,
+  phase: "discovery" | "refinement" | "breakdown" | undefined,
+  topic: string | undefined,
+  projectDir: string
+): Promise<string> {
+  // Check for active interview
+  const activeInterview = await projectManager.getActiveInterview(projectId)
+
+  if (activeInterview) {
+    // Resume existing interview
+    const context = await projectManager.getInterviewContext(projectId)
+
+    const lines: string[] = []
+
+    lines.push(`## Continuing Interview: ${activeInterview.phase}`)
+    lines.push("")
+    lines.push(`**Session ID:** ${activeInterview.id}`)
+    lines.push(`**Exchanges:** ${activeInterview.exchanges.length}`)
+
+    if (activeInterview.topic) {
+      lines.push(`**Topic:** ${activeInterview.topic}`)
+    }
+
+    lines.push("")
+
+    if (context) {
+      lines.push(context)
+      lines.push("")
+    }
+
+    lines.push("---")
+    lines.push("")
+    lines.push("Continue the conversation, or use `project_plan(action='complete')` to finish.")
+
+    return lines.join("\n")
+  }
+
+  // No active interview - show planning status and offer to start
+  const artifacts = await loadPlanningArtifacts(projectDir)
+  const interviews = await projectManager.listInterviews(projectId)
+  const currentPhase = await determinePhase(projectDir)
+  const targetPhase = phase || currentPhase
+
+  const lines: string[] = []
+
+  lines.push(`## Planning: ${projectId}`)
+  lines.push("")
+  lines.push(`**Current Phase:** ${currentPhase}`)
+
+  if (topic) {
+    lines.push(`**Focus Area:** ${topic}`)
+  }
+
+  lines.push("")
+
+  // Show existing artifacts
+  if (Object.keys(artifacts).length > 0) {
+    lines.push("### Planning Artifacts")
+    lines.push("")
+    for (const [name, exists] of Object.entries(artifacts)) {
+      lines.push(`- ${exists ? "✅" : "⬜"} ${name}`)
+    }
+    lines.push("")
+  }
+
+  // Show interview summary
+  if (interviews.length > 0) {
+    const completed = interviews.filter((i) => i.status === "completed").length
+    lines.push(`### Interview History: ${completed} completed sessions`)
+    lines.push("")
+  }
+
+  lines.push("---")
+  lines.push("")
+  lines.push("No active interview session.")
+  lines.push("")
+  lines.push(`Use \`project_plan(action='start', phase='${targetPhase}')\` to begin a new interview.`)
+  lines.push("")
+  lines.push(getPhaseQuestions(targetPhase, topic))
+
+  return lines.join("\n")
+}
+
+/**
+ * Get phase-specific opening questions
+ */
+function getPhaseQuestions(
+  phase: "discovery" | "refinement" | "breakdown",
+  topic?: string
+): string {
+  const lines: string[] = []
+
+  switch (phase) {
+    case "discovery":
+      lines.push("### Discovery Phase")
+      lines.push("")
+      lines.push("Let's explore the project scope and requirements.")
+      lines.push("")
+      lines.push("**Questions to discuss:**")
+      if (topic) {
+        lines.push(`1. What are the key requirements for ${topic}?`)
+        lines.push(`2. What constraints or dependencies affect ${topic}?`)
+        lines.push(`3. How does ${topic} fit into the overall project goals?`)
+      } else {
+        lines.push("1. What problem are you trying to solve?")
+        lines.push("2. Who are the primary stakeholders?")
+        lines.push("3. What does success look like for this project?")
+        lines.push("4. What are the known constraints (timeline, resources, technology)?")
+      }
+      break
+
+    case "refinement":
+      lines.push("### Refinement Phase")
+      lines.push("")
+      lines.push("Let's refine the technical approach and identify risks.")
+      lines.push("")
+      lines.push("**Areas to address:**")
+      if (topic) {
+        lines.push(`1. What is the technical approach for ${topic}?`)
+        lines.push(`2. What are the risks specific to ${topic}?`)
+        lines.push(`3. How will we validate ${topic} works correctly?`)
+      } else {
+        lines.push("1. What is the high-level architecture?")
+        lines.push("2. What are the key technical decisions?")
+        lines.push("3. What are the main risks and how will we mitigate them?")
+        lines.push("4. How will we measure success?")
+      }
+      break
+
+    case "breakdown":
+      lines.push("### Breakdown Phase")
+      lines.push("")
+      lines.push("Let's break down the work into actionable issues.")
+      lines.push("")
+      lines.push("I'll help you create issues with:")
+      lines.push("- Clear titles and descriptions")
+      lines.push("- Priority assignments (P0-P3)")
+      lines.push("- Dependency relationships")
+      lines.push("- Hierarchical structure (epics → tasks → subtasks)")
+      lines.push("")
+      if (topic) {
+        lines.push(`**What specific work items are needed for ${topic}?**`)
+      } else {
+        lines.push("**What area should we break down first?**")
+      }
+      break
+  }
+
+  return lines.join("\n")
 }
 
 /**
@@ -198,33 +373,13 @@ async function loadPlanningArtifacts(
 }
 
 /**
- * Load interview history
+ * Determine current planning phase based on artifacts
  */
-async function loadInterviews(projectDir: string): Promise<string[]> {
-  const interviewsDir = path.join(projectDir, "interviews")
-  const interviews: string[] = []
+async function determinePhase(
+  projectDir: string
+): Promise<"discovery" | "refinement" | "breakdown"> {
+  const artifacts = await loadPlanningArtifacts(projectDir)
 
-  try {
-    const files = await fs.readdir(interviewsDir)
-    for (const file of files) {
-      if (file.endsWith(".md")) {
-        interviews.push(file)
-      }
-    }
-  } catch {
-    // Interviews directory doesn't exist
-  }
-
-  return interviews.sort()
-}
-
-/**
- * Determine current planning phase
- */
-function determinePhase(
-  artifacts: Record<string, boolean>,
-  _interviews: string[]
-): "discovery" | "refinement" | "breakdown" {
   // If we have architecture and risks, we're in breakdown
   if (artifacts.architecture && artifacts.risks) {
     return "breakdown"

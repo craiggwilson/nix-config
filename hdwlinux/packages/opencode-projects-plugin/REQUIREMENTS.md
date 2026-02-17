@@ -222,10 +222,7 @@ interface ProjectPlanArgs {
 **Behavior:**
 1. Load existing planning artifacts
 2. Resume conversational interview if incomplete
-3. Delegate to specialized agents as needed:
-   - `roadmap-builder` for strategic planning
-   - `project-planner` for scope/resource planning
-   - `task-planner` for issue breakdown
+3. Delegate specialized work to subagents via Task tool as needed
 4. Update beads with new/refined issues
 5. Persist artifacts incrementally
 
@@ -322,12 +319,12 @@ system_prompt: |
   3. Synthesize findings into actionable project plans
   4. Maintain project artifacts and beads issues
   
-  Available subagents for delegation:
-  - roadmap-builder: Strategic planning, OKR alignment, multi-quarter planning
-  - project-planner: Scope definition, resource planning, risk assessment  
-  - task-planner: User story creation, acceptance criteria, sprint planning
-  - codebase-analyst: Technical context gathering, architecture discovery
-  - researcher: External research, best practices, technology evaluation
+  When delegating work to subagents:
+  - Use the Task tool to spawn specialized agents for focused work
+  - For strategic/roadmap planning, use agents with planning expertise
+  - For technical research, use agents with codebase analysis capabilities
+  - For task breakdown, use agents skilled at decomposition and estimation
+  - Always provide clear context and expected outputs to subagents
   
   Always persist findings incrementally. Use beads for issue tracking.
 ```
