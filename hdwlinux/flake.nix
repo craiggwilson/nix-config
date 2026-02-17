@@ -105,6 +105,7 @@
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
           ./packages/opencode-augment
+          ./packages/opencode-projects-plugin
           ./packages/songtool.nix
           ./packages/workspace-mcp.nix
           ./packages/writeShellApplicationWithSubcommands.nix

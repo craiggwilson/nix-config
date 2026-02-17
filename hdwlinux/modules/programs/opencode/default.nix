@@ -155,6 +155,9 @@
           command = commandConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;
+          plugin = [
+            "file://${pkgs.hdwlinux.opencode-projects-plugin}/lib/node_modules/opencode-projects"
+          ];
           keybinds = {
             "app_exit" = "ctrl+q";
           };
