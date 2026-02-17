@@ -5,9 +5,8 @@
 import { tool } from "@opencode-ai/plugin"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
-import { $ } from "bun"
 
-import type { ToolDeps, ProjectToolContext, VCSType } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext, VCSType, BunShell } from "../lib/types.js"
 
 interface IssueClaimArgs {
   issueId: string
@@ -19,8 +18,8 @@ interface IssueClaimArgs {
 /**
  * Create the issue_claim tool
  */
-export function createIssueClaim(deps: ToolDeps) {
-  const { config, beads, focus, repoRoot, log } = deps
+export function createIssueClaim(deps: ToolDepsV2) {
+  const { projectManager, log, $ } = deps
 
   return tool({
     description: `Claim an issue and optionally start work in an isolated worktree.
@@ -47,11 +46,11 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
         .describe("Agent for delegation (default: 'coder')"),
     },
 
-    async execute(args: IssueClaimArgs, ctx: ProjectToolContext): Promise<string> {
+    async execute(args: IssueClaimArgs, _ctx: ProjectToolContext): Promise<string> {
       const { issueId, isolate = false, delegate = false, agent = "coder" } = args
 
       // Resolve project ID from focus
-      const projectId = focus.getProjectId()
+      const projectId = projectManager.getFocusedProjectId()
 
       if (!projectId) {
         return "No project is currently focused.\n\nUse `project_focus(projectId)` to set context before claiming issues."
@@ -59,15 +58,8 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
 
       await log.info(`Claiming issue ${issueId} in project ${projectId}`)
 
-      // Find project directory
-      const projectDir = await findProjectDir(projectId, config, repoRoot)
-
-      if (!projectDir) {
-        return `Project '${projectId}' not found.`
-      }
-
       // Get issue details first
-      const issue = await beads.getIssue(issueId, projectDir)
+      const issue = await projectManager.getIssue(projectId, issueId)
 
       if (!issue) {
         return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project_status\` to see available issues.`
@@ -79,14 +71,11 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
       }
 
       // Claim the issue
-      const claimed = await beads.claimIssue(issueId, projectDir)
+      const claimed = await projectManager.claimIssue(projectId, issueId)
 
       if (!claimed) {
-        return `Failed to claim issue '${issueId}'. Check beads configuration.`
+        return `Failed to claim issue '${issueId}'. Check issue storage configuration.`
       }
-
-      // Set issue focus
-      focus.setIssueFocus(issueId)
 
       // Build response
       const lines: string[] = []
@@ -104,41 +93,43 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
 
       // Handle isolation
       if (isolate) {
-        const vcs = await detectVCS(repoRoot)
-
-        if (!vcs) {
+        const projectDir = await projectManager.getProjectDir(projectId)
+        if (!projectDir) {
           lines.push("")
-          lines.push("**Warning:** No VCS detected. Cannot create isolated worktree.")
+          lines.push("**Warning:** Could not find project directory for worktree creation.")
         } else {
-          const worktreeResult = await createWorktree(vcs, repoRoot, projectId, issueId, config, log)
+          // Get the repo root (parent of .projects directory)
+          const repoRoot = path.dirname(path.dirname(projectDir))
+          const vcs = await detectVCS(repoRoot)
 
-          if (worktreeResult.success) {
+          if (!vcs) {
             lines.push("")
-            lines.push("### Isolated Worktree Created")
-            lines.push("")
-            lines.push(`**Path:** ${worktreeResult.path}`)
-            lines.push(`**Branch:** ${worktreeResult.branch}`)
-            lines.push(`**VCS:** ${vcs}`)
-
-            // Handle delegation
-            if (delegate) {
-              lines.push("")
-              lines.push("### Background Delegation")
-              lines.push("")
-              lines.push(`**Agent:** ${agent}`)
-              lines.push(`**Status:** Delegation not yet implemented`)
-              lines.push("")
-              lines.push("TODO: Integrate with background delegation system")
-
-              // TODO: Implement delegation
-              // This would create a background session with:
-              // - Working directory set to worktree path
-              // - Issue context injected
-              // - Agent specified
-            }
+            lines.push("**Warning:** No VCS detected. Cannot create isolated worktree.")
           } else {
-            lines.push("")
-            lines.push(`**Warning:** Failed to create worktree: ${worktreeResult.error}`)
+            const worktreeResult = await createWorktree(vcs, repoRoot, projectId, issueId, log, $)
+
+            if (worktreeResult.success) {
+              lines.push("")
+              lines.push("### Isolated Worktree Created")
+              lines.push("")
+              lines.push(`**Path:** ${worktreeResult.path}`)
+              lines.push(`**Branch:** ${worktreeResult.branch}`)
+              lines.push(`**VCS:** ${vcs}`)
+
+              // Handle delegation
+              if (delegate) {
+                lines.push("")
+                lines.push("### Background Delegation")
+                lines.push("")
+                lines.push(`**Agent:** ${agent}`)
+                lines.push(`**Status:** Delegation not yet implemented`)
+                lines.push("")
+                lines.push("TODO: Integrate with background delegation system")
+              }
+            } else {
+              lines.push("")
+              lines.push(`**Warning:** Failed to create worktree: ${worktreeResult.error}`)
+            }
           }
         }
       }
@@ -162,35 +153,6 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
       return lines.join("\n")
     },
   })
-}
-
-/**
- * Find project directory by ID
- */
-async function findProjectDir(
-  projectId: string,
-  config: ToolDeps["config"],
-  repoRoot: string
-): Promise<string | null> {
-  // Check local first
-  const localDir = path.join(config.getLocalProjectsDir(repoRoot), projectId)
-  try {
-    await fs.access(localDir)
-    return localDir
-  } catch {
-    // Not in local
-  }
-
-  // Check global
-  const globalDir = path.join(config.getGlobalProjectsDir(), projectId)
-  try {
-    await fs.access(globalDir)
-    return globalDir
-  } catch {
-    // Not in global
-  }
-
-  return null
 }
 
 /**
@@ -224,14 +186,12 @@ async function createWorktree(
   repoRoot: string,
   projectId: string,
   issueId: string,
-  config: ToolDeps["config"],
-  log: ToolDeps["log"]
+  log: ToolDepsV2["log"],
+  $: BunShell
 ): Promise<{ success: boolean; path?: string; branch?: string; error?: string }> {
-  const worktreeSettings = config.getWorktreeSettings()
-
   // Determine worktree base path
   const repoName = path.basename(repoRoot)
-  const basePath = worktreeSettings.basePath || path.join(path.dirname(repoRoot), `${repoName}-worktrees`)
+  const basePath = path.join(path.dirname(repoRoot), `${repoName}-worktrees`)
 
   // Create worktree path
   const worktreePath = path.join(basePath, issueId)
@@ -243,7 +203,8 @@ async function createWorktree(
 
     if (vcs === "jj") {
       // Create jj workspace
-      const result = await $`jj workspace add --name ${issueId} ${worktreePath}`.cwd(repoRoot).quiet()
+      const cmd = `cd ${JSON.stringify(repoRoot)} && jj workspace add --name ${issueId} ${JSON.stringify(worktreePath)}`
+      const result = await $`${cmd}`
 
       if (result.exitCode !== 0) {
         return { success: false, error: result.stderr.toString() }
@@ -253,7 +214,8 @@ async function createWorktree(
       return { success: true, path: worktreePath, branch: issueId }
     } else {
       // Create git worktree
-      const result = await $`git worktree add -b ${branchName} ${worktreePath}`.cwd(repoRoot).quiet()
+      const cmd = `cd ${JSON.stringify(repoRoot)} && git worktree add -b ${branchName} ${JSON.stringify(worktreePath)}`
+      const result = await $`${cmd}`
 
       if (result.exitCode !== 0) {
         return { success: false, error: result.stderr.toString() }

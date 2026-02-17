@@ -2,7 +2,12 @@
  * Shared type definitions for opencode-projects plugin
  */
 
-import type { ToolContext } from "@opencode-ai/plugin"
+import type { ToolContext, PluginInput } from "@opencode-ai/plugin"
+
+/**
+ * BunShell type extracted from PluginInput
+ */
+export type BunShell = PluginInput["$"]
 
 /**
  * OpenCode SDK client type (simplified for our needs)
@@ -84,13 +89,9 @@ export interface Logger {
 }
 
 /**
- * Tool context with required fields
+ * Tool context - re-export from plugin package
  */
-export interface ProjectToolContext extends ToolContext {
-  sessionID: string
-  messageID: string
-  agent: string
-}
+export type ProjectToolContext = ToolContext
 
 /**
  * Project configuration
@@ -192,7 +193,7 @@ export interface WorktreeInfo {
 }
 
 /**
- * Tool dependencies passed to tool creators
+ * Tool dependencies passed to tool creators (legacy - for backward compatibility)
  */
 export interface ToolDeps {
   client: OpencodeClient
@@ -201,9 +202,22 @@ export interface ToolDeps {
   focus: FocusManager
   repoRoot: string
   log: Logger
+  $: BunShell
+}
+
+/**
+ * New tool dependencies using ProjectManager
+ */
+export interface ToolDepsV2 {
+  client: OpencodeClient
+  projectManager: ProjectManager
+  log: Logger
+  $: BunShell
 }
 
 // Forward declarations for manager types
 export type ConfigManager = import("./config.js").ConfigManager
 export type BeadsClient = import("./beads.js").BeadsClient
 export type FocusManager = import("./focus.js").FocusManager
+export type ProjectManager = import("./project-manager.js").ProjectManager
+export type IssueStorage = import("./issue-storage.js").IssueStorage

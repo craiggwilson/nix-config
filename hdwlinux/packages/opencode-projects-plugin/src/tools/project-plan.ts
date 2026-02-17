@@ -6,7 +6,7 @@ import { tool } from "@opencode-ai/plugin"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
-import type { ToolDeps, ProjectToolContext } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
 
 interface ProjectPlanArgs {
   projectId?: string
@@ -17,8 +17,8 @@ interface ProjectPlanArgs {
 /**
  * Create the project_plan tool
  */
-export function createProjectPlan(deps: ToolDeps) {
-  const { config, beads, focus, repoRoot, log } = deps
+export function createProjectPlan(deps: ToolDepsV2) {
+  const { projectManager, log } = deps
 
   return tool({
     description: `Continue or refine project planning.
@@ -49,7 +49,7 @@ This tool loads existing planning artifacts and continues the conversation.`,
       const { phase, focus: focusArea } = args
 
       // Resolve project ID
-      const projectId = args.projectId || focus.getProjectId()
+      const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
         return "No project specified and no project is currently focused.\n\nUse `project_create` to start a new project, or `project_focus(projectId)` to set context."
@@ -57,8 +57,8 @@ This tool loads existing planning artifacts and continues the conversation.`,
 
       await log.info(`Continuing planning for project: ${projectId}, phase: ${phase || "auto"}`)
 
-      // Find project directory
-      const projectDir = await findProjectDir(projectId, config, repoRoot)
+      // Get project directory
+      const projectDir = await projectManager.getProjectDir(projectId)
 
       if (!projectDir) {
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
@@ -168,35 +168,6 @@ This tool loads existing planning artifacts and continues the conversation.`,
 }
 
 /**
- * Find project directory by ID
- */
-async function findProjectDir(
-  projectId: string,
-  config: ToolDeps["config"],
-  repoRoot: string
-): Promise<string | null> {
-  // Check local first
-  const localDir = path.join(config.getLocalProjectsDir(repoRoot), projectId)
-  try {
-    await fs.access(localDir)
-    return localDir
-  } catch {
-    // Not in local
-  }
-
-  // Check global
-  const globalDir = path.join(config.getGlobalProjectsDir(), projectId)
-  try {
-    await fs.access(globalDir)
-    return globalDir
-  } catch {
-    // Not in global
-  }
-
-  return null
-}
-
-/**
  * Load planning artifacts
  */
 async function loadPlanningArtifacts(
@@ -252,7 +223,7 @@ async function loadInterviews(projectDir: string): Promise<string[]> {
  */
 function determinePhase(
   artifacts: Record<string, boolean>,
-  interviews: string[]
+  _interviews: string[]
 ): "discovery" | "refinement" | "breakdown" {
   // If we have architecture and risks, we're in breakdown
   if (artifacts.architecture && artifacts.risks) {

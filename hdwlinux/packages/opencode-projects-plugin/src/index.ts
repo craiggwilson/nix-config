@@ -21,19 +21,29 @@ import { createIssueCreate } from "./tools/issue-create.js"
 import { createIssueClaim } from "./tools/issue-claim.js"
 
 import { ConfigManager } from "./lib/config.js"
-import { BeadsClient } from "./lib/beads.js"
+import { BeadsIssueStorage } from "./lib/beads-issue-storage.js"
 import { FocusManager } from "./lib/focus.js"
+import { ProjectManager } from "./lib/project-manager.js"
 import { createLogger } from "./lib/logger.js"
 
 import { PROJECT_RULES } from "./agents/rules.js"
 
 import type { OpencodeClient } from "./lib/types.js"
 
+// Re-export SDK classes for external consumers
+export { ProjectManager } from "./lib/project-manager.js"
+export { ConfigManager } from "./lib/config.js"
+export { FocusManager } from "./lib/focus.js"
+export { BeadsIssueStorage } from "./lib/beads-issue-storage.js"
+export { InMemoryIssueStorage } from "./lib/inmemory-issue-storage.js"
+export type { IssueStorage, Issue, ProjectStatus } from "./lib/issue-storage.js"
+export type { ProjectMetadata, CreateProjectOptions } from "./lib/project-manager.js"
+
 /**
  * Main plugin export
  */
 export const ProjectsPlugin: Plugin = async (ctx) => {
-  const { client, directory, worktree } = ctx
+  const { client, directory, worktree, $ } = ctx
   const typedClient = client as OpencodeClient
 
   const log = createLogger(typedClient)
@@ -41,31 +51,46 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
   // Initialize managers
   const config = await ConfigManager.load()
-  const beads = new BeadsClient(log)
+  const issueStorage = new BeadsIssueStorage(log)
   const focus = new FocusManager()
+
+  // Set the shell for beads client
+  issueStorage.setShell($)
 
   // Detect if we're in a repository
   const repoRoot = worktree || directory
 
+  // Create ProjectManager
+  const projectManager = new ProjectManager({
+    config,
+    issueStorage,
+    focus,
+    log,
+    repoRoot,
+  })
+
   // Check beads availability
-  const beadsAvailable = await beads.isAvailable()
+  const beadsAvailable = await issueStorage.isAvailable()
   if (!beadsAvailable) {
     await log.warn("beads (bd) not found in PATH - some features will be unavailable")
   }
 
   await log.info(`opencode-projects initialized in ${repoRoot}`)
 
+  // Create tool dependencies (v2 style)
+  const toolDeps = { client: typedClient, projectManager, log, $ }
+
   return {
     // Project management tools
     tool: {
-      project_create: createProjectCreate({ client: typedClient, config, beads, focus, repoRoot, log }),
-      project_list: createProjectList({ client: typedClient, config, beads, focus, repoRoot, log }),
-      project_status: createProjectStatus({ client: typedClient, config, beads, focus, repoRoot, log }),
-      project_focus: createProjectFocus({ client: typedClient, config, beads, focus, repoRoot, log }),
-      project_plan: createProjectPlan({ client: typedClient, config, beads, focus, repoRoot, log }),
-      project_close: createProjectClose({ client: typedClient, config, beads, focus, repoRoot, log }),
-      issue_create: createIssueCreate({ client: typedClient, config, beads, focus, repoRoot, log }),
-      issue_claim: createIssueClaim({ client: typedClient, config, beads, focus, repoRoot, log }),
+      project_create: createProjectCreate(toolDeps),
+      project_list: createProjectList(toolDeps),
+      project_status: createProjectStatus(toolDeps),
+      project_focus: createProjectFocus(toolDeps),
+      project_plan: createProjectPlan(toolDeps),
+      project_close: createProjectClose(toolDeps),
+      issue_create: createIssueCreate(toolDeps),
+      issue_claim: createIssueClaim(toolDeps),
     },
 
     // Inject project management rules into system prompt
@@ -73,9 +98,9 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       output.system.push(PROJECT_RULES)
 
       // Inject focused project context if any
-      const focused = focus.getCurrent()
-      if (focused) {
-        const contextBlock = await buildFocusContext(focused, beads, repoRoot)
+      const projectId = projectManager.getFocusedProjectId()
+      if (projectId) {
+        const contextBlock = await buildFocusContext(projectManager)
         if (contextBlock) {
           output.system.push(contextBlock)
         }
@@ -83,11 +108,11 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     },
 
     // Preserve project context during compaction
-    "experimental.session.compacting": async (input, output) => {
-      const focused = focus.getCurrent()
-      if (!focused) return
+    "experimental.session.compacting": async (_input, output) => {
+      const projectId = projectManager.getFocusedProjectId()
+      if (!projectId) return
 
-      const contextBlock = await buildCompactionContext(focused, beads, repoRoot)
+      const contextBlock = await buildCompactionContext(projectManager)
       if (contextBlock) {
         output.context.push(contextBlock)
       }
@@ -95,12 +120,14 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
     // Inject environment variables for shell commands
     "shell.env": async (_input, output) => {
-      const focused = focus.getCurrent()
-      if (focused?.projectId) {
-        output.env.OPENCODE_PROJECT_ID = focused.projectId
+      const projectId = projectManager.getFocusedProjectId()
+      const issueId = projectManager.getFocusedIssueId()
+
+      if (projectId) {
+        output.env.OPENCODE_PROJECT_ID = projectId
       }
-      if (focused?.issueId) {
-        output.env.OPENCODE_ISSUE_ID = focused.issueId
+      if (issueId) {
+        output.env.OPENCODE_ISSUE_ID = issueId
       }
     },
 
@@ -117,35 +144,37 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 /**
  * Build context block for focused project/issue
  */
-async function buildFocusContext(
-  focused: { projectId: string; issueId?: string },
-  beads: BeadsClient,
-  repoRoot: string
-): Promise<string | null> {
+async function buildFocusContext(projectManager: ProjectManager): Promise<string | null> {
+  const projectId = projectManager.getFocusedProjectId()
+  if (!projectId) return null
+
   const sections: string[] = ["<project-context>"]
 
-  sections.push(`## Focused Project: ${focused.projectId}`)
+  sections.push(`## Focused Project: ${projectId}`)
 
-  // Get project status from beads
+  // Get project status
   try {
-    const status = await beads.getProjectStatus(focused.projectId, repoRoot)
-    if (status) {
+    const status = await projectManager.getProjectStatus(projectId)
+    if (status?.issueStatus) {
       sections.push("")
-      sections.push(`**Progress:** ${status.completed}/${status.total} issues complete`)
-      if (status.blockers.length > 0) {
-        sections.push(`**Blockers:** ${status.blockers.length}`)
+      sections.push(
+        `**Progress:** ${status.issueStatus.completed}/${status.issueStatus.total} issues complete`
+      )
+      if (status.issueStatus.blockers.length > 0) {
+        sections.push(`**Blockers:** ${status.issueStatus.blockers.length}`)
       }
     }
   } catch {
-    // Beads may not be initialized
+    // Project may not exist
   }
 
-  if (focused.issueId) {
+  const issueId = projectManager.getFocusedIssueId()
+  if (issueId) {
     sections.push("")
-    sections.push(`### Focused Issue: ${focused.issueId}`)
+    sections.push(`### Focused Issue: ${issueId}`)
 
     try {
-      const issue = await beads.getIssue(focused.issueId, repoRoot)
+      const issue = await projectManager.getIssue(projectId, issueId)
       if (issue) {
         sections.push(`**Title:** ${issue.title}`)
         sections.push(`**Status:** ${issue.status}`)
@@ -166,22 +195,22 @@ async function buildFocusContext(
 /**
  * Build context for session compaction
  */
-async function buildCompactionContext(
-  focused: { projectId: string; issueId?: string },
-  beads: BeadsClient,
-  repoRoot: string
-): Promise<string | null> {
+async function buildCompactionContext(projectManager: ProjectManager): Promise<string | null> {
+  const projectId = projectManager.getFocusedProjectId()
+  if (!projectId) return null
+
   const sections: string[] = ["<project-compaction-context>"]
 
-  sections.push(`## Active Project: ${focused.projectId}`)
+  sections.push(`## Active Project: ${projectId}`)
 
-  if (focused.issueId) {
-    sections.push(`## Working On: ${focused.issueId}`)
+  const issueId = projectManager.getFocusedIssueId()
+  if (issueId) {
+    sections.push(`## Working On: ${issueId}`)
   }
 
   // Get ready issues
   try {
-    const ready = await beads.getReadyIssues(focused.projectId, repoRoot)
+    const ready = await projectManager.getReadyIssues(projectId)
     if (ready.length > 0) {
       sections.push("")
       sections.push("## Ready Issues (no blockers)")
@@ -190,7 +219,7 @@ async function buildCompactionContext(
       }
     }
   } catch {
-    // Beads may not be available
+    // Project may not exist
   }
 
   sections.push("")

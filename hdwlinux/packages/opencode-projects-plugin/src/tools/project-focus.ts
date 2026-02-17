@@ -4,7 +4,7 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
 
 interface ProjectFocusArgs {
   projectId?: string
@@ -15,8 +15,8 @@ interface ProjectFocusArgs {
 /**
  * Create the project_focus tool
  */
-export function createProjectFocus(deps: ToolDeps) {
-  const { beads, focus, repoRoot, log } = deps
+export function createProjectFocus(deps: ToolDepsV2) {
+  const { projectManager, log } = deps
 
   return tool({
     description: `Set or get the current project context.
@@ -48,28 +48,29 @@ Call without arguments to see current focus.`,
 
       // Clear focus
       if (clear) {
-        focus.clear()
+        projectManager.clearFocus()
         await log.info("Focus cleared")
         return "Focus cleared. No project or issue is currently active."
       }
 
       // Get current focus
       if (!projectId && !issueId) {
-        const current = focus.getCurrent()
+        const currentProjectId = projectManager.getFocusedProjectId()
+        const currentIssueId = projectManager.getFocusedIssueId()
 
-        if (!current) {
+        if (!currentProjectId) {
           return "No project is currently focused.\n\nUse `project_focus(projectId)` to set focus, or `project_list` to see available projects."
         }
 
         const lines: string[] = ["## Current Focus", ""]
-        lines.push(`**Project:** ${current.projectId}`)
+        lines.push(`**Project:** ${currentProjectId}`)
 
-        if (current.issueId) {
-          lines.push(`**Issue:** ${current.issueId}`)
+        if (currentIssueId) {
+          lines.push(`**Issue:** ${currentIssueId}`)
 
           // Get issue details
           try {
-            const issue = await beads.getIssue(current.issueId, repoRoot)
+            const issue = await projectManager.getIssue(currentProjectId, currentIssueId)
             if (issue) {
               lines.push(`**Title:** ${issue.title}`)
               lines.push(`**Status:** ${issue.status}`)
@@ -90,9 +91,15 @@ Call without arguments to see current focus.`,
         return lines.join("\n")
       }
 
-      // Set focus
+      // Set focus to project (and optionally issue)
       if (projectId) {
-        focus.setFocus(projectId, issueId)
+        // Verify project exists
+        const project = await projectManager.getProject(projectId)
+        if (!project) {
+          return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+        }
+
+        projectManager.setFocus(projectId, issueId)
         await log.info(`Focus set to project: ${projectId}${issueId ? `, issue: ${issueId}` : ""}`)
 
         const lines: string[] = ["## Focus Set", ""]
@@ -103,7 +110,7 @@ Call without arguments to see current focus.`,
 
           // Get issue details
           try {
-            const issue = await beads.getIssue(issueId, repoRoot)
+            const issue = await projectManager.getIssue(projectId, issueId)
             if (issue) {
               lines.push(`**Title:** ${issue.title}`)
               lines.push(`**Status:** ${issue.status}`)
@@ -126,22 +133,22 @@ Call without arguments to see current focus.`,
 
       // Set issue focus within current project
       if (issueId) {
-        const current = focus.getCurrent()
+        const currentProjectId = projectManager.getFocusedProjectId()
 
-        if (!current) {
+        if (!currentProjectId) {
           return "Cannot focus on an issue without a project.\n\nUse `project_focus(projectId, issueId)` to set both."
         }
 
-        focus.setIssueFocus(issueId)
-        await log.info(`Focus set to issue: ${issueId} in project: ${current.projectId}`)
+        projectManager.setFocus(currentProjectId, issueId)
+        await log.info(`Focus set to issue: ${issueId} in project: ${currentProjectId}`)
 
         const lines: string[] = ["## Issue Focus Set", ""]
-        lines.push(`**Project:** ${current.projectId}`)
+        lines.push(`**Project:** ${currentProjectId}`)
         lines.push(`**Issue:** ${issueId}`)
 
         // Get issue details
         try {
-          const issue = await beads.getIssue(issueId, repoRoot)
+          const issue = await projectManager.getIssue(currentProjectId, issueId)
           if (issue) {
             lines.push(`**Title:** ${issue.title}`)
             lines.push(`**Status:** ${issue.status}`)

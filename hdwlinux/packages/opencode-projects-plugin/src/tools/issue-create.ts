@@ -3,10 +3,8 @@
  */
 
 import { tool } from "@opencode-ai/plugin"
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
 
-import type { ToolDeps, ProjectToolContext } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
 
 interface IssueCreateArgs {
   title: string
@@ -21,8 +19,8 @@ interface IssueCreateArgs {
 /**
  * Create the issue_create tool
  */
-export function createIssueCreate(deps: ToolDeps) {
-  const { config, beads, focus, repoRoot, log } = deps
+export function createIssueCreate(deps: ToolDepsV2) {
+  const { projectManager, log } = deps
 
   return tool({
     description: `Create a beads issue within a project.
@@ -62,7 +60,7 @@ Issues are tracked in beads and support:
       const { title, description, priority, parent, blockedBy, labels } = args
 
       // Resolve project ID
-      const projectId = args.projectId || focus.getProjectId()
+      const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
         return "No project specified and no project is currently focused.\n\nUse `project_focus(projectId)` to set context, or provide projectId explicitly."
@@ -70,40 +68,23 @@ Issues are tracked in beads and support:
 
       await log.info(`Creating issue in project ${projectId}: ${title}`)
 
-      // Find project directory
-      const projectDir = await findProjectDir(projectId, config, repoRoot)
-
-      if (!projectDir) {
+      // Verify project exists
+      const project = await projectManager.getProject(projectId)
+      if (!project) {
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
       }
 
-      // Check if beads is initialized
-      const beadsInitialized = await beads.isInitialized(projectDir)
-
-      if (!beadsInitialized) {
-        return `Beads is not initialized in project '${projectId}'.\n\nRun \`bd init\` in ${projectDir} to initialize issue tracking.`
-      }
-
       // Create the issue
-      const issueId = await beads.createIssue(projectDir, title, {
+      const issueId = await projectManager.createIssue(projectId, title, {
         priority,
         parent,
         description,
         labels,
+        blockedBy,
       })
 
       if (!issueId) {
-        return `Failed to create issue. Check that beads is properly configured.`
-      }
-
-      // Add dependencies if specified
-      if (blockedBy && blockedBy.length > 0) {
-        for (const blockerId of blockedBy) {
-          const success = await beads.addDependency(issueId, blockerId, projectDir)
-          if (!success) {
-            await log.warn(`Failed to add dependency: ${issueId} blocked by ${blockerId}`)
-          }
-        }
+        return `Failed to create issue. Check that issue storage is properly configured.`
       }
 
       // Build response
@@ -147,33 +128,4 @@ Issues are tracked in beads and support:
       return lines.join("\n")
     },
   })
-}
-
-/**
- * Find project directory by ID
- */
-async function findProjectDir(
-  projectId: string,
-  config: ToolDeps["config"],
-  repoRoot: string
-): Promise<string | null> {
-  // Check local first
-  const localDir = path.join(config.getLocalProjectsDir(repoRoot), projectId)
-  try {
-    await fs.access(localDir)
-    return localDir
-  } catch {
-    // Not in local
-  }
-
-  // Check global
-  const globalDir = path.join(config.getGlobalProjectsDir(), projectId)
-  try {
-    await fs.access(globalDir)
-    return globalDir
-  } catch {
-    // Not in global
-  }
-
-  return null
 }

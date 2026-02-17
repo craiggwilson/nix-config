@@ -3,10 +3,8 @@
  */
 
 import { tool } from "@opencode-ai/plugin"
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
 
-import type { ToolDeps, ProjectToolContext } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
 
 interface ProjectCloseArgs {
   projectId: string
@@ -17,8 +15,8 @@ interface ProjectCloseArgs {
 /**
  * Create the project_close tool
  */
-export function createProjectClose(deps: ToolDeps) {
-  const { config, focus, repoRoot, log } = deps
+export function createProjectClose(deps: ToolDepsV2) {
+  const { projectManager, log } = deps
 
   return tool({
     description: `Close a project (mark as completed, cancelled, or archived).
@@ -42,37 +40,10 @@ This updates the project status and optionally adds a final summary.`,
 
       await log.info(`Closing project: ${projectId}, reason: ${reason}`)
 
-      // Find project directory
-      const projectDir = await findProjectDir(projectId, config, repoRoot)
+      const closed = await projectManager.closeProject(projectId, { reason, summary })
 
-      if (!projectDir) {
+      if (!closed) {
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
-      }
-
-      // Load and update metadata
-      const metadataPath = path.join(projectDir, "project.json")
-
-      try {
-        const content = await fs.readFile(metadataPath, "utf8")
-        const metadata = JSON.parse(content) as Record<string, unknown>
-
-        // Update status
-        metadata.status = reason === "cancelled" ? "archived" : reason
-        metadata.closedAt = new Date().toISOString()
-        metadata.closeReason = reason
-
-        if (summary) {
-          metadata.closeSummary = summary
-        }
-
-        await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2), "utf8")
-      } catch (error) {
-        return `Failed to update project metadata: ${error}`
-      }
-
-      // Clear focus if this project was focused
-      if (focus.isFocusedOn(projectId)) {
-        focus.clear()
       }
 
       // Build response
@@ -97,33 +68,4 @@ This updates the project status and optionally adds a final summary.`,
       return lines.join("\n")
     },
   })
-}
-
-/**
- * Find project directory by ID
- */
-async function findProjectDir(
-  projectId: string,
-  config: ToolDeps["config"],
-  repoRoot: string
-): Promise<string | null> {
-  // Check local first
-  const localDir = path.join(config.getLocalProjectsDir(repoRoot), projectId)
-  try {
-    await fs.access(localDir)
-    return localDir
-  } catch {
-    // Not in local
-  }
-
-  // Check global
-  const globalDir = path.join(config.getGlobalProjectsDir(), projectId)
-  try {
-    await fs.access(globalDir)
-    return globalDir
-  } catch {
-    // Not in global
-  }
-
-  return null
 }

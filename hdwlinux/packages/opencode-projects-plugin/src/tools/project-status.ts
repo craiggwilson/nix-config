@@ -3,10 +3,9 @@
  */
 
 import { tool } from "@opencode-ai/plugin"
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
 
-import type { ToolDeps, ProjectToolContext, BeadsIssue } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
+import type { Issue } from "../lib/issue-storage.js"
 
 interface ProjectStatusArgs {
   projectId?: string
@@ -16,8 +15,8 @@ interface ProjectStatusArgs {
 /**
  * Create the project_status tool
  */
-export function createProjectStatus(deps: ToolDeps) {
-  const { config, beads, focus, repoRoot, log } = deps
+export function createProjectStatus(deps: ToolDepsV2) {
+  const { projectManager, log } = deps
 
   return tool({
     description: `Show detailed project status including progress and blockers.
@@ -39,7 +38,7 @@ If no projectId is provided, uses the currently focused project.`,
       const { format = "summary" } = args
 
       // Resolve project ID
-      const projectId = args.projectId || focus.getProjectId()
+      const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
         return "No project specified and no project is currently focused.\n\nUse `project_list` to see available projects, then `project_focus(projectId)` to set context."
@@ -47,33 +46,27 @@ If no projectId is provided, uses the currently focused project.`,
 
       await log.info(`Getting status for project: ${projectId}`)
 
-      // Find project directory
-      const projectDir = await findProjectDir(projectId, config, repoRoot)
+      // Get project status
+      const status = await projectManager.getProjectStatus(projectId)
 
-      if (!projectDir) {
+      if (!status) {
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
       }
 
-      // Load project metadata
-      const metadata = await loadProjectMetadata(projectDir)
+      const { metadata, issueStatus } = status
 
-      if (!metadata) {
-        return `Project '${projectId}' has invalid metadata.`
-      }
+      // Get issues for detailed/tree view
+      const issues = format !== "summary" ? await projectManager.listIssues(projectId) : []
+      const readyIssues = await projectManager.getReadyIssues(projectId)
 
-      // Get beads status
-      const status = await beads.getProjectStatus(projectId, projectDir)
-      const issues = await beads.listIssues(projectDir)
-      const readyIssues = await beads.getReadyIssues(projectId, projectDir)
-
-      // Build output based on format
+      // Build output
       const lines: string[] = []
 
       // Header
       lines.push(`## ${metadata.name}`)
       lines.push("")
       lines.push(`**ID:** ${projectId}`)
-      lines.push(`**Type:** ${metadata.type || "project"}`)
+      lines.push(`**Type:** ${metadata.type}`)
       lines.push(`**Status:** ${metadata.status}`)
 
       if (metadata.description) {
@@ -83,9 +76,11 @@ If no projectId is provided, uses the currently focused project.`,
       lines.push("")
 
       // Progress
-      if (status) {
+      if (issueStatus) {
         const percentage =
-          status.total > 0 ? Math.round((status.completed / status.total) * 100) : 0
+          issueStatus.total > 0
+            ? Math.round((issueStatus.completed / issueStatus.total) * 100)
+            : 0
 
         lines.push("### Progress")
         lines.push("")
@@ -93,10 +88,10 @@ If no projectId is provided, uses the currently focused project.`,
         lines.push("")
         lines.push(`| Status | Count |`)
         lines.push(`|--------|-------|`)
-        lines.push(`| Total | ${status.total} |`)
-        lines.push(`| Completed | ${status.completed} |`)
-        lines.push(`| In Progress | ${status.inProgress} |`)
-        lines.push(`| Blocked | ${status.blocked} |`)
+        lines.push(`| Total | ${issueStatus.total} |`)
+        lines.push(`| Completed | ${issueStatus.completed} |`)
+        lines.push(`| In Progress | ${issueStatus.inProgress} |`)
+        lines.push(`| Blocked | ${issueStatus.blocked} |`)
         lines.push("")
       }
 
@@ -115,15 +110,15 @@ If no projectId is provided, uses the currently focused project.`,
       }
 
       // Blockers
-      if (status && status.blockers.length > 0) {
+      if (issueStatus && issueStatus.blockers.length > 0) {
         lines.push("### Blockers")
         lines.push("")
-        for (const blocker of status.blockers.slice(0, 5)) {
+        for (const blocker of issueStatus.blockers.slice(0, 5)) {
           lines.push(`- **${blocker.issueId}**: ${blocker.title}`)
           lines.push(`  Blocked by: ${blocker.blockedBy.join(", ")}`)
         }
-        if (status.blockers.length > 5) {
-          lines.push(`- ... and ${status.blockers.length - 5} more`)
+        if (issueStatus.blockers.length > 5) {
+          lines.push(`- ... and ${issueStatus.blockers.length - 5} more`)
         }
         lines.push("")
       }
@@ -175,49 +170,6 @@ If no projectId is provided, uses the currently focused project.`,
 }
 
 /**
- * Find project directory by ID
- */
-async function findProjectDir(
-  projectId: string,
-  config: ToolDeps["config"],
-  repoRoot: string
-): Promise<string | null> {
-  // Check local first
-  const localDir = path.join(config.getLocalProjectsDir(repoRoot), projectId)
-  try {
-    await fs.access(localDir)
-    return localDir
-  } catch {
-    // Not in local
-  }
-
-  // Check global
-  const globalDir = path.join(config.getGlobalProjectsDir(), projectId)
-  try {
-    await fs.access(globalDir)
-    return globalDir
-  } catch {
-    // Not in global
-  }
-
-  return null
-}
-
-/**
- * Load project metadata
- */
-async function loadProjectMetadata(
-  projectDir: string
-): Promise<Record<string, unknown> | null> {
-  try {
-    const content = await fs.readFile(path.join(projectDir, "project.json"), "utf8")
-    return JSON.parse(content)
-  } catch {
-    return null
-  }
-}
-
-/**
  * Render ASCII progress bar
  */
 function renderProgressBar(percentage: number): string {
@@ -230,10 +182,10 @@ function renderProgressBar(percentage: number): string {
 /**
  * Render issue tree
  */
-function renderIssueTree(issues: BeadsIssue[]): string {
+function renderIssueTree(issues: Issue[]): string {
   // Build parent-child relationships
-  const children = new Map<string, BeadsIssue[]>()
-  const roots: BeadsIssue[] = []
+  const children = new Map<string, Issue[]>()
+  const roots: Issue[] = []
 
   for (const issue of issues) {
     if (issue.parent) {
@@ -248,7 +200,7 @@ function renderIssueTree(issues: BeadsIssue[]): string {
   // Render tree
   const lines: string[] = []
 
-  function renderNode(issue: BeadsIssue, prefix: string, isLast: boolean): void {
+  function renderNode(issue: Issue, prefix: string, isLast: boolean): void {
     const connector = isLast ? "└── " : "├── "
     const statusIcon =
       issue.status === "closed"
