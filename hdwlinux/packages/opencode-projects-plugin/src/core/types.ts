@@ -216,8 +216,8 @@ export interface ToolDepsV2 {
 }
 
 // Forward declarations for manager types
-export type ConfigManager = import("./config.js").ConfigManager
-export type BeadsClient = import("./beads.js").BeadsClient
-export type FocusManager = import("./focus.js").FocusManager
+export type ConfigManager = import("./config-manager.js").ConfigManager
+export type BeadsClient = import("../storage/beads-client.js").BeadsClient
+export type FocusManager = import("./focus-manager.js").FocusManager
 export type ProjectManager = import("./project-manager.js").ProjectManager
-export type IssueStorage = import("./issue-storage.js").IssueStorage
+export type IssueStorage = import("../storage/issue-storage.js").IssueStorage

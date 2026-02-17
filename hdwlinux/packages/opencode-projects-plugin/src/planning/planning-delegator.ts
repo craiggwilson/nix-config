@@ -6,7 +6,7 @@
  * OpenCode decide if no suitable agent is found.
  */
 
-import type { Logger } from "./types.js"
+import type { Logger } from "../core/types.js"
 
 // Use any for client to avoid SDK type compatibility issues
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

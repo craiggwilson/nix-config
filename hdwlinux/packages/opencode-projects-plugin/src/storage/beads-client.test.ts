@@ -10,8 +10,8 @@ import * as path from "node:path"
 import * as os from "node:os"
 import { $ } from "bun"
 
-import { BeadsClient } from "./beads.js"
-import type { Logger, BunShell } from "./types.js"
+import { BeadsClient } from "./beads-client.js"
+import type { Logger, BunShell } from "../core/types.js"
 
 // Mock logger
 const mockLogger: Logger = {

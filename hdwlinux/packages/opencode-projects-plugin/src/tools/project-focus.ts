@@ -4,7 +4,7 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
 
 interface ProjectFocusArgs {
   projectId?: string

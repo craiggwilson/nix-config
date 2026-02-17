@@ -9,26 +9,26 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as crypto from "node:crypto"
 
-import type { IssueStorage, Issue, CreateIssueOptions, ProjectStatus } from "./issue-storage.js"
-import type { FocusManager } from "./focus.js"
-import type { ConfigManager } from "./config.js"
+import type { IssueStorage, Issue, CreateIssueOptions, ProjectStatus } from "../storage/index.js"
+import type { FocusManager } from "./focus-manager.js"
+import type { ConfigManager } from "./config-manager.js"
 import type { Logger, OpencodeClient } from "./types.js"
-import { InterviewManager, type InterviewSession, type InterviewSummary } from "./interview-manager.js"
 import {
+  InterviewManager,
   ArtifactManager,
+  PlanningDelegator,
+  type InterviewSession,
+  type InterviewSummary,
   type ArtifactType,
   type ArtifactMetadata,
   type RoadmapContent,
   type ArchitectureContent,
   type RisksContent,
   type SuccessCriteriaContent,
-} from "./artifact-manager.js"
-import {
-  PlanningDelegator,
   type PlanningPhase,
   type AgentInfo,
   type DelegationResult,
-} from "./planning-delegator.js"
+} from "../planning/index.js"
 
 /**
  * Project metadata stored in project.json

@@ -11,54 +11,68 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import type { Event } from "@opencode-ai/sdk"
 
-import { createProjectCreate } from "./tools/project-create.js"
-import { createProjectList } from "./tools/project-list.js"
-import { createProjectStatus } from "./tools/project-status.js"
-import { createProjectFocus } from "./tools/project-focus.js"
-import { createProjectPlan } from "./tools/project-plan.js"
-import { createProjectClose } from "./tools/project-close.js"
-import { createIssueCreate } from "./tools/issue-create.js"
-import { createIssueClaim } from "./tools/issue-claim.js"
+import {
+  createProjectCreate,
+  createProjectList,
+  createProjectStatus,
+  createProjectFocus,
+  createProjectPlan,
+  createProjectClose,
+  createIssueCreate,
+  createIssueClaim,
+} from "./tools/index.js"
 
-import { ConfigManager } from "./lib/config.js"
-import { BeadsIssueStorage } from "./lib/beads-issue-storage.js"
-import { FocusManager } from "./lib/focus.js"
-import { ProjectManager } from "./lib/project-manager.js"
-import { createLogger } from "./lib/logger.js"
+import {
+  ConfigManager,
+  FocusManager,
+  ProjectManager,
+  createLogger,
+  type OpencodeClient,
+} from "./core/index.js"
 
-import { PROJECT_RULES } from "./agents/rules.js"
+import { BeadsIssueStorage } from "./storage/index.js"
 
-import type { OpencodeClient } from "./lib/types.js"
+import { PROJECT_RULES } from "./agents/index.js"
 
 // Re-export SDK classes for external consumers
-export { ProjectManager } from "./lib/project-manager.js"
-export { ConfigManager } from "./lib/config.js"
-export { FocusManager } from "./lib/focus.js"
-export { BeadsIssueStorage } from "./lib/beads-issue-storage.js"
-export { InMemoryIssueStorage } from "./lib/inmemory-issue-storage.js"
-export { InterviewManager } from "./lib/interview-manager.js"
-export { ArtifactManager } from "./lib/artifact-manager.js"
-export { PlanningDelegator } from "./lib/planning-delegator.js"
-export type { IssueStorage, Issue, ProjectStatus } from "./lib/issue-storage.js"
-export type { ProjectMetadata, CreateProjectOptions } from "./lib/project-manager.js"
-export type { InterviewSession, InterviewSummary, InterviewExchange } from "./lib/interview-manager.js"
-export type {
-  ArtifactType,
-  ArtifactMetadata,
-  RoadmapContent,
-  ArchitectureContent,
-  RisksContent,
-  SuccessCriteriaContent,
-  Milestone,
-  Risk,
-  SuccessCriterion,
-} from "./lib/artifact-manager.js"
-export type {
-  PlanningPhase,
-  AgentInfo,
-  DelegationRequest,
-  DelegationResult,
-} from "./lib/planning-delegator.js"
+export {
+  ProjectManager,
+  ConfigManager,
+  FocusManager,
+  createLogger,
+} from "./core/index.js"
+
+export {
+  BeadsIssueStorage,
+  InMemoryIssueStorage,
+  type IssueStorage,
+  type Issue,
+  type ProjectStatus,
+} from "./storage/index.js"
+
+export {
+  InterviewManager,
+  ArtifactManager,
+  PlanningDelegator,
+  type InterviewSession,
+  type InterviewSummary,
+  type InterviewExchange,
+  type ArtifactType,
+  type ArtifactMetadata,
+  type RoadmapContent,
+  type ArchitectureContent,
+  type RisksContent,
+  type SuccessCriteriaContent,
+  type Milestone,
+  type Risk,
+  type SuccessCriterion,
+  type PlanningPhase,
+  type AgentInfo,
+  type DelegationRequest,
+  type DelegationResult,
+} from "./planning/index.js"
+
+export type { ProjectMetadata, CreateProjectOptions } from "./core/index.js"
 
 /**
  * Main plugin export

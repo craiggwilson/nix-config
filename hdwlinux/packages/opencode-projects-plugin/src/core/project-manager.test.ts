@@ -8,9 +8,9 @@ import * as path from "node:path"
 import * as os from "node:os"
 
 import { ProjectManager } from "./project-manager.js"
-import { ConfigManager } from "./config.js"
-import { InMemoryIssueStorage } from "./inmemory-issue-storage.js"
-import { FocusManager } from "./focus.js"
+import { ConfigManager } from "./config-manager.js"
+import { InMemoryIssueStorage } from "../storage/index.js"
+import { FocusManager } from "./focus-manager.js"
 import { createMockLogger } from "./test-utils.js"
 
 describe("ProjectManager", () => {

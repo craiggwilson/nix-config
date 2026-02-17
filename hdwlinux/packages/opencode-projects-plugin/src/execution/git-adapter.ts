@@ -1,0 +1,258 @@
+/**
+ * Git Adapter - VCS adapter implementation for Git
+ */
+
+import * as path from "node:path"
+
+import type { VCSAdapter, VCSType, WorktreeInfo, MergeResult, MergeStrategy } from "./vcs-adapter.js"
+import type { BunShell, Logger } from "../core/types.js"
+
+/**
+ * Git implementation of VCSAdapter
+ */
+export class GitAdapter implements VCSAdapter {
+  readonly type: VCSType = "git"
+  readonly repoRoot: string
+
+  private $: BunShell
+  private log: Logger
+  private worktreeBase: string
+
+  constructor(repoRoot: string, shell: BunShell, log: Logger) {
+    this.repoRoot = repoRoot
+    this.$ = shell
+    this.log = log
+
+    // Worktrees go in a sibling directory
+    const repoName = path.basename(repoRoot)
+    this.worktreeBase = path.join(path.dirname(repoRoot), `${repoName}-worktrees`)
+  }
+
+  async createWorktree(name: string, baseBranch?: string): Promise<WorktreeInfo> {
+    const worktreePath = path.join(this.worktreeBase, name)
+    const branchName = name.replace(/\//g, "-") // Sanitize for branch name
+
+    await this.log.info(`Creating git worktree: ${name} at ${worktreePath}`)
+
+    // Determine base
+    const base = baseBranch || (await this.getDefaultBranch())
+
+    // Create the worktree with a new branch
+    const cmd = `git -C ${JSON.stringify(this.repoRoot)} worktree add -b ${branchName} ${JSON.stringify(worktreePath)} ${base}`
+    const result = await this.$`${cmd}`
+
+    if (result.exitCode !== 0) {
+      const error = result.stderr.toString()
+      await this.log.error(`Failed to create worktree: ${error}`)
+      throw new Error(`Failed to create git worktree: ${error}`)
+    }
+
+    return {
+      name,
+      path: worktreePath,
+      branch: branchName,
+      isMain: false,
+    }
+  }
+
+  async listWorktrees(): Promise<WorktreeInfo[]> {
+    const cmd = `git -C ${JSON.stringify(this.repoRoot)} worktree list --porcelain`
+    const result = await this.$`${cmd}`
+
+    if (result.exitCode !== 0) {
+      return []
+    }
+
+    const output = result.stdout.toString()
+    const worktrees: WorktreeInfo[] = []
+    let current: Partial<WorktreeInfo> = {}
+
+    for (const line of output.split("\n")) {
+      if (line.startsWith("worktree ")) {
+        if (current.path) {
+          worktrees.push(current as WorktreeInfo)
+        }
+        current = {
+          path: line.slice(9),
+          isMain: false,
+        }
+      } else if (line.startsWith("branch ")) {
+        current.branch = line.slice(7).replace("refs/heads/", "")
+      } else if (line === "bare") {
+        current.isMain = true
+      }
+    }
+
+    if (current.path) {
+      worktrees.push(current as WorktreeInfo)
+    }
+
+    // Add names based on path relative to worktree base
+    return worktrees.map((wt) => {
+      let name: string
+      if (wt.path.startsWith(this.worktreeBase)) {
+        // Get relative path from worktree base
+        name = path.relative(this.worktreeBase, wt.path)
+      } else {
+        name = path.basename(wt.path)
+      }
+      return {
+        ...wt,
+        name,
+        isMain: wt.path === this.repoRoot,
+      }
+    })
+  }
+
+  async removeWorktree(name: string): Promise<boolean> {
+    const worktreePath = path.join(this.worktreeBase, name)
+
+    await this.log.info(`Removing git worktree: ${name}`)
+
+    // Remove the worktree
+    const removeCmd = `git -C ${JSON.stringify(this.repoRoot)} worktree remove ${JSON.stringify(worktreePath)} --force`
+    const removeResult = await this.$`${removeCmd}`
+
+    if (removeResult.exitCode !== 0) {
+      await this.log.warn(`Failed to remove worktree: ${removeResult.stderr.toString()}`)
+      return false
+    }
+
+    // Delete the branch
+    const branchName = name.replace(/\//g, "-")
+    const branchCmd = `git -C ${JSON.stringify(this.repoRoot)} branch -D ${branchName}`
+    await this.$`${branchCmd}` // Ignore errors - branch may not exist
+
+    return true
+  }
+
+  async merge(
+    source: string,
+    target?: string,
+    strategy: MergeStrategy = "squash"
+  ): Promise<MergeResult> {
+    const targetBranch = target || (await this.getDefaultBranch())
+
+    await this.log.info(`Merging ${source} into ${targetBranch} with strategy: ${strategy}`)
+
+    // Checkout target branch
+    const checkoutCmd = `git -C ${JSON.stringify(this.repoRoot)} checkout ${targetBranch}`
+    const checkoutResult = await this.$`${checkoutCmd}`
+
+    if (checkoutResult.exitCode !== 0) {
+      return {
+        success: false,
+        error: `Failed to checkout ${targetBranch}: ${checkoutResult.stderr.toString()}`,
+      }
+    }
+
+    // Perform merge based on strategy
+    let mergeCmd: string
+    switch (strategy) {
+      case "squash":
+        mergeCmd = `git -C ${JSON.stringify(this.repoRoot)} merge --squash ${source}`
+        break
+      case "rebase":
+        mergeCmd = `git -C ${JSON.stringify(this.repoRoot)} rebase ${source}`
+        break
+      case "merge":
+      default:
+        mergeCmd = `git -C ${JSON.stringify(this.repoRoot)} merge ${source}`
+        break
+    }
+
+    const mergeResult = await this.$`${mergeCmd}`
+
+    if (mergeResult.exitCode !== 0) {
+      const error = mergeResult.stderr.toString()
+
+      // Check for conflicts
+      if (error.includes("CONFLICT") || error.includes("conflict")) {
+        const conflictCmd = `git -C ${JSON.stringify(this.repoRoot)} diff --name-only --diff-filter=U`
+        const conflictResult = await this.$`${conflictCmd}`
+        const conflictFiles = conflictResult.stdout.toString().trim().split("\n").filter(Boolean)
+
+        return {
+          success: false,
+          error: "Merge conflicts detected",
+          conflictFiles,
+        }
+      }
+
+      return {
+        success: false,
+        error: `Merge failed: ${error}`,
+      }
+    }
+
+    // For squash, we need to commit
+    if (strategy === "squash") {
+      const commitCmd = `git -C ${JSON.stringify(this.repoRoot)} commit -m "Merge ${source} (squashed)"`
+      const commitResult = await this.$`${commitCmd}`
+
+      if (commitResult.exitCode !== 0) {
+        // No changes to commit is OK
+        if (!commitResult.stdout.toString().includes("nothing to commit")) {
+          return {
+            success: false,
+            error: `Commit failed: ${commitResult.stderr.toString()}`,
+          }
+        }
+      }
+    }
+
+    // Get the commit ID
+    const headCmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse HEAD`
+    const headResult = await this.$`${headCmd}`
+    const commitId = headResult.stdout.toString().trim()
+
+    return {
+      success: true,
+      commitId,
+    }
+  }
+
+  async getCurrentBranch(): Promise<string> {
+    const cmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse --abbrev-ref HEAD`
+    const result = await this.$`${cmd}`
+
+    if (result.exitCode !== 0) {
+      return "HEAD"
+    }
+
+    return result.stdout.toString().trim()
+  }
+
+  async getDefaultBranch(): Promise<string> {
+    // Try to get the default branch from remote
+    const remoteCmd = `git -C ${JSON.stringify(this.repoRoot)} symbolic-ref refs/remotes/origin/HEAD 2>/dev/null`
+    const remoteResult = await this.$`${remoteCmd}`
+
+    if (remoteResult.exitCode === 0) {
+      const ref = remoteResult.stdout.toString().trim()
+      return ref.replace("refs/remotes/origin/", "")
+    }
+
+    // Fall back to checking common names
+    for (const branch of ["main", "master", "trunk"]) {
+      const checkCmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse --verify ${branch} 2>/dev/null`
+      const checkResult = await this.$`${checkCmd}`
+      if (checkResult.exitCode === 0) {
+        return branch
+      }
+    }
+
+    return "main"
+  }
+
+  async hasUncommittedChanges(): Promise<boolean> {
+    const cmd = `git -C ${JSON.stringify(this.repoRoot)} status --porcelain`
+    const result = await this.$`${cmd}`
+
+    return result.stdout.toString().trim().length > 0
+  }
+
+  getWorktreeBasePath(): string {
+    return this.worktreeBase
+  }
+}

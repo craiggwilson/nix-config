@@ -6,7 +6,7 @@ import { tool } from "@opencode-ai/plugin"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
-import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
+import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
 
 interface ProjectPlanArgs {
   projectId?: string

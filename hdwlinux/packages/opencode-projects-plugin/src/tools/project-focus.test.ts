@@ -10,17 +10,17 @@ import * as os from "node:os"
 import { createProjectCreate } from "./project-create.js"
 import { createProjectFocus } from "./project-focus.js"
 import { createIssueCreate } from "./issue-create.js"
-import { ConfigManager } from "../lib/config.js"
-import { InMemoryIssueStorage } from "../lib/inmemory-issue-storage.js"
-import { FocusManager } from "../lib/focus.js"
-import { ProjectManager } from "../lib/project-manager.js"
+import { ConfigManager } from "../core/config-manager.js"
+import { InMemoryIssueStorage } from "../storage/inmemory-issue-storage.js"
+import { FocusManager } from "../core/focus-manager.js"
+import { ProjectManager } from "../core/project-manager.js"
 import {
   createMockLogger,
   createMockClient,
   createTestShell,
   createMockContext,
-} from "../lib/test-utils.js"
-import type { BunShell, ToolDepsV2 } from "../lib/types.js"
+} from "../core/test-utils.js"
+import type { BunShell, ToolDepsV2 } from "../core/types.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()

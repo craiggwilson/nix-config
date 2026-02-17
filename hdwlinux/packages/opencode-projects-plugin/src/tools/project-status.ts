@@ -4,8 +4,8 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
-import type { Issue } from "../lib/issue-storage.js"
+import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
+import type { Issue } from "../storage/issue-storage.js"
 
 interface ProjectStatusArgs {
   projectId?: string

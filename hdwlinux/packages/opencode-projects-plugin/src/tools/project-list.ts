@@ -4,8 +4,8 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDepsV2, ProjectToolContext } from "../lib/types.js"
-import type { ProjectMetadata } from "../lib/project-manager.js"
+import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
+import type { ProjectMetadata } from "../core/project-manager.js"
 
 interface ProjectListArgs {
   scope?: "local" | "global" | "all"
