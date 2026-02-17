@@ -20,6 +20,7 @@ import {
   createProjectClose,
   createIssueCreate,
   createIssueClaim,
+  createIssueUpdate,
 } from "./tools/index.js"
 
 import {
@@ -33,6 +34,7 @@ import {
 import { BeadsIssueStorage } from "./storage/index.js"
 
 import { PROJECT_RULES } from "./agents/index.js"
+import { WorktreeManager } from "./execution/index.js"
 
 // Re-export SDK classes for external consumers
 export {
@@ -127,11 +129,20 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       project_close: createProjectClose(toolDeps),
       issue_create: createIssueCreate(toolDeps),
       issue_claim: createIssueClaim(toolDeps),
+      issue_update: createIssueUpdate(toolDeps),
     },
 
     // Inject project management rules into system prompt
     "experimental.chat.system.transform": async (_input, output) => {
       output.system.push(PROJECT_RULES)
+
+      // Inject VCS context so agents know which commands to use
+      const worktreeManager = new WorktreeManager(repoRoot, $, log)
+      await worktreeManager.detectVCS()
+      const vcsContext = worktreeManager.getVCSContext()
+      if (vcsContext) {
+        output.system.push(vcsContext)
+      }
 
       // Inject focused project context if any
       const projectId = projectManager.getFocusedProjectId()

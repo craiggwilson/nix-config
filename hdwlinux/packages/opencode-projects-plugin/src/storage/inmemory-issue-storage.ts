@@ -179,6 +179,40 @@ export class InMemoryIssueStorage implements IssueStorage {
     return true
   }
 
+  async updateIssue(
+    issueId: string,
+    projectDir: string,
+    options: import("./issue-storage.js").UpdateIssueOptions
+  ): Promise<boolean> {
+    const issues = this.getProjectIssues(projectDir)
+    const issue = issues.get(issueId)
+
+    if (!issue) return false
+
+    if (options.status !== undefined) {
+      issue.status = options.status
+    }
+    if (options.assignee !== undefined) {
+      issue.assignee = options.assignee
+    }
+    if (options.priority !== undefined) {
+      issue.priority = options.priority
+    }
+    if (options.description !== undefined) {
+      issue.description = options.description
+    }
+    if (options.labels !== undefined) {
+      issue.labels = options.labels
+    }
+    if (options.blockedBy !== undefined) {
+      issue.blockedBy = options.blockedBy
+    }
+
+    issue.updatedAt = new Date().toISOString()
+
+    return true
+  }
+
   async addDependency(childId: string, parentId: string, projectDir: string): Promise<boolean> {
     const issues = this.getProjectIssues(projectDir)
     const child = issues.get(childId)
@@ -195,6 +229,49 @@ export class InMemoryIssueStorage implements IssueStorage {
     }
 
     child.updatedAt = new Date().toISOString()
+    return true
+  }
+
+  // Store delegation metadata in memory
+  private delegationMetadata: Map<string, import("./issue-storage.js").IssueDelegationMetadata> =
+    new Map()
+
+  private getDelegationKey(issueId: string, projectDir: string): string {
+    return `${projectDir}:${issueId}`
+  }
+
+  async setDelegationMetadata(
+    issueId: string,
+    projectDir: string,
+    metadata: import("./issue-storage.js").IssueDelegationMetadata
+  ): Promise<boolean> {
+    const key = this.getDelegationKey(issueId, projectDir)
+    this.delegationMetadata.set(key, metadata)
+    return true
+  }
+
+  async getDelegationMetadata(
+    issueId: string,
+    projectDir: string
+  ): Promise<import("./issue-storage.js").IssueDelegationMetadata | null> {
+    const key = this.getDelegationKey(issueId, projectDir)
+    return this.delegationMetadata.get(key) || null
+  }
+
+  async clearDelegationMetadata(issueId: string, projectDir: string): Promise<boolean> {
+    const key = this.getDelegationKey(issueId, projectDir)
+    this.delegationMetadata.delete(key)
+    return true
+  }
+
+  // Store comments in memory
+  private comments: Map<string, string[]> = new Map()
+
+  async addComment(issueId: string, projectDir: string, comment: string): Promise<boolean> {
+    const key = this.getDelegationKey(issueId, projectDir)
+    const existing = this.comments.get(key) || []
+    existing.push(comment)
+    this.comments.set(key, existing)
     return true
   }
 

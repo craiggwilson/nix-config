@@ -391,6 +391,83 @@ export class ProjectManager {
   }
 
   /**
+   * Update an issue
+   */
+  async updateIssue(
+    projectId: string,
+    issueId: string,
+    options: {
+      status?: "open" | "in_progress" | "closed"
+      assignee?: string
+      priority?: number
+      description?: string
+      labels?: string[]
+      blockedBy?: string[]
+    }
+  ): Promise<boolean> {
+    const projectDir = await this.findProjectDir(projectId)
+    if (!projectDir) return false
+
+    const updated = await this.issueStorage.updateIssue(issueId, projectDir, options)
+
+    // If closing the issue and it's the focused issue, clear issue focus
+    if (updated && options.status === "closed") {
+      if (this.focus.getIssueId() === issueId) {
+        this.focus.clearIssueFocus()
+      }
+    }
+
+    return updated
+  }
+
+  /**
+   * Add a comment to an issue
+   */
+  async addIssueComment(projectId: string, issueId: string, comment: string): Promise<boolean> {
+    const projectDir = await this.findProjectDir(projectId)
+    if (!projectDir) return false
+
+    return this.issueStorage.addComment(issueId, projectDir, comment)
+  }
+
+  /**
+   * Add a completion comment when closing an issue
+   */
+  async addCompletionComment(
+    projectId: string,
+    issueId: string,
+    options: {
+      summary?: string
+      artifacts?: string[]
+      mergeCommit?: string
+    }
+  ): Promise<boolean> {
+    const lines: string[] = []
+
+    lines.push("[COMPLETED]")
+
+    if (options.summary) {
+      lines.push("")
+      lines.push(options.summary)
+    }
+
+    if (options.mergeCommit) {
+      lines.push("")
+      lines.push(`Merge commit: ${options.mergeCommit}`)
+    }
+
+    if (options.artifacts && options.artifacts.length > 0) {
+      lines.push("")
+      lines.push("Artifacts:")
+      for (const artifact of options.artifacts) {
+        lines.push(`- ${artifact}`)
+      }
+    }
+
+    return this.addIssueComment(projectId, issueId, lines.join("\n"))
+  }
+
+  /**
    * Get the currently focused project ID
    */
   getFocusedProjectId(): string | null {

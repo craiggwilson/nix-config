@@ -257,11 +257,167 @@ export class BeadsIssueStorage implements IssueStorage {
     }
   }
 
+  async updateIssue(
+    issueId: string,
+    projectDir: string,
+    options: import("./issue-storage.js").UpdateIssueOptions
+  ): Promise<boolean> {
+    try {
+      const args: string[] = ["update", issueId]
+
+      if (options.status) {
+        const statusArg = options.status === "in_progress" ? "in-progress" : options.status
+        args.push("--status", statusArg)
+      }
+      if (options.assignee !== undefined) {
+        args.push("--assignee", options.assignee)
+      }
+      if (options.priority !== undefined) {
+        args.push("-p", String(options.priority))
+      }
+      if (options.description !== undefined) {
+        args.push("-d", JSON.stringify(options.description))
+      }
+      if (options.labels?.length) {
+        for (const label of options.labels) {
+          args.push("-l", label)
+        }
+      }
+
+      const result = await runCommand(this.getShell(), this.bdCmd(args.join(" ")), projectDir)
+      return result.exitCode === 0
+    } catch {
+      return false
+    }
+  }
+
   async addDependency(childId: string, parentId: string, projectDir: string): Promise<boolean> {
     try {
       const result = await runCommand(
         this.getShell(),
         this.bdCmd(`dep add ${childId} ${parentId}`),
+        projectDir
+      )
+      return result.exitCode === 0
+    } catch {
+      return false
+    }
+  }
+
+  async setDelegationMetadata(
+    issueId: string,
+    projectDir: string,
+    metadata: import("./issue-storage.js").IssueDelegationMetadata
+  ): Promise<boolean> {
+    try {
+      // Format metadata as a structured comment
+      const comment = this.formatDelegationComment(metadata)
+
+      // Add comment (this is the source of truth / history)
+      const commentResult = await runCommand(
+        this.getShell(),
+        this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
+        projectDir
+      )
+
+      if (commentResult.exitCode !== 0) {
+        return false
+      }
+
+      // Update notes with current state (reflects latest comment)
+      const notesJson = JSON.stringify(metadata)
+      const notesResult = await runCommand(
+        this.getShell(),
+        this.bdCmd(`update ${issueId} --notes ${JSON.stringify(notesJson)}`),
+        projectDir
+      )
+
+      return notesResult.exitCode === 0
+    } catch {
+      return false
+    }
+  }
+
+  async getDelegationMetadata(
+    issueId: string,
+    projectDir: string
+  ): Promise<import("./issue-storage.js").IssueDelegationMetadata | null> {
+    try {
+      // Read from notes (current state)
+      const result = await runCommand(
+        this.getShell(),
+        this.bdCmd(`show ${issueId} --json`),
+        projectDir
+      )
+
+      if (result.exitCode !== 0) {
+        return null
+      }
+
+      const issues = JSON.parse(result.stdout.toString())
+      const issue = Array.isArray(issues) ? issues[0] : issues
+
+      if (!issue?.notes) {
+        return null
+      }
+
+      // Parse JSON from notes
+      return JSON.parse(issue.notes)
+    } catch {
+      return null
+    }
+  }
+
+  async clearDelegationMetadata(issueId: string, projectDir: string): Promise<boolean> {
+    try {
+      // Add a comment noting the delegation was cleared
+      const comment = "[DELEGATION] Cleared"
+      await runCommand(
+        this.getShell(),
+        this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
+        projectDir
+      )
+
+      // Clear notes
+      const result = await runCommand(
+        this.getShell(),
+        this.bdCmd(`update ${issueId} --notes ""`),
+        projectDir
+      )
+
+      return result.exitCode === 0
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Format delegation metadata as a human-readable comment
+   */
+  private formatDelegationComment(
+    metadata: import("./issue-storage.js").IssueDelegationMetadata
+  ): string {
+    const lines: string[] = []
+
+    lines.push(`[DELEGATION] ${metadata.delegationStatus.toUpperCase()}`)
+    lines.push(`- ID: ${metadata.delegationId}`)
+
+    if (metadata.worktreePath) {
+      lines.push(`- Worktree: ${metadata.worktreePath}`)
+    }
+
+    if (metadata.sessionId) {
+      lines.push(`- Session: ${metadata.sessionId}`)
+    }
+
+    return lines.join("\n")
+  }
+
+  async addComment(issueId: string, projectDir: string, comment: string): Promise<boolean> {
+    try {
+      const result = await runCommand(
+        this.getShell(),
+        this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
         projectDir
       )
       return result.exitCode === 0

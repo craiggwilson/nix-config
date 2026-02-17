@@ -18,3 +18,10 @@ export type {
   CreateWorktreeOptions,
   MergeWorktreeOptions,
 } from "./worktree-manager.js"
+
+export { DelegationManager } from "./delegation-manager.js"
+export type {
+  Delegation,
+  DelegationStatus,
+  CreateDelegationOptions,
+} from "./delegation-manager.js"

@@ -44,6 +44,28 @@ export interface ListIssuesOptions {
 }
 
 /**
+ * Options for updating an issue
+ */
+export interface UpdateIssueOptions {
+  status?: IssueStatus
+  assignee?: string
+  priority?: number
+  description?: string
+  labels?: string[]
+  blockedBy?: string[]
+}
+
+/**
+ * Delegation metadata stored on an issue
+ */
+export interface IssueDelegationMetadata {
+  delegationId: string
+  delegationStatus: string
+  worktreePath?: string
+  sessionId?: string
+}
+
+/**
  * Project status summary
  */
 export interface ProjectStatus {
@@ -116,6 +138,38 @@ export interface IssueStorage {
    * Update issue status
    */
   updateStatus(issueId: string, status: IssueStatus, projectDir: string): Promise<boolean>
+
+  /**
+   * Update issue fields
+   */
+  updateIssue(issueId: string, projectDir: string, options: UpdateIssueOptions): Promise<boolean>
+
+  /**
+   * Set delegation metadata on an issue
+   */
+  setDelegationMetadata(
+    issueId: string,
+    projectDir: string,
+    metadata: IssueDelegationMetadata
+  ): Promise<boolean>
+
+  /**
+   * Get delegation metadata from an issue
+   */
+  getDelegationMetadata(
+    issueId: string,
+    projectDir: string
+  ): Promise<IssueDelegationMetadata | null>
+
+  /**
+   * Clear delegation metadata from an issue
+   */
+  clearDelegationMetadata(issueId: string, projectDir: string): Promise<boolean>
+
+  /**
+   * Add a comment to an issue
+   */
+  addComment(issueId: string, projectDir: string, comment: string): Promise<boolean>
 
   /**
    * Add a dependency between issues

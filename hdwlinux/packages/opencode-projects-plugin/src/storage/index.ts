@@ -8,6 +8,8 @@ export type {
   IssueStatus,
   CreateIssueOptions,
   ListIssuesOptions,
+  UpdateIssueOptions,
+  IssueDelegationMetadata,
   ProjectStatus,
 } from "./issue-storage.js"
 
