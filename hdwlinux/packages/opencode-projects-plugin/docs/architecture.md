@@ -169,3 +169,34 @@ When sessions are compacted, the plugin preserves:
 - Project progress summary
 - Ready issues list
 - Quick reference commands
+
+## Small Model Integration
+
+The plugin uses OpenCode's `small_model` configuration for intelligent decisions.
+
+### Agent Selection
+
+When delegating work, the plugin asks the small model to select the best agent:
+
+1. **Planning delegations** - Selects based on planning phase and task description
+2. **Issue work delegations** - Selects based on issue title and description
+3. **Background task delegations** - Selects based on the delegation prompt
+
+The small model receives:
+- List of available agents with descriptions
+- Task description and context
+- Optional task type hint (planning, coding, research, review)
+
+### Configuration
+
+Requires `small_model` in OpenCode config. If not configured, the plugin falls back to letting OpenCode decide which agent to use.
+
+### Timeout
+
+All small model prompts have a 30-second timeout to prevent blocking. Sessions created for small model queries are cleaned up after use.
+
+### Utilities
+
+- `promptSmallModel<T>()` - Low-level utility for structured JSON responses
+- `selectAgent()` - High-level agent selection with caching
+- `discoverAgents()` - Cached agent discovery from SDK

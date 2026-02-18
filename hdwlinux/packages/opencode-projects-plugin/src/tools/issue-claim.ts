@@ -7,6 +7,7 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
 import type { ToolDepsV2, ProjectToolContext, VCSType, BunShell } from "../core/types.js"
+import { selectAgent, discoverAgents } from "../core/agent-selector.js"
 
 interface IssueClaimArgs {
   issueId: string
@@ -19,7 +20,7 @@ interface IssueClaimArgs {
  * Create the issue_claim tool
  */
 export function createIssueClaim(deps: ToolDepsV2) {
-  const { projectManager, log, $ } = deps
+  const { client, projectManager, log, $ } = deps
 
   return tool({
     description: `Claim an issue and optionally start work in an isolated worktree.
@@ -43,11 +44,11 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
       agent: tool.schema
         .string()
         .optional()
-        .describe("Agent for delegation (default: 'coder')"),
+        .describe("Agent for delegation (auto-selected if not specified)"),
     },
 
     async execute(args: IssueClaimArgs, _ctx: ProjectToolContext): Promise<string> {
-      const { issueId, isolate = false, delegate = false, agent = "coder" } = args
+      const { issueId, isolate = false, delegate = false, agent } = args
 
 
       const projectId = projectManager.getFocusedProjectId()
@@ -121,7 +122,24 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
                 lines.push("")
                 lines.push("### Background Delegation")
                 lines.push("")
-                lines.push(`**Agent:** ${agent}`)
+
+                let selectedAgent = agent
+                if (!selectedAgent) {
+                  const agents = await discoverAgents(client, log)
+                  const taskDescription = `Work on issue: ${issue.title}\n\n${issue.description || ""}`
+                  selectedAgent =
+                    (await selectAgent(client, log, {
+                      agents,
+                      taskDescription,
+                      taskType: "coding",
+                    })) || undefined
+                }
+
+                if (selectedAgent) {
+                  lines.push(`**Agent:** ${selectedAgent}`)
+                } else {
+                  lines.push(`**Agent:** (OpenCode will decide)`)
+                }
                 lines.push(`**Status:** Delegation not yet implemented`)
                 lines.push("")
                 lines.push("TODO: Integrate with background delegation system")

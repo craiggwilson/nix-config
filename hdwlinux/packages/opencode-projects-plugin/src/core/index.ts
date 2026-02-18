@@ -24,6 +24,12 @@ export * from "./test-utils.js"
 
 export { buildIssueTree, renderTree, renderIssueTree } from "./tree-renderer.js"
 
+export { promptSmallModel } from "./small-model.js"
+export type { SmallModelOptions, SmallModelResult } from "./small-model.js"
+
+export { selectAgent, discoverAgents, clearAgentCache } from "./agent-selector.js"
+export type { AgentInfo, AgentSelectionContext } from "./agent-selector.js"
+
 export {
   ProjectsPluginError,
   ProjectNotFoundError,

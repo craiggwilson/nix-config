@@ -26,7 +26,9 @@ export type {
 export { PlanningDelegator } from "./planning-delegator.js"
 export type {
   PlanningPhase,
-  AgentInfo,
   DelegationRequest,
   DelegationResult,
 } from "./planning-delegator.js"
+
+// Re-export AgentInfo from core for backwards compatibility
+export type { AgentInfo } from "./planning-delegator.js"

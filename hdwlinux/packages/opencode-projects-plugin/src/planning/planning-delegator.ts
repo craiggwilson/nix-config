@@ -1,12 +1,18 @@
 /**
  * PlanningDelegator - Delegates planning work to available agents
  *
- * Discovers available agents from the OpenCode SDK and selects
- * the best match for the planning task. Falls back to letting
- * OpenCode decide if no suitable agent is found.
+ * Uses the small model to intelligently select the best agent
+ * for each planning task. Falls back to letting OpenCode decide
+ * if small model is not available.
  */
 
 import type { Logger } from "../core/types.js"
+import {
+  selectAgent,
+  discoverAgents,
+  clearAgentCache,
+  type AgentInfo,
+} from "../core/agent-selector.js"
 
 // Use any for client to avoid SDK type compatibility issues
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,13 +23,8 @@ type DelegationClient = any
  */
 export type PlanningPhase = "discovery" | "refinement" | "breakdown"
 
-/**
- * Agent info from SDK
- */
-export interface AgentInfo {
-  name: string
-  description?: string
-}
+// Re-export AgentInfo for consumers
+export type { AgentInfo }
 
 /**
  * Delegation request
@@ -33,7 +34,7 @@ export interface DelegationRequest {
   context?: string
   projectId: string
   phase?: PlanningPhase
-  preferredAgent?: string // User can specify a preferred agent
+  preferredAgent?: string
 }
 
 /**
@@ -43,17 +44,8 @@ export interface DelegationResult {
   success: boolean
   sessionId?: string
   response?: string
-  agentUsed?: string // Which agent was actually used
+  agentUsed?: string
   error?: string
-}
-
-/**
- * Keywords to match agents to planning phases
- */
-const PHASE_KEYWORDS: Record<PlanningPhase, string[]> = {
-  discovery: ["roadmap", "vision", "strategy", "okr", "quarter", "initiative"],
-  refinement: ["project", "plan", "scope", "resource", "risk", "stakeholder"],
-  breakdown: ["task", "sprint", "story", "acceptance", "estimate", "backlog"],
 }
 
 /**
@@ -62,7 +54,6 @@ const PHASE_KEYWORDS: Record<PlanningPhase, string[]> = {
 export class PlanningDelegator {
   private client: DelegationClient
   private log: Logger
-  private cachedAgents: AgentInfo[] | null = null
 
   constructor(client: DelegationClient, log: Logger) {
     this.client = client
@@ -73,70 +64,39 @@ export class PlanningDelegator {
    * Discover available agents from the SDK
    */
   async discoverAgents(): Promise<AgentInfo[]> {
-    if (this.cachedAgents !== null) {
-      return this.cachedAgents
-    }
-
-    try {
-      const result = await this.client.app.agents()
-      const agents = result.data || []
-
-      const mapped: AgentInfo[] = agents.map((a: { name: string; description?: string }) => ({
-        name: a.name,
-        description: a.description,
-      }))
-
-      this.cachedAgents = mapped
-      return mapped
-    } catch (error) {
-      await this.log.warn(`Failed to discover agents: ${error}`)
-      return []
-    }
+    return discoverAgents(this.client, this.log)
   }
 
   /**
    * Clear the agent cache (useful if agents change)
    */
   clearCache(): void {
-    this.cachedAgents = null
+    clearAgentCache()
   }
 
   /**
-   * Find the best agent for a planning phase
-   * Returns null if no suitable agent is found
+   * Find the best agent for a planning task using the small model.
+   * Returns null if no suitable agent is found or small model unavailable.
    */
-  async findAgentForPhase(phase: PlanningPhase): Promise<string | null> {
+  async findAgentForTask(phase: PlanningPhase, taskDescription: string): Promise<string | null> {
     const agents = await this.discoverAgents()
 
     if (agents.length === 0) {
       return null
     }
 
-    const keywords = PHASE_KEYWORDS[phase]
+    const taskType =
+      phase === "discovery"
+        ? "planning"
+        : phase === "refinement"
+          ? "planning"
+          : "general"
 
-
-    const scored = agents.map((agent) => {
-      const searchText = `${agent.name} ${agent.description || ""}`.toLowerCase()
-      let score = 0
-
-      for (const keyword of keywords) {
-        if (searchText.includes(keyword)) {
-          score += 1
-        }
-      }
-
-      return { agent, score }
+    return selectAgent(this.client, this.log, {
+      agents,
+      taskDescription: `Planning phase: ${phase}\n\n${taskDescription}`,
+      taskType,
     })
-
-
-    scored.sort((a, b) => b.score - a.score)
-
-
-    if (scored[0].score > 0) {
-      return scored[0].agent.name
-    }
-
-    return null
   }
 
   /**
@@ -158,14 +118,13 @@ export class PlanningDelegator {
    * Delegate planning work
    *
    * If preferredAgent is specified and available, uses that.
-   * Otherwise, tries to find a suitable agent for the phase.
+   * Otherwise, uses small model to select the best agent.
    * If no suitable agent is found, lets OpenCode decide.
    */
   async delegate(request: DelegationRequest): Promise<DelegationResult> {
     const { prompt, context, projectId, phase, preferredAgent } = request
 
     await this.log.info(`Delegating planning for project ${projectId}`)
-
 
     let agentToUse: string | undefined
 
@@ -180,10 +139,10 @@ export class PlanningDelegator {
     }
 
     if (!agentToUse && phase) {
-      const suggested = await this.findAgentForPhase(phase)
+      const taskDescription = context ? `${context}\n\n${prompt}` : prompt
+      const suggested = await this.findAgentForTask(phase, taskDescription)
       if (suggested) {
         agentToUse = suggested
-        await this.log.info(`Using suggested agent for ${phase}: ${suggested}`)
       }
     }
 
@@ -192,7 +151,6 @@ export class PlanningDelegator {
     }
 
     try {
-
       const sessionOptions: { body?: { agent?: string; title?: string } } = {
         body: {
           title: `Planning: ${projectId}`,
@@ -213,15 +171,12 @@ export class PlanningDelegator {
         }
       }
 
-
       const fullPrompt = this.buildPrompt(prompt, context, projectId, phase)
-
 
       const promptResult = await this.client.session.prompt({
         path: { id: sessionId },
         body: { content: fullPrompt },
       })
-
 
       const messages = await this.client.session.messages({ path: { id: sessionId } })
       const lastMessage = messages.data?.slice(-1)[0]
@@ -266,7 +221,6 @@ export class PlanningDelegator {
     lines.push("")
     lines.push(prompt)
     lines.push("")
-
 
     if (phase) {
       lines.push("## Expected Output")

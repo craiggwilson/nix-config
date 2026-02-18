@@ -664,12 +664,12 @@ export class ProjectManager {
   }
 
   /**
-   * Find the best agent for a planning phase
+   * Find the best agent for a planning task
    * Returns null if no suitable agent is found
    */
-  async findAgentForPhase(phase: PlanningPhase): Promise<string | null> {
+  async findAgentForTask(phase: PlanningPhase, taskDescription: string): Promise<string | null> {
     if (!this.planningDelegator) return null
-    return this.planningDelegator.findAgentForPhase(phase)
+    return this.planningDelegator.findAgentForTask(phase, taskDescription)
   }
 
   /**

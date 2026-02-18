@@ -10,6 +10,7 @@ import * as path from "node:path"
 import * as crypto from "node:crypto"
 
 import type { Logger } from "../core/types.js"
+import { selectAgent, discoverAgents } from "../core/agent-selector.js"
 
 /**
  * Delegation status
@@ -66,13 +67,29 @@ export class DelegationManager {
 
   /**
    * Create a new delegation
+   *
+   * If no agent is specified and a client is available, uses the small model
+   * to select the best agent for the task.
    */
   async create(
     projectId: string,
     options: CreateDelegationOptions
   ): Promise<Delegation> {
-    const { issueId, prompt, worktreePath, agent } = options
+    const { issueId, prompt, worktreePath } = options
+    let { agent } = options
 
+    // If no agent specified and we have a client, use small model to select
+    if (!agent && this.client) {
+      const agents = await discoverAgents(this.client, this.log)
+      if (agents.length > 0) {
+        agent =
+          (await selectAgent(this.client, this.log, {
+            agents,
+            taskDescription: prompt,
+            taskType: "coding",
+          })) || undefined
+      }
+    }
 
     const id = this.generateId()
     const now = new Date().toISOString()
