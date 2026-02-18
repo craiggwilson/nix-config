@@ -43,25 +43,50 @@ export function createMockClient(): OpencodeClient {
 }
 
 /**
+ * Check if a value is a raw shell expression { raw: string }
+ */
+function isRawExpression(value: unknown): value is { raw: string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "raw" in value &&
+    typeof (value as { raw: unknown }).raw === "string"
+  )
+}
+
+/**
  * Create a test shell adapter that matches the BunShell interface
+ *
+ * This shell executes commands using Bun's native shell with the 'raw'
+ * syntax, which allows executing command strings. This is needed because
+ * the normal shell interpolation treats strings as single arguments.
  */
 export function createTestShell(): BunShell {
-  const shell = ((strings: TemplateStringsArray, ...expressions: unknown[]) => {
-    let cmd = strings[0]
-    for (let i = 0; i < expressions.length; i++) {
-      cmd += String(expressions[i]) + strings[i + 1]
-    }
-    return $`${{ raw: cmd }}`.nothrow().quiet()
-  }) as BunShell
+  const createShellFn = (cwd?: string) => {
+    const shellFn = ((strings: TemplateStringsArray, ...expressions: unknown[]) => {
+      let cmd = strings[0]
+      for (let i = 0; i < expressions.length; i++) {
+        const expr = expressions[i]
+        // Handle { raw: string } expressions - extract the raw string
+        const exprStr = isRawExpression(expr) ? expr.raw : String(expr)
+        cmd += exprStr + strings[i + 1]
+      }
+      // Use Bun's native shell with raw to execute command strings
+      const baseShell = cwd ? $.cwd(cwd) : $
+      return baseShell`${{ raw: cmd }}`.nothrow().quiet()
+    }) as BunShell
 
-  shell.braces = (pattern: string) => [pattern]
-  shell.escape = (input: string) => input
-  shell.env = () => shell
-  shell.cwd = () => shell
-  shell.nothrow = () => shell
-  shell.throws = () => shell
+    shellFn.braces = (pattern: string) => [pattern]
+    shellFn.escape = (input: string) => input
+    shellFn.env = () => shellFn
+    shellFn.cwd = (newCwd: string) => createShellFn(newCwd)
+    shellFn.nothrow = () => shellFn
+    shellFn.throws = () => shellFn
 
-  return shell
+    return shellFn
+  }
+
+  return createShellFn()
 }
 
 /**

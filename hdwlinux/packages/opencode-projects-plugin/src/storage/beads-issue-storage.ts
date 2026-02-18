@@ -1,23 +1,26 @@
 /**
- * BeadsIssueStorage - IssueStorage implementation backed by beads CLI
+ * BeadsIssueStorage - Issue storage implementation using beads CLI
+ *
+ * Uses the --repo flag to specify the beads repository path,
+ * avoiding the need for cd commands which don't work reliably
+ * in all shell environments.
  */
 
-import * as path from "node:path"
 import * as fs from "node:fs/promises"
+import * as path from "node:path"
 
 import type {
   IssueStorage,
   Issue,
-  IssueStatus,
   CreateIssueOptions,
+  IssueStatus,
   ListIssuesOptions,
+  UpdateIssueOptions,
+  IssueDelegationMetadata,
   ProjectStatus,
 } from "./issue-storage.js"
-import type { Logger, BunShell } from "../core/types.js"
+import type { BunShell, Logger } from "../core/types.js"
 
-/**
- * Result from running a shell command
- */
 interface ShellResult {
   exitCode: number
   stdout: string
@@ -25,38 +28,12 @@ interface ShellResult {
 }
 
 /**
- * Run a shell command
- */
-async function runCommand(
-  $: BunShell,
-  cmd: string,
-  cwd?: string
-): Promise<ShellResult> {
-  const fullCmd = cwd ? `cd ${JSON.stringify(cwd)} && ${cmd}` : cmd
-
-  try {
-    const result = await $`${fullCmd}`
-    return {
-      exitCode: result.exitCode,
-      stdout: result.stdout.toString(),
-      stderr: result.stderr.toString(),
-    }
-  } catch (error) {
-    return {
-      exitCode: 1,
-      stdout: "",
-      stderr: String(error),
-    }
-  }
-}
-
-/**
- * BeadsIssueStorage - wraps beads CLI for issue tracking
+ * BeadsIssueStorage - uses beads CLI for issue management
  */
 export class BeadsIssueStorage implements IssueStorage {
-  private log: Logger
   private $: BunShell | null = null
-  private noDaemon: boolean = true
+  private log: Logger
+  private noDaemon: boolean
 
   constructor(log: Logger, options?: { noDaemon?: boolean }) {
     this.log = log
@@ -64,7 +41,7 @@ export class BeadsIssueStorage implements IssueStorage {
   }
 
   /**
-   * Set the shell function to use for commands
+   * Set the shell to use for commands
    */
   setShell($: BunShell): void {
     this.$ = $
@@ -81,16 +58,38 @@ export class BeadsIssueStorage implements IssueStorage {
   }
 
   /**
-   * Get the base bd command with common flags
+   * Run a beads command with the specified repo path
    */
-  private bdCmd(subcommand: string): string {
-    const flags = this.noDaemon ? "--no-daemon" : ""
-    return `bd ${flags} ${subcommand}`.trim()
+  private async runBd(args: string[], repoPath?: string): Promise<ShellResult> {
+    const $ = this.getShell()
+    const daemonFlag = this.noDaemon ? "--no-daemon" : ""
+    const repoFlag = repoPath ? `--repo "${repoPath}"` : ""
+
+    // Build the command - bd [flags] [args]
+    const cmd = ["bd", daemonFlag, repoFlag, ...args].filter(Boolean).join(" ")
+
+    try {
+      // Use { raw: cmd } to tell the shell to parse the command string
+      // rather than treating it as a single escaped argument
+      const result = await $`${{ raw: cmd }}`.nothrow().quiet()
+      return {
+        exitCode: result.exitCode,
+        stdout: result.stdout.toString(),
+        stderr: result.stderr.toString(),
+      }
+    } catch (error) {
+      return {
+        exitCode: 1,
+        stdout: "",
+        stderr: String(error),
+      }
+    }
   }
 
   async isAvailable(): Promise<boolean> {
     try {
-      const result = await runCommand(this.getShell(), "which bd")
+      const $ = this.getShell()
+      const result = await $`which bd`.nothrow().quiet()
       return result.exitCode === 0
     } catch {
       return false
@@ -99,8 +98,8 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async init(projectDir: string, options?: { stealth?: boolean }): Promise<boolean> {
     try {
-      const args = options?.stealth ? "init --stealth" : "init"
-      const result = await runCommand(this.getShell(), this.bdCmd(args), projectDir)
+      const args = options?.stealth ? ["init", "--stealth"] : ["init"]
+      const result = await this.runBd(args, projectDir)
       return result.exitCode === 0
     } catch (error) {
       await this.log.error(`beads init failed: ${error}`)
@@ -124,7 +123,8 @@ export class BeadsIssueStorage implements IssueStorage {
     options?: CreateIssueOptions
   ): Promise<string | null> {
     try {
-      const args: string[] = ["create", JSON.stringify(title)]
+      // Use --force to bypass prefix mismatch errors
+      const args: string[] = ["create", "--force", `"${title.replace(/"/g, '\\"')}"`]
 
       if (options?.priority !== undefined) {
         args.push("-p", String(options.priority))
@@ -133,7 +133,7 @@ export class BeadsIssueStorage implements IssueStorage {
         args.push("--parent", options.parent)
       }
       if (options?.description) {
-        args.push("-d", JSON.stringify(options.description))
+        args.push("-d", `"${options.description.replace(/"/g, '\\"')}"`)
       }
       if (options?.labels?.length) {
         for (const label of options.labels) {
@@ -141,21 +141,21 @@ export class BeadsIssueStorage implements IssueStorage {
         }
       }
 
-      const result = await runCommand(this.getShell(), this.bdCmd(args.join(" ")), projectDir)
+      const result = await this.runBd(args, projectDir)
 
       if (result.exitCode !== 0) {
         await this.log.error(`beads create failed: ${result.stderr}`)
         return null
       }
 
-
-      const match = result.stdout.match(/Created issue:\s+([\w-]+)/)
+      // Parse issue ID from output
+      const match = result.stdout.match(/Created issue:\s+([\w.-]+)/)
       if (match) return match[1]
 
-      const altMatch = result.stdout.match(/✓\s+Created issue:\s+([\w-]+)/)
+      const altMatch = result.stdout.match(/✓\s+Created issue:\s+([\w.-]+)/)
       if (altMatch) return altMatch[1]
 
-      const idMatch = result.stdout.match(/[\w]+-[a-z0-9]+/)
+      const idMatch = result.stdout.match(/[\w]+-[a-z0-9.]+/)
       return idMatch ? idMatch[0] : null
     } catch (error) {
       await this.log.error(`beads create failed: ${error}`)
@@ -165,18 +165,18 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async getIssue(issueId: string, projectDir: string): Promise<Issue | null> {
     try {
-      const result = await runCommand(
-        this.getShell(),
-        this.bdCmd(`show ${issueId} --json`),
-        projectDir
-      )
+      const result = await this.runBd(["show", issueId, "--json"], projectDir)
 
       if (result.exitCode !== 0) {
         return null
       }
 
-      const data = JSON.parse(result.stdout)
-      return this.parseIssue(data)
+      const issues = JSON.parse(result.stdout)
+      if (!Array.isArray(issues) || issues.length === 0) {
+        return null
+      }
+
+      return this.parseIssue(issues[0])
     } catch {
       return null
     }
@@ -184,47 +184,75 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async listIssues(projectDir: string, options?: ListIssuesOptions): Promise<Issue[]> {
     try {
-      let args = "list --json"
+      const args = ["list", "--json"]
 
       if (options?.status) {
-        args += ` --status ${options.status}`
+        args.push("--status", options.status)
       }
 
-      const result = await runCommand(this.getShell(), this.bdCmd(args), projectDir)
+      const result = await this.runBd(args, projectDir)
 
       if (result.exitCode !== 0) {
         return []
       }
 
-      const data = JSON.parse(result.stdout)
-      let issues = Array.isArray(data) ? data.map((d: unknown) => this.parseIssue(d)) : []
-
-
-      if (options?.parent) {
-        issues = issues.filter((i) => i.parent === options.parent)
-      }
-      if (options?.labels?.length) {
-        issues = issues.filter((i) =>
-          options.labels!.some((label) => i.labels?.includes(label))
-        )
+      const issues = JSON.parse(result.stdout)
+      if (!Array.isArray(issues)) {
+        return []
       }
 
-      return issues
+      return issues.map((i) => this.parseIssue(i))
     } catch {
       return []
     }
   }
 
+  async updateIssue(
+    issueId: string,
+    projectDir: string,
+    options: UpdateIssueOptions
+  ): Promise<boolean> {
+    try {
+      const args = ["update", issueId]
+
+      if (options.status) {
+        args.push("--status", this.statusToBeads(options.status))
+      }
+      if (options.priority !== undefined) {
+        args.push("-p", String(options.priority))
+      }
+      if (options.description) {
+        args.push("-d", `"${options.description.replace(/"/g, '\\"')}"`)
+      }
+      if (options.assignee) {
+        args.push("--assignee", options.assignee)
+      }
+
+      const result = await this.runBd(args, projectDir)
+      return result.exitCode === 0
+    } catch (error) {
+      await this.log.error(`beads update failed: ${error}`)
+      return false
+    }
+  }
+
   async getReadyIssues(projectDir: string): Promise<Issue[]> {
     try {
-      const result = await runCommand(this.getShell(), this.bdCmd("ready --json"), projectDir)
+      // Get issues that are open and have no open blockers
+      const result = await this.runBd(["list", "--ready", "--json"], projectDir)
 
       if (result.exitCode !== 0) {
+        // Fallback: get all open issues and filter
+        const allIssues = await this.listIssues(projectDir, { status: "open" })
+        return allIssues.filter((i) => !i.blockedBy || i.blockedBy.length === 0)
+      }
+
+      const issues = JSON.parse(result.stdout)
+      if (!Array.isArray(issues)) {
         return []
       }
 
-      const data = JSON.parse(result.stdout)
-      return Array.isArray(data) ? data.map((d: unknown) => this.parseIssue(d)) : []
+      return issues.map((i) => this.parseIssue(i))
     } catch {
       return []
     }
@@ -232,74 +260,26 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async claimIssue(issueId: string, projectDir: string, assignee?: string): Promise<boolean> {
     try {
-      let cmd = `update ${issueId} --claim`
+      const args = ["update", issueId, "--status", "in_progress"]
       if (assignee) {
-        cmd += ` --assignee ${assignee}`
+        args.push("--assignee", assignee)
       }
-      const result = await runCommand(this.getShell(), this.bdCmd(cmd), projectDir)
+
+      const result = await this.runBd(args, projectDir)
       return result.exitCode === 0
-    } catch {
+    } catch (error) {
+      await this.log.error(`beads claim failed: ${error}`)
       return false
     }
   }
 
   async updateStatus(issueId: string, status: IssueStatus, projectDir: string): Promise<boolean> {
     try {
-      const statusArg = status === "in_progress" ? "in-progress" : status
-      const result = await runCommand(
-        this.getShell(),
-        this.bdCmd(`update ${issueId} --status ${statusArg}`),
-        projectDir
-      )
+      const beadsStatus = this.statusToBeads(status)
+      const result = await this.runBd(["update", issueId, "--status", beadsStatus], projectDir)
       return result.exitCode === 0
-    } catch {
-      return false
-    }
-  }
-
-  async updateIssue(
-    issueId: string,
-    projectDir: string,
-    options: import("./issue-storage.js").UpdateIssueOptions
-  ): Promise<boolean> {
-    try {
-      const args: string[] = ["update", issueId]
-
-      if (options.status) {
-        const statusArg = options.status === "in_progress" ? "in-progress" : options.status
-        args.push("--status", statusArg)
-      }
-      if (options.assignee !== undefined) {
-        args.push("--assignee", options.assignee)
-      }
-      if (options.priority !== undefined) {
-        args.push("-p", String(options.priority))
-      }
-      if (options.description !== undefined) {
-        args.push("-d", JSON.stringify(options.description))
-      }
-      if (options.labels?.length) {
-        for (const label of options.labels) {
-          args.push("-l", label)
-        }
-      }
-
-      const result = await runCommand(this.getShell(), this.bdCmd(args.join(" ")), projectDir)
-      return result.exitCode === 0
-    } catch {
-      return false
-    }
-  }
-
-  async addDependency(childId: string, parentId: string, projectDir: string): Promise<boolean> {
-    try {
-      const result = await runCommand(
-        this.getShell(),
-        this.bdCmd(`dep add ${childId} ${parentId}`),
-        projectDir
-      )
-      return result.exitCode === 0
-    } catch {
+    } catch (error) {
+      await this.log.error(`beads status update failed: ${error}`)
       return false
     }
   }
@@ -307,33 +287,15 @@ export class BeadsIssueStorage implements IssueStorage {
   async setDelegationMetadata(
     issueId: string,
     projectDir: string,
-    metadata: import("./issue-storage.js").IssueDelegationMetadata
+    metadata: IssueDelegationMetadata
   ): Promise<boolean> {
     try {
-
-      const comment = this.formatDelegationComment(metadata)
-
-
-      const commentResult = await runCommand(
-        this.getShell(),
-        this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
-        projectDir
-      )
-
-      if (commentResult.exitCode !== 0) {
-        return false
-      }
-
-
-      const notesJson = JSON.stringify(metadata)
-      const notesResult = await runCommand(
-        this.getShell(),
-        this.bdCmd(`update ${issueId} --notes ${JSON.stringify(notesJson)}`),
-        projectDir
-      )
-
-      return notesResult.exitCode === 0
-    } catch {
+      // Store delegation metadata as a label
+      const label = `delegation:${metadata.delegationId}:${metadata.delegationStatus}`
+      const result = await this.runBd(["update", issueId, "-l", label], projectDir)
+      return result.exitCode === 0
+    } catch (error) {
+      await this.log.error(`beads set delegation metadata failed: ${error}`)
       return false
     }
   }
@@ -341,28 +303,21 @@ export class BeadsIssueStorage implements IssueStorage {
   async getDelegationMetadata(
     issueId: string,
     projectDir: string
-  ): Promise<import("./issue-storage.js").IssueDelegationMetadata | null> {
+  ): Promise<IssueDelegationMetadata | null> {
     try {
+      const issue = await this.getIssue(issueId, projectDir)
+      if (!issue?.labels) return null
 
-      const result = await runCommand(
-        this.getShell(),
-        this.bdCmd(`show ${issueId} --json`),
-        projectDir
-      )
+      const delegationLabel = issue.labels.find((l) => l.startsWith("delegation:"))
+      if (!delegationLabel) return null
 
-      if (result.exitCode !== 0) {
-        return null
+      const parts = delegationLabel.split(":")
+      if (parts.length < 3) return null
+
+      return {
+        delegationId: parts[1],
+        delegationStatus: parts[2],
       }
-
-      const issues = JSON.parse(result.stdout.toString())
-      const issue = Array.isArray(issues) ? issues[0] : issues
-
-      if (!issue?.notes) {
-        return null
-      }
-
-
-      return JSON.parse(issue.notes)
     } catch {
       return null
     }
@@ -370,58 +325,43 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async clearDelegationMetadata(issueId: string, projectDir: string): Promise<boolean> {
     try {
+      const issue = await this.getIssue(issueId, projectDir)
+      if (!issue?.labels) return true
 
-      const comment = "[DELEGATION] Cleared"
-      await runCommand(
-        this.getShell(),
-        this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
+      const delegationLabel = issue.labels.find((l) => l.startsWith("delegation:"))
+      if (!delegationLabel) return true
+
+      // Remove the delegation label
+      const result = await this.runBd(
+        ["update", issueId, "--remove-label", delegationLabel],
         projectDir
       )
-
-
-      const result = await runCommand(
-        this.getShell(),
-        this.bdCmd(`update ${issueId} --notes ""`),
-        projectDir
-      )
-
       return result.exitCode === 0
-    } catch {
+    } catch (error) {
+      await this.log.error(`beads clear delegation metadata failed: ${error}`)
       return false
     }
   }
 
-  /**
-   * Format delegation metadata as a human-readable comment
-   */
-  private formatDelegationComment(
-    metadata: import("./issue-storage.js").IssueDelegationMetadata
-  ): string {
-    const lines: string[] = []
-
-    lines.push(`[DELEGATION] ${metadata.delegationStatus.toUpperCase()}`)
-    lines.push(`- ID: ${metadata.delegationId}`)
-
-    if (metadata.worktreePath) {
-      lines.push(`- Worktree: ${metadata.worktreePath}`)
-    }
-
-    if (metadata.sessionId) {
-      lines.push(`- Session: ${metadata.sessionId}`)
-    }
-
-    return lines.join("\n")
-  }
-
   async addComment(issueId: string, projectDir: string, comment: string): Promise<boolean> {
     try {
-      const result = await runCommand(
-        this.getShell(),
-        this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
+      const result = await this.runBd(
+        ["comment", issueId, `"${comment.replace(/"/g, '\\"')}"`],
         projectDir
       )
       return result.exitCode === 0
-    } catch {
+    } catch (error) {
+      await this.log.error(`beads add comment failed: ${error}`)
+      return false
+    }
+  }
+
+  async addDependency(childId: string, parentId: string, projectDir: string): Promise<boolean> {
+    try {
+      const result = await this.runBd(["update", childId, "--blocked-by", parentId], projectDir)
+      return result.exitCode === 0
+    } catch (error) {
+      await this.log.error(`beads add dependency failed: ${error}`)
       return false
     }
   }
@@ -430,16 +370,7 @@ export class BeadsIssueStorage implements IssueStorage {
     try {
       const issues = await this.listIssues(projectDir)
 
-      if (issues.length === 0) {
-        return {
-          total: 0,
-          completed: 0,
-          inProgress: 0,
-          blocked: 0,
-          blockers: [],
-        }
-      }
-
+      const total = issues.length
       const completed = issues.filter((i) => i.status === "closed").length
       const inProgress = issues.filter((i) => i.status === "in_progress").length
       const blocked = issues.filter((i) => i.blockedBy && i.blockedBy.length > 0).length
@@ -453,7 +384,7 @@ export class BeadsIssueStorage implements IssueStorage {
         }))
 
       return {
-        total: issues.length,
+        total,
         completed,
         inProgress,
         blocked,
@@ -464,33 +395,91 @@ export class BeadsIssueStorage implements IssueStorage {
     }
   }
 
-  /**
-   * Parse raw beads output into Issue
-   */
-  private parseIssue(data: unknown): Issue {
-    const d = data as Record<string, unknown>
-    return {
-      id: String(d.id || ""),
-      title: String(d.title || d.summary || ""),
-      description: d.description ? String(d.description) : undefined,
-      status: this.parseStatus(d.status),
-      priority: typeof d.priority === "number" ? d.priority : undefined,
-      assignee: d.assignee ? String(d.assignee) : undefined,
-      parent: d.parent ? String(d.parent) : undefined,
-      blockedBy: Array.isArray(d.blocked_by) ? d.blocked_by.map(String) : undefined,
-      labels: Array.isArray(d.labels) ? d.labels.map(String) : undefined,
-      createdAt: d.created_at ? String(d.created_at) : undefined,
-      updatedAt: d.updated_at ? String(d.updated_at) : undefined,
+  async getChildren(issueId: string, projectDir: string): Promise<Issue[]> {
+    try {
+      const result = await this.runBd(["list", "--parent", issueId, "--json"], projectDir)
+
+      if (result.exitCode !== 0) {
+        return []
+      }
+
+      const issues = JSON.parse(result.stdout)
+      if (!Array.isArray(issues)) {
+        return []
+      }
+
+      return issues.map((i) => this.parseIssue(i))
+    } catch {
+      return []
+    }
+  }
+
+  async getTree(projectDir: string, rootId?: string): Promise<Issue[]> {
+    try {
+      const args = ["tree", "--json"]
+      if (rootId) {
+        args.push(rootId)
+      }
+
+      const result = await this.runBd(args, projectDir)
+
+      if (result.exitCode !== 0) {
+        return []
+      }
+
+      const issues = JSON.parse(result.stdout)
+      if (!Array.isArray(issues)) {
+        return []
+      }
+
+      return issues.map((i) => this.parseIssue(i))
+    } catch {
+      return []
     }
   }
 
   /**
-   * Parse status string
+   * Parse a beads issue JSON object into our Issue type
+   */
+  private parseIssue(data: Record<string, unknown>): Issue {
+    return {
+      id: String(data.id || ""),
+      title: String(data.title || ""),
+      description: data.description ? String(data.description) : undefined,
+      status: this.parseStatus(data.status),
+      priority: typeof data.priority === "number" ? data.priority : 2,
+      parent: data.parent ? String(data.parent) : undefined,
+      blockedBy: Array.isArray(data.blocked_by) ? data.blocked_by.map(String) : [],
+      labels: Array.isArray(data.labels) ? data.labels.map(String) : [],
+      createdAt: data.created_at ? String(data.created_at) : new Date().toISOString(),
+      updatedAt: data.updated_at ? String(data.updated_at) : new Date().toISOString(),
+    }
+  }
+
+  /**
+   * Parse status string to IssueStatus
    */
   private parseStatus(status: unknown): IssueStatus {
     const s = String(status).toLowerCase()
-    if (s === "closed" || s === "done" || s === "complete") return "closed"
+    if (s === "todo" || s === "open") return "open"
     if (s === "in_progress" || s === "in-progress" || s === "active") return "in_progress"
+    if (s === "done" || s === "closed" || s === "completed") return "closed"
     return "open"
+  }
+
+  /**
+   * Convert IssueStatus to beads status string
+   */
+  private statusToBeads(status: IssueStatus): string {
+    switch (status) {
+      case "open":
+        return "todo"
+      case "in_progress":
+        return "in_progress"
+      case "closed":
+        return "done"
+      default:
+        return "todo"
+    }
   }
 }

@@ -298,7 +298,8 @@ export class ProjectManager {
   }
 
   /**
-   * Create an issue in a project
+   * Create an issue in a project.
+   * If no parent is specified, defaults to the project's root issue.
    */
   async createIssue(
     projectId: string,
@@ -308,7 +309,16 @@ export class ProjectManager {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return null
 
-    return this.issueStorage.createIssue(projectDir, title, options)
+    // Default parent to root issue if not specified
+    let effectiveOptions = options
+    if (!options?.parent) {
+      const metadata = await this.loadProjectMetadata(projectDir)
+      if (metadata?.rootIssue) {
+        effectiveOptions = { ...options, parent: metadata.rootIssue }
+      }
+    }
+
+    return this.issueStorage.createIssue(projectDir, title, effectiveOptions)
   }
 
   /**

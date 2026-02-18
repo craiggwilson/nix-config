@@ -37,44 +37,9 @@ import { BeadsIssueStorage } from "./storage/index.js"
 import { PROJECT_RULES } from "./agents/index.js"
 import { WorktreeManager, DelegationManager, type Delegation } from "./execution/index.js"
 
-export {
-  ProjectManager,
-  ConfigManager,
-  FocusManager,
-  createLogger,
-} from "./core/index.js"
-
-export {
-  BeadsIssueStorage,
-  InMemoryIssueStorage,
-  type IssueStorage,
-  type Issue,
-  type ProjectStatus,
-} from "./storage/index.js"
-
-export {
-  InterviewManager,
-  ArtifactManager,
-  PlanningDelegator,
-  type InterviewSession,
-  type InterviewSummary,
-  type InterviewExchange,
-  type ArtifactType,
-  type ArtifactMetadata,
-  type RoadmapContent,
-  type ArchitectureContent,
-  type RisksContent,
-  type SuccessCriteriaContent,
-  type Milestone,
-  type Risk,
-  type SuccessCriterion,
-  type PlanningPhase,
-  type AgentInfo,
-  type DelegationRequest,
-  type DelegationResult,
-} from "./planning/index.js"
-
-export type { ProjectMetadata, CreateProjectOptions } from "./core/index.js"
+// Re-exports removed to avoid plugin loader issues.
+// The plugin loader may try to call each export as a plugin function.
+// Import directly from submodules if needed for external use.
 
 /**
  * Main plugin export
