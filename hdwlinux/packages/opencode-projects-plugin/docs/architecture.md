@@ -200,3 +200,75 @@ All small model prompts have a 30-second timeout to prevent blocking. Sessions c
 - `promptSmallModel<T>()` - Low-level utility for structured JSON responses
 - `selectAgent()` - High-level agent selection with caching
 - `discoverAgents()` - Cached agent discovery from SDK
+
+## Background Delegations
+
+The plugin supports true background delegation with fire-and-forget execution.
+
+### How It Works
+
+1. **Fire-and-Forget**: When a delegation is created, the prompt is sent without awaiting the response
+2. **Session Idle Events**: Completion is detected via `session.idle` events
+3. **Batched Notifications**: Multiple parallel delegations notify the parent when ALL complete
+4. **Timeout Handling**: Delegations timeout after 15 minutes (configurable)
+
+### Delegation Lifecycle
+
+```
+create() → status: "pending"
+    ↓
+startDelegation() → status: "running"
+    ↓ (fire prompt, don't await)
+    ↓
+[session.idle event] → handleSessionIdle()
+    ↓
+complete() → status: "completed"
+    ↓
+notifyParent() → send <delegation-notification>
+```
+
+### Batched Notifications
+
+When multiple delegations run for the same parent session:
+- Individual completions send `noReply: true` (silent)
+- When ALL complete, sends `noReply: false` (triggers response)
+- Reduces noise while ensuring the agent knows when to continue
+
+### Root Session Scoping
+
+Delegations are scoped to the root session (top of the parent chain):
+- Ensures visibility across the session tree
+- Parent sessions can see child delegations
+- Notifications go to the root session
+
+### Disabled Tools
+
+Delegated sessions cannot use state-modifying tools:
+- `project_create`, `project_close`
+- `issue_create`, `issue_update`, `issue_claim`
+- `task`, `delegate` (no recursive delegation)
+- `todowrite`, `plan_save`
+
+### Configuration
+
+```json
+{
+  "delegation": {
+    "timeoutMs": 900000  // 15 minutes (default)
+  }
+}
+```
+
+### Result Persistence
+
+Delegation results are persisted to `{projectDir}/delegations/`:
+- `{id}.json` - Structured delegation data
+- `{id}.md` - Human-readable markdown with metadata and result
+
+### Title/Description Generation
+
+After completion, the small model generates:
+- **Title**: 2-5 words summarizing the outcome
+- **Description**: 2-3 sentences describing what was accomplished
+
+Falls back to truncation if small model is unavailable.

@@ -19,6 +19,10 @@ You have access to project planning and tracking tools:
 ### Issue Tools
 - \`issue_create(title, projectId?, description?, priority?, parent?, blockedBy?, labels?)\` - Create a beads issue
 - \`issue_claim(issueId, isolate?, delegate?)\` - Claim an issue and optionally start isolated work
+- \`issue_update(issueId, status?, ...)\` - Update issue status and fields
+
+### Delegation Tools
+- \`delegation_read(id)\` - Read delegation results by ID
 
 ## Workflow Guidelines
 
@@ -49,5 +53,42 @@ When focused on a project/issue:
 - Context is automatically injected into prompts
 - Beads queries are scoped to the focused project
 - Environment variables are set for shell commands
+
+## Background Delegations
+
+When you delegate work to a background agent:
+1. The delegation starts immediately and runs in the background
+2. You will receive a \`<delegation-notification>\` when it completes
+3. Do NOT poll for status - continue with other productive work
+4. Multiple delegations can run in parallel
+5. You will be notified when ALL delegations complete
+
+### Delegation Notifications
+
+Notifications arrive in this format:
+\`\`\`xml
+<delegation-notification>
+  <delegation-id>del-abc123</delegation-id>
+  <issue>issue-id</issue>
+  <status>complete|failed|timeout</status>
+  <title>Generated Title</title>
+  <description>Brief description of what was accomplished.</description>
+  <result>The full delegation result...</result>
+</delegation-notification>
+\`\`\`
+
+When all delegations complete:
+\`\`\`xml
+<delegation-notification>
+  <status>all-complete</status>
+  <summary>All delegations complete. Review the results above and continue.</summary>
+</delegation-notification>
+\`\`\`
+
+### Disabled Tools in Delegations
+
+Delegated agents cannot use state-modifying tools:
+- project_create, project_close, issue_create, issue_update, issue_claim
+- task, delegate (no recursive delegation)
 
 </project-management-system>`

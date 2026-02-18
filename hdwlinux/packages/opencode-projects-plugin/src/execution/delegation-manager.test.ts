@@ -154,7 +154,7 @@ describe("DelegationManager", () => {
       expect(updated!.completedAt).toBeDefined()
     })
 
-    test("persists result to research directory", async () => {
+    test("persists result to delegations directory", async () => {
       const delegation = await manager.create("test-project", {
         issueId: "issue-123",
         prompt: "Test prompt",
@@ -162,10 +162,10 @@ describe("DelegationManager", () => {
 
       await manager.complete(delegation.id, "Task completed")
 
-      const resultPath = path.join(testDir, "research", `delegation-${delegation.id}.md`)
+      const resultPath = path.join(testDir, "delegations", `${delegation.id}.md`)
       const content = await fs.readFile(resultPath, "utf8")
 
-      expect(content).toContain("# Delegation: issue-123")
+      expect(content).toContain("issue-123")
       expect(content).toContain("## Prompt")
       expect(content).toContain("Test prompt")
       expect(content).toContain("## Result")

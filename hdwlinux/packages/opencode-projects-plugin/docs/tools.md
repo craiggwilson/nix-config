@@ -146,3 +146,24 @@ Update issue fields including status.
 | `artifacts` | string[] | No | Artifacts to reference |
 
 **Returns:** Update confirmation with changes summary.
+
+---
+
+## Delegation Tools
+
+### delegation_read
+
+Read the result of a completed delegation.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `id` | string | Yes | Delegation ID (e.g., 'del-abc123') |
+| `projectId` | string | No | Project ID (default: focused project) |
+
+**Returns:** Full delegation result including metadata, prompt, and output.
+
+**Use cases:**
+- Retrieve results after session compaction
+- Review what a background delegation accomplished
+- Debug delegation failures

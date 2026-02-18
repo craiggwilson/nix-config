@@ -44,6 +44,9 @@ const DEFAULT_CONFIG: ProjectConfig = {
   worktrees: {
     autoCleanup: true,
   },
+  delegation: {
+    timeoutMs: 15 * 60 * 1000, // 15 minutes
+  },
 }
 
 /**
@@ -157,7 +160,7 @@ export class ConfigManager {
     }
 
     // Warn about unknown top-level fields
-    const knownFields = ["version", "defaults", "projects", "agents", "worktrees"]
+    const knownFields = ["version", "defaults", "projects", "agents", "worktrees", "delegation"]
     for (const key of Object.keys(this.config)) {
       if (!knownFields.includes(key)) {
         warnings.push({
@@ -183,6 +186,13 @@ export class ConfigManager {
 
     await fs.mkdir(configDir, { recursive: true })
     await fs.writeFile(configPath, JSON.stringify(this.config, null, 2), "utf8")
+  }
+
+  /**
+   * Get a configuration value by key path
+   */
+  get<K extends keyof ProjectConfig>(key: K): ProjectConfig[K] {
+    return this.config[key]
   }
 
   /**

@@ -20,7 +20,7 @@ interface IssueClaimArgs {
  * Create the issue_claim tool
  */
 export function createIssueClaim(deps: ToolDepsV2) {
-  const { client, projectManager, log, $ } = deps
+  const { client, projectManager, log, $, delegationManager } = deps
 
   return tool({
     description: `Claim an issue and optionally start work in an isolated worktree.
@@ -118,31 +118,37 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
               lines.push(`**VCS:** ${vcs}`)
 
               // Handle delegation
-              if (delegate) {
+              if (delegate && delegationManager) {
                 lines.push("")
                 lines.push("### Background Delegation")
                 lines.push("")
 
-                let selectedAgent = agent
-                if (!selectedAgent) {
-                  const agents = await discoverAgents(client, log)
-                  const taskDescription = `Work on issue: ${issue.title}\n\n${issue.description || ""}`
-                  selectedAgent =
-                    (await selectAgent(client, log, {
-                      agents,
-                      taskDescription,
-                      taskType: "coding",
-                    })) || undefined
-                }
+                // Create delegation (fires in background, returns immediately)
+                const delegation = await delegationManager.create(projectId, {
+                  issueId,
+                  prompt: `Work on issue: ${issue.title}\n\n${issue.description || ""}`,
+                  worktreePath: worktreeResult.path,
+                  agent,
+                  parentSessionId: undefined, // Will be set by context if available
+                })
 
-                if (selectedAgent) {
-                  lines.push(`**Agent:** ${selectedAgent}`)
+                if (delegation.agent) {
+                  lines.push(`**Agent:** ${delegation.agent}`)
                 } else {
                   lines.push(`**Agent:** (OpenCode will decide)`)
                 }
-                lines.push(`**Status:** Delegation not yet implemented`)
+                lines.push(`**Delegation ID:** ${delegation.id}`)
+                lines.push(`**Status:** Running in background`)
                 lines.push("")
-                lines.push("TODO: Integrate with background delegation system")
+                lines.push("You will be notified via `<delegation-notification>` when complete.")
+                lines.push("Continue with other work - do NOT poll for status.")
+                lines.push("")
+                lines.push("Use `delegation_read(id)` to retrieve results after compaction.")
+              } else if (delegate && !delegationManager) {
+                lines.push("")
+                lines.push("### Background Delegation")
+                lines.push("")
+                lines.push("**Warning:** Delegation manager not available.")
               }
             } else {
               lines.push("")

@@ -20,7 +20,7 @@ export interface OpencodeClient {
     agents: (args: Record<string, never>) => Promise<{ data?: Agent[] }>
   }
   session: {
-    create: (args: { body: { title?: string; parentID?: string } }) => Promise<{ data?: Session }>
+    create: (args: { body: { title?: string; parentID?: string; agent?: string } }) => Promise<{ data?: Session }>
     get: (args: { path: { id: string } }) => Promise<{ data?: Session }>
     prompt: (args: {
       path: { id: string }
@@ -112,6 +112,9 @@ export interface ProjectConfig {
   worktrees: {
     autoCleanup: boolean
     basePath?: string
+  }
+  delegation?: {
+    timeoutMs?: number
   }
 }
 
@@ -213,6 +216,7 @@ export interface ToolDepsV2 {
   projectManager: ProjectManager
   log: Logger
   $: BunShell
+  delegationManager?: DelegationManager
 }
 
 // Forward declarations for manager types
@@ -221,3 +225,4 @@ export type BeadsClient = import("../storage/beads-client.js").BeadsClient
 export type FocusManager = import("./focus-manager.js").FocusManager
 export type ProjectManager = import("./project-manager.js").ProjectManager
 export type IssueStorage = import("../storage/issue-storage.js").IssueStorage
+export type DelegationManager = import("../execution/delegation-manager.js").DelegationManager

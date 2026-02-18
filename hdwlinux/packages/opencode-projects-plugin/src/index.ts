@@ -21,6 +21,7 @@ import {
   createIssueCreate,
   createIssueClaim,
   createIssueUpdate,
+  createDelegationRead,
 } from "./tools/index.js"
 
 import {
@@ -34,7 +35,7 @@ import {
 import { BeadsIssueStorage } from "./storage/index.js"
 
 import { PROJECT_RULES } from "./agents/index.js"
-import { WorktreeManager } from "./execution/index.js"
+import { WorktreeManager, DelegationManager, type Delegation } from "./execution/index.js"
 
 export {
   ProjectManager,
@@ -105,9 +106,18 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     await log.warn("beads (bd) not found in PATH - some features will be unavailable")
   }
 
+  // Get project directory for delegation manager
+  const projectDir = await projectManager.getProjectDir(projectManager.getFocusedProjectId() || "default")
+  const delegationManager = new DelegationManager(
+    projectDir || repoRoot,
+    log,
+    typedClient,
+    { timeoutMs: config.get("delegation")?.timeoutMs }
+  )
+
   await log.info(`opencode-projects initialized in ${repoRoot}`)
 
-  const toolDeps = { client: typedClient, projectManager, log, $ }
+  const toolDeps = { client: typedClient, projectManager, log, $, delegationManager }
 
   return {
     tool: {
@@ -120,6 +130,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       issue_create: createIssueCreate(toolDeps),
       issue_claim: createIssueClaim(toolDeps),
       issue_update: createIssueUpdate(toolDeps),
+      delegation_read: createDelegationRead(toolDeps),
     },
 
     "experimental.chat.system.transform": async (_input, output) => {
@@ -149,6 +160,13 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       if (contextBlock) {
         output.context.push(contextBlock)
       }
+
+      // Add running delegations context
+      const runningDelegations = await delegationManager.getRunningDelegations()
+      if (runningDelegations.length > 0) {
+        const delegationContext = buildDelegationCompactionContext(runningDelegations)
+        output.context.push(delegationContext)
+      }
     },
 
     "shell.env": async (_input, output) => {
@@ -165,7 +183,14 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
     event: async ({ event }: { event: Event }) => {
       if (event.type === "session.idle") {
-        // TODO: Check for completed project delegations
+        // Check if this is a delegation session
+        const sessionId = (event.properties as { sessionID?: string })?.sessionID
+        if (sessionId) {
+          const delegationId = delegationManager.findBySession(sessionId)
+          if (delegationId) {
+            await delegationManager.handleSessionIdle(sessionId)
+          }
+        }
       }
     },
   }
@@ -290,9 +315,37 @@ async function buildCompactionContext(projectManager: ProjectManager): Promise<s
   sections.push("- `project_focus` - Change focus")
   sections.push("- `issue_claim` - Start work on an issue")
   sections.push("- `issue_update` - Update/close an issue")
+  sections.push("- `delegation_read` - Read delegation results")
   sections.push("</project-compaction-context>")
 
   return sections.join("\n")
+}
+
+/**
+ * Build context for running delegations during compaction.
+ */
+function buildDelegationCompactionContext(delegations: Delegation[]): string {
+  const lines = ["<delegation-context>"]
+  lines.push("## Running Delegations")
+  lines.push("")
+
+  for (const d of delegations) {
+    lines.push(`### ${d.id}`)
+    lines.push(`- **Issue:** ${d.issueId}`)
+    lines.push(`- **Agent:** ${d.agent || "(auto)"}`)
+    lines.push(`- **Started:** ${d.startedAt}`)
+    if (d.worktreePath) {
+      lines.push(`- **Worktree:** ${d.worktreePath}`)
+    }
+    lines.push("")
+  }
+
+  lines.push("> You will be notified via `<delegation-notification>` when delegations complete.")
+  lines.push("> Do NOT poll for status - continue productive work.")
+  lines.push("> Use `delegation_read(id)` to retrieve results after compaction.")
+  lines.push("</delegation-context>")
+
+  return lines.join("\n")
 }
 
 export default ProjectsPlugin
