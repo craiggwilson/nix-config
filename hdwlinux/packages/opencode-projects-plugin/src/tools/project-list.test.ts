@@ -34,10 +34,10 @@ describe("project_list and project_status tools", () => {
   let projectId: string
 
   beforeAll(async () => {
-    // Create a temporary directory for testing
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-list-test-"))
 
-    // Initialize managers
+
     const config = await ConfigManager.load()
     const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
@@ -58,7 +58,7 @@ describe("project_list and project_status tools", () => {
       $: testShell,
     }
 
-    // Create a test project
+
     const createTool = createProjectCreate(toolDeps)
 
     await createTool.execute(
@@ -71,16 +71,16 @@ describe("project_list and project_status tools", () => {
       mockContext
     )
 
-    // Get the project ID from focus
+
     projectId = projectManager.getFocusedProjectId()!
   })
 
   afterAll(async () => {
-    // Cleanup test directory
+
     try {
       await fs.rm(testDir, { recursive: true, force: true })
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 
@@ -96,7 +96,7 @@ describe("project_list and project_status tools", () => {
     })
 
     test("returns empty message when no projects", async () => {
-      // Create a new empty directory with its own ProjectManager
+
       const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), "empty-test-"))
       const config = await ConfigManager.load()
       const emptyManager = new ProjectManager({
@@ -118,18 +118,18 @@ describe("project_list and project_status tools", () => {
 
       expect(result).toContain("No projects found")
 
-      // Cleanup
+
       await fs.rm(emptyDir, { recursive: true, force: true })
     })
 
     test("filters by status", async () => {
       const tool = createProjectList(toolDeps)
 
-      // Active projects should include our test project
+
       const activeResult = await tool.execute({ status: "active" }, mockContext)
       expect(activeResult).toContain("List Test Project")
 
-      // Completed projects should not include our test project
+
       const completedResult = await tool.execute({ status: "completed" }, mockContext)
       expect(completedResult).toContain("No projects found")
     })
@@ -155,7 +155,6 @@ describe("project_list and project_status tools", () => {
     })
 
     test("returns error for non-existent project", async () => {
-      // Clear focus first
       projectManager.clearFocus()
 
       const tool = createProjectStatus(toolDeps)
@@ -164,12 +163,12 @@ describe("project_list and project_status tools", () => {
 
       expect(result).toContain("not found")
 
-      // Restore focus
+
       projectManager.setFocus(projectId)
     })
 
     test("prompts when no project focused", async () => {
-      // Clear focus
+
       projectManager.clearFocus()
 
       const tool = createProjectStatus(toolDeps)
@@ -179,7 +178,7 @@ describe("project_list and project_status tools", () => {
       expect(result).toContain("No project specified")
       expect(result).toContain("project_focus")
 
-      // Restore focus
+
       projectManager.setFocus(projectId)
     })
   })

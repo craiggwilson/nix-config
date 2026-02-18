@@ -15,7 +15,10 @@ interface ProjectCreateArgs {
 }
 
 /**
- * Create the project_create tool
+ * Creates the project_create tool for initializing new projects.
+ *
+ * @param deps - Tool dependencies including ProjectManager and logger
+ * @returns OpenCode tool definition
  */
 export function createProjectCreate(deps: ToolDepsV2) {
   const { projectManager, log } = deps
@@ -61,7 +64,7 @@ Use this when starting a new initiative, feature, or long-term effort.`,
           description,
         })
 
-        // Build response
+  
         const lines: string[] = [
           `## Project Created: ${result.metadata.name}`,
           "",

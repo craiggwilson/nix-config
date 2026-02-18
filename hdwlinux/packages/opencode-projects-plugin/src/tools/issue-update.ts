@@ -104,7 +104,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         artifacts,
       } = args
 
-      // Resolve project ID
+
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
@@ -113,14 +113,14 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
 
       await log.info(`Updating issue ${issueId} in project ${projectId}`)
 
-      // Get current issue state
+
       const issue = await projectManager.getIssue(projectId, issueId)
 
       if (!issue) {
         return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project_status\` to see available issues.`
       }
 
-      // Build update options
+
       const updateOptions: {
         status?: "open" | "in_progress" | "closed"
         assignee?: string
@@ -137,26 +137,26 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
       if (labels !== undefined) updateOptions.labels = labels
       if (blockedBy !== undefined) updateOptions.blockedBy = blockedBy
 
-      // Check if there's anything to update
+
       if (Object.keys(updateOptions).length === 0) {
         return `No updates specified for issue '${issueId}'.\n\nProvide at least one field to update (status, assignee, priority, description, labels, or blockedBy).`
       }
 
-      // Perform the update
+
       const updated = await projectManager.updateIssue(projectId, issueId, updateOptions)
 
       if (!updated) {
         return `Failed to update issue '${issueId}'. Check issue storage configuration.`
       }
 
-      // Build response
+
       const lines: string[] = []
 
       lines.push(`## Issue Updated: ${issueId}`)
       lines.push("")
       lines.push(`**Title:** ${issue.title}`)
 
-      // Show what changed
+
       lines.push("")
       lines.push("### Changes")
       lines.push("")
@@ -182,18 +182,18 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         lines.push(`- **Blocked By:** ${blockedBy.join(", ") || "(none)"}`)
       }
 
-      // Track merge commit for completion comment
+
       let mergeCommitId: string | undefined
 
-      // Handle worktree merge if closing and requested
+
       if (status === "closed" && mergeWorktree) {
         const projectDir = await projectManager.getProjectDir(projectId)
         if (projectDir) {
-          // Get repo root (parent of .projects directory)
+
           const repoRoot = path.dirname(path.dirname(projectDir))
           const worktreeManager = new WorktreeManager(repoRoot, $, log)
 
-          // Check if there's a worktree for this issue
+
           const worktree = await worktreeManager.getWorktree(projectId, issueId)
 
           if (worktree) {
@@ -232,7 +232,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         }
       }
 
-      // Add completion comment when closing
+
       if (status === "closed") {
         await projectManager.addCompletionComment(projectId, issueId, {
           summary: comment,
@@ -245,7 +245,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         lines.push("")
         lines.push("**Issue closed.** Use `project_status` to see remaining work.")
       } else if (comment) {
-        // Add regular comment if provided but not closing
+
         await projectManager.addIssueComment(projectId, issueId, comment)
       }
 

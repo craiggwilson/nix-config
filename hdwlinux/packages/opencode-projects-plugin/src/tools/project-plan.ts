@@ -59,7 +59,7 @@ This tool manages interview sessions and loads existing planning artifacts.`,
     async execute(args: ProjectPlanArgs, _ctx: ProjectToolContext): Promise<string> {
       const { phase, topic, action = "continue" } = args
 
-      // Resolve project ID
+
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {

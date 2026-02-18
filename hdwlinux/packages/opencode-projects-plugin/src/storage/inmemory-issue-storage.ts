@@ -27,7 +27,7 @@ function generateId(prefix: string): string {
  * InMemoryIssueStorage - stores issues in memory
  */
 export class InMemoryIssueStorage implements IssueStorage {
-  // Map of projectDir -> Map of issueId -> Issue
+
   private projects: Map<string, Map<string, Issue>> = new Map()
   private initialized: Set<string> = new Set()
   private prefix: string
@@ -53,7 +53,7 @@ export class InMemoryIssueStorage implements IssueStorage {
    */
   private generateIssueId(projectDir: string, parent?: string): string {
     if (parent) {
-      // Find existing children to determine next index
+
       const issues = this.getProjectIssues(projectDir)
       let maxIndex = 0
       for (const [id] of issues) {
@@ -71,12 +71,12 @@ export class InMemoryIssueStorage implements IssueStorage {
   }
 
   async isAvailable(): Promise<boolean> {
-    return true // Always available
+return true
   }
 
   async init(projectDir: string, _options?: { stealth?: boolean }): Promise<boolean> {
     this.initialized.add(projectDir)
-    this.getProjectIssues(projectDir) // Ensure map exists
+this.getProjectIssues(projectDir)
     return true
   }
 
@@ -144,7 +144,7 @@ export class InMemoryIssueStorage implements IssueStorage {
       if (issue.status !== "open") return false
       if (!issue.blockedBy || issue.blockedBy.length === 0) return true
 
-      // Check if all blockers are closed
+
       return issue.blockedBy.every((blockerId) => {
         const blocker = issues.get(blockerId)
         return blocker?.status === "closed"
@@ -232,7 +232,7 @@ export class InMemoryIssueStorage implements IssueStorage {
     return true
   }
 
-  // Store delegation metadata in memory
+
   private delegationMetadata: Map<string, import("./issue-storage.js").IssueDelegationMetadata> =
     new Map()
 
@@ -264,7 +264,7 @@ export class InMemoryIssueStorage implements IssueStorage {
     return true
   }
 
-  // Store comments in memory
+
   private comments: Map<string, string[]> = new Map()
 
   async addComment(issueId: string, projectDir: string, comment: string): Promise<boolean> {
@@ -291,7 +291,7 @@ export class InMemoryIssueStorage implements IssueStorage {
     const completed = issues.filter((i) => i.status === "closed").length
     const inProgress = issues.filter((i) => i.status === "in_progress").length
 
-    // Count issues that have open blockers
+
     const issueMap = new Map(issues.map((i) => [i.id, i]))
     const blockedIssues = issues.filter((i) => {
       if (!i.blockedBy || i.blockedBy.length === 0) return false

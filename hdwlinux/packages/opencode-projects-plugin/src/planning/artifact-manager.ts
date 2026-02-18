@@ -162,7 +162,7 @@ export class ArtifactManager {
         lastModified = stat.mtime.toISOString()
         size = stat.size
       } catch {
-        // File doesn't exist
+
       }
 
       artifacts.push({
@@ -389,7 +389,7 @@ export class ArtifactManager {
     lines.push(content.summary)
     lines.push("")
 
-    // Risk matrix summary
+
     const highRisks = content.risks.filter(
       (r) => r.likelihood === "high" || r.impact === "high"
     )

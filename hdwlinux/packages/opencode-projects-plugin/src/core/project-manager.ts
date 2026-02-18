@@ -94,7 +94,7 @@ export interface ProjectManagerDeps {
   focus: FocusManager
   log: Logger
   repoRoot: string
-  client?: OpencodeClient // Optional - needed for agent delegation
+  client?: OpencodeClient 
 }
 
 /**
@@ -143,20 +143,10 @@ export class ProjectManager {
     const { name, type = "project", workspace, storage, description } = options
 
     await this.log.info(`Creating project: ${name}`)
-
-    // Generate project ID
     const projectId = generateProjectId(name)
-
-    // Determine workspace root
     const effectiveWorkspace = workspace || this.repoRoot
-
-    // Determine storage location
     const effectiveStorage = storage || this.config.getDefaultStorage()
-
-    // Get project directory
     const projectDir = this.config.resolveProjectDir(projectId, effectiveWorkspace, effectiveStorage)
-
-    // Check if project already exists
     try {
       await fs.access(projectDir)
       throw new Error(`Project directory already exists at ${projectDir}`)
@@ -166,14 +156,10 @@ export class ProjectManager {
       }
       // Directory doesn't exist, good to proceed
     }
-
-    // Create directory structure
     await fs.mkdir(projectDir, { recursive: true })
     await fs.mkdir(path.join(projectDir, "research"), { recursive: true })
     await fs.mkdir(path.join(projectDir, "interviews"), { recursive: true })
     await fs.mkdir(path.join(projectDir, "plans"), { recursive: true })
-
-    // Initialize issue storage
     const storageInitialized = await this.issueStorage.init(projectDir, {
       stealth: effectiveStorage === "global",
     })
@@ -181,8 +167,6 @@ export class ProjectManager {
     if (!storageInitialized) {
       await this.log.warn("Failed to initialize issue storage")
     }
-
-    // Create root epic
     let rootIssueId: string | null = null
     if (storageInitialized) {
       rootIssueId = await this.issueStorage.createIssue(projectDir, name, {
@@ -191,8 +175,6 @@ export class ProjectManager {
         labels: ["epic", type],
       })
     }
-
-    // Create project metadata
     const metadata: ProjectMetadata = {
       id: projectId,
       name,
@@ -210,15 +192,11 @@ export class ProjectManager {
       JSON.stringify(metadata, null, 2),
       "utf8"
     )
-
-    // Save project overrides to config
     this.config.setProjectOverrides(projectId, {
       storage: effectiveStorage,
       workspaces: [effectiveWorkspace],
     })
     await this.config.save()
-
-    // Set focus to new project
     this.focus.setFocus(projectId)
 
     return {
@@ -236,22 +214,16 @@ export class ProjectManager {
     const { scope = "all", status = "all" } = options
 
     const projects: ProjectMetadata[] = []
-
-    // Scan local projects
     if (scope === "local" || scope === "all") {
       const localDir = this.config.getLocalProjectsDir(this.repoRoot)
       const localProjects = await this.scanProjectsDir(localDir, "local")
       projects.push(...localProjects)
     }
-
-    // Scan global projects
     if (scope === "global" || scope === "all") {
       const globalDir = this.config.getGlobalProjectsDir()
       const globalProjects = await this.scanProjectsDir(globalDir, "global")
       projects.push(...globalProjects)
     }
-
-    // Filter by status
     if (status === "all") {
       return projects
     }
@@ -305,8 +277,6 @@ export class ProjectManager {
 
     const metadata = await this.loadProjectMetadata(projectDir)
     if (!metadata) return false
-
-    // Update metadata
     metadata.status = reason === "cancelled" ? "archived" : reason
     metadata.closedAt = new Date().toISOString()
     metadata.closeReason = reason
@@ -319,8 +289,6 @@ export class ProjectManager {
       JSON.stringify(metadata, null, 2),
       "utf8"
     )
-
-    // Clear focus if this project was focused
     if (this.focus.isFocusedOn(projectId)) {
       this.focus.clear()
     }
@@ -383,7 +351,7 @@ export class ProjectManager {
     const claimed = await this.issueStorage.claimIssue(issueId, projectDir, assignee)
 
     if (claimed) {
-      // Set issue focus
+
       this.focus.setIssueFocus(issueId)
     }
 
@@ -409,8 +377,6 @@ export class ProjectManager {
     if (!projectDir) return false
 
     const updated = await this.issueStorage.updateIssue(issueId, projectDir, options)
-
-    // If closing the issue and it's the focused issue, clear issue focus
     if (updated && options.status === "closed") {
       if (this.focus.getIssueId() === issueId) {
         this.focus.clearIssueFocus()
@@ -495,10 +461,6 @@ export class ProjectManager {
     this.focus.clear()
   }
 
-  // ============================================
-  // Interview Management
-  // ============================================
-
   /**
    * Get an InterviewManager for a project
    */
@@ -563,8 +525,6 @@ export class ProjectManager {
   ): Promise<boolean> {
     const manager = await this.getInterviewManager(projectId)
     if (!manager) return false
-
-    // Resume the most recent active session
     const session = await manager.getMostRecentActiveSession()
     if (!session) return false
 
@@ -601,10 +561,6 @@ export class ProjectManager {
     await manager.resumeSession(session.id)
     return manager.getInterviewContext()
   }
-
-  // ============================================
-  // Artifact Management
-  // ============================================
 
   /**
    * Get an ArtifactManager for a project
@@ -691,10 +647,6 @@ export class ProjectManager {
 
     return manager.generateSuccessCriteria(content)
   }
-
-  // ============================================
-  // Planning Delegation
-  // ============================================
 
   /**
    * Check if planning delegation is available

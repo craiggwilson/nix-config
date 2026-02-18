@@ -148,7 +148,7 @@ export class BeadsIssueStorage implements IssueStorage {
         return null
       }
 
-      // Parse issue ID from output
+
       const match = result.stdout.match(/Created issue:\s+([\w-]+)/)
       if (match) return match[1]
 
@@ -199,7 +199,7 @@ export class BeadsIssueStorage implements IssueStorage {
       const data = JSON.parse(result.stdout)
       let issues = Array.isArray(data) ? data.map((d: unknown) => this.parseIssue(d)) : []
 
-      // Apply additional filters
+
       if (options?.parent) {
         issues = issues.filter((i) => i.parent === options.parent)
       }
@@ -310,10 +310,10 @@ export class BeadsIssueStorage implements IssueStorage {
     metadata: import("./issue-storage.js").IssueDelegationMetadata
   ): Promise<boolean> {
     try {
-      // Format metadata as a structured comment
+
       const comment = this.formatDelegationComment(metadata)
 
-      // Add comment (this is the source of truth / history)
+
       const commentResult = await runCommand(
         this.getShell(),
         this.bdCmd(`comments add ${issueId} ${JSON.stringify(comment)}`),
@@ -324,7 +324,7 @@ export class BeadsIssueStorage implements IssueStorage {
         return false
       }
 
-      // Update notes with current state (reflects latest comment)
+
       const notesJson = JSON.stringify(metadata)
       const notesResult = await runCommand(
         this.getShell(),
@@ -343,7 +343,7 @@ export class BeadsIssueStorage implements IssueStorage {
     projectDir: string
   ): Promise<import("./issue-storage.js").IssueDelegationMetadata | null> {
     try {
-      // Read from notes (current state)
+
       const result = await runCommand(
         this.getShell(),
         this.bdCmd(`show ${issueId} --json`),
@@ -361,7 +361,7 @@ export class BeadsIssueStorage implements IssueStorage {
         return null
       }
 
-      // Parse JSON from notes
+
       return JSON.parse(issue.notes)
     } catch {
       return null
@@ -370,7 +370,7 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async clearDelegationMetadata(issueId: string, projectDir: string): Promise<boolean> {
     try {
-      // Add a comment noting the delegation was cleared
+
       const comment = "[DELEGATION] Cleared"
       await runCommand(
         this.getShell(),
@@ -378,7 +378,7 @@ export class BeadsIssueStorage implements IssueStorage {
         projectDir
       )
 
-      // Clear notes
+
       const result = await runCommand(
         this.getShell(),
         this.bdCmd(`update ${issueId} --notes ""`),

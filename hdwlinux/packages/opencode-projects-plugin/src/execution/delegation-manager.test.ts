@@ -17,13 +17,13 @@ describe("DelegationManager", () => {
   let manager: DelegationManager
 
   beforeEach(async () => {
-    // Create a fresh temporary directory for each test
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "delegation-test-"))
     manager = new DelegationManager(testDir, mockLogger)
   })
 
   afterAll(async () => {
-    // Cleanup all test directories
+
     try {
       const tmpDir = os.tmpdir()
       const entries = await fs.readdir(tmpDir)
@@ -33,7 +33,7 @@ describe("DelegationManager", () => {
         }
       }
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 

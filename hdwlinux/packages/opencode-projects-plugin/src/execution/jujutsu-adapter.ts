@@ -33,11 +33,11 @@ export class JujutsuAdapter implements VCSAdapter {
 
     await this.log.info(`Creating jj workspace: ${name} at ${workspacePath}`)
 
-    // Ensure the parent directory exists
+
     const mkdirCmd = `mkdir -p ${JSON.stringify(this.worktreeBase)}`
     await this.$`${mkdirCmd}`
 
-    // Create the workspace
+
     // Note: jj workspace add creates a new workspace at the specified path
     const cmd = `jj -R ${JSON.stringify(this.repoRoot)} workspace add --name ${name} ${JSON.stringify(workspacePath)}`
     const result = await this.$`${cmd}`
@@ -48,7 +48,7 @@ export class JujutsuAdapter implements VCSAdapter {
       throw new Error(`Failed to create jj workspace: ${error}`)
     }
 
-    // Get the change ID for the new workspace
+
     const changeCmd = `jj -R ${JSON.stringify(workspacePath)} log -r @ --no-graph -T 'change_id'`
     const changeResult = await this.$`${changeCmd}`
     const changeId = changeResult.stdout.toString().trim()
@@ -75,7 +75,7 @@ export class JujutsuAdapter implements VCSAdapter {
     for (const line of output.split("\n")) {
       if (!line.trim()) continue
 
-      // Parse workspace list output
+
       // Format: "name: path (change_id)"
       const match = line.match(/^(\S+):\s+(.+?)(?:\s+\(([^)]+)\))?$/)
       if (match) {
@@ -95,7 +95,7 @@ export class JujutsuAdapter implements VCSAdapter {
   async removeWorktree(name: string): Promise<boolean> {
     await this.log.info(`Removing jj workspace: ${name}`)
 
-    // Forget the workspace
+
     const forgetCmd = `jj -R ${JSON.stringify(this.repoRoot)} workspace forget ${name}`
     const forgetResult = await this.$`${forgetCmd}`
 
@@ -104,7 +104,7 @@ export class JujutsuAdapter implements VCSAdapter {
       return false
     }
 
-    // Remove the directory
+
     const workspacePath = path.join(this.worktreeBase, name)
     const rmCmd = `rm -rf ${JSON.stringify(workspacePath)}`
     await this.$`${rmCmd}`
@@ -163,7 +163,7 @@ export class JujutsuAdapter implements VCSAdapter {
       }
     }
 
-    // Get the resulting change ID
+
     const headCmd = `jj -R ${JSON.stringify(this.repoRoot)} log -r @ --no-graph -T 'commit_id'`
     const headResult = await this.$`${headCmd}`
     const commitId = headResult.stdout.toString().trim()

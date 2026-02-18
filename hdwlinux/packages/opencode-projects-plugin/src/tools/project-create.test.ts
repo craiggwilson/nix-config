@@ -30,10 +30,10 @@ describe("project_create tool", () => {
   let testShell: BunShell
 
   beforeAll(async () => {
-    // Create a temporary directory for testing
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-create-test-"))
 
-    // Initialize managers
+
     const config = await ConfigManager.load()
     const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
@@ -49,11 +49,11 @@ describe("project_create tool", () => {
   })
 
   afterAll(async () => {
-    // Cleanup test directory
+
     try {
       await fs.rm(testDir, { recursive: true, force: true })
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 
@@ -75,18 +75,18 @@ describe("project_create tool", () => {
       mockContext
     )
 
-    // Check result contains expected content
+
     expect(result).toContain("Project Created")
     expect(result).toContain("Test Project")
 
-    // Find the project directory
+
     const projectsDir = path.join(testDir, ".projects")
     const entries = await fs.readdir(projectsDir)
     expect(entries.length).toBe(1)
 
     const projectDir = path.join(projectsDir, entries[0])
 
-    // Verify directory structure
+
     const researchDir = path.join(projectDir, "research")
     const interviewsDir = path.join(projectDir, "interviews")
     const plansDir = path.join(projectDir, "plans")
@@ -95,7 +95,7 @@ describe("project_create tool", () => {
     expect((await fs.stat(interviewsDir)).isDirectory()).toBe(true)
     expect((await fs.stat(plansDir)).isDirectory()).toBe(true)
 
-    // Verify project.json exists
+
     const metadataPath = path.join(projectDir, "project.json")
     const metadata = JSON.parse(await fs.readFile(metadataPath, "utf8"))
 
@@ -106,7 +106,7 @@ describe("project_create tool", () => {
   })
 
   test("sets focus to new project", async () => {
-    // Focus should be set to the created project
+
     const focusedId = projectManager.getFocusedProjectId()
     expect(focusedId).not.toBeNull()
     expect(focusedId).toMatch(/^test-project-/)
@@ -120,7 +120,7 @@ describe("project_create tool", () => {
       $: testShell,
     })
 
-    // Create another project with the same name
+
     const result = await tool.execute(
       {
         name: "Test Project",
@@ -131,12 +131,12 @@ describe("project_create tool", () => {
 
     expect(result).toContain("Project Created")
 
-    // Should have 2 projects now
+
     const projectsDir = path.join(testDir, ".projects")
     const entries = await fs.readdir(projectsDir)
     expect(entries.length).toBe(2)
 
-    // IDs should be different
+
     expect(entries[0]).not.toBe(entries[1])
   })
 })

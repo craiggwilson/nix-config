@@ -14,13 +14,13 @@ describe("ArtifactManager", () => {
   let manager: ArtifactManager
 
   beforeEach(async () => {
-    // Create a fresh temporary directory for each test
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "artifact-test-"))
     manager = new ArtifactManager(testDir)
   })
 
   afterAll(async () => {
-    // Cleanup all test directories
+
     try {
       const tmpDir = os.tmpdir()
       const entries = await fs.readdir(tmpDir)
@@ -30,7 +30,7 @@ describe("ArtifactManager", () => {
         }
       }
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 
@@ -55,7 +55,7 @@ describe("ArtifactManager", () => {
     })
 
     test("shows existing artifacts with metadata", async () => {
-      // Create a roadmap
+
       await manager.writeArtifact("roadmap", "# Test Roadmap")
 
       const artifacts = await manager.listArtifacts()
@@ -131,7 +131,7 @@ describe("ArtifactManager", () => {
       expect(markdown).toContain("## Assumptions")
       expect(markdown).toContain("## Constraints")
 
-      // Verify file was written
+
       const exists = await manager.artifactExists("roadmap")
       expect(exists).toBe(true)
     })

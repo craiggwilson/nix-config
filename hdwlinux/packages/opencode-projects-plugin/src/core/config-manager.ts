@@ -11,6 +11,24 @@ import type { ProjectConfig, ProjectOverrides } from "./types.js"
 const CONFIG_FILENAME = "opencode-projects.json"
 
 /**
+ * Validation error for configuration
+ */
+export interface ConfigValidationError {
+  field: string
+  message: string
+  value?: unknown
+}
+
+/**
+ * Validation result
+ */
+export interface ConfigValidationResult {
+  valid: boolean
+  errors: ConfigValidationError[]
+  warnings: ConfigValidationError[]
+}
+
+/**
  * Default configuration
  */
 const DEFAULT_CONFIG: ProjectConfig = {
@@ -62,7 +80,6 @@ export class ConfigManager {
       const content = await fs.readFile(configPath, "utf8")
       const loaded = JSON.parse(content) as Partial<ProjectConfig>
 
-      // Merge with defaults
       const config: ProjectConfig = {
         ...DEFAULT_CONFIG,
         ...loaded,
@@ -71,10 +88,89 @@ export class ConfigManager {
         worktrees: { ...DEFAULT_CONFIG.worktrees, ...loaded.worktrees },
       }
 
-      return new ConfigManager(config)
+      const manager = new ConfigManager(config)
+      const validation = manager.validate()
+
+      if (!validation.valid) {
+        console.warn("Configuration validation errors:")
+        for (const error of validation.errors) {
+          console.warn(`  - ${error.field}: ${error.message}`)
+        }
+      }
+
+      for (const warning of validation.warnings) {
+        console.warn(`Config warning: ${warning.field}: ${warning.message}`)
+      }
+
+      return manager
     } catch {
-      // Config doesn't exist or is invalid, use defaults
       return new ConfigManager({ ...DEFAULT_CONFIG })
+    }
+  }
+
+  /**
+   * Validate the current configuration
+   */
+  validate(): ConfigValidationResult {
+    const errors: ConfigValidationError[] = []
+    const warnings: ConfigValidationError[] = []
+
+    // Validate version
+    if (!this.config.version) {
+      errors.push({ field: "version", message: "Version is required" })
+    }
+
+    // Validate defaults.storage
+    const validStorageValues = ["local", "global"]
+    if (!validStorageValues.includes(this.config.defaults.storage)) {
+      errors.push({
+        field: "defaults.storage",
+        message: `Must be one of: ${validStorageValues.join(", ")}`,
+        value: this.config.defaults.storage,
+      })
+    }
+
+    // Validate defaults.vcs
+    const validVcsValues = ["auto", "git", "jj"]
+    if (!validVcsValues.includes(this.config.defaults.vcs)) {
+      errors.push({
+        field: "defaults.vcs",
+        message: `Must be one of: ${validVcsValues.join(", ")}`,
+        value: this.config.defaults.vcs,
+      })
+    }
+
+    // Validate paths don't contain dangerous characters
+    const pathFields = ["defaults.beadsPath", "defaults.projectsPath"]
+    for (const field of pathFields) {
+      const value = field === "defaults.beadsPath"
+        ? this.config.defaults.beadsPath
+        : this.config.defaults.projectsPath
+
+      if (value.includes("..")) {
+        errors.push({
+          field,
+          message: "Path cannot contain '..'",
+          value,
+        })
+      }
+    }
+
+    // Warn about unknown top-level fields
+    const knownFields = ["version", "defaults", "projects", "agents", "worktrees"]
+    for (const key of Object.keys(this.config)) {
+      if (!knownFields.includes(key)) {
+        warnings.push({
+          field: key,
+          message: "Unknown configuration field (may be ignored)",
+        })
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
     }
   }
 

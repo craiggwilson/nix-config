@@ -66,7 +66,7 @@ export class InterviewManager {
     phase: "discovery" | "refinement" | "breakdown",
     topic?: string
   ): Promise<InterviewSession> {
-    // Ensure interviews directory exists
+
     await fs.mkdir(this.interviewsDir, { recursive: true })
 
     const sessionId = this.generateSessionId()
@@ -180,10 +180,10 @@ export class InterviewManager {
         }
       }
     } catch {
-      // Directory doesn't exist
+
     }
 
-    // Sort by last updated, most recent first
+
     return summaries.sort(
       (a, b) => new Date(b.lastUpdatedAt).getTime() - new Date(a.lastUpdatedAt).getTime()
     )
@@ -254,7 +254,7 @@ export class InterviewManager {
     lines.push(`**Exchanges:** ${this.currentSession.exchanges.length}`)
     lines.push("")
 
-    // Include last few exchanges for context
+
     const recentExchanges = this.currentSession.exchanges.slice(-4)
     if (recentExchanges.length > 0) {
       lines.push("### Recent Discussion")
@@ -263,7 +263,7 @@ export class InterviewManager {
       for (const exchange of recentExchanges) {
         const roleLabel = exchange.role === "assistant" ? "**Assistant:**" : "**User:**"
         lines.push(roleLabel)
-        // Truncate long content
+
         const content =
           exchange.content.length > 500
             ? exchange.content.slice(0, 497) + "..."

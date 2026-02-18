@@ -14,13 +14,13 @@ describe("InterviewManager", () => {
   let manager: InterviewManager
 
   beforeEach(async () => {
-    // Create a fresh temporary directory for each test
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "interview-test-"))
     manager = new InterviewManager(testDir)
   })
 
   afterAll(async () => {
-    // Cleanup all test directories
+
     try {
       const tmpDir = os.tmpdir()
       const entries = await fs.readdir(tmpDir)
@@ -30,7 +30,7 @@ describe("InterviewManager", () => {
         }
       }
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 
@@ -105,7 +105,7 @@ describe("InterviewManager", () => {
 
       await manager.completeSession()
 
-      // Load from disk to verify
+
       const filePath = path.join(testDir, "interviews", `${session.id}.json`)
       const content = await fs.readFile(filePath, "utf8")
       const saved = JSON.parse(content)
@@ -127,7 +127,7 @@ describe("InterviewManager", () => {
       const original = await manager.startSession("test-project", "discovery")
       await manager.addExchange("assistant", "Question 1")
 
-      // Create new manager to simulate restart
+
       const manager2 = new InterviewManager(testDir)
       const resumed = await manager2.resumeSession(original.id)
 
@@ -172,7 +172,7 @@ describe("InterviewManager", () => {
       const s1 = await manager.startSession("test-project", "discovery")
       await manager.completeSession()
 
-      // Small delay to ensure different timestamps
+
       await new Promise((r) => setTimeout(r, 10))
 
       const s2 = await manager.startSession("test-project", "refinement")

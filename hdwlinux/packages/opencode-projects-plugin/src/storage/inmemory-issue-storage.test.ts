@@ -49,7 +49,7 @@ describe("InMemoryIssueStorage", () => {
 
     expect(childId).toBe(`${parentId}.1`)
 
-    // Second child should be .2
+
     const child2Id = await storage.createIssue(projectDir, "Child Issue 2", {
       parent: parentId!,
     })
@@ -178,14 +178,14 @@ describe("InMemoryIssueStorage", () => {
 
     await storage.addDependency(blockedId!, blockerId!, projectDir)
 
-    // Initially blocked
+
     let ready = await storage.getReadyIssues(projectDir)
     expect(ready.map((i) => i.id)).not.toContain(blockedId!)
 
-    // Close the blocker
+
     await storage.updateStatus(blockerId!, "closed", projectDir)
 
-    // Now unblocked
+
     ready = await storage.getReadyIssues(projectDir)
     expect(ready.map((i) => i.id)).toContain(blockedId!)
   })

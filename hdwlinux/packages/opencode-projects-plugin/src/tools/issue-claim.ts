@@ -49,7 +49,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
     async execute(args: IssueClaimArgs, _ctx: ProjectToolContext): Promise<string> {
       const { issueId, isolate = false, delegate = false, agent = "coder" } = args
 
-      // Resolve project ID from focus
+
       const projectId = projectManager.getFocusedProjectId()
 
       if (!projectId) {
@@ -58,26 +58,26 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
 
       await log.info(`Claiming issue ${issueId} in project ${projectId}`)
 
-      // Get issue details first
+
       const issue = await projectManager.getIssue(projectId, issueId)
 
       if (!issue) {
         return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project_status\` to see available issues.`
       }
 
-      // Check if already claimed
+
       if (issue.status === "in_progress") {
         return `Issue '${issueId}' is already in progress${issue.assignee ? ` (assigned to ${issue.assignee})` : ""}.\n\nUse \`project_status\` to see other available issues.`
       }
 
-      // Claim the issue
+
       const claimed = await projectManager.claimIssue(projectId, issueId)
 
       if (!claimed) {
         return `Failed to claim issue '${issueId}'. Check issue storage configuration.`
       }
 
-      // Build response
+
       const lines: string[] = []
 
       lines.push(`## Issue Claimed: ${issueId}`)
@@ -91,7 +91,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
         lines.push(issue.description)
       }
 
-      // Handle isolation
+
       if (isolate) {
         const projectDir = await projectManager.getProjectDir(projectId)
         if (!projectDir) {

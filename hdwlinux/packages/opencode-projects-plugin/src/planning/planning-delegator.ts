@@ -114,7 +114,7 @@ export class PlanningDelegator {
 
     const keywords = PHASE_KEYWORDS[phase]
 
-    // Score each agent based on keyword matches
+
     const scored = agents.map((agent) => {
       const searchText = `${agent.name} ${agent.description || ""}`.toLowerCase()
       let score = 0
@@ -128,10 +128,10 @@ export class PlanningDelegator {
       return { agent, score }
     })
 
-    // Sort by score descending
+
     scored.sort((a, b) => b.score - a.score)
 
-    // Return the best match if it has any score
+
     if (scored[0].score > 0) {
       return scored[0].agent.name
     }
@@ -166,7 +166,7 @@ export class PlanningDelegator {
 
     await this.log.info(`Delegating planning for project ${projectId}`)
 
-    // Determine which agent to use
+
     let agentToUse: string | undefined
 
     if (preferredAgent) {
@@ -192,7 +192,7 @@ export class PlanningDelegator {
     }
 
     try {
-      // Create a session for the delegation
+
       const sessionOptions: { body?: { agent?: string; title?: string } } = {
         body: {
           title: `Planning: ${projectId}`,
@@ -213,16 +213,16 @@ export class PlanningDelegator {
         }
       }
 
-      // Build the full prompt with context
+
       const fullPrompt = this.buildPrompt(prompt, context, projectId, phase)
 
-      // Send the prompt
+
       const promptResult = await this.client.session.prompt({
         path: { id: sessionId },
         body: { content: fullPrompt },
       })
 
-      // Get the response
+
       const messages = await this.client.session.messages({ path: { id: sessionId } })
       const lastMessage = messages.data?.slice(-1)[0]
 
@@ -267,7 +267,7 @@ export class PlanningDelegator {
     lines.push(prompt)
     lines.push("")
 
-    // Add phase-specific guidance
+
     if (phase) {
       lines.push("## Expected Output")
       lines.push("")

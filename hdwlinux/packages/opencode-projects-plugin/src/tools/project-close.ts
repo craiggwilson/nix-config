@@ -46,7 +46,7 @@ This updates the project status and optionally adds a final summary.`,
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
       }
 
-      // Build response
+
       const lines: string[] = []
 
       lines.push(`## Project Closed: ${projectId}`)

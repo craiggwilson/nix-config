@@ -21,10 +21,10 @@ describe("ProjectManager", () => {
   let focus: FocusManager
 
   beforeEach(async () => {
-    // Create a fresh temporary directory for each test
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-manager-test-"))
 
-    // Initialize dependencies
+
     config = await ConfigManager.load()
     issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     focus = new FocusManager()
@@ -39,7 +39,7 @@ describe("ProjectManager", () => {
   })
 
   afterAll(async () => {
-    // Cleanup all test directories
+
     try {
       const tmpDir = os.tmpdir()
       const entries = await fs.readdir(tmpDir)
@@ -49,7 +49,7 @@ describe("ProjectManager", () => {
         }
       }
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 
@@ -66,7 +66,7 @@ describe("ProjectManager", () => {
       expect(result.metadata.type).toBe("project")
       expect(result.metadata.status).toBe("active")
 
-      // Verify directory structure
+  
       const projectDir = result.projectDir
       expect((await fs.stat(path.join(projectDir, "research"))).isDirectory()).toBe(true)
       expect((await fs.stat(path.join(projectDir, "interviews"))).isDirectory()).toBe(true)
@@ -81,7 +81,7 @@ describe("ProjectManager", () => {
 
       expect(result.rootIssueId).not.toBeUndefined()
 
-      // Verify issue was created
+
       const issue = await issueStorage.getIssue(result.rootIssueId!, result.projectDir)
       expect(issue).not.toBeNull()
       expect(issue?.title).toBe("Issue Test")
@@ -155,7 +155,7 @@ describe("ProjectManager", () => {
     test("returns project status with issue counts", async () => {
       const result = await manager.createProject({ name: "Status Test" })
 
-      // Create some issues
+
       await manager.createIssue(result.projectId, "Open Issue")
       const claimedId = await manager.createIssue(result.projectId, "Claimed Issue")
       await manager.claimIssue(result.projectId, claimedId!)
@@ -244,13 +244,13 @@ describe("ProjectManager", () => {
       const blockedId = await manager.createIssue(result.projectId, "Blocked")
       const readyId = await manager.createIssue(result.projectId, "Ready")
 
-      // Add dependency
+
       const projectDir = await manager.getProjectDir(result.projectId)
       await issueStorage.addDependency(blockedId!, blockerId!, projectDir!)
 
       const ready = await manager.getReadyIssues(result.projectId)
 
-      // Should include root, blocker, and ready - but not blocked
+
       expect(ready.map((i) => i.id)).toContain(readyId!)
       expect(ready.map((i) => i.id)).toContain(blockerId!)
       expect(ready.map((i) => i.id)).not.toContain(blockedId!)

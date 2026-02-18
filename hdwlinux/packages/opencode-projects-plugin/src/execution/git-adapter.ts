@@ -34,10 +34,10 @@ export class GitAdapter implements VCSAdapter {
 
     await this.log.info(`Creating git worktree: ${name} at ${worktreePath}`)
 
-    // Determine base
+
     const base = baseBranch || (await this.getDefaultBranch())
 
-    // Create the worktree with a new branch
+
     const cmd = `git -C ${JSON.stringify(this.repoRoot)} worktree add -b ${branchName} ${JSON.stringify(worktreePath)} ${base}`
     const result = await this.$`${cmd}`
 
@@ -109,7 +109,7 @@ export class GitAdapter implements VCSAdapter {
 
     await this.log.info(`Removing git worktree: ${name}`)
 
-    // Remove the worktree
+
     const removeCmd = `git -C ${JSON.stringify(this.repoRoot)} worktree remove ${JSON.stringify(worktreePath)} --force`
     const removeResult = await this.$`${removeCmd}`
 
@@ -118,7 +118,7 @@ export class GitAdapter implements VCSAdapter {
       return false
     }
 
-    // Delete the branch
+
     const branchName = name.replace(/\//g, "-")
     const branchCmd = `git -C ${JSON.stringify(this.repoRoot)} branch -D ${branchName}`
     await this.$`${branchCmd}` // Ignore errors - branch may not exist
@@ -135,7 +135,7 @@ export class GitAdapter implements VCSAdapter {
 
     await this.log.info(`Merging ${source} into ${targetBranch} with strategy: ${strategy}`)
 
-    // Checkout target branch
+
     const checkoutCmd = `git -C ${JSON.stringify(this.repoRoot)} checkout ${targetBranch}`
     const checkoutResult = await this.$`${checkoutCmd}`
 
@@ -146,7 +146,7 @@ export class GitAdapter implements VCSAdapter {
       }
     }
 
-    // Perform merge based on strategy
+
     let mergeCmd: string
     switch (strategy) {
       case "squash":
@@ -201,7 +201,7 @@ export class GitAdapter implements VCSAdapter {
       }
     }
 
-    // Get the commit ID
+
     const headCmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse HEAD`
     const headResult = await this.$`${headCmd}`
     const commitId = headResult.stdout.toString().trim()
@@ -224,7 +224,7 @@ export class GitAdapter implements VCSAdapter {
   }
 
   async getDefaultBranch(): Promise<string> {
-    // Try to get the default branch from remote
+
     const remoteCmd = `git -C ${JSON.stringify(this.repoRoot)} symbolic-ref refs/remotes/origin/HEAD 2>/dev/null`
     const remoteResult = await this.$`${remoteCmd}`
 
@@ -233,7 +233,7 @@ export class GitAdapter implements VCSAdapter {
       return ref.replace("refs/remotes/origin/", "")
     }
 
-    // Fall back to checking common names
+
     for (const branch of ["main", "master", "trunk"]) {
       const checkCmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse --verify ${branch} 2>/dev/null`
       const checkResult = await this.$`${checkCmd}`

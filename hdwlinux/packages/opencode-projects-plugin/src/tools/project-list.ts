@@ -47,10 +47,10 @@ Shows project name, status, and issue counts.`,
         return `No projects found${scopeText}${statusText}.\n\nUse \`project_create\` to create a new project.`
       }
 
-      // Build output
+
       const lines: string[] = ["## Projects", ""]
 
-      // Group by storage
+
       const localProjects = projects.filter((p) => p.storage === "local")
       const globalProjects = projects.filter((p) => p.storage === "global")
 

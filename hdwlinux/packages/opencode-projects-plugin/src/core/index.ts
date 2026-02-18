@@ -21,3 +21,18 @@ export { createLogger } from "./logger.js"
 export * from "./types.js"
 
 export * from "./test-utils.js"
+
+export { buildIssueTree, renderTree, renderIssueTree } from "./tree-renderer.js"
+
+export {
+  ProjectsPluginError,
+  ProjectNotFoundError,
+  IssueNotFoundError,
+  BeadsNotAvailableError,
+  VCSNotDetectedError,
+  WorktreeError,
+  MergeConflictError,
+  NoProjectFocusedError,
+  ConfigurationError,
+  formatError,
+} from "./errors.js"

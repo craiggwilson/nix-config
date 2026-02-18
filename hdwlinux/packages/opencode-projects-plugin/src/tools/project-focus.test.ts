@@ -34,10 +34,10 @@ describe("project_focus tool", () => {
   let projectId: string
 
   beforeAll(async () => {
-    // Create a temporary directory for testing
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-focus-test-"))
 
-    // Initialize managers
+
     const config = await ConfigManager.load()
     const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
@@ -58,7 +58,7 @@ describe("project_focus tool", () => {
       $: testShell,
     }
 
-    // Create a test project
+
     const createTool = createProjectCreate(toolDeps)
 
     await createTool.execute(
@@ -70,19 +70,19 @@ describe("project_focus tool", () => {
       mockContext
     )
 
-    // Get the project ID from focus
+
     projectId = projectManager.getFocusedProjectId()!
 
-    // Clear focus for tests
+
     projectManager.clearFocus()
   })
 
   afterAll(async () => {
-    // Cleanup test directory
+
     try {
       await fs.rm(testDir, { recursive: true, force: true })
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 
@@ -103,7 +103,7 @@ describe("project_focus tool", () => {
     expect(result).toContain("Focus Set")
     expect(result).toContain(projectId)
 
-    // Verify focus was set
+
     expect(projectManager.getFocusedProjectId()).toBe(projectId)
   })
 
@@ -117,7 +117,7 @@ describe("project_focus tool", () => {
   })
 
   test("sets focus to a specific issue", async () => {
-    // First create an issue
+
     const issueTool = createIssueCreate(toolDeps)
 
     const issueResult = await issueTool.execute(
@@ -128,12 +128,12 @@ describe("project_focus tool", () => {
       mockContext
     )
 
-    // Extract issue ID from result
+
     const issueIdMatch = issueResult.match(/Issue Created:\s+([\w.-]+)/)
     expect(issueIdMatch).not.toBeNull()
     const issueId = issueIdMatch![1]
 
-    // Now set focus to the issue
+
     const focusTool = createProjectFocus(toolDeps)
 
     const result = await focusTool.execute({ issueId }, mockContext)
@@ -141,7 +141,7 @@ describe("project_focus tool", () => {
     expect(result).toContain("Issue Focus Set")
     expect(result).toContain(issueId)
 
-    // Verify focus was set
+
     expect(projectManager.getFocusedIssueId()).toBe(issueId)
   })
 
@@ -152,7 +152,7 @@ describe("project_focus tool", () => {
 
     expect(result).toContain("Focus cleared")
 
-    // Verify focus was cleared
+
     expect(projectManager.getFocusedProjectId()).toBeNull()
   })
 })
@@ -166,7 +166,7 @@ describe("FocusManager", () => {
     const serialized = focus.serialize()
     expect(serialized).not.toBeNull()
 
-    // Create new manager and restore
+
     const focus2 = new FocusManager()
     const restored = focus2.restore(serialized!)
 

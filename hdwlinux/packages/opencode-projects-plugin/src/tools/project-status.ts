@@ -5,7 +5,7 @@
 import { tool } from "@opencode-ai/plugin"
 
 import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
-import type { Issue } from "../storage/issue-storage.js"
+import { renderIssueTree } from "../core/tree-renderer.js"
 
 interface ProjectStatusArgs {
   projectId?: string
@@ -37,7 +37,7 @@ If no projectId is provided, uses the currently focused project.`,
     async execute(args: ProjectStatusArgs, _ctx: ProjectToolContext): Promise<string> {
       const { format = "summary" } = args
 
-      // Resolve project ID
+
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
@@ -59,7 +59,7 @@ If no projectId is provided, uses the currently focused project.`,
       const issues = format !== "summary" ? await projectManager.listIssues(projectId) : []
       const readyIssues = await projectManager.getReadyIssues(projectId)
 
-      // Build output
+
       const lines: string[] = []
 
       // Header
@@ -177,51 +177,4 @@ function renderProgressBar(percentage: number): string {
   const filled = Math.round((percentage / 100) * width)
   const empty = width - filled
   return `[${"█".repeat(filled)}${"░".repeat(empty)}]`
-}
-
-/**
- * Render issue tree
- */
-function renderIssueTree(issues: Issue[]): string {
-  // Build parent-child relationships
-  const children = new Map<string, Issue[]>()
-  const roots: Issue[] = []
-
-  for (const issue of issues) {
-    if (issue.parent) {
-      const siblings = children.get(issue.parent) || []
-      siblings.push(issue)
-      children.set(issue.parent, siblings)
-    } else {
-      roots.push(issue)
-    }
-  }
-
-  // Render tree
-  const lines: string[] = []
-
-  function renderNode(issue: Issue, prefix: string, isLast: boolean): void {
-    const connector = isLast ? "└── " : "├── "
-    const statusIcon =
-      issue.status === "closed"
-        ? "✓"
-        : issue.status === "in_progress"
-          ? "●"
-          : "○"
-
-    lines.push(`${prefix}${connector}${statusIcon} ${issue.id}: ${issue.title}`)
-
-    const childIssues = children.get(issue.id) || []
-    const childPrefix = prefix + (isLast ? "    " : "│   ")
-
-    for (let i = 0; i < childIssues.length; i++) {
-      renderNode(childIssues[i], childPrefix, i === childIssues.length - 1)
-    }
-  }
-
-  for (let i = 0; i < roots.length; i++) {
-    renderNode(roots[i], "", i === roots.length - 1)
-  }
-
-  return lines.join("\n")
 }

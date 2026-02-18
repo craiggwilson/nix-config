@@ -59,7 +59,7 @@ Issues are tracked in beads and support:
     async execute(args: IssueCreateArgs, _ctx: ProjectToolContext): Promise<string> {
       const { title, description, priority, parent, blockedBy, labels } = args
 
-      // Resolve project ID
+
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
@@ -68,13 +68,13 @@ Issues are tracked in beads and support:
 
       await log.info(`Creating issue in project ${projectId}: ${title}`)
 
-      // Verify project exists
+
       const project = await projectManager.getProject(projectId)
       if (!project) {
         return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
       }
 
-      // Create the issue
+
       const issueId = await projectManager.createIssue(projectId, title, {
         priority,
         parent,
@@ -87,7 +87,7 @@ Issues are tracked in beads and support:
         return `Failed to create issue. Check that issue storage is properly configured.`
       }
 
-      // Build response
+
       const lines: string[] = []
 
       lines.push(`## Issue Created: ${issueId}`)

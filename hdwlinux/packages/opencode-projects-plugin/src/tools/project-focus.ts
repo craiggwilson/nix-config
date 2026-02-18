@@ -46,14 +46,14 @@ Call without arguments to see current focus.`,
     async execute(args: ProjectFocusArgs, _ctx: ProjectToolContext): Promise<string> {
       const { projectId, issueId, clear } = args
 
-      // Clear focus
+
       if (clear) {
         projectManager.clearFocus()
         await log.info("Focus cleared")
         return "Focus cleared. No project or issue is currently active."
       }
 
-      // Get current focus
+
       if (!projectId && !issueId) {
         const currentProjectId = projectManager.getFocusedProjectId()
         const currentIssueId = projectManager.getFocusedIssueId()
@@ -68,7 +68,7 @@ Call without arguments to see current focus.`,
         if (currentIssueId) {
           lines.push(`**Issue:** ${currentIssueId}`)
 
-          // Get issue details
+
           try {
             const issue = await projectManager.getIssue(currentProjectId, currentIssueId)
             if (issue) {
@@ -76,7 +76,7 @@ Call without arguments to see current focus.`,
               lines.push(`**Status:** ${issue.status}`)
             }
           } catch {
-            // Issue details not available
+
           }
         }
 
@@ -91,9 +91,9 @@ Call without arguments to see current focus.`,
         return lines.join("\n")
       }
 
-      // Set focus to project (and optionally issue)
+
       if (projectId) {
-        // Verify project exists
+  
         const project = await projectManager.getProject(projectId)
         if (!project) {
           return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
@@ -108,7 +108,7 @@ Call without arguments to see current focus.`,
         if (issueId) {
           lines.push(`**Issue:** ${issueId}`)
 
-          // Get issue details
+
           try {
             const issue = await projectManager.getIssue(projectId, issueId)
             if (issue) {
@@ -121,7 +121,7 @@ Call without arguments to see current focus.`,
               }
             }
           } catch {
-            // Issue details not available
+
           }
         }
 
@@ -131,7 +131,7 @@ Call without arguments to see current focus.`,
         return lines.join("\n")
       }
 
-      // Set issue focus within current project
+
       if (issueId) {
         const currentProjectId = projectManager.getFocusedProjectId()
 

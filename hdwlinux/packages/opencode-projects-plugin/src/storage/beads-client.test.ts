@@ -13,7 +13,7 @@ import { $ } from "bun"
 import { BeadsClient } from "./beads-client.js"
 import type { Logger, BunShell } from "../core/types.js"
 
-// Mock logger
+
 const mockLogger: Logger = {
   debug: async () => {},
   info: async () => {},
@@ -56,16 +56,16 @@ describe("BeadsClient", () => {
     client = new BeadsClient(mockLogger)
     client.setShell(testShell)
 
-    // Create a temporary directory for testing
+
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "beads-test-"))
   })
 
   afterAll(async () => {
-    // Cleanup test directory
+
     try {
       await fs.rm(testDir, { recursive: true, force: true })
     } catch {
-      // Ignore cleanup errors
+
     }
   })
 

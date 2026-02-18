@@ -36,7 +36,6 @@ import { BeadsIssueStorage } from "./storage/index.js"
 import { PROJECT_RULES } from "./agents/index.js"
 import { WorktreeManager } from "./execution/index.js"
 
-// Re-export SDK classes for external consumers
 export {
   ProjectManager,
   ConfigManager,
@@ -86,18 +85,12 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
   const log = createLogger(typedClient)
   await log.info("opencode-projects plugin initializing")
 
-  // Initialize managers
   const config = await ConfigManager.load()
   const issueStorage = new BeadsIssueStorage(log)
   const focus = new FocusManager()
-
-  // Set the shell for beads client
   issueStorage.setShell($)
 
-  // Detect if we're in a repository
   const repoRoot = worktree || directory
-
-  // Create ProjectManager with client for delegation
   const projectManager = new ProjectManager({
     config,
     issueStorage,
@@ -107,7 +100,6 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     client: typedClient,
   })
 
-  // Check beads availability
   const beadsAvailable = await issueStorage.isAvailable()
   if (!beadsAvailable) {
     await log.warn("beads (bd) not found in PATH - some features will be unavailable")
@@ -115,11 +107,9 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
   await log.info(`opencode-projects initialized in ${repoRoot}`)
 
-  // Create tool dependencies (v2 style)
   const toolDeps = { client: typedClient, projectManager, log, $ }
 
   return {
-    // Project management tools
     tool: {
       project_create: createProjectCreate(toolDeps),
       project_list: createProjectList(toolDeps),
@@ -132,11 +122,9 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       issue_update: createIssueUpdate(toolDeps),
     },
 
-    // Inject project management rules into system prompt
     "experimental.chat.system.transform": async (_input, output) => {
       output.system.push(PROJECT_RULES)
 
-      // Inject VCS context so agents know which commands to use
       const worktreeManager = new WorktreeManager(repoRoot, $, log)
       await worktreeManager.detectVCS()
       const vcsContext = worktreeManager.getVCSContext()
@@ -144,7 +132,6 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         output.system.push(vcsContext)
       }
 
-      // Inject focused project context if any
       const projectId = projectManager.getFocusedProjectId()
       if (projectId) {
         const contextBlock = await buildFocusContext(projectManager)
@@ -154,7 +141,6 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       }
     },
 
-    // Preserve project context during compaction
     "experimental.session.compacting": async (_input, output) => {
       const projectId = projectManager.getFocusedProjectId()
       if (!projectId) return
@@ -165,7 +151,6 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       }
     },
 
-    // Inject environment variables for shell commands
     "shell.env": async (_input, output) => {
       const projectId = projectManager.getFocusedProjectId()
       const issueId = projectManager.getFocusedIssueId()
@@ -178,9 +163,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       }
     },
 
-    // Handle events
     event: async ({ event }: { event: Event }) => {
-      // Handle session idle for delegation completion
       if (event.type === "session.idle") {
         // TODO: Check for completed project delegations
       }
@@ -199,7 +182,6 @@ async function buildFocusContext(projectManager: ProjectManager): Promise<string
 
   sections.push(`## Focused Project: ${projectId}`)
 
-  // Get project status
   try {
     const status = await projectManager.getProjectStatus(projectId)
     if (status?.issueStatus) {
@@ -240,7 +222,8 @@ async function buildFocusContext(projectManager: ProjectManager): Promise<string
 }
 
 /**
- * Build context for session compaction
+ * Build context for session compaction.
+ * This context survives compaction and helps the agent resume work.
  */
 async function buildCompactionContext(projectManager: ProjectManager): Promise<string | null> {
   const projectId = projectManager.getFocusedProjectId()
@@ -252,17 +235,49 @@ async function buildCompactionContext(projectManager: ProjectManager): Promise<s
 
   const issueId = projectManager.getFocusedIssueId()
   if (issueId) {
-    sections.push(`## Working On: ${issueId}`)
+    sections.push(`## Current Issue: ${issueId}`)
+
+    try {
+      const issue = await projectManager.getIssue(projectId, issueId)
+      if (issue) {
+        sections.push(`**Title:** ${issue.title}`)
+        sections.push(`**Status:** ${issue.status}`)
+        if (issue.description) {
+          sections.push(`**Description:** ${issue.description}`)
+        }
+        if (issue.blockedBy && issue.blockedBy.length > 0) {
+          sections.push(`**Blocked by:** ${issue.blockedBy.join(", ")}`)
+        }
+      }
+    } catch {
+      // Issue may not exist
+    }
   }
 
-  // Get ready issues
+  try {
+    const status = await projectManager.getProjectStatus(projectId)
+    if (status?.issueStatus) {
+      sections.push("")
+      sections.push("## Project Progress")
+      sections.push(`- **Completed:** ${status.issueStatus.completed}/${status.issueStatus.total}`)
+      sections.push(`- **In Progress:** ${status.issueStatus.inProgress}`)
+      sections.push(`- **Blocked:** ${status.issueStatus.blocked}`)
+    }
+  } catch {
+    // Project may not exist
+  }
+
   try {
     const ready = await projectManager.getReadyIssues(projectId)
     if (ready.length > 0) {
       sections.push("")
-      sections.push("## Ready Issues (no blockers)")
+      sections.push("## Ready Issues (unblocked)")
       for (const issue of ready.slice(0, 5)) {
-        sections.push(`- ${issue.id}: ${issue.title}`)
+        const priority = issue.priority !== undefined ? `P${issue.priority}` : ""
+        sections.push(`- ${issue.id}: ${issue.title} ${priority}`.trim())
+      }
+      if (ready.length > 5) {
+        sections.push(`- ... and ${ready.length - 5} more`)
       }
     }
   } catch {
@@ -270,8 +285,11 @@ async function buildCompactionContext(projectManager: ProjectManager): Promise<s
   }
 
   sections.push("")
-  sections.push("Use `project_status` to get full project state.")
-  sections.push("Use `project_focus` to change focus.")
+  sections.push("## Quick Reference")
+  sections.push("- `project_status` - Full project state")
+  sections.push("- `project_focus` - Change focus")
+  sections.push("- `issue_claim` - Start work on an issue")
+  sections.push("- `issue_update` - Update/close an issue")
   sections.push("</project-compaction-context>")
 
   return sections.join("\n")

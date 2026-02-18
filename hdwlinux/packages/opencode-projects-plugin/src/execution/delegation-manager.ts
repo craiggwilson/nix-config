@@ -73,7 +73,7 @@ export class DelegationManager {
   ): Promise<Delegation> {
     const { issueId, prompt, worktreePath, agent } = options
 
-    // Generate delegation ID
+
     const id = this.generateId()
     const now = new Date().toISOString()
 
@@ -88,7 +88,7 @@ export class DelegationManager {
       startedAt: now,
     }
 
-    // Save the delegation
+
     await this.save(delegation)
 
     await this.log.info(`Created delegation ${id} for issue ${issueId}`)
@@ -99,7 +99,7 @@ export class DelegationManager {
         delegation.status = "running"
         await this.save(delegation)
 
-        // Create a session and send the prompt
+
         const sessionResult = await this.client.session.create({
           body: {
             agent,
@@ -111,7 +111,7 @@ export class DelegationManager {
         if (sessionId) {
           delegation.sessionId = sessionId
 
-          // Send the prompt
+
           await this.client.session.prompt({
             path: { id: sessionId },
             body: { content: this.buildPrompt(delegation) },
@@ -161,10 +161,10 @@ export class DelegationManager {
         }
       }
     } catch {
-      // Directory doesn't exist
+
     }
 
-    // Apply filters
+
     let filtered = delegations
 
     if (options?.status) {
@@ -175,7 +175,7 @@ export class DelegationManager {
       filtered = filtered.filter((d) => d.issueId === options.issueId)
     }
 
-    // Sort by start time, most recent first
+
     return filtered.sort(
       (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
     )
@@ -194,7 +194,7 @@ export class DelegationManager {
 
     await this.save(delegation)
 
-    // Persist result to research directory
+
     await this.persistResult(delegation)
 
     await this.log.info(`Delegation ${delegationId} completed`)
