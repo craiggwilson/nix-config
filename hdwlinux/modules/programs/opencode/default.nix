@@ -34,92 +34,45 @@
             throw "Unknown MCP server type for ${name}"
         ) config.hdwlinux.ai.agent.mcpServers;
 
-        # Format tools attrset for OpenCode frontmatter (lowercase names, boolean values)
+        # Transform tools attrset for OpenCode config (boolean values)
         # "allow" -> true, "ask"/"deny" -> false
-        formatTools =
-          tools:
-          let
-            toolLines = lib.mapAttrsToList (
-              name: perm: "  ${lib.toLower name}: ${if perm == "allow" then "true" else "false"}"
-            ) tools;
-          in
-          lib.concatStringsSep "\n" toolLines;
+        transformTools = tools: lib.mapAttrs (_: perm: perm == "allow") tools;
 
-        # Generate agent markdown with OpenCode-compatible frontmatter
-        generateAgentMd =
-          name: agent:
-          let
-            toolsSection = if agent.tools == { } then "" else "tools:\n${formatTools agent.tools}\n";
-            frontmatter = ''
-              ---
-              description: ${agent.description}
-              mode: ${agent.mode}
-              model: ${agent.model}
-              ${toolsSection}---
+        # Transform agents to OpenCode JSON config format
+        # Uses {file:path} syntax for OpenCode's variable substitution
+        agentConfig = lib.mapAttrs (
+          _: agent:
+          {
+            description = agent.description;
+            mode = agent.mode;
+            model = agent.model;
+            prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.content)}}";
+          }
+          // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
+          // lib.optionalAttrs (agent.extraMeta ? color) { color = agent.extraMeta.color; }
+        ) config.hdwlinux.ai.agent.agents;
 
-            '';
-            content = builtins.readFile agent.content;
-          in
-          pkgs.writeText "${name}.md" (frontmatter + content);
+        # Transform commands to OpenCode JSON config format
+        # Uses {file:path} syntax for OpenCode's variable substitution
+        commandConfig = lib.mapAttrs (_: command: {
+          description = command.description;
+          template = "{file:${builtins.unsafeDiscardStringContext (toString command.content)}}";
+        }) config.hdwlinux.ai.agent.commands;
 
-        # Generate command markdown with OpenCode-compatible frontmatter
-        generateCommandMd =
-          name: command:
-          let
-            frontmatter = ''
-              ---
-              description: ${command.description}
-              ---
+        # Build a derivation containing symlinks to all skills
+        # OpenCode expects: skills/<name>/SKILL.md (must be files for discovery)
+        skillsDir = pkgs.linkFarm "opencode-skills" (
+          lib.mapAttrsToList (name: path: {
+            inherit name;
+            path = path;
+          }) config.hdwlinux.ai.agent.skills
+        );
 
-            '';
-            content = builtins.readFile command.content;
-          in
-          pkgs.writeText "${name}.md" (frontmatter + content);
-
-        # Build a derivation containing all agent markdown files
-        agentsDir = pkgs.runCommand "opencode-agents" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (
-              name: agent: "cp ${generateAgentMd name agent} $out/${name}.md"
-            ) config.hdwlinux.ai.agent.agents
-          )}
-        '';
-
-        # Build a derivation containing all command markdown files
-        commandsDir = pkgs.runCommand "opencode-commands" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (
-              name: command: "cp ${generateCommandMd name command} $out/${name}.md"
-            ) config.hdwlinux.ai.agent.commands
-          )}
-        '';
-
-        # Build a derivation containing all skills in OpenCode format
-        # OpenCode expects: skills/<name>/SKILL.md
-        skillsDir = pkgs.runCommand "opencode-skills" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (name: path: ''
-              mkdir -p $out/${name}
-              cp -r ${path}/* $out/${name}/
-            '') config.hdwlinux.ai.agent.skills
-          )}
-        '';
-
-        # Collect all rules into instruction file paths for the config
+        # Collect all rules as direct file paths for OpenCode's instructions config
+        # Uses absolute paths to source files in the nix store
         ruleInstructions = lib.mapAttrsToList (
-          name: _rule: ".config/opencode/rules/${name}.md"
+          _: rule: builtins.unsafeDiscardStringContext (toString rule.content)
         ) config.hdwlinux.ai.agent.rules;
-
-        # Generate rule files (no frontmatter needed for OpenCode - just content)
-        rulesDir = pkgs.runCommand "opencode-rules" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (name: rule: "cp ${rule.content} $out/${name}.md") config.hdwlinux.ai.agent.rules
-          )}
-        '';
 
         providers =
           { }
@@ -198,6 +151,8 @@
           "$schema" = "https://opencode.ai/config.json";
           provider = providers;
           mcp = mcpConfig;
+          agent = agentConfig;
+          command = commandConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;
           keybinds = {
@@ -215,10 +170,7 @@
 
         home.file = {
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
-          ".config/opencode/agents".source = agentsDir;
-          ".config/opencode/commands".source = commandsDir;
           ".config/opencode/skills".source = skillsDir;
-          ".config/opencode/rules".source = rulesDir;
         };
       };
   };
