@@ -7,7 +7,7 @@
         description = "Expert codebase analyst specializing in code archaeology, architecture discovery, and technical research. Masters code navigation, dependency analysis, and pattern recognition to provide deep insights into any codebase.";
         model = "opus4.5";
         content = ./content.md;
-        extraMeta.color = "teal";
+        extraMeta.augment.color = "teal";
       };
     };
   };

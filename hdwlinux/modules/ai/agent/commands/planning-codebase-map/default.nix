@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.commands.planning-codebase-map = {
         description = "Map and document a codebase as part of planning discovery";
         content = ./content.md;
-        extraMeta.argument-hint = "[repository-name-or-focus]";
+        extraMeta.augment.argument-hint = "[repository-name-or-focus]";
       };
     };
   };

@@ -7,7 +7,7 @@
         description = "Expert Go developer with deep knowledge of idiomatic Go, concurrency patterns, and cloud-native development. Masters the standard library, popular frameworks, and performance optimization.";
         model = "opus4.5";
         content = ./content.md;
-        extraMeta.color = "cyan";
+        extraMeta.augment.color = "cyan";
       };
     };
   };

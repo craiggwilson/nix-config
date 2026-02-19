@@ -14,12 +14,30 @@
 
         toolPermissionWithSubs = lib.types.either toolPermission (lib.types.attrsOf toolPermission);
 
+        # Nested extraMeta type: keyed by program name (e.g., augment, opencode), then key-value pairs
+        extraMetaType = lib.types.attrsOf (lib.types.attrsOf lib.types.str);
+
+        # Base options shared by items (commands, rules) and agents
+        itemOptions = {
+          description = lib.mkOption {
+            description = "A description of what this item does.";
+            type = lib.types.str;
+          };
+          extraMeta = lib.mkOption {
+            description = "Program-specific metadata. Top-level key is program name (e.g., augment, opencode).";
+            type = extraMetaType;
+            default = { };
+          };
+          content = lib.mkOption {
+            description = "Path to the markdown file containing the content.";
+            type = lib.types.path;
+          };
+        };
+
+        itemType = lib.types.submodule { options = itemOptions; };
+
         agentType = lib.types.submodule {
-          options = {
-            description = lib.mkOption {
-              description = "A description of what this agent does.";
-              type = lib.types.str;
-            };
+          options = itemOptions // {
             mode = lib.mkOption {
               description = "The mode of the agent, primary or subagent";
               type = lib.types.str;
@@ -34,33 +52,6 @@
               description = "Tools with their permission levels. Key is tool name, value is permission.";
               type = lib.types.attrsOf toolPermission;
               default = { };
-            };
-            extraMeta = lib.mkOption {
-              description = "Additional flexible key-value metadata for agent-specific fields.";
-              type = lib.types.attrsOf lib.types.str;
-              default = { };
-            };
-            content = lib.mkOption {
-              description = "Path to the markdown file containing the agent's prompt.";
-              type = lib.types.path;
-            };
-          };
-        };
-
-        itemType = lib.types.submodule {
-          options = {
-            description = lib.mkOption {
-              description = "A description of what this item does.";
-              type = lib.types.str;
-            };
-            extraMeta = lib.mkOption {
-              description = "Additional flexible key-value metadata. Each coding agent interprets relevant keys.";
-              type = lib.types.attrsOf lib.types.str;
-              default = { };
-            };
-            content = lib.mkOption {
-              description = "Path to the markdown file containing the content.";
-              type = lib.types.path;
             };
           };
         };

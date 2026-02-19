@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.commands.planning-finalize = {
         description = "Finalize and wrap up a planning cycle";
         content = ./content.md;
-        extraMeta.argument-hint = "[optional-focus-area]";
+        extraMeta.augment.argument-hint = "[optional-focus-area]";
       };
     };
   };

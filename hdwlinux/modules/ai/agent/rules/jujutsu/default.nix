@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.rules.jujutsu = {
         description = "Version control using Jujutsu (jj)";
         content = ./content.md;
-        extraMeta.type = "always_apply";
+        extraMeta.augment.type = "always_apply";
       };
     };
   };

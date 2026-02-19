@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.commands.planning-init = {
         description = "Initialize a planning cycle for roadmap, project, or task planning";
         content = ./content.md;
-        extraMeta.argument-hint = "[roadmap|project|task] [optional-focus-area]";
+        extraMeta.augment.argument-hint = "[roadmap|project|task] [optional-focus-area]";
       };
     };
   };

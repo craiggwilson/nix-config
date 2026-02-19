@@ -13,10 +13,13 @@
         ...
       }:
       let
-        # Generate YAML frontmatter from extraMeta attrset (for commands/rules)
+        # Generate YAML frontmatter from extraMeta.augment attrset (for commands/rules)
         extraMetaToFrontmatter =
           extraMeta:
-          lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key}: ${value}") extraMeta);
+          let
+            augmentMeta = extraMeta.augment or { };
+          in
+          lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key}: ${value}") augmentMeta);
 
         # Format tools attrset as comma-separated string (just the tool names)
         formatTools = tools: lib.concatStringsSep ", " (lib.attrNames tools);
@@ -32,8 +35,9 @@
               "model: ${agent.model}"
               "tools: ${formatTools agent.tools}"
             ];
-            # Add any extra metadata fields
-            extraFields = lib.mapAttrsToList (key: value: "${key}: ${value}") agent.extraMeta;
+            # Add any extra metadata fields from augment-specific config
+            augmentMeta = agent.extraMeta.augment or { };
+            extraFields = lib.mapAttrsToList (key: value: "${key}: ${value}") augmentMeta;
             allFields = formalFields ++ extraFields;
             frontmatter = ''
               ---
@@ -63,43 +67,36 @@
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
-        # Build a derivation containing all agent markdown files
-        agentsDir = pkgs.runCommand "augment-agents" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (
-              name: agent: "cp ${generateAgentMd name agent} $out/${name}.md"
-            ) config.hdwlinux.ai.agent.agents
-          )}
-        '';
+        # Build a derivation containing symlinks to all agent markdown files
+        agentsDir = pkgs.linkFarm "augment-agents" (
+          lib.mapAttrsToList (name: agent: {
+            name = "${name}.md";
+            path = generateAgentMd name agent;
+          }) config.hdwlinux.ai.agent.agents
+        );
 
-        # Build a derivation containing all command markdown files
-        commandsDir = pkgs.runCommand "augment-commands" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (
-              name: command: "cp ${generateMd name command} $out/${name}.md"
-            ) config.hdwlinux.ai.agent.commands
-          )}
-        '';
+        # Build a derivation containing symlinks to all command markdown files
+        commandsDir = pkgs.linkFarm "augment-commands" (
+          lib.mapAttrsToList (name: command: {
+            name = "${name}.md";
+            path = generateMd name command;
+          }) config.hdwlinux.ai.agent.commands
+        );
 
-        # Build a derivation containing all rule markdown files
-        rulesDir = pkgs.runCommand "augment-rules" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (
-              name: rule: "cp ${generateMd name rule} $out/${name}.md"
-            ) config.hdwlinux.ai.agent.rules
-          )}
-        '';
+        # Build a derivation containing symlinks to all rule markdown files
+        rulesDir = pkgs.linkFarm "augment-rules" (
+          lib.mapAttrsToList (name: rule: {
+            name = "${name}.md";
+            path = generateMd name rule;
+          }) config.hdwlinux.ai.agent.rules
+        );
 
-        # Build a derivation containing all skills
-        skillsDir = pkgs.runCommand "augment-skills" { } ''
-          mkdir -p $out
-          ${lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (name: path: "cp -r ${path} $out/${name}") config.hdwlinux.ai.agent.skills
-          )}
-        '';
+        # Build a derivation containing symlinks to all skills
+        skillsDir = pkgs.linkFarm "augment-skills" (
+          lib.mapAttrsToList (name: path: {
+            inherit name path;
+          }) config.hdwlinux.ai.agent.skills
+        );
 
         # Transform MCP servers to Augment format
         mcpServers = lib.mapAttrs (

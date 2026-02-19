@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.rules.markdown-formatting = {
         description = "Markdown formatting standards for all generated documents";
         content = ./content.md;
-        extraMeta.type = "always_apply";
+        extraMeta.augment.type = "always_apply";
       };
     };
   };

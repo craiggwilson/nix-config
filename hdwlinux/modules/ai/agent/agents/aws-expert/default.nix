@@ -7,7 +7,7 @@
         description = "Expert AWS architect with deep knowledge of AWS services, well-architected framework, and cloud-native patterns. Masters compute, networking, data, security, and operational excellence on AWS.";
         model = "opus4.5";
         content = ./content.md;
-        extraMeta.color = "orange";
+        extraMeta.augment.color = "orange";
       };
     };
   };

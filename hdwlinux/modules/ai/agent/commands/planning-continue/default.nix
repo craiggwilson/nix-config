@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.commands.planning-continue = {
         description = "Continue an in-progress planning cycle";
         content = ./content.md;
-        extraMeta.argument-hint = "[optional-focus-area]";
+        extraMeta.augment.argument-hint = "[optional-focus-area]";
       };
     };
   };

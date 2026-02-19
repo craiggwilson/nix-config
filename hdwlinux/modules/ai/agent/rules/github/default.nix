@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.rules.github = {
         description = "GitHub access configuration";
         content = ./content.md;
-        extraMeta.type = "agent_requested";
+        extraMeta.augment.type = "agent_requested";
       };
     };
   };

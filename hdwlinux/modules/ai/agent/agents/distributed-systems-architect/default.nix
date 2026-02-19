@@ -7,7 +7,7 @@
         description = "Distributed systems architect designing scalable, resilient service ecosystems. Masters service boundaries, multi-region architecture, disaster recovery, cloud-provider redundancy, and operational excellence in cloud-native environments.";
         model = "opus4.5";
         content = ./content.md;
-        extraMeta.color = "yellow";
+        extraMeta.augment.color = "yellow";
       };
     };
   };

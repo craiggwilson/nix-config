@@ -7,7 +7,7 @@
         description = "Expert Apache Kafka and WarpStream architect with deep knowledge of event streaming, topic design, performance tuning, and cloud-native deployments. Masters producers, consumers, Kafka Streams, Connect, and WarpStream's S3-native architecture.";
         model = "opus4.5";
         content = ./content.md;
-        extraMeta.color = "blue";
+        extraMeta.augment.color = "blue";
       };
     };
   };

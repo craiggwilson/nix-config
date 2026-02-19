@@ -6,7 +6,7 @@
       hdwlinux.ai.agent.rules.google-workspace = {
         description = "Google Workspace access configuration";
         content = ./content.md;
-        extraMeta.type = "agent-requested";
+        extraMeta.augment.type = "agent-requested";
       };
     };
   };
