@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 pkgs.buildNpmPackage {
-  pname = "opencode-augment";
+  pname = "opencode-augment-provider";
   version = "0.1.0";
 
   src = ./.;
@@ -21,14 +21,14 @@ pkgs.buildNpmPackage {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p $out/lib/node_modules/@opencode/augment-provider
+    mkdir -p $out/lib/node_modules/opencode-augment-provider
 
     # Copy built files
-    cp -r dist $out/lib/node_modules/@opencode/augment-provider/
-    cp package.json $out/lib/node_modules/@opencode/augment-provider/
+    cp -r dist $out/lib/node_modules/opencode-augment-provider/
+    cp package.json $out/lib/node_modules/opencode-augment-provider/
 
     # Copy node_modules for runtime dependencies
-    cp -r node_modules $out/lib/node_modules/@opencode/augment-provider/
+    cp -r node_modules $out/lib/node_modules/opencode-augment-provider/
 
     runHook postInstall
   '';

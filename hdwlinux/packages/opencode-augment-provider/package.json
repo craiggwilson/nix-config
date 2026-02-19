@@ -1,5 +1,5 @@
 {
-  "name": "@opencode/augment-provider",
+  "name": "opencode-augment-provider",
   "version": "0.1.0",
   "description": "OpenCode provider implementation using Augment AI SDK",
   "type": "module",

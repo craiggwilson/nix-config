@@ -90,7 +90,7 @@
           })
           // (lib.optionalAttrs (hasTag "users:craig:work") {
             augment = {
-              npm = "file://${pkgs.hdwlinux.opencode-augment}/lib/node_modules/@opencode/augment-provider";
+              npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
               name = "Augment Code";
               models = {
                 "claude-haiku-4-5" = {

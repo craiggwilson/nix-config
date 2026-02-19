@@ -104,7 +104,7 @@
           ./packages/fern.nix
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
-          ./packages/opencode-augment
+          ./packages/opencode-augment-provider
           ./packages/opencode-projects-plugin
           ./packages/songtool.nix
           ./packages/workspace-mcp.nix
