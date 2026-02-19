@@ -170,11 +170,11 @@
           };
           edit = {
             "*" = "ask";
-            "/home/craig/Projects/*" = "allow";
+            "~/Projects/*" = "allow";
           };
           external_directory = {
             "*" = "ask";
-            "/home/craig/Projects/*" = "allow";
+            "~/Projects/*" = "allow";
           };
           glob = "allow";
           grep = "allow";

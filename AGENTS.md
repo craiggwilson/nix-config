@@ -17,6 +17,9 @@ jj squash          # Squash changes into parent
 jj log             # View history
 jj git push        # Push to remote
 ```
+
+**NEVER USE GIT**
+
 ### Related Repositories
 
 - **`nix-private`** (sibling repository): Contains private/sensitive substrateModules imported via `inputs.hdwlinux-private.substrateModules.nix-private`
