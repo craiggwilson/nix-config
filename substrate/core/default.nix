@@ -5,8 +5,7 @@
     ./hosts.nix
     ./lib.nix
     ./modules.nix
-    ./overlays.nix
-    ./packages.nix
+    ./outputs.nix
     ./settings.nix
     ./users.nix
   ];

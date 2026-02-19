@@ -27,7 +27,7 @@ let
   );
 in
 {
-  options.substrate.finders = lib.mkOption {
+  options.substrate.moduleFinders = lib.mkOption {
     type = lib.types.attrsOf finderType;
     description = "All the registered finders.";
     default = { };

@@ -45,22 +45,13 @@ let
         };
       };
 
+      # Note: jail.extend requires pkgs, so modules using jail need to call jail.extend themselves
+      # Example: { pkgs, jail, ... }: let jailLib = jail.extend pkgs; in ...
       config.substrate.settings.extraArgsGenerators = [
         (
-          { pkgs, ... }:
-          let
-            extendArgs = {
-              inherit pkgs;
-            }
-            // lib.optionalAttrs (cfg.basePermissions != null) {
-              basePermissions = cfg.basePermissions;
-            }
-            // lib.optionalAttrs (cfg.additionalCombinators != null) {
-              additionalCombinators = cfg.additionalCombinators;
-            };
-          in
+          { ... }:
           {
-            jail = jailInput.lib.extend extendArgs;
+            jail = jailInput.lib;
           }
         )
       ];

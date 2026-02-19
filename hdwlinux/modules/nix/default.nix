@@ -40,6 +40,10 @@
           };
 
           nixpkgs = {
+            config = {
+              allowUnfree = true;
+              cudaSupport = hasTag "cuda";
+            };
             flake = {
               setNixPath = true;
               setFlakeRegistry = true;

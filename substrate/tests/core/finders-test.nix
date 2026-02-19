@@ -22,7 +22,7 @@ let
         let
           eval = evalSubstrate [ ];
         in
-        eval.config.substrate.finders ? all;
+        eval.config.substrate.moduleFinders ? all;
     };
 
     # Test 2: "all" finder has find function
@@ -31,7 +31,7 @@ let
         let
           eval = evalSubstrate [ ];
         in
-        eval.config.substrate.finders.all ? find;
+        eval.config.substrate.moduleFinders.all ? find;
     };
 
     # Test 3: "all" finder returns empty list with no modules
@@ -39,7 +39,7 @@ let
       check =
         let
           eval = evalSubstrate [ ];
-          found = eval.config.substrate.finders.all.find [ ];
+          found = eval.config.substrate.moduleFinders.all.find [ ];
         in
         found == [ ];
     };
@@ -50,10 +50,12 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.modules.programs.test = { nixos = { }; };
+              config.substrate.modules.programs.test = {
+                nixos = { };
+              };
             }
           ];
-          found = eval.config.substrate.finders.all.find [ ];
+          found = eval.config.substrate.moduleFinders.all.find [ ];
         in
         lib.length found == 1;
     };
@@ -63,11 +65,23 @@ let
       check =
         let
           eval = evalSubstrate [
-            { config.substrate.modules.programs.git = { nixos = { }; }; }
-            { config.substrate.modules.programs.vim = { nixos = { }; }; }
-            { config.substrate.modules.hardware.audio = { nixos = { }; }; }
+            {
+              config.substrate.modules.programs.git = {
+                nixos = { };
+              };
+            }
+            {
+              config.substrate.modules.programs.vim = {
+                nixos = { };
+              };
+            }
+            {
+              config.substrate.modules.hardware.audio = {
+                nixos = { };
+              };
+            }
           ];
-          found = eval.config.substrate.finders.all.find [ ];
+          found = eval.config.substrate.moduleFinders.all.find [ ];
         in
         lib.length found == 3;
     };
@@ -77,9 +91,13 @@ let
       check =
         let
           eval = evalSubstrate [
-            { config.substrate.modules.programs.editors.vim = { nixos = { }; }; }
+            {
+              config.substrate.modules.programs.editors.vim = {
+                nixos = { };
+              };
+            }
           ];
-          found = eval.config.substrate.finders.all.find [ ];
+          found = eval.config.substrate.moduleFinders.all.find [ ];
         in
         # Only vim should be found, not programs or editors
         lib.length found == 1;
@@ -92,24 +110,24 @@ let
           eval = evalSubstrate [
             {
               config.substrate.modules.programs.test = {
-                nixos = { };  # Any non-null value
+                nixos = { }; # Any non-null value
               };
             }
           ];
-          found = eval.config.substrate.finders.all.find [ ];
+          found = eval.config.substrate.moduleFinders.all.find [ ];
           module = builtins.head found;
         in
         # Module should have nixos attribute that is not null
         module ? nixos && module.nixos != null;
     };
 
-    # Test 8: Default finder is "all"
-    defaultFinderIsAll = {
+    # Test 8: Default modulesFinder is "all"
+    defaultModulesFinderIsAll = {
       check =
         let
           eval = evalSubstrate [ ];
         in
-        eval.config.substrate.settings.finder == "all";
+        eval.config.substrate.settings.modulesFinder == "all";
     };
 
     # Test 9: Custom finders can be registered
@@ -118,13 +136,13 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.finders.custom = {
+              config.substrate.moduleFinders.custom = {
                 find = _: [ ];
               };
             }
           ];
         in
-        eval.config.substrate.finders ? custom;
+        eval.config.substrate.moduleFinders ? custom;
     };
 
     # Test 10: Finder receives config argument
@@ -133,17 +151,16 @@ let
         let
           eval = evalSubstrate [
             {
-              config.substrate.finders.test = {
+              config.substrate.moduleFinders.test = {
                 # Custom finder accepts list of configs
                 find = cfgs: if builtins.any (cfg: cfg ? testAttr) cfgs then [ "found" ] else [ ];
               };
             }
           ];
-          found = eval.config.substrate.finders.test.find [ { testAttr = true; } ];
+          found = eval.config.substrate.moduleFinders.test.find [ { testAttr = true; } ];
         in
         found == [ "found" ];
     };
   };
 in
 runTests "Finders Tests" tests
-

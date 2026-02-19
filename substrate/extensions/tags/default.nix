@@ -110,7 +110,7 @@ in
       );
     };
     settings = {
-      finder = lib.mkOption {
+      modulesFinder = lib.mkOption {
         type = lib.types.enum [ finderName ];
       };
 
@@ -118,11 +118,7 @@ in
         type = lib.types.listOf (
           lib.types.either lib.types.str (lib.types.attrsOf (lib.types.listOf lib.types.str))
         );
-        apply =
-          list:
-          lib.map (
-            item: if builtins.isString item then { ${item} = [ ]; } else item
-          ) list;
+        apply = list: lib.map (item: if builtins.isString item then { ${item} = [ ]; } else item) list;
         description = ''
           All the tags available for use. A list where each element can be:
           - A simple string: "tag1" (tag with no implications)
@@ -149,14 +145,16 @@ in
   };
 
   config.substrate = {
-    finders.${finderName} = {
+    moduleFinders.${finderName} = {
       find =
         cfgs:
         let
           allTags = slib.unique (lib.flatten (lib.map tagsFromAttrs cfgs));
         in
         # Force evaluation of validatedTagNames to trigger validation errors early
-        builtins.seq validatedTagNames (filterByTags (expandTags allTags) (config.substrate.finders.all.find cfgs));
+        builtins.seq validatedTagNames (
+          filterByTags (expandTags allTags) (config.substrate.moduleFinders.all.find cfgs)
+        );
     };
 
     settings = {
@@ -166,7 +164,7 @@ in
         default = [ ];
       };
 
-      finder = finderName;
+      modulesFinder = finderName;
 
       extraArgsGenerators = [
         (
@@ -179,7 +177,7 @@ in
 
       checks =
         let
-          allModules = config.substrate.finders.all.find [ ];
+          allModules = config.substrate.moduleFinders.all.find [ ];
 
           validateModuleTags =
             let
@@ -301,7 +299,9 @@ in
                 in
                 isCircular || builtins.any (t: hasCircularPath startTag t newVisited) unvisitedImplied;
 
-              tagsWithCircular = lib.filter (tag: hasCircularPath tag tag [ ]) (builtins.attrNames normalizedTags);
+              tagsWithCircular = lib.filter (tag: hasCircularPath tag tag [ ]) (
+                builtins.attrNames normalizedTags
+              );
             in
             {
               name = "circular-tag-implications";

@@ -24,19 +24,7 @@
               type = lib.types.listOf (lib.types.enum (builtins.attrNames config.substrate.users));
               default = [ ];
             };
-            nixpkgsConfig = lib.mkOption {
-              type = lib.types.attrsOf lib.types.anything;
-              description = ''
-                Additional nixpkgs config to apply when instantiating nixpkgs for this host.
-                This is merged with the default config (allowUnfree = true).
-                Useful for options that must be set at nixpkgs instantiation time,
-                such as cudaSupport.
 
-                Example:
-                  nixpkgsConfig = { cudaSupport = true; };
-              '';
-              default = { };
-            };
           };
         }
       )

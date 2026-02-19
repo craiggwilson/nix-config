@@ -85,6 +85,9 @@
         inputs.hdwlinux-private.substrateModules.nix-private
         inputs.substrate.substrateModules.home-manager
         inputs.substrate.substrateModules.jail
+        inputs.substrate.substrateModules.nixos
+        inputs.substrate.substrateModules.overlays
+        inputs.substrate.substrateModules.packages
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.types
@@ -148,6 +151,7 @@
               "hardware:system76-serval-ws"
 
               "boot:systemd"
+              "cuda"
               "printing"
               "raeford"
               "scanning"
@@ -158,6 +162,7 @@
               "hardware:dell-xps-15-9520"
 
               "boot:systemd"
+              "cuda"
               "printing"
               "raeford"
               "scanning"
@@ -231,6 +236,7 @@
           "boot:systemd"
           "camera"
           "cloud:sync"
+          "cuda"
           "desktop"
           { "desktop:custom" = [ "gui" ]; }
           "desktop:custom:hyprland"

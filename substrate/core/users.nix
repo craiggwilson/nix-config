@@ -27,19 +27,7 @@
                 type = lib.types.enum config.substrate.settings.systems;
                 default = builtins.currentSystem;
               };
-              nixpkgsConfig = lib.mkOption {
-                type = lib.types.attrsOf lib.types.anything;
-                description = ''
-                  Additional nixpkgs config to apply when instantiating nixpkgs for this user
-                  (standalone home-manager only). This is merged with the default config
-                  (allowUnfree = true). For NixOS-managed home-manager, the host's nixpkgsConfig
-                  is used instead.
 
-                  Example:
-                    nixpkgsConfig = { cudaSupport = true; };
-                '';
-                default = { };
-              };
             };
         }
       )

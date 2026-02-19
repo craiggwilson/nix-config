@@ -1,0 +1,11 @@
+{
+  "id": "substrate-features-f4a3bc",
+  "name": "substrate-features",
+  "type": "project",
+  "description": "Add new features to the substrate framework",
+  "storage": "local",
+  "workspace": "/home/craig/Projects/hdwlinux/nix-config",
+  "rootIssue": "substrate-features-f4a3bc-2cz",
+  "createdAt": "2026-02-19T17:18:59.551Z",
+  "status": "active"
+}

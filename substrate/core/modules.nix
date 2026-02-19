@@ -55,7 +55,7 @@ in
   };
 
   # The "all" finder returns all modules regardless of the configs passed
-  config.substrate.finders.all = {
+  config.substrate.moduleFinders.all = {
     find = _cfgs: collectSubstrateModules config.substrate.modules;
   };
 }

@@ -5,19 +5,19 @@
 }:
 let
   testLib = import ../lib.nix { inherit pkgs; };
-  inherit (testLib) lib mkEvalSubstrate evalSubstrate runTests;
+  inherit (testLib)
+    lib
+    mkEvalSubstrate
+    evalSubstrate
+    runTests
+    ;
 
   # Rename the base evaluator for clarity
   evalSubstrateBase = evalSubstrate;
 
   # Evaluate substrate with home-manager extension
   evalSubstrateWithHM = mkEvalSubstrate [
-    ../../core/settings.nix
-    ../../core/lib.nix
-    ../../core/modules.nix
-    ../../core/finders.nix
-    ../../core/overlays.nix
-    ../../core/packages.nix
+    ../../core
     ../../extensions/home-manager/default.nix
   ];
 
@@ -67,7 +67,9 @@ let
           eval = evalSubstrateWithHM [
             {
               config.substrate.modules.programs.test = {
-                homeManager = { programs.git.enable = true; };
+                homeManager = {
+                  programs.git.enable = true;
+                };
               };
             }
           ];
@@ -75,18 +77,29 @@ let
         eval.config.substrate.modules.programs.test.homeManager != null;
     };
 
-    # Test 6: extractClassModules works for homeManager
-    extractClassModulesHomeManager = {
+    # Test 6: findModulesForClass works for homeManager
+    findModulesForClassHomeManager = {
       check =
         let
-          eval = evalSubstrateWithHM [ ];
-          extractClassModules = eval.config.substrate.lib.extractClassModules;
-          mods = [
-            { nixos = null; homeManager = { config = { }; }; }
-            { nixos = { }; homeManager = null; }
+          eval = evalSubstrateWithHM [
+            {
+              config.substrate.modules.programs.test1 = {
+                nixos = null;
+                homeManager = {
+                  config = { };
+                };
+              };
+            }
+            {
+              config.substrate.modules.programs.test2 = {
+                nixos = { };
+                homeManager = null;
+              };
+            }
           ];
+          findModulesForClass = eval.config.substrate.lib.findModulesForClass;
         in
-        lib.length (extractClassModules "homeManager" mods) == 1;
+        lib.length (findModulesForClass "homeManager" [ ]) == 1;
     };
 
     # Test 7: Both nixos and homeManager can coexist
@@ -96,8 +109,12 @@ let
           eval = evalSubstrateWithHM [
             {
               config.substrate.modules.programs.git = {
-                nixos = { programs.git.enable = true; };
-                homeManager = { programs.git.userName = "test"; };
+                nixos = {
+                  programs.git.enable = true;
+                };
+                homeManager = {
+                  programs.git.userName = "test";
+                };
               };
             }
           ];
@@ -118,4 +135,3 @@ let
   };
 in
 runTests "Home-Manager Extension Tests" tests
-
