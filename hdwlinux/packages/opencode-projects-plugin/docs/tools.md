@@ -2,7 +2,7 @@
 
 ## Project Tools
 
-### project_create
+### project-create
 
 Create a new project with optional initial structure.
 
@@ -17,7 +17,7 @@ Create a new project with optional initial structure.
 
 ---
 
-### project_list
+### project-list
 
 List all projects with optional filtering.
 
@@ -31,7 +31,7 @@ List all projects with optional filtering.
 
 ---
 
-### project_status
+### project-status
 
 Get detailed status of a project including issue tree.
 
@@ -44,7 +44,7 @@ Get detailed status of a project including issue tree.
 
 ---
 
-### project_focus
+### project-focus
 
 Set or clear project/issue focus.
 
@@ -59,7 +59,7 @@ Set or clear project/issue focus.
 
 ---
 
-### project_plan
+### project-plan
 
 Start or continue planning sessions.
 
@@ -74,7 +74,7 @@ Start or continue planning sessions.
 
 ---
 
-### project_close
+### project-close
 
 Close a project.
 
@@ -90,7 +90,7 @@ Close a project.
 
 ## Issue Tools
 
-### issue_create
+### project-create-issue
 
 Create a new issue within a project.
 
@@ -109,7 +109,7 @@ Create a new issue within a project.
 
 ---
 
-### issue_claim
+### project-claim-issue
 
 Claim an issue to work on, optionally in an isolated worktree.
 
@@ -125,7 +125,7 @@ Claim an issue to work on, optionally in an isolated worktree.
 
 ---
 
-### issue_update
+### project-update-issue
 
 Update issue fields including status.
 
@@ -151,7 +151,7 @@ Update issue fields including status.
 
 ## Delegation Tools
 
-### delegation_read
+### project-internal-delegation-read
 
 Read the result of a completed delegation.
 

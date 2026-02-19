@@ -26,7 +26,7 @@ export class ProjectNotFoundError extends ProjectsPluginError {
       `Project '${projectId}' not found`,
       "PROJECT_NOT_FOUND",
       true,
-      "Use `project_list` to see available projects, or `project_create` to create a new one."
+      "Use `project-list` to see available projects, or `project-create` to create a new one."
     )
     this.name = "ProjectNotFoundError"
   }
@@ -42,7 +42,7 @@ export class IssueNotFoundError extends ProjectsPluginError {
       `Issue '${issueId}' not found${context}`,
       "ISSUE_NOT_FOUND",
       true,
-      "Use `project_status` to see available issues."
+      "Use `project-status` to see available issues."
     )
     this.name = "IssueNotFoundError"
   }
@@ -117,7 +117,7 @@ export class NoProjectFocusedError extends ProjectsPluginError {
       "No project is currently focused",
       "NO_PROJECT_FOCUSED",
       true,
-      "Use `project_focus(projectId)` to set context, or provide projectId explicitly."
+      "Use `project-focus(projectId)` to set context, or provide projectId explicitly."
     )
     this.name = "NoProjectFocusedError"
   }

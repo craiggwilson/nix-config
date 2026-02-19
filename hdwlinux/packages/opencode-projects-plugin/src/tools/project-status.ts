@@ -1,5 +1,5 @@
 /**
- * project_status tool - Show project progress and blockers
+ * project-status tool - Show project progress and blockers
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -13,7 +13,7 @@ interface ProjectStatusArgs {
 }
 
 /**
- * Create the project_status tool
+ * Create the project-status tool
  */
 export function createProjectStatus(deps: ToolDepsV2) {
   const { projectManager, log } = deps
@@ -41,7 +41,7 @@ If no projectId is provided, uses the currently focused project.`,
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
-        return "No project specified and no project is currently focused.\n\nUse `project_list` to see available projects, then `project_focus(projectId)` to set context."
+        return "No project specified and no project is currently focused.\n\nUse `project-list` to see available projects, then `project-focus(projectId)` to set context."
       }
 
       await log.info(`Getting status for project: ${projectId}`)
@@ -50,7 +50,7 @@ If no projectId is provided, uses the currently focused project.`,
       const status = await projectManager.getProjectStatus(projectId)
 
       if (!status) {
-        return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+        return `Project '${projectId}' not found.\n\nUse \`project-list\` to see available projects.`
       }
 
       const { metadata, issueStatus } = status
@@ -160,9 +160,9 @@ If no projectId is provided, uses the currently focused project.`,
       lines.push("---")
       lines.push("")
       lines.push("**Actions:**")
-      lines.push("- `issue_claim(issueId)` - Start work on an issue")
-      lines.push("- `issue_create(title)` - Add a new issue")
-      lines.push("- `project_plan` - Continue planning")
+      lines.push("- `project-claim-issue(issueId)` - Start work on an issue")
+      lines.push("- `project-create-issue(title)` - Add a new issue")
+      lines.push("- `project-plan` - Continue planning")
 
       return lines.join("\n")
     },

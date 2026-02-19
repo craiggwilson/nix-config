@@ -5,7 +5,7 @@
 ### 1. Create the Project
 
 ```
-project_create(name="auth-system", description="User authentication and authorization")
+project-create(name="auth-system", description="User authentication and authorization")
 ```
 
 This creates:
@@ -16,7 +16,7 @@ This creates:
 ### 2. Start Planning
 
 ```
-project_plan(action="start", phase="discovery")
+project-plan(action="start", phase="discovery")
 ```
 
 The planning interview will ask about:
@@ -36,7 +36,7 @@ After completing the interview, artifacts are generated:
 ### 4. Break Down into Issues
 
 ```
-project_plan(action="start", phase="breakdown")
+project-plan(action="start", phase="breakdown")
 ```
 
 This creates issues from the roadmap with proper dependencies.
@@ -48,7 +48,7 @@ This creates issues from the roadmap with proper dependencies.
 ### 1. View Available Work
 
 ```
-project_status()
+project-status()
 ```
 
 Shows the issue tree with status icons:
@@ -60,7 +60,7 @@ Shows the issue tree with status icons:
 ### 2. Claim an Issue
 
 ```
-issue_claim(issueId="auth-system.2")
+project-claim-issue(issueId="auth-system.2")
 ```
 
 This:
@@ -71,7 +71,7 @@ This:
 ### 3. Work in Isolation (Optional)
 
 ```
-issue_claim(issueId="auth-system.2", isolated=true)
+project-claim-issue(issueId="auth-system.2", isolated=true)
 ```
 
 Creates a worktree at `../repo-worktrees/auth-system/auth-system.2/` where you can work without affecting the main branch.
@@ -79,7 +79,7 @@ Creates a worktree at `../repo-worktrees/auth-system/auth-system.2/` where you c
 ### 4. Complete the Issue
 
 ```
-issue_update(
+project-update-issue(
   issueId="auth-system.2",
   status="closed",
   comment="Implemented login flow with OAuth support",
@@ -100,7 +100,7 @@ This:
 ### 1. Delegate to Background Agent
 
 ```
-issue_claim(issueId="auth-system.3", isolated=true, delegate=true)
+project-claim-issue(issueId="auth-system.3", isolated=true, delegate=true)
 ```
 
 This:
@@ -111,7 +111,7 @@ This:
 ### 2. Check Delegation Status
 
 ```
-project_status()
+project-status()
 ```
 
 Shows active delegations and their status.
@@ -124,7 +124,7 @@ When the delegation completes:
 - Merge when ready:
 
 ```
-issue_update(issueId="auth-system.3", status="closed", mergeWorktree=true)
+project-update-issue(issueId="auth-system.3", status="closed", mergeWorktree=true)
 ```
 
 ---
@@ -134,14 +134,14 @@ issue_update(issueId="auth-system.3", status="closed", mergeWorktree=true)
 ### Create Dependent Issues
 
 ```
-issue_create(title="Implement login", blockedBy=["auth-system.1"])
-issue_create(title="Implement logout", blockedBy=["auth-system.1"])
+project-create-issue(title="Implement login", blockedBy=["auth-system.1"])
+project-create-issue(title="Implement logout", blockedBy=["auth-system.1"])
 ```
 
 ### View Dependency Tree
 
 ```
-project_status()
+project-status()
 ```
 
 Output:
@@ -156,7 +156,7 @@ Output:
 When you close a blocking issue, dependent issues become ready:
 
 ```
-issue_update(issueId="auth-system.1", status="closed")
+project-update-issue(issueId="auth-system.1", status="closed")
 ```
 
 Now `auth-system.2` and `auth-system.3` are unblocked.
@@ -168,13 +168,13 @@ Now `auth-system.2` and `auth-system.3` are unblocked.
 ### Switch Between Projects
 
 ```
-project_focus(projectId="other-project")
+project-focus(projectId="other-project")
 ```
 
 ### View All Projects
 
 ```
-project_list()
+project-list()
 ```
 
 ### Work Across Projects

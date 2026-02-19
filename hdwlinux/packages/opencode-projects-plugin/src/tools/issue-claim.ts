@@ -1,5 +1,5 @@
 /**
- * issue_claim tool - Claim an issue and optionally start isolated work
+ * project-claim-issue tool - Claim an issue and optionally start isolated work
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -17,7 +17,7 @@ interface IssueClaimArgs {
 }
 
 /**
- * Create the issue_claim tool
+ * Create the project-claim-issue tool
  */
 export function createIssueClaim(deps: ToolDepsV2) {
   const { client, projectManager, log, $, delegationManager } = deps
@@ -54,7 +54,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
       const projectId = projectManager.getFocusedProjectId()
 
       if (!projectId) {
-        return "No project is currently focused.\n\nUse `project_focus(projectId)` to set context before claiming issues."
+        return "No project is currently focused.\n\nUse `project-focus(projectId)` to set context before claiming issues."
       }
 
       await log.info(`Claiming issue ${issueId} in project ${projectId}`)
@@ -63,12 +63,12 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
       const issue = await projectManager.getIssue(projectId, issueId)
 
       if (!issue) {
-        return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project_status\` to see available issues.`
+        return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project-status\` to see available issues.`
       }
 
 
       if (issue.status === "in_progress") {
-        return `Issue '${issueId}' is already in progress${issue.assignee ? ` (assigned to ${issue.assignee})` : ""}.\n\nUse \`project_status\` to see other available issues.`
+        return `Issue '${issueId}' is already in progress${issue.assignee ? ` (assigned to ${issue.assignee})` : ""}.\n\nUse \`project-status\` to see other available issues.`
       }
 
 
@@ -143,7 +143,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
                 lines.push("You will be notified via `<delegation-notification>` when complete.")
                 lines.push("Continue with other work - do NOT poll for status.")
                 lines.push("")
-                lines.push("Use `delegation_read(id)` to retrieve results after compaction.")
+                lines.push("Use `project-internal-delegation-read(id)` to retrieve results after compaction.")
               } else if (delegate && !delegationManager) {
                 lines.push("")
                 lines.push("### Background Delegation")
@@ -172,7 +172,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
         lines.push("- Use `bd update <id> --status closed` when complete")
       }
 
-      lines.push("- `project_status` - Check project progress")
+      lines.push("- `project-status` - Check project progress")
 
       return lines.join("\n")
     },

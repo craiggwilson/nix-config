@@ -9,34 +9,34 @@ export const PROJECT_RULES = `<project-management-system>
 You have access to project planning and tracking tools:
 
 ### Project Tools
-- \`project_create(name, type?, workspace?, storage?, description?)\` - Create a new project and start planning
-- \`project_list(scope?, status?)\` - List all projects
-- \`project_status(projectId?, format?)\` - Show project progress and blockers
-- \`project_focus(projectId?, issueId?, clear?)\` - Set/get current project context
-- \`project_plan(projectId?, phase?, focus?)\` - Continue or refine project planning
-- \`project_close(projectId, reason?, summary?)\` - Close a project
+- \`project-create(name, type?, workspace?, storage?, description?)\` - Create a new project and start planning
+- \`project-list(scope?, status?)\` - List all projects
+- \`project-status(projectId?, format?)\` - Show project progress and blockers
+- \`project-focus(projectId?, issueId?, clear?)\` - Set/get current project context
+- \`project-plan(projectId?, phase?, focus?)\` - Continue or refine project planning
+- \`project-close(projectId, reason?, summary?)\` - Close a project
 
 ### Issue Tools
-- \`issue_create(title, projectId?, description?, priority?, parent?, blockedBy?, labels?)\` - Create a beads issue
-- \`issue_claim(issueId, isolate?, delegate?)\` - Claim an issue and optionally start isolated work
-- \`issue_update(issueId, status?, ...)\` - Update issue status and fields
+- \`project-create-issue(title, projectId?, description?, priority?, parent?, blockedBy?, labels?)\` - Create a beads issue
+- \`project-claim-issue(issueId, isolate?, delegate?)\` - Claim an issue and optionally start isolated work
+- \`project-update-issue(issueId, status?, ...)\` - Update issue status and fields
 
 ### Delegation Tools
-- \`delegation_read(id)\` - Read delegation results by ID
+- \`project-internal-delegation-read(id)\` - Read delegation results by ID
 
 ## Workflow Guidelines
 
 ### Starting a New Project
-1. Use \`project_create\` to initialize the project
+1. Use \`project-create\` to initialize the project
 2. Engage in conversational discovery to understand scope
-3. Use \`project_plan\` to refine and break down work
+3. Use \`project-plan\` to refine and break down work
 4. Issues are automatically created in beads
 
 ### Working on Issues
-1. Use \`project_focus\` to set context
-2. Use \`project_status\` to see ready work
-3. Use \`issue_claim\` to start work
-4. For parallel work, use \`issue_claim(id, isolate=true, delegate=true)\`
+1. Use \`project-focus\` to set context
+2. Use \`project-status\` to see ready work
+3. Use \`project-claim-issue\` to start work
+4. For parallel work, use \`project-claim-issue(id, isolate=true, delegate=true)\`
 
 ### Project Types
 - **Roadmap** (6+ months): Strategic planning with milestones, risks, architecture
@@ -88,7 +88,7 @@ When all delegations complete:
 ### Disabled Tools in Delegations
 
 Delegated agents cannot use state-modifying tools:
-- project_create, project_close, issue_create, issue_update, issue_claim
+- project-create, project-close, project-create-issue, project-update-issue, project-claim-issue
 - task, delegate (no recursive delegation)
 
 </project-management-system>`

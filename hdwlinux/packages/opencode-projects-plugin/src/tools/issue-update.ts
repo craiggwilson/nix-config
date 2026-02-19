@@ -1,5 +1,5 @@
 /**
- * issue_update tool - Update issue fields including status
+ * project-update-issue tool - Update issue fields including status
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -25,7 +25,7 @@ interface IssueUpdateArgs {
 }
 
 /**
- * Create the issue_update tool
+ * Create the project-update-issue tool
  */
 export function createIssueUpdate(deps: ToolDepsV2) {
   const { projectManager, log, $ } = deps
@@ -108,7 +108,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
-        return "No project specified and no project is currently focused.\n\nUse `project_focus(projectId)` to set context, or provide projectId explicitly."
+        return "No project specified and no project is currently focused.\n\nUse `project-focus(projectId)` to set context, or provide projectId explicitly."
       }
 
       await log.info(`Updating issue ${issueId} in project ${projectId}`)
@@ -117,7 +117,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
       const issue = await projectManager.getIssue(projectId, issueId)
 
       if (!issue) {
-        return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project_status\` to see available issues.`
+        return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project-status\` to see available issues.`
       }
 
 
@@ -243,7 +243,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         lines.push("")
         lines.push("---")
         lines.push("")
-        lines.push("**Issue closed.** Use `project_status` to see remaining work.")
+        lines.push("**Issue closed.** Use `project-status` to see remaining work.")
       } else if (comment) {
 
         await projectManager.addIssueComment(projectId, issueId, comment)
@@ -253,7 +253,7 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         lines.push("")
         lines.push("---")
         lines.push("")
-        lines.push("**Issue in progress.** Use `issue_update(status='closed')` when complete.")
+        lines.push("**Issue in progress.** Use `project-update-issue(status='closed')` when complete.")
       }
 
       return lines.join("\n")

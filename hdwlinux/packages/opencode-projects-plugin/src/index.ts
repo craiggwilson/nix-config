@@ -86,16 +86,16 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
   return {
     tool: {
-      project_create: createProjectCreate(toolDeps),
-      project_list: createProjectList(toolDeps),
-      project_status: createProjectStatus(toolDeps),
-      project_focus: createProjectFocus(toolDeps),
-      project_plan: createProjectPlan(toolDeps),
-      project_close: createProjectClose(toolDeps),
-      issue_create: createIssueCreate(toolDeps),
-      issue_claim: createIssueClaim(toolDeps),
-      issue_update: createIssueUpdate(toolDeps),
-      delegation_read: createDelegationRead(toolDeps),
+      "project-create": createProjectCreate(toolDeps),
+      "project-list": createProjectList(toolDeps),
+      "project-status": createProjectStatus(toolDeps),
+      "project-focus": createProjectFocus(toolDeps),
+      "project-plan": createProjectPlan(toolDeps),
+      "project-close": createProjectClose(toolDeps),
+      "project-create-issue": createIssueCreate(toolDeps),
+      "project-claim-issue": createIssueClaim(toolDeps),
+      "project-update-issue": createIssueUpdate(toolDeps),
+      "project-internal-delegation-read": createDelegationRead(toolDeps),
     },
 
     "experimental.chat.system.transform": async (_input, output) => {
@@ -276,11 +276,11 @@ async function buildCompactionContext(projectManager: ProjectManager): Promise<s
 
   sections.push("")
   sections.push("## Quick Reference")
-  sections.push("- `project_status` - Full project state")
-  sections.push("- `project_focus` - Change focus")
-  sections.push("- `issue_claim` - Start work on an issue")
-  sections.push("- `issue_update` - Update/close an issue")
-  sections.push("- `delegation_read` - Read delegation results")
+  sections.push("- `project-status` - Full project state")
+  sections.push("- `project-focus` - Change focus")
+  sections.push("- `project-claim-issue` - Start work on an issue")
+  sections.push("- `project-update-issue` - Update/close an issue")
+  sections.push("- `project-internal-delegation-read` - Read delegation results")
   sections.push("</project-compaction-context>")
 
   return sections.join("\n")
@@ -307,7 +307,7 @@ function buildDelegationCompactionContext(delegations: Delegation[]): string {
 
   lines.push("> You will be notified via `<delegation-notification>` when delegations complete.")
   lines.push("> Do NOT poll for status - continue productive work.")
-  lines.push("> Use `delegation_read(id)` to retrieve results after compaction.")
+  lines.push("> Use `project-internal-delegation-read(id)` to retrieve results after compaction.")
   lines.push("</delegation-context>")
 
   return lines.join("\n")

@@ -136,7 +136,7 @@ User Request
     │
     ▼
 ┌─────────┐
-│  Tool   │ ◄── project_create, issue_claim, etc.
+│  Tool   │ ◄── project-create, project-claim-issue, etc.
 └────┬────┘
      │
      ▼
@@ -244,8 +244,8 @@ Delegations are scoped to the root session (top of the parent chain):
 ### Disabled Tools
 
 Delegated sessions cannot use state-modifying tools:
-- `project_create`, `project_close`
-- `issue_create`, `issue_update`, `issue_claim`
+- `project-create`, `project-close`
+- `project-create-issue`, `project-update-issue`, `project-claim-issue`
 - `task`, `delegate` (no recursive delegation)
 - `todowrite`, `plan_save`
 

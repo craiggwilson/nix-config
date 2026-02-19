@@ -1,5 +1,5 @@
 /**
- * delegation_read tool - Read delegation results
+ * project-internal-delegation-read tool - Read delegation results
  *
  * Retrieves the result of a completed delegation by ID.
  * Useful after session compaction when delegation notifications
@@ -18,7 +18,7 @@ interface DelegationReadArgs {
 }
 
 /**
- * Create the delegation_read tool
+ * Create the project-internal-delegation-read tool
  */
 export function createDelegationRead(deps: ToolDepsV2) {
   const { projectManager, log } = deps
@@ -45,7 +45,7 @@ Returns the full delegation result including metadata, prompt, and output.`,
       const projectId = args.projectId || projectManager.getFocusedProjectId()
 
       if (!projectId) {
-        return "No project specified and no project is currently focused.\n\nUse `project_focus(projectId)` to set context, or provide projectId explicitly."
+        return "No project specified and no project is currently focused.\n\nUse `project-focus(projectId)` to set context, or provide projectId explicitly."
       }
 
       const projectDir = await projectManager.getProjectDir(projectId)
@@ -142,7 +142,7 @@ Possible reasons:
 - The delegation was created in a different project
 - The delegation has not been persisted yet (still running)
 
-Use \`project_status\` to see active delegations.`
+Use \`project-status\` to see active delegations.`
     },
   })
 }

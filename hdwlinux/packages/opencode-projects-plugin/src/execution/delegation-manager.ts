@@ -73,11 +73,11 @@ const DISABLED_TOOLS: Record<string, boolean> = {
   // Prevent state modifications
   todowrite: false,
   plan_save: false,
-  project_create: false,
-  project_close: false,
-  issue_create: false,
-  issue_update: false,
-  issue_claim: false,
+  "project-create": false,
+  "project-close": false,
+  "project-create-issue": false,
+  "project-update-issue": false,
+  "project-claim-issue": false,
 }
 
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes
@@ -717,7 +717,7 @@ Respond with ONLY valid JSON:
     lines.push("## Constraints")
     lines.push("")
     lines.push("You are running as a background delegation. The following tools are disabled:")
-    lines.push("- project_create, project_close, issue_create, issue_update, issue_claim")
+    lines.push("- project-create, project-close, project-create-issue, project-update-issue, project-claim-issue")
     lines.push("- task, delegate (no recursive delegation)")
     lines.push("")
     lines.push("Focus on completing the assigned task. Do not create new issues or projects.")
