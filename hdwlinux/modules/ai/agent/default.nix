@@ -57,8 +57,8 @@
             type = extraMetaType;
             default = { };
           };
-          content = lib.mkOption {
-            description = "Path to the markdown file containing the content.";
+          prompt = lib.mkOption {
+            description = "Path to the markdown file containing the prompt.";
             type = lib.types.path;
           };
         };
@@ -75,7 +75,7 @@
             model = lib.mkOption {
               description = "The model to use for this agent.";
               type = lib.types.str;
-              default = "opus4.5";
+              default = "";
             };
             tools = lib.mkOption {
               description = "Tools with their permission levels. Key is tool name, value is permission.";

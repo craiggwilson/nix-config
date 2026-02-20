@@ -48,7 +48,7 @@
             description = agent.description;
             mode = agent.mode;
             model = resolveModel agent.model;
-            prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.content)}}";
+            prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.prompt)}}";
           }
           // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
           // lib.optionalAttrs (agent.extraMeta ? color) { color = agent.extraMeta.color; }
@@ -58,7 +58,7 @@
         # Uses {file:path} syntax for OpenCode's variable substitution
         commandConfig = lib.mapAttrs (_: command: {
           description = command.description;
-          template = "{file:${builtins.unsafeDiscardStringContext (toString command.content)}}";
+          template = "{file:${builtins.unsafeDiscardStringContext (toString command.prompt)}}";
         }) config.hdwlinux.ai.agent.commands;
 
         # Build a derivation containing symlinks to all skills
@@ -73,7 +73,7 @@
         # Collect all rules as direct file paths for OpenCode's instructions config
         # Uses absolute paths to source files in the nix store
         ruleInstructions = lib.mapAttrsToList (
-          _: rule: builtins.unsafeDiscardStringContext (toString rule.content)
+          _: rule: builtins.unsafeDiscardStringContext (toString rule.prompt)
         ) config.hdwlinux.ai.agent.rules;
 
         providers =

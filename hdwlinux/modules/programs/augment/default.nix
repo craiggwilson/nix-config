@@ -47,7 +47,7 @@
               ---
 
             '';
-            content = builtins.readFile agent.content;
+            content = builtins.readFile agent.prompt;
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
@@ -65,7 +65,7 @@
               ---
 
             '';
-            content = builtins.readFile item.content;
+            content = builtins.readFile item.prompt;
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
