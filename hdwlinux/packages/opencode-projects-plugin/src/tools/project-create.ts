@@ -4,7 +4,8 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
+import type { ToolDeps, ProjectToolContext } from "../core/types.js"
+import { formatError } from "../core/errors.js"
 
 interface ProjectCreateArgs {
   name: string
@@ -20,7 +21,7 @@ interface ProjectCreateArgs {
  * @param deps - Tool dependencies including ProjectManager and logger
  * @returns OpenCode tool definition
  */
-export function createProjectCreate(deps: ToolDepsV2) {
+export function createProjectCreate(deps: ToolDeps) {
   const { projectManager, log } = deps
 
   return tool({
@@ -100,7 +101,7 @@ Use this when starting a new initiative, feature, or long-term effort.`,
 
         return lines.join("\n")
       } catch (error) {
-        return `Failed to create project: ${error}`
+        return formatError(error)
       }
     },
   })

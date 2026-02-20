@@ -157,9 +157,9 @@
           command = commandConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;
-          small_model = "augment/claude-haiku-4-5";
+          small_model = resolveModel "small";
           plugin = [
-            #"file://${pkgs.hdwlinux.opencode-projects-plugin}/lib/node_modules/opencode-projects"
+            "file://${config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/packages/opencode-projects-plugin"}"
           ];
           keybinds = {
             "app_exit" = "ctrl+q";

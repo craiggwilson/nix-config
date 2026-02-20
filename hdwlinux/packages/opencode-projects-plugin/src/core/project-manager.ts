@@ -12,23 +12,19 @@ import * as crypto from "node:crypto"
 import type { IssueStorage, Issue, CreateIssueOptions, ProjectStatus } from "../storage/index.js"
 import type { FocusManager } from "./focus-manager.js"
 import type { ConfigManager } from "./config-manager.js"
-import type { Logger, OpencodeClient } from "./types.js"
-import {
-  InterviewManager,
-  ArtifactManager,
-  PlanningDelegator,
-  type InterviewSession,
-  type InterviewSummary,
-  type ArtifactType,
-  type ArtifactMetadata,
-  type RoadmapContent,
-  type ArchitectureContent,
-  type RisksContent,
-  type SuccessCriteriaContent,
-  type PlanningPhase,
-  type AgentInfo,
-  type DelegationResult,
-} from "../planning/index.js"
+import type {
+  Logger,
+  OpencodeClient,
+  PlanningState,
+  PlanningPhase,
+  PlanningUnderstanding,
+  BunShell,
+  VCSType,
+} from "./types.js"
+import { PlanningManager } from "../planning/index.js"
+import { IssueManager, type UpdateIssueOptions, type CompletionCommentOptions } from "./issue-manager.js"
+import { WorktreeManager } from "../execution/worktree-manager.js"
+import type { DelegationManager, Delegation } from "../execution/delegation-manager.js"
 
 /**
  * Project metadata stored in project.json
@@ -94,7 +90,34 @@ export interface ProjectManagerDeps {
   focus: FocusManager
   log: Logger
   repoRoot: string
-  client?: OpencodeClient 
+  client?: OpencodeClient
+  $?: BunShell
+  delegationManager?: DelegationManager
+}
+
+/**
+ * Options for starting work on an issue
+ */
+export interface StartWorkOptions {
+  /** Create isolated worktree for code changes */
+  isolate?: boolean
+  /** Agent to use for delegation (auto-selected if not specified) */
+  agent?: string
+  /** Parent session ID for notifications */
+  parentSessionId?: string
+}
+
+/**
+ * Result of starting work on an issue
+ */
+export interface StartWorkResult {
+  success: boolean
+  issue: Issue
+  delegation?: Delegation
+  worktreePath?: string
+  worktreeBranch?: string
+  vcs?: VCSType
+  error?: string
 }
 
 /**
@@ -117,11 +140,13 @@ function generateProjectId(name: string): string {
 export class ProjectManager {
   private config: ConfigManager
   private issueStorage: IssueStorage
+  private issueManager: IssueManager
   private focus: FocusManager
   private log: Logger
   private repoRoot: string
   private client?: OpencodeClient
-  private planningDelegator?: PlanningDelegator
+  private $?: BunShell
+  private delegationManager?: DelegationManager
 
   constructor(deps: ProjectManagerDeps) {
     this.config = deps.config
@@ -130,10 +155,29 @@ export class ProjectManager {
     this.log = deps.log
     this.repoRoot = deps.repoRoot
     this.client = deps.client
+    this.$ = deps.$
+    this.delegationManager = deps.delegationManager
 
-    if (this.client) {
-      this.planningDelegator = new PlanningDelegator(this.client, this.log)
-    }
+    // Create IssueManager with shared dependencies
+    this.issueManager = new IssueManager({
+      issueStorage: deps.issueStorage,
+      focus: deps.focus,
+      log: deps.log,
+    })
+  }
+
+  /**
+   * Get the IssueManager instance for direct issue operations
+   */
+  getIssueManager(): IssueManager {
+    return this.issueManager
+  }
+
+  /**
+   * Set the delegation manager (for late binding)
+   */
+  setDelegationManager(delegationManager: DelegationManager): void {
+    this.delegationManager = delegationManager
   }
 
   /**
@@ -318,7 +362,7 @@ export class ProjectManager {
       }
     }
 
-    return this.issueStorage.createIssue(projectDir, title, effectiveOptions)
+    return this.issueManager.createIssue(projectDir, title, effectiveOptions)
   }
 
   /**
@@ -328,7 +372,7 @@ export class ProjectManager {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return null
 
-    return this.issueStorage.getIssue(issueId, projectDir)
+    return this.issueManager.getIssue(projectDir, issueId)
   }
 
   /**
@@ -338,7 +382,7 @@ export class ProjectManager {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return []
 
-    return this.issueStorage.listIssues(projectDir)
+    return this.issueManager.listIssues(projectDir)
   }
 
   /**
@@ -348,7 +392,7 @@ export class ProjectManager {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return []
 
-    return this.issueStorage.getReadyIssues(projectDir)
+    return this.issueManager.getReadyIssues(projectDir)
   }
 
   /**
@@ -358,14 +402,7 @@ export class ProjectManager {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return false
 
-    const claimed = await this.issueStorage.claimIssue(issueId, projectDir, assignee)
-
-    if (claimed) {
-
-      this.focus.setIssueFocus(issueId)
-    }
-
-    return claimed
+    return this.issueManager.claimIssue(projectDir, issueId, assignee)
   }
 
   /**
@@ -374,26 +411,12 @@ export class ProjectManager {
   async updateIssue(
     projectId: string,
     issueId: string,
-    options: {
-      status?: "open" | "in_progress" | "closed"
-      assignee?: string
-      priority?: number
-      description?: string
-      labels?: string[]
-      blockedBy?: string[]
-    }
+    options: UpdateIssueOptions
   ): Promise<boolean> {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return false
 
-    const updated = await this.issueStorage.updateIssue(issueId, projectDir, options)
-    if (updated && options.status === "closed") {
-      if (this.focus.getIssueId() === issueId) {
-        this.focus.clearIssueFocus()
-      }
-    }
-
-    return updated
+    return this.issueManager.updateIssue(projectDir, issueId, options)
   }
 
   /**
@@ -403,7 +426,7 @@ export class ProjectManager {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return false
 
-    return this.issueStorage.addComment(issueId, projectDir, comment)
+    return this.issueManager.addComment(projectDir, issueId, comment)
   }
 
   /**
@@ -412,35 +435,156 @@ export class ProjectManager {
   async addCompletionComment(
     projectId: string,
     issueId: string,
-    options: {
-      summary?: string
-      artifacts?: string[]
-      mergeCommit?: string
-    }
+    options: CompletionCommentOptions
   ): Promise<boolean> {
-    const lines: string[] = []
+    const projectDir = await this.findProjectDir(projectId)
+    if (!projectDir) return false
 
-    lines.push("[COMPLETED]")
+    return this.issueManager.addCompletionComment(projectDir, issueId, options)
+  }
 
-    if (options.summary) {
-      lines.push("")
-      lines.push(options.summary)
-    }
+  /**
+   * Start work on an issue with a background agent.
+   *
+   * This method:
+   * 1. Validates the issue exists and is not already in progress
+   * 2. Optionally creates an isolated worktree (if isolate=true)
+   * 3. Claims the issue (sets status to in_progress)
+   * 4. Creates a delegation to a background agent
+   * 5. Stores delegation metadata on the issue
+   *
+   * @param projectId - Project ID
+   * @param issueId - Issue ID to work on
+   * @param options - Options for starting work
+   * @returns Result with delegation info or error
+   */
+  async startWorkOnIssue(
+    projectId: string,
+    issueId: string,
+    options: StartWorkOptions = {}
+  ): Promise<StartWorkResult> {
+    const { isolate = false, agent, parentSessionId } = options
 
-    if (options.mergeCommit) {
-      lines.push("")
-      lines.push(`Merge commit: ${options.mergeCommit}`)
-    }
-
-    if (options.artifacts && options.artifacts.length > 0) {
-      lines.push("")
-      lines.push("Artifacts:")
-      for (const artifact of options.artifacts) {
-        lines.push(`- ${artifact}`)
+    // Validate delegation manager is available
+    if (!this.delegationManager) {
+      return {
+        success: false,
+        issue: { id: issueId, title: "", status: "open", priority: 2, createdAt: "", updatedAt: "" },
+        error: "Delegation manager not available. Cannot start background work.",
       }
     }
 
-    return this.addIssueComment(projectId, issueId, lines.join("\n"))
+    // Get project directory
+    const projectDir = await this.findProjectDir(projectId)
+    if (!projectDir) {
+      return {
+        success: false,
+        issue: { id: issueId, title: "", status: "open", priority: 2, createdAt: "", updatedAt: "" },
+        error: `Project '${projectId}' not found.`,
+      }
+    }
+
+    // Get the issue
+    const issue = await this.issueManager.getIssue(projectDir, issueId)
+    if (!issue) {
+      return {
+        success: false,
+        issue: { id: issueId, title: "", status: "open", priority: 2, createdAt: "", updatedAt: "" },
+        error: `Issue '${issueId}' not found in project '${projectId}'.`,
+      }
+    }
+
+    // Check if already in progress
+    if (issue.status === "in_progress") {
+      return {
+        success: false,
+        issue,
+        error: `Issue '${issueId}' is already in progress${issue.assignee ? ` (assigned to ${issue.assignee})` : ""}.`,
+      }
+    }
+
+    await this.log.info(`Starting work on issue ${issueId} in project ${projectId} (isolate=${isolate})`)
+
+    // Variables for worktree (only used if isolate=true)
+    let worktreePath: string | undefined
+    let worktreeBranch: string | undefined
+    let vcs: VCSType | undefined
+
+    // Create worktree if isolate=true
+    if (isolate) {
+      if (!this.$) {
+        return {
+          success: false,
+          issue,
+          error: "Shell not available. Cannot create isolated worktree.",
+        }
+      }
+
+      const worktreeManager = new WorktreeManager(this.repoRoot, this.$, this.log)
+      const adapter = await worktreeManager.detectVCS()
+
+      if (!adapter) {
+        return {
+          success: false,
+          issue,
+          error: "No VCS detected (git or jj required). Cannot create isolated worktree.",
+        }
+      }
+
+      vcs = worktreeManager.getVCSType() || undefined
+
+      const worktreeResult = await worktreeManager.createIsolatedWorktree({
+        projectId,
+        issueId,
+      })
+
+      if (!worktreeResult.success || !worktreeResult.info) {
+        return {
+          success: false,
+          issue,
+          error: `Failed to create worktree: ${worktreeResult.error || "Unknown error"}`,
+        }
+      }
+
+      worktreePath = worktreeResult.info.path
+      worktreeBranch = worktreeResult.info.branch
+    }
+
+    // Claim the issue
+    const claimed = await this.issueManager.claimIssue(projectDir, issueId)
+    if (!claimed) {
+      return {
+        success: false,
+        issue,
+        error: `Failed to claim issue '${issueId}'. Check issue storage configuration.`,
+      }
+    }
+
+    // Create delegation
+    const delegation = await this.delegationManager.create(projectId, {
+      issueId,
+      prompt: `Work on issue: ${issue.title}\n\n${issue.description || ""}`,
+      worktreePath,
+      worktreeBranch,
+      vcs,
+      agent,
+      parentSessionId,
+    })
+
+    // Store delegation metadata on the issue
+    await this.issueManager.setDelegationMetadata(projectDir, issueId, {
+      delegationId: delegation.id,
+      delegationStatus: "running",
+    })
+
+    return {
+      success: true,
+      issue,
+      delegation,
+      worktreePath,
+      worktreeBranch,
+      vcs,
+    }
   }
 
   /**
@@ -471,246 +615,101 @@ export class ProjectManager {
     this.focus.clear()
   }
 
+  // ============================================================================
+  // Planning State Management (delegates to PlanningManager)
+  // ============================================================================
+
   /**
-   * Get an InterviewManager for a project
+   * Get a PlanningManager for a project
    */
-  async getInterviewManager(projectId: string): Promise<InterviewManager | null> {
+  async getPlanningManager(projectId: string): Promise<PlanningManager | null> {
     const projectDir = await this.findProjectDir(projectId)
     if (!projectDir) return null
 
-    return new InterviewManager(projectDir)
+    return new PlanningManager(projectDir, this.log)
   }
 
   /**
-   * Start a new interview session for a project
+   * Get the planning state for a project
    */
-  async startInterview(
-    projectId: string,
-    phase: "discovery" | "refinement" | "breakdown",
-    topic?: string
-  ): Promise<InterviewSession | null> {
-    const manager = await this.getInterviewManager(projectId)
+  async getPlanningState(projectId: string): Promise<PlanningState | null> {
+    const manager = await this.getPlanningManager(projectId)
     if (!manager) return null
 
-    return manager.startSession(projectId, phase, topic)
+    return manager.getState()
   }
 
   /**
-   * Resume an existing interview session
+   * Start or continue a planning session
    */
-  async resumeInterview(projectId: string, sessionId: string): Promise<InterviewSession | null> {
-    const manager = await this.getInterviewManager(projectId)
-    if (!manager) return null
-
-    return manager.resumeSession(sessionId)
-  }
-
-  /**
-   * Get the most recent active interview for a project
-   */
-  async getActiveInterview(projectId: string): Promise<InterviewSession | null> {
-    const manager = await this.getInterviewManager(projectId)
-    if (!manager) return null
-
-    return manager.getMostRecentActiveSession()
-  }
-
-  /**
-   * List all interviews for a project
-   */
-  async listInterviews(projectId: string): Promise<InterviewSummary[]> {
-    const manager = await this.getInterviewManager(projectId)
-    if (!manager) return []
-
-    return manager.listSessions()
-  }
-
-  /**
-   * Add an exchange to the current interview
-   */
-  async addInterviewExchange(
-    projectId: string,
-    role: "assistant" | "user",
-    content: string
-  ): Promise<boolean> {
-    const manager = await this.getInterviewManager(projectId)
-    if (!manager) return false
-    const session = await manager.getMostRecentActiveSession()
-    if (!session) return false
-
-    await manager.resumeSession(session.id)
-    await manager.addExchange(role, content)
-    return true
-  }
-
-  /**
-   * Complete the current interview
-   */
-  async completeInterview(projectId: string): Promise<boolean> {
-    const manager = await this.getInterviewManager(projectId)
-    if (!manager) return false
-
-    const session = await manager.getMostRecentActiveSession()
-    if (!session) return false
-
-    await manager.resumeSession(session.id)
-    await manager.completeSession()
-    return true
-  }
-
-  /**
-   * Get interview context for prompt injection
-   */
-  async getInterviewContext(projectId: string): Promise<string | null> {
-    const manager = await this.getInterviewManager(projectId)
-    if (!manager) return null
-
-    const session = await manager.getMostRecentActiveSession()
-    if (!session) return null
-
-    await manager.resumeSession(session.id)
-    return manager.getInterviewContext()
-  }
-
-  /**
-   * Get an ArtifactManager for a project
-   */
-  async getArtifactManager(projectId: string): Promise<ArtifactManager | null> {
-    const projectDir = await this.findProjectDir(projectId)
-    if (!projectDir) return null
-
-    return new ArtifactManager(projectDir)
-  }
-
-  /**
-   * List all artifacts for a project
-   */
-  async listArtifacts(projectId: string): Promise<ArtifactMetadata[]> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return []
-
-    return manager.listArtifacts()
-  }
-
-  /**
-   * Check if an artifact exists
-   */
-  async artifactExists(projectId: string, type: ArtifactType): Promise<boolean> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return false
-
-    return manager.artifactExists(type)
-  }
-
-  /**
-   * Read an artifact's content
-   */
-  async readArtifact(projectId: string, type: ArtifactType): Promise<string | null> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return null
-
-    return manager.readArtifact(type)
-  }
-
-  /**
-   * Generate a roadmap artifact
-   */
-  async generateRoadmap(projectId: string, content: RoadmapContent): Promise<string | null> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return null
-
-    return manager.generateRoadmap(content)
-  }
-
-  /**
-   * Generate an architecture artifact
-   */
-  async generateArchitecture(
-    projectId: string,
-    content: ArchitectureContent
-  ): Promise<string | null> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return null
-
-    return manager.generateArchitecture(content)
-  }
-
-  /**
-   * Generate a risks artifact
-   */
-  async generateRisks(projectId: string, content: RisksContent): Promise<string | null> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return null
-
-    return manager.generateRisks(content)
-  }
-
-  /**
-   * Generate a success criteria artifact
-   */
-  async generateSuccessCriteria(
-    projectId: string,
-    content: SuccessCriteriaContent
-  ): Promise<string | null> {
-    const manager = await this.getArtifactManager(projectId)
-    if (!manager) return null
-
-    return manager.generateSuccessCriteria(content)
-  }
-
-  /**
-   * Check if planning delegation is available
-   */
-  isDelegationAvailable(): boolean {
-    return !!this.planningDelegator
-  }
-
-  /**
-   * Discover available agents from the SDK
-   */
-  async discoverAgents(): Promise<AgentInfo[]> {
-    if (!this.planningDelegator) return []
-    return this.planningDelegator.listAgents()
-  }
-
-  /**
-   * Find the best agent for a planning task
-   * Returns null if no suitable agent is found
-   */
-  async findAgentForTask(phase: PlanningPhase, taskDescription: string): Promise<string | null> {
-    if (!this.planningDelegator) return null
-    return this.planningDelegator.findAgentForTask(phase, taskDescription)
-  }
-
-  /**
-   * Delegate planning work
-   *
-   * Discovers available agents and selects the best match for the phase.
-   * Falls back to letting OpenCode decide if no suitable agent is found.
-   */
-  async delegatePlanning(
-    projectId: string,
-    prompt: string,
-    options?: {
-      context?: string
-      phase?: PlanningPhase
-      preferredAgent?: string
-    }
-  ): Promise<DelegationResult> {
-    if (!this.planningDelegator) {
-      return {
-        success: false,
-        error: "Planning delegation not available (no client configured)",
-      }
+  async startOrContinuePlanning(projectId: string): Promise<PlanningState> {
+    const manager = await this.getPlanningManager(projectId)
+    if (!manager) {
+      throw new Error(`Project not found: ${projectId}`)
     }
 
-    return this.planningDelegator.delegate({
-      prompt,
-      context: options?.context,
-      projectId,
-      phase: options?.phase,
-      preferredAgent: options?.preferredAgent,
-    })
+    return manager.startOrContinue()
+  }
+
+  /**
+   * Advance to the next planning phase
+   */
+  async advancePlanningPhase(projectId: string): Promise<PlanningState> {
+    const manager = await this.getPlanningManager(projectId)
+    if (!manager) {
+      throw new Error(`Project not found: ${projectId}`)
+    }
+
+    return manager.advancePhase()
+  }
+
+  /**
+   * Jump to a specific planning phase
+   */
+  async setPlanningPhase(projectId: string, phase: PlanningPhase): Promise<PlanningState> {
+    const manager = await this.getPlanningManager(projectId)
+    if (!manager) {
+      throw new Error(`Project not found: ${projectId}`)
+    }
+
+    return manager.setPhase(phase)
+  }
+
+  /**
+   * Update the planning understanding
+   */
+  async updatePlanningUnderstanding(
+    projectId: string,
+    updates: Partial<PlanningUnderstanding>
+  ): Promise<PlanningState> {
+    const manager = await this.getPlanningManager(projectId)
+    if (!manager) {
+      throw new Error(`Project not found: ${projectId}`)
+    }
+
+    return manager.updateUnderstanding(updates)
+  }
+
+  /**
+   * Update open questions
+   */
+  async updateOpenQuestions(projectId: string, questions: string[]): Promise<PlanningState> {
+    const manager = await this.getPlanningManager(projectId)
+    if (!manager) {
+      throw new Error(`Project not found: ${projectId}`)
+    }
+
+    return manager.updateOpenQuestions(questions)
+  }
+
+  /**
+   * Check if planning is active for a project
+   */
+  async isPlanningActive(projectId: string): Promise<boolean> {
+    const manager = await this.getPlanningManager(projectId)
+    if (!manager) return false
+
+    return manager.isActive()
   }
 
   /**

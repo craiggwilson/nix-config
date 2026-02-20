@@ -19,7 +19,10 @@ describe("DelegationManager", () => {
   beforeEach(async () => {
 
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "delegation-test-"))
-    manager = new DelegationManager(testDir, mockLogger)
+    manager = new DelegationManager(testDir, mockLogger, undefined, {
+      timeoutMs: 15 * 60 * 1000,
+      smallModelTimeoutMs: 30000,
+    })
   })
 
   afterAll(async () => {

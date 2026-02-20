@@ -2,16 +2,12 @@
  * Jujutsu Adapter - VCS adapter implementation for Jujutsu (jj)
  */
 
+import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
 import type { VCSAdapter, VCSType, WorktreeInfo, MergeResult, MergeStrategy } from "./vcs-adapter.js"
 import type { BunShell, Logger } from "../core/types.js"
-
-interface ShellResult {
-  exitCode: number
-  stdout: string
-  stderr: string
-}
+import { runShell, type ShellResult } from "../core/shell-utils.js"
 
 /**
  * Jujutsu implementation of VCSAdapter
@@ -37,23 +33,8 @@ export class JujutsuAdapter implements VCSAdapter {
   /**
    * Run a shell command
    */
-  private async runShell(cmd: string): Promise<ShellResult> {
-    try {
-      // Use { raw: cmd } to tell the shell to parse the command string
-      // rather than treating it as a single escaped argument
-      const result = await this.$`${{ raw: cmd }}`.nothrow().quiet()
-      return {
-        exitCode: result.exitCode,
-        stdout: result.stdout.toString(),
-        stderr: result.stderr.toString(),
-      }
-    } catch (error) {
-      return {
-        exitCode: 1,
-        stdout: "",
-        stderr: String(error),
-      }
-    }
+  private async runCommand(cmd: string): Promise<ShellResult> {
+    return runShell(this.$, cmd)
   }
 
   async createWorktree(name: string, _baseBranch?: string): Promise<WorktreeInfo> {
@@ -61,10 +42,12 @@ export class JujutsuAdapter implements VCSAdapter {
 
     await this.log.info(`Creating jj workspace: ${name} at ${workspacePath}`)
 
-    await this.runShell(`mkdir -p ${JSON.stringify(this.worktreeBase)}`)
+    // Ensure parent directory exists (jj workspace add requires it)
+    // Use path.dirname to handle nested paths like "project/issue"
+    await fs.mkdir(path.dirname(workspacePath), { recursive: true })
 
     const cmd = `jj -R ${JSON.stringify(this.repoRoot)} workspace add --name ${name} ${JSON.stringify(workspacePath)}`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       await this.log.error(`Failed to create workspace: ${result.stderr}`)
@@ -72,7 +55,7 @@ export class JujutsuAdapter implements VCSAdapter {
     }
 
     const changeCmd = `jj -R ${JSON.stringify(workspacePath)} log -r @ --no-graph -T 'change_id'`
-    const changeResult = await this.runShell(changeCmd)
+    const changeResult = await this.runCommand(changeCmd)
     const changeId = changeResult.stdout.trim()
 
     return {
@@ -85,7 +68,7 @@ export class JujutsuAdapter implements VCSAdapter {
 
   async listWorktrees(): Promise<WorktreeInfo[]> {
     const cmd = `jj -R ${JSON.stringify(this.repoRoot)} workspace list`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       return []
@@ -116,7 +99,7 @@ export class JujutsuAdapter implements VCSAdapter {
     await this.log.info(`Removing jj workspace: ${name}`)
 
     const forgetCmd = `jj -R ${JSON.stringify(this.repoRoot)} workspace forget ${name}`
-    const forgetResult = await this.runShell(forgetCmd)
+    const forgetResult = await this.runCommand(forgetCmd)
 
     if (forgetResult.exitCode !== 0) {
       await this.log.warn(`Failed to forget workspace: ${forgetResult.stderr}`)
@@ -124,7 +107,7 @@ export class JujutsuAdapter implements VCSAdapter {
     }
 
     const workspacePath = path.join(this.worktreeBase, name)
-    await this.runShell(`rm -rf ${JSON.stringify(workspacePath)}`)
+    await this.runCommand(`rm -rf ${JSON.stringify(workspacePath)}`)
 
     return true
   }
@@ -153,7 +136,7 @@ export class JujutsuAdapter implements VCSAdapter {
         break
     }
 
-    const mergeResult = await this.runShell(mergeCmd)
+    const mergeResult = await this.runCommand(mergeCmd)
 
     if (mergeResult.exitCode !== 0) {
       if (mergeResult.stderr.includes("conflict") || mergeResult.stderr.includes("Conflict")) {
@@ -171,7 +154,7 @@ export class JujutsuAdapter implements VCSAdapter {
     }
 
     const headCmd = `jj -R ${JSON.stringify(this.repoRoot)} log -r @ --no-graph -T 'commit_id'`
-    const headResult = await this.runShell(headCmd)
+    const headResult = await this.runCommand(headCmd)
     const commitId = headResult.stdout.trim()
 
     return {
@@ -182,7 +165,7 @@ export class JujutsuAdapter implements VCSAdapter {
 
   async getCurrentBranch(): Promise<string> {
     const cmd = `jj -R ${JSON.stringify(this.repoRoot)} log -r @ --no-graph -T 'change_id'`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       return "@"
@@ -193,7 +176,7 @@ export class JujutsuAdapter implements VCSAdapter {
 
   async getDefaultBranch(): Promise<string> {
     const cmd = `jj -R ${JSON.stringify(this.repoRoot)} bookmark list`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode === 0) {
       for (const name of ["main", "master", "trunk"]) {
@@ -208,7 +191,7 @@ export class JujutsuAdapter implements VCSAdapter {
 
   async hasUncommittedChanges(): Promise<boolean> {
     const cmd = `jj -R ${JSON.stringify(this.repoRoot)} status`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     // In jj, working copy changes are always "uncommitted" in a sense
     // Check if there are actual file modifications

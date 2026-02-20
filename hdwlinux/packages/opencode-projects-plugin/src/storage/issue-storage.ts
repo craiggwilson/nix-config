@@ -62,6 +62,8 @@ export interface IssueDelegationMetadata {
   delegationId: string
   delegationStatus: string
   worktreePath?: string
+  worktreeBranch?: string
+  vcs?: "git" | "jj"
   sessionId?: string
 }
 
@@ -182,4 +184,14 @@ export interface IssueStorage {
    * Get project status summary
    */
   getProjectStatus(projectDir: string): Promise<ProjectStatus | null>
+
+  /**
+   * Get children of an issue
+   */
+  getChildren(issueId: string, projectDir: string): Promise<Issue[]>
+
+  /**
+   * Get issue tree for a project
+   */
+  getTree(projectDir: string, rootId?: string): Promise<Issue[]>
 }

@@ -2,16 +2,12 @@
  * Git Adapter - VCS adapter implementation for Git
  */
 
+import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
 import type { VCSAdapter, VCSType, WorktreeInfo, MergeResult, MergeStrategy } from "./vcs-adapter.js"
 import type { BunShell, Logger } from "../core/types.js"
-
-interface ShellResult {
-  exitCode: number
-  stdout: string
-  stderr: string
-}
+import { runShell, type ShellResult } from "../core/shell-utils.js"
 
 /**
  * Git implementation of VCSAdapter
@@ -37,23 +33,8 @@ export class GitAdapter implements VCSAdapter {
   /**
    * Run a shell command
    */
-  private async runShell(cmd: string): Promise<ShellResult> {
-    try {
-      // Use { raw: cmd } to tell the shell to parse the command string
-      // rather than treating it as a single escaped argument
-      const result = await this.$`${{ raw: cmd }}`.nothrow().quiet()
-      return {
-        exitCode: result.exitCode,
-        stdout: result.stdout.toString(),
-        stderr: result.stderr.toString(),
-      }
-    } catch (error) {
-      return {
-        exitCode: 1,
-        stdout: "",
-        stderr: String(error),
-      }
-    }
+  private async runCommand(cmd: string): Promise<ShellResult> {
+    return runShell(this.$, cmd)
   }
 
   async createWorktree(name: string, baseBranch?: string): Promise<WorktreeInfo> {
@@ -62,10 +43,13 @@ export class GitAdapter implements VCSAdapter {
 
     await this.log.info(`Creating git worktree: ${name} at ${worktreePath}`)
 
+    // Ensure parent directory exists (handles nested paths like "project/issue")
+    await fs.mkdir(path.dirname(worktreePath), { recursive: true })
+
     const base = baseBranch || (await this.getDefaultBranch())
 
     const cmd = `git -C ${JSON.stringify(this.repoRoot)} worktree add -b ${branchName} ${JSON.stringify(worktreePath)} ${base}`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       await this.log.error(`Failed to create worktree: ${result.stderr}`)
@@ -82,7 +66,7 @@ export class GitAdapter implements VCSAdapter {
 
   async listWorktrees(): Promise<WorktreeInfo[]> {
     const cmd = `git -C ${JSON.stringify(this.repoRoot)} worktree list --porcelain`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       return []
@@ -133,7 +117,7 @@ export class GitAdapter implements VCSAdapter {
     await this.log.info(`Removing git worktree: ${name}`)
 
     const removeCmd = `git -C ${JSON.stringify(this.repoRoot)} worktree remove ${JSON.stringify(worktreePath)} --force`
-    const removeResult = await this.runShell(removeCmd)
+    const removeResult = await this.runCommand(removeCmd)
 
     if (removeResult.exitCode !== 0) {
       await this.log.warn(`Failed to remove worktree: ${removeResult.stderr}`)
@@ -142,7 +126,7 @@ export class GitAdapter implements VCSAdapter {
 
     const branchName = name.replace(/\//g, "-")
     const branchCmd = `git -C ${JSON.stringify(this.repoRoot)} branch -D ${branchName}`
-    await this.runShell(branchCmd) // Ignore errors - branch may not exist
+    await this.runCommand(branchCmd) // Ignore errors - branch may not exist
 
     return true
   }
@@ -157,7 +141,7 @@ export class GitAdapter implements VCSAdapter {
     await this.log.info(`Merging ${source} into ${targetBranch} with strategy: ${strategy}`)
 
     const checkoutCmd = `git -C ${JSON.stringify(this.repoRoot)} checkout ${targetBranch}`
-    const checkoutResult = await this.runShell(checkoutCmd)
+    const checkoutResult = await this.runCommand(checkoutCmd)
 
     if (checkoutResult.exitCode !== 0) {
       return {
@@ -180,12 +164,12 @@ export class GitAdapter implements VCSAdapter {
         break
     }
 
-    const mergeResult = await this.runShell(mergeCmd)
+    const mergeResult = await this.runCommand(mergeCmd)
 
     if (mergeResult.exitCode !== 0) {
       if (mergeResult.stderr.includes("CONFLICT") || mergeResult.stderr.includes("conflict")) {
         const conflictCmd = `git -C ${JSON.stringify(this.repoRoot)} diff --name-only --diff-filter=U`
-        const conflictResult = await this.runShell(conflictCmd)
+        const conflictResult = await this.runCommand(conflictCmd)
         const conflictFiles = conflictResult.stdout.trim().split("\n").filter(Boolean)
 
         return {
@@ -204,7 +188,7 @@ export class GitAdapter implements VCSAdapter {
     // For squash, we need to commit
     if (strategy === "squash") {
       const commitCmd = `git -C ${JSON.stringify(this.repoRoot)} commit -m "Merge ${source} (squashed)"`
-      const commitResult = await this.runShell(commitCmd)
+      const commitResult = await this.runCommand(commitCmd)
 
       if (commitResult.exitCode !== 0) {
         if (!commitResult.stdout.includes("nothing to commit")) {
@@ -217,7 +201,7 @@ export class GitAdapter implements VCSAdapter {
     }
 
     const headCmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse HEAD`
-    const headResult = await this.runShell(headCmd)
+    const headResult = await this.runCommand(headCmd)
     const commitId = headResult.stdout.trim()
 
     return {
@@ -228,7 +212,7 @@ export class GitAdapter implements VCSAdapter {
 
   async getCurrentBranch(): Promise<string> {
     const cmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse --abbrev-ref HEAD`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       return "HEAD"
@@ -239,7 +223,7 @@ export class GitAdapter implements VCSAdapter {
 
   async getDefaultBranch(): Promise<string> {
     const remoteCmd = `git -C ${JSON.stringify(this.repoRoot)} symbolic-ref refs/remotes/origin/HEAD 2>/dev/null`
-    const remoteResult = await this.runShell(remoteCmd)
+    const remoteResult = await this.runCommand(remoteCmd)
 
     if (remoteResult.exitCode === 0) {
       const ref = remoteResult.stdout.trim()
@@ -248,7 +232,7 @@ export class GitAdapter implements VCSAdapter {
 
     for (const branch of ["main", "master", "trunk"]) {
       const checkCmd = `git -C ${JSON.stringify(this.repoRoot)} rev-parse --verify ${branch} 2>/dev/null`
-      const checkResult = await this.runShell(checkCmd)
+      const checkResult = await this.runCommand(checkCmd)
       if (checkResult.exitCode === 0) {
         return branch
       }
@@ -259,7 +243,7 @@ export class GitAdapter implements VCSAdapter {
 
   async hasUncommittedChanges(): Promise<boolean> {
     const cmd = `git -C ${JSON.stringify(this.repoRoot)} status --porcelain`
-    const result = await this.runShell(cmd)
+    const result = await this.runCommand(cmd)
 
     return result.stdout.trim().length > 0
   }

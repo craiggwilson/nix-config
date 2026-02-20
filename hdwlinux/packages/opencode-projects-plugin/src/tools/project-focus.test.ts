@@ -9,7 +9,7 @@ import * as os from "node:os"
 
 import { createProjectCreate } from "./project-create.js"
 import { createProjectFocus } from "./project-focus.js"
-import { createIssueCreate } from "./project-create-issue.js"
+import { createProjectCreateIssue } from "./project-create-issue.js"
 import { ConfigManager } from "../core/config-manager.js"
 import { InMemoryIssueStorage } from "../storage/inmemory-issue-storage.js"
 import { FocusManager } from "../core/focus-manager.js"
@@ -20,7 +20,7 @@ import {
   createTestShell,
   createMockContext,
 } from "../core/test-utils.js"
-import type { BunShell, ToolDepsV2 } from "../core/types.js"
+import type { BunShell, ToolDeps } from "../core/types.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()
@@ -30,7 +30,7 @@ describe("project_focus tool", () => {
   let testDir: string
   let projectManager: ProjectManager
   let testShell: BunShell
-  let toolDeps: ToolDepsV2
+  let toolDeps: ToolDeps
   let projectId: string
 
   beforeAll(async () => {
@@ -54,6 +54,7 @@ describe("project_focus tool", () => {
     toolDeps = {
       client: mockClient,
       projectManager,
+      issueStorage,
       log: mockLogger,
       $: testShell,
     }
@@ -118,7 +119,7 @@ describe("project_focus tool", () => {
 
   test("sets focus to a specific issue", async () => {
 
-    const issueTool = createIssueCreate(toolDeps)
+    const issueTool = createProjectCreateIssue(toolDeps)
 
     const issueResult = await issueTool.execute(
       {

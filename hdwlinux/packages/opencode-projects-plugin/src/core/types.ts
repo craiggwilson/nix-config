@@ -39,43 +39,100 @@ export interface OpencodeClient {
   }
 }
 
+/**
+ * Agent configuration from OpenCode
+ */
 export interface Agent {
+  /** Unique agent name/identifier */
   name: string
+  /** Human-readable description of the agent's capabilities */
   description?: string
+  /** Agent mode (e.g., "coder", "researcher") */
   mode?: string
 }
 
+/**
+ * OpenCode session representing a conversation context
+ */
 export interface Session {
+  /** Unique session identifier */
   id: string
+  /** Human-readable session title */
   title?: string
+  /** Parent session ID for nested sessions */
   parentID?: string
 }
 
+/**
+ * Message part representing content in a conversation
+ */
 export interface Part {
+  /** Content type */
   type: "text" | "image" | "file"
+  /** Text content (for text type) */
   text?: string
 }
 
-export interface Message {
-  id: string
-  role: "user" | "assistant"
-  sessionID: string
+/**
+ * Message error information
+ */
+export interface MessageError {
+  /** Error name/type */
+  name: string
+  /** Error message */
+  message?: string
 }
 
+/**
+ * Message metadata in a conversation
+ */
+export interface MessageInfo {
+  /** Unique message identifier */
+  id: string
+  /** Message author role */
+  role: "user" | "assistant"
+  /** Session this message belongs to */
+  sessionID: string
+  /** Error information if the message was aborted or failed */
+  error?: MessageError
+}
+
+/**
+ * Message in a conversation (alias for backward compatibility)
+ */
+export type Message = MessageInfo
+
+/**
+ * Message item containing metadata and content parts
+ */
 export interface MessageItem {
-  info: Message
+  /** Message metadata */
+  info: MessageInfo
+  /** Content parts of the message */
   parts: Part[]
 }
 
+/**
+ * OpenCode plugin configuration
+ */
 export interface PluginConfig {
+  /** Small model to use for quick queries */
   small_model?: string
+  /** Agent-specific configurations */
   agent?: Record<string, AgentConfig>
 }
 
+/**
+ * Agent-specific configuration
+ */
 export interface AgentConfig {
+  /** Permission settings for tools */
   permission?: Record<string, PermissionEntry>
 }
 
+/**
+ * Permission entry for tool access control
+ */
 export type PermissionEntry = "ask" | "allow" | "deny" | Record<string, "ask" | "allow" | "deny">
 
 /**
@@ -114,13 +171,22 @@ export interface ProjectConfig {
     basePath?: string
   }
   delegation?: {
+    /** Timeout for background delegations in milliseconds (default: 15 minutes) */
     timeoutMs?: number
+    /** Timeout for small model queries in milliseconds (default: 30 seconds) */
+    smallModelTimeoutMs?: number
   }
 }
 
+/**
+ * Per-project configuration overrides
+ */
 export interface ProjectOverrides {
+  /** Storage location override */
   storage?: "local" | "global"
+  /** Associated workspaces */
   workspaces?: string[]
+  /** Custom beads path for this project */
   beadsPath?: string
 }
 
@@ -196,14 +262,63 @@ export interface WorktreeInfo {
 }
 
 /**
- * Tool dependencies using ProjectManager
+ * Dependencies provided to tool implementations.
+ *
+ * These dependencies are injected by the plugin during initialization
+ * and provide access to core managers and utilities.
  */
-export interface ToolDepsV2 {
+export interface ToolDeps {
+  /** OpenCode SDK client for API calls */
   client: OpencodeClient
+  /** Project manager for project/issue operations */
   projectManager: ProjectManager
+  /** Issue storage backend (beads or in-memory) */
+  issueStorage: IssueStorage
+  /** Logger for debug/info/warn/error messages */
   log: Logger
+  /** Bun shell for executing commands */
   $: BunShell
+  /** Delegation manager for background agent work (optional) */
   delegationManager?: DelegationManager
+}
+
+/**
+ * Planning phase
+ */
+export type PlanningPhase = "discovery" | "synthesis" | "breakdown" | "complete"
+
+/**
+ * Planning decision
+ */
+export interface PlanningDecision {
+  decision: string
+  rationale: string
+}
+
+/**
+ * Accumulated understanding from planning
+ */
+export interface PlanningUnderstanding {
+  problem?: string
+  goals?: string[]
+  stakeholders?: string[]
+  timeline?: string
+  constraints?: string[]
+  technicalContext?: string
+  risks?: string[]
+  decisions?: PlanningDecision[]
+}
+
+/**
+ * Planning state persisted to .projects/<id>/planning.json
+ */
+export interface PlanningState {
+  phase: PlanningPhase
+  startedAt: string
+  lastUpdatedAt: string
+  understanding: PlanningUnderstanding
+  openQuestions: string[]
+  completedPhases: PlanningPhase[]
 }
 
 // Forward declarations for manager types

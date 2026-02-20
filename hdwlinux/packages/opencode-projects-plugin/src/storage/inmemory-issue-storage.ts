@@ -316,6 +316,38 @@ this.getProjectIssues(projectDir)
     }
   }
 
+  async getChildren(issueId: string, projectDir: string): Promise<Issue[]> {
+    const issues = this.getProjectIssues(projectDir)
+    return Array.from(issues.values()).filter((i) => i.parent === issueId)
+  }
+
+  async getTree(projectDir: string, rootId?: string): Promise<Issue[]> {
+    const issues = this.getProjectIssues(projectDir)
+    const allIssues = Array.from(issues.values())
+
+    if (!rootId) {
+      return allIssues
+    }
+
+    // Return the root and all descendants
+    const result: Issue[] = []
+    const collectDescendants = (parentId: string) => {
+      const children = allIssues.filter((i) => i.parent === parentId)
+      for (const child of children) {
+        result.push(child)
+        collectDescendants(child.id)
+      }
+    }
+
+    const root = issues.get(rootId)
+    if (root) {
+      result.push(root)
+      collectDescendants(rootId)
+    }
+
+    return result
+  }
+
   /**
    * Clear all data (useful for test cleanup)
    */

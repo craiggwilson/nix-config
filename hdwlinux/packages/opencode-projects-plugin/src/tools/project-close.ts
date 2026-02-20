@@ -4,7 +4,8 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
+import type { ToolDeps, ProjectToolContext } from "../core/types.js"
+import { formatError } from "../core/errors.js"
 
 interface ProjectCloseArgs {
   projectId: string
@@ -15,7 +16,7 @@ interface ProjectCloseArgs {
 /**
  * Create the project_close tool
  */
-export function createProjectClose(deps: ToolDepsV2) {
+export function createProjectClose(deps: ToolDeps) {
   const { projectManager, log } = deps
 
   return tool({
@@ -36,36 +37,39 @@ This updates the project status and optionally adds a final summary.`,
     },
 
     async execute(args: ProjectCloseArgs, _ctx: ProjectToolContext): Promise<string> {
-      const { projectId, reason = "completed", summary } = args
+      try {
+        const { projectId, reason = "completed", summary } = args
 
-      await log.info(`Closing project: ${projectId}, reason: ${reason}`)
+        await log.info(`Closing project: ${projectId}, reason: ${reason}`)
 
-      const closed = await projectManager.closeProject(projectId, { reason, summary })
+        const closed = await projectManager.closeProject(projectId, { reason, summary })
 
-      if (!closed) {
-        return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
-      }
+        if (!closed) {
+          return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+        }
 
+        const lines: string[] = []
 
-      const lines: string[] = []
-
-      lines.push(`## Project Closed: ${projectId}`)
-      lines.push("")
-      lines.push(`**Status:** ${reason}`)
-      lines.push(`**Closed At:** ${new Date().toISOString()}`)
-
-      if (summary) {
+        lines.push(`## Project Closed: ${projectId}`)
         lines.push("")
-        lines.push("**Summary:**")
-        lines.push(summary)
+        lines.push(`**Status:** ${reason}`)
+        lines.push(`**Closed At:** ${new Date().toISOString()}`)
+
+        if (summary) {
+          lines.push("")
+          lines.push("**Summary:**")
+          lines.push(summary)
+        }
+
+        lines.push("")
+        lines.push("---")
+        lines.push("")
+        lines.push("The project has been marked as closed. Use `project_list` to see other projects.")
+
+        return lines.join("\n")
+      } catch (error) {
+        return formatError(error)
       }
-
-      lines.push("")
-      lines.push("---")
-      lines.push("")
-      lines.push("The project has been marked as closed. Use `project_list` to see other projects.")
-
-      return lines.join("\n")
     },
   })
 }

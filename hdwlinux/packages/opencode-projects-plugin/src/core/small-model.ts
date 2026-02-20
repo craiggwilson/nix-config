@@ -14,8 +14,8 @@ import type { Logger, OpencodeClient } from "./types.js"
 export interface SmallModelOptions {
   /** The prompt to send (should request JSON response) */
   prompt: string
-  /** Timeout in milliseconds (default: 30000) */
-  timeoutMs?: number
+  /** Timeout in milliseconds */
+  timeoutMs: number
   /** Session title for debugging */
   sessionTitle?: string
 }
@@ -28,8 +28,6 @@ export interface SmallModelResult<T> {
   data?: T
   error?: string
 }
-
-const DEFAULT_TIMEOUT_MS = 30000
 
 /**
  * Prompt the small model for a structured JSON response.
@@ -51,7 +49,7 @@ export async function promptSmallModel<T>(
   log: Logger,
   options: SmallModelOptions
 ): Promise<SmallModelResult<T>> {
-  const { prompt, timeoutMs = DEFAULT_TIMEOUT_MS, sessionTitle = "Small Model Query" } = options
+  const { prompt, timeoutMs, sessionTitle = "Small Model Query" } = options
 
   let sessionId: string | undefined
 

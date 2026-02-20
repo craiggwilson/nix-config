@@ -61,16 +61,18 @@ Set or clear project/issue focus.
 
 ### project-plan
 
-Start or continue planning sessions.
+Manage project planning sessions.
 
 **Parameters:**
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `projectId` | string | No | Project ID (default: focused project) |
-| `action` | `"start"` \| `"continue"` \| `"complete"` \| `"list"` | No | Planning action |
-| `phase` | `"discovery"` \| `"refinement"` \| `"breakdown"` | No | Planning phase |
+| `action` | `"start"` \| `"continue"` \| `"save"` \| `"advance"` \| `"phase"` \| `"status"` | No | Planning action (default: continue) |
+| `phase` | `"discovery"` \| `"synthesis"` \| `"breakdown"` \| `"complete"` | No | Phase to jump to (for action='phase') |
+| `understanding` | string | No | JSON string of understanding updates (for action='save') |
+| `openQuestions` | string | No | Comma-separated list of open questions (for action='save') |
 
-**Returns:** Interview session state or artifact list.
+**Returns:** Planning session state with phase guidance.
 
 ---
 
@@ -111,17 +113,28 @@ Create a new issue within a project.
 
 ### project-work-on-issue
 
-Claim an issue to work on, optionally in an isolated worktree.
+Start work on an issue with a background agent.
+
+This tool:
+1. Claims the issue (sets status to in_progress)
+2. Optionally creates an isolated git worktree or jj workspace (if isolate=true)
+3. Delegates work to a background agent
+4. Returns immediately - you'll be notified when complete
 
 **Parameters:**
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `issueId` | string | Yes | Issue ID to claim |
-| `projectId` | string | No | Project ID (default: focused project) |
-| `isolated` | boolean | No | Create isolated worktree |
-| `delegate` | boolean | No | Delegate to background agent |
+| `issueId` | string | Yes | Issue ID to work on |
+| `isolate` | boolean | No | Create isolated worktree (default: false). Use true for code changes. |
+| `agent` | string | No | Agent to use (auto-selected if not specified) |
 
-**Returns:** Claim confirmation with worktree path if isolated.
+**Behavior:**
+- `isolate=false` (default): Runs in repo root. Good for research, analysis, documentation.
+- `isolate=true`: Creates git worktree or jj workspace. Required for code changes that need merging.
+
+When `isolate=true`, the completion notification includes VCS-specific merge instructions.
+
+**Returns:** Delegation confirmation with worktree path (if isolated) and delegation ID.
 
 ---
 

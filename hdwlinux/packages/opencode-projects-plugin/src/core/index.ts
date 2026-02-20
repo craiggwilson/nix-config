@@ -10,7 +10,16 @@ export type {
   CloseProjectOptions,
   CreateProjectResult,
   ProjectManagerDeps,
+  StartWorkOptions,
+  StartWorkResult,
 } from "./project-manager.js"
+
+export { IssueManager } from "./issue-manager.js"
+export type {
+  UpdateIssueOptions,
+  CompletionCommentOptions,
+  IssueManagerDeps,
+} from "./issue-manager.js"
 
 export { FocusManager } from "./focus-manager.js"
 
@@ -27,8 +36,11 @@ export { buildIssueTree, renderTree, renderIssueTree } from "./tree-renderer.js"
 export { promptSmallModel } from "./small-model.js"
 export type { SmallModelOptions, SmallModelResult } from "./small-model.js"
 
-export { selectAgent, discoverAgents, clearAgentCache } from "./agent-selector.js"
+export { selectAgent, discoverAgents } from "./agent-selector.js"
 export type { AgentInfo, AgentSelectionContext } from "./agent-selector.js"
+
+export { runShell, runShellInDir } from "./shell-utils.js"
+export type { ShellResult } from "./shell-utils.js"
 
 export {
   ProjectsPluginError,
