@@ -5,7 +5,7 @@
     homeManager = {
       hdwlinux.ai.agent.agents.java-expert = {
         description = "Expert Java developer with deep knowledge of the JVM ecosystem, enterprise patterns, and modern Java development. Masters Spring, build tools, testing, and performance optimization.";
-        model = "opus4.5";
+        model = "coding";
         content = ./content.md;
         extraMeta.augment.color = "green";
       };

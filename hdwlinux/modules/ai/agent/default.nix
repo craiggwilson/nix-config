@@ -4,8 +4,37 @@
       "ai:agent"
     ];
     homeManager =
-      { lib, ... }:
+      { config, lib, ... }:
       let
+        # Resolve canonical model name to provider-specific identifier
+        # Follows fallback chain if model not available for the provider
+        resolveModel =
+          provider: canonicalName:
+          let
+            resolve =
+              modelName: visited:
+              let
+                model = config.hdwlinux.ai.agent.models.${modelName} or (throw "Unknown model: ${modelName}");
+
+                # Check for cycles
+                hasCycle = builtins.elem modelName visited;
+                visited' = visited ++ [ modelName ];
+                cycleError = throw "Cycle detected in model fallback chain: ${builtins.concatStringsSep " -> " visited'}";
+
+                # Try to get provider-specific name
+                providerModel = model.providers.${provider} or null;
+              in
+              if hasCycle then
+                cycleError
+              else if providerModel != null then
+                providerModel
+              else if model.fallback != null then
+                resolve model.fallback visited'
+              else
+                throw "Model ${canonicalName} (resolved to ${modelName}) is not available for ${provider}";
+          in
+          resolve canonicalName [ ];
+
         toolPermission = lib.types.enum [
           "allow"
           "ask"
@@ -93,6 +122,13 @@
       in
       {
         options.hdwlinux.ai.agent = {
+          resolveModel = lib.mkOption {
+            description = "Function to resolve a canonical model name to a provider-specific identifier. Takes provider name and canonical model name.";
+            type = lib.types.functionTo (lib.types.functionTo lib.types.str);
+            readOnly = true;
+            default = resolveModel;
+          };
+
           agents = lib.mkOption {
             description = "Agent (subagent) definitions for AI assistants.";
             type = lib.types.attrsOf agentType;

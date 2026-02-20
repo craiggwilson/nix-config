@@ -13,6 +13,8 @@
         ...
       }:
       let
+        resolveModel = config.hdwlinux.ai.agent.resolveModel "augment";
+
         # Generate YAML frontmatter from extraMeta.augment attrset (for commands/rules)
         extraMetaToFrontmatter =
           extraMeta:
@@ -32,7 +34,7 @@
             formalFields = [
               "name: ${name}"
               "description: ${agent.description}"
-              "model: ${agent.model}"
+              "model: ${resolveModel agent.model}"
               "tools: ${formatTools agent.tools}"
             ];
             # Add any extra metadata fields from augment-specific config
@@ -117,6 +119,15 @@
 
       in
       {
+        hdwlinux.ai.agent.models = {
+          "haiku4.5".providers.augment = "haiku4.5";
+          "opus4.5".providers.augment = "opus4.5";
+          "sonnet4".providers.augment = "sonnet4";
+          "sonnet4.5".providers.augment = "sonnet4.5";
+          "gpt5".providers.augment = "gpt5";
+          "gpt5.1".providers.augment = "gpt5.1";
+        };
+
         home.packages = [
           (pkgs.writeShellScriptBin "auggie" ''
             ${pkgs.hdwlinux.auggie}/bin/auggie --mcp-config ~/.augment/mcp-servers.json "$@"

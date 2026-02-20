@@ -14,6 +14,8 @@
         ...
       }:
       let
+        resolveModel = config.hdwlinux.ai.agent.resolveModel "opencode";
+
         # Transform MCP servers to OpenCode format
         mcpConfig = lib.mapAttrs (
           name: server:
@@ -45,7 +47,7 @@
           {
             description = agent.description;
             mode = agent.mode;
-            model = agent.model;
+            model = resolveModel agent.model;
             prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.content)}}";
           }
           // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
@@ -155,6 +157,7 @@
           command = commandConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;
+          small_model = "augment/claude-haiku-4-5";
           plugin = [
             #"file://${pkgs.hdwlinux.opencode-projects-plugin}/lib/node_modules/opencode-projects"
           ];
@@ -166,6 +169,16 @@
 
       in
       {
+        hdwlinux.ai.agent.models = {
+          "haiku4.5".providers.opencode = "augment/claude-haiku-4-5";
+          "opus4.5".providers.opencode = "augment/claude-opus-4-5";
+          "opus4.6".providers.opencode = "augment/claude-opus-4-6";
+          "sonnet4".providers.opencode = "augment/claude-sonnet-4";
+          "sonnet4.5".providers.opencode = "augment/claude-sonnet-4-5";
+          "gpt5.1".providers.opencode = "augment/gpt-5-1";
+          "gpt5.2".providers.opencode = "augment/gpt-5-2";
+        };
+
         home.packages = [
           inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode
           pkgs.beads
