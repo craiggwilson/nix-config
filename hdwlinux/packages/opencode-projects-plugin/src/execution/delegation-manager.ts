@@ -77,7 +77,7 @@ const DISABLED_TOOLS: Record<string, boolean> = {
   "project-close": false,
   "project-create-issue": false,
   "project-update-issue": false,
-  "project-claim-issue": false,
+  "project-work-on-issue": false,
 }
 
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes
@@ -211,7 +211,8 @@ export class DelegationManager {
         this.handleTimeout(delegation.id)
       }, this.timeoutMs)
 
-      // Fire the prompt WITHOUT awaiting (fire-and-forget)
+      // Fire the prompt (fire-and-forget)
+      // Completion is handled via session.idle events
       this.client.session
         .prompt({
           path: { id: sessionId },
@@ -238,6 +239,9 @@ export class DelegationManager {
 
   /**
    * Handle session.idle event - called when a delegated session becomes idle
+   * 
+   * This is the primary completion handler. The session.idle event fires when
+   * the agent has finished processing and is waiting for input.
    */
   async handleSessionIdle(sessionId: string): Promise<void> {
     const delegationId = this.sessionToDelegation.get(sessionId)
@@ -246,7 +250,7 @@ export class DelegationManager {
     const delegation = await this.get(delegationId)
     if (!delegation || delegation.status !== "running") return
 
-    await this.log.info(`Delegation ${delegation.id} completed (session idle)`)
+    await this.log.info(`Delegation ${delegation.id} session idle, marking complete`)
 
     // Get the result from session messages
     const result = await this.getSessionResult(sessionId)
@@ -476,6 +480,40 @@ export class DelegationManager {
   }
 
   /**
+   * Check if a session has done meaningful work (has tool calls)
+   */
+  private async sessionHasWork(sessionId: string): Promise<boolean> {
+    if (!this.client) return false
+
+    try {
+      const messages = await this.client.session.messages({
+        path: { id: sessionId },
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const messageData = messages.data as any[] | undefined
+      if (!messageData) return false
+
+      // Check for tool_use parts in assistant messages
+      for (const message of messageData) {
+        if (message.info?.role !== "assistant") continue
+        
+        const parts = message.parts || []
+        for (const part of parts) {
+          if (part.type === "tool_use") {
+            return true
+          }
+        }
+      }
+
+      return false
+    } catch (error) {
+      await this.log.error(`Failed to check session work: ${error}`)
+      return false
+    }
+  }
+
+  /**
    * Get result text from a session's messages
    */
   private async getSessionResult(sessionId: string): Promise<string> {
@@ -489,21 +527,49 @@ export class DelegationManager {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const messageData = messages.data as any[] | undefined
 
+      await this.log.debug(`getSessionResult: ${messageData?.length || 0} messages in session ${sessionId}`)
+
       if (!messageData || messageData.length === 0) {
         return "(no messages)"
       }
 
-      // Find last assistant message
+      // Log message roles for debugging
+      const roles = messageData.map((m) => m.info?.role).join(", ")
+      await this.log.debug(`getSessionResult: message roles: ${roles}`)
+
+      // Find assistant messages
       const assistantMessages = messageData.filter((m) => m.info?.role === "assistant")
       if (assistantMessages.length === 0) {
         return "(no assistant response)"
       }
 
-      const lastMessage = assistantMessages[assistantMessages.length - 1]
-      const parts = lastMessage.parts || []
-      const textParts = parts.filter((p: { type: string }) => p.type === "text")
+      // Collect text from all assistant messages, skipping aborted ones
+      const allTextParts: string[] = []
+      
+      for (const message of assistantMessages) {
+        // Skip messages with errors (aborted, etc.)
+        if (message.info?.error) {
+          await this.log.debug(`getSessionResult: skipping message with error: ${message.info.error.name}`)
+          continue
+        }
+        
+        const parts = message.parts || []
+        const textParts = parts.filter((p: { type: string }) => p.type === "text")
+        
+        for (const part of textParts) {
+          if (part.text) {
+            allTextParts.push(part.text)
+          }
+        }
+      }
+      
+      await this.log.debug(`getSessionResult: collected ${allTextParts.length} text parts from ${assistantMessages.length} assistant messages`)
 
-      return textParts.map((p: { text?: string }) => p.text || "").join("\n")
+      const result = allTextParts.join("\n")
+      
+      await this.log.debug(`getSessionResult: result length: ${result.length}`)
+      
+      return result || "(no text content)"
     } catch (error) {
       return `(error retrieving result: ${error})`
     }
@@ -717,7 +783,7 @@ Respond with ONLY valid JSON:
     lines.push("## Constraints")
     lines.push("")
     lines.push("You are running as a background delegation. The following tools are disabled:")
-    lines.push("- project-create, project-close, project-create-issue, project-update-issue, project-claim-issue")
+    lines.push("- project-create, project-close, project-create-issue, project-update-issue, project-work-on-issue")
     lines.push("- task, delegate (no recursive delegation)")
     lines.push("")
     lines.push("Focus on completing the assigned task. Do not create new issues or projects.")

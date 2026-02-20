@@ -93,7 +93,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       "project-plan": createProjectPlan(toolDeps),
       "project-close": createProjectClose(toolDeps),
       "project-create-issue": createIssueCreate(toolDeps),
-      "project-claim-issue": createIssueClaim(toolDeps),
+      "project-work-on-issue": createIssueClaim(toolDeps),
       "project-update-issue": createIssueUpdate(toolDeps),
       "project-internal-delegation-read": createDelegationRead(toolDeps),
     },
@@ -278,7 +278,7 @@ async function buildCompactionContext(projectManager: ProjectManager): Promise<s
   sections.push("## Quick Reference")
   sections.push("- `project-status` - Full project state")
   sections.push("- `project-focus` - Change focus")
-  sections.push("- `project-claim-issue` - Start work on an issue")
+  sections.push("- `project-work-on-issue` - Start work on an issue")
   sections.push("- `project-update-issue` - Update/close an issue")
   sections.push("- `project-internal-delegation-read` - Read delegation results")
   sections.push("</project-compaction-context>")

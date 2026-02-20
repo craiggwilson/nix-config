@@ -1,5 +1,5 @@
 /**
- * project-claim-issue tool - Claim an issue and optionally start isolated work
+ * project-work-on-issue tool - Claim an issue and optionally start isolated work
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -17,7 +17,7 @@ interface IssueClaimArgs {
 }
 
 /**
- * Create the project-claim-issue tool
+ * Create the project-work-on-issue tool
  */
 export function createIssueClaim(deps: ToolDepsV2) {
   const { client, projectManager, log, $, delegationManager } = deps
@@ -47,7 +47,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
         .describe("Agent for delegation (auto-selected if not specified)"),
     },
 
-    async execute(args: IssueClaimArgs, _ctx: ProjectToolContext): Promise<string> {
+    async execute(args: IssueClaimArgs, ctx: ProjectToolContext): Promise<string> {
       const { issueId, isolate = false, delegate = false, agent } = args
 
 
@@ -129,7 +129,7 @@ This atomically claims the issue (sets assignee and status to in_progress).`,
                   prompt: `Work on issue: ${issue.title}\n\n${issue.description || ""}`,
                   worktreePath: worktreeResult.path,
                   agent,
-                  parentSessionId: undefined, // Will be set by context if available
+                  parentSessionId: ctx.sessionID,
                 })
 
                 if (delegation.agent) {
@@ -228,7 +228,7 @@ async function createWorktree(
     if (vcs === "jj") {
       // Create jj workspace
       const cmd = `cd ${JSON.stringify(repoRoot)} && jj workspace add --name ${issueId} ${JSON.stringify(worktreePath)}`
-      const result = await $`${cmd}`
+      const result = await $`${{ raw: cmd }}`.nothrow().quiet()
 
       if (result.exitCode !== 0) {
         return { success: false, error: result.stderr.toString() }
@@ -239,7 +239,7 @@ async function createWorktree(
     } else {
       // Create git worktree
       const cmd = `cd ${JSON.stringify(repoRoot)} && git worktree add -b ${branchName} ${JSON.stringify(worktreePath)}`
-      const result = await $`${cmd}`
+      const result = await $`${{ raw: cmd }}`.nothrow().quiet()
 
       if (result.exitCode !== 0) {
         return { success: false, error: result.stderr.toString() }

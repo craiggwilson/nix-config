@@ -60,7 +60,7 @@ Shows the issue tree with status icons:
 ### 2. Claim an Issue
 
 ```
-project-claim-issue(issueId="auth-system.2")
+project-work-on-issue(issueId="auth-system.2")
 ```
 
 This:
@@ -71,7 +71,7 @@ This:
 ### 3. Work in Isolation (Optional)
 
 ```
-project-claim-issue(issueId="auth-system.2", isolated=true)
+project-work-on-issue(issueId="auth-system.2", isolated=true)
 ```
 
 Creates a worktree at `../repo-worktrees/auth-system/auth-system.2/` where you can work without affecting the main branch.
@@ -100,7 +100,7 @@ This:
 ### 1. Delegate to Background Agent
 
 ```
-project-claim-issue(issueId="auth-system.3", isolated=true, delegate=true)
+project-work-on-issue(issueId="auth-system.3", isolated=true, delegate=true)
 ```
 
 This:

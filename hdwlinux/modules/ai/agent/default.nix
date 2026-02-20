@@ -150,22 +150,24 @@
             "ls *" = "allow";
             "nix *" = "allow";
             "pwd *" = "allow";
-            "reboot *" = "deny";
             "rg *" = "allow";
-            "shutdown *" = "deny";
+            "sleep *" = "allow";
             "sort *" = "allow";
-            "sudo *" = "deny";
             "tail *" = "allow";
+            "timeout *" = "allow";
             "xargs *" = "allow";
+            "wc *" = "allow";
             "*/skills/*/bin/*" = "allow";
+
+            "reboot *" = "deny";
+            "shutdown *" = "deny";
+            "sudo *" = "deny";
           };
-          edit = {
-            "*" = "ask";
-            "~/Projects/*" = "allow";
-          };
+          edit = "allow";
           external_directory = {
             "*" = "ask";
             "~/Projects/*" = "allow";
+            "/tmp/*" = "allow";
           };
           glob = "allow";
           grep = "allow";

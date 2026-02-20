@@ -9,7 +9,7 @@ import * as os from "node:os"
 
 import { createProjectCreate } from "./project-create.js"
 import { createProjectFocus } from "./project-focus.js"
-import { createIssueCreate } from "./issue-create.js"
+import { createIssueCreate } from "./project-create-issue.js"
 import { ConfigManager } from "../core/config-manager.js"
 import { InMemoryIssueStorage } from "../storage/inmemory-issue-storage.js"
 import { FocusManager } from "../core/focus-manager.js"

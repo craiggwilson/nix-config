@@ -18,7 +18,7 @@ You have access to project planning and tracking tools:
 
 ### Issue Tools
 - \`project-create-issue(title, projectId?, description?, priority?, parent?, blockedBy?, labels?)\` - Create a beads issue
-- \`project-claim-issue(issueId, isolate?, delegate?)\` - Claim an issue and optionally start isolated work
+- \`project-work-on-issue(issueId, isolate?, delegate?)\` - Claim an issue and optionally start isolated work
 - \`project-update-issue(issueId, status?, ...)\` - Update issue status and fields
 
 ### Delegation Tools
@@ -35,8 +35,8 @@ You have access to project planning and tracking tools:
 ### Working on Issues
 1. Use \`project-focus\` to set context
 2. Use \`project-status\` to see ready work
-3. Use \`project-claim-issue\` to start work
-4. For parallel work, use \`project-claim-issue(id, isolate=true, delegate=true)\`
+3. Use \`project-work-on-issue\` to start work
+4. For parallel work, use \`project-work-on-issue(id, isolate=true, delegate=true)\`
 
 ### Project Types
 - **Roadmap** (6+ months): Strategic planning with milestones, risks, architecture
@@ -88,7 +88,7 @@ When all delegations complete:
 ### Disabled Tools in Delegations
 
 Delegated agents cannot use state-modifying tools:
-- project-create, project-close, project-create-issue, project-update-issue, project-claim-issue
+- project-create, project-close, project-create-issue, project-update-issue, project-work-on-issue
 - task, delegate (no recursive delegation)
 
 </project-management-system>`

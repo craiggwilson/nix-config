@@ -109,7 +109,7 @@ Create a new issue within a project.
 
 ---
 
-### project-claim-issue
+### project-work-on-issue
 
 Claim an issue to work on, optionally in an isolated worktree.
 

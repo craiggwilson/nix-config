@@ -176,7 +176,7 @@ describe("project_list and project_status tools", () => {
       const result = await tool.execute({}, mockContext)
 
       expect(result).toContain("No project specified")
-      expect(result).toContain("project_focus")
+      expect(result).toContain("project-focus")
 
 
       projectManager.setFocus(projectId)

@@ -160,7 +160,7 @@ If no projectId is provided, uses the currently focused project.`,
       lines.push("---")
       lines.push("")
       lines.push("**Actions:**")
-      lines.push("- `project-claim-issue(issueId)` - Start work on an issue")
+      lines.push("- `project-work-on-issue(issueId)` - Start work on an issue")
       lines.push("- `project-create-issue(title)` - Add a new issue")
       lines.push("- `project-plan` - Continue planning")
 
