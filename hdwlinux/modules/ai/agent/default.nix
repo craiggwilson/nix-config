@@ -195,6 +195,7 @@
             "wc *" = "allow";
             "*/skills/*/bin/*" = "allow";
 
+            "git *" = "deny";
             "reboot *" = "deny";
             "shutdown *" = "deny";
             "sudo *" = "deny";

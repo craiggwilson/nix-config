@@ -41,8 +41,6 @@
 
           # Aliases
           "small".fallback = "haiku4.5";
-          "fast".fallback = "haiku4.5";
-          "best".fallback = "opus4.5";
           "default".fallback = "sonnet4.5";
           "coding".fallback = "sonnet4.5";
           "reasoning".fallback = "opus4.5";

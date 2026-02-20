@@ -18,10 +18,10 @@ import {
   createProjectFocus,
   createProjectPlan,
   createProjectClose,
-  createIssueCreate,
-  createIssueClaim,
-  createIssueUpdate,
-  createDelegationRead,
+  createProjectCreateIssue,
+  createProjectWorkOnIssue,
+  createProjectUpdateIssue,
+  createProjectInternalDelegationRead,
 } from "./tools/index.js"
 
 import {
@@ -57,6 +57,19 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
   issueStorage.setShell($)
 
   const repoRoot = worktree || directory
+
+  // Create delegation manager first (uses repoRoot as default project dir)
+  const delegationManager = new DelegationManager(
+    repoRoot,
+    log,
+    typedClient,
+    {
+      timeoutMs: config.getDelegationTimeoutMs(),
+      smallModelTimeoutMs: config.getSmallModelTimeoutMs(),
+    }
+  )
+
+  // Create project manager with all dependencies including shell and delegation manager
   const projectManager = new ProjectManager({
     config,
     issueStorage,
@@ -64,6 +77,8 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     log,
     repoRoot,
     client: typedClient,
+    $,
+    delegationManager,
   })
 
   const beadsAvailable = await issueStorage.isAvailable()
@@ -71,18 +86,9 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     await log.warn("beads (bd) not found in PATH - some features will be unavailable")
   }
 
-  // Get project directory for delegation manager
-  const projectDir = await projectManager.getProjectDir(projectManager.getFocusedProjectId() || "default")
-  const delegationManager = new DelegationManager(
-    projectDir || repoRoot,
-    log,
-    typedClient,
-    { timeoutMs: config.get("delegation")?.timeoutMs }
-  )
-
   await log.info(`opencode-projects initialized in ${repoRoot}`)
 
-  const toolDeps = { client: typedClient, projectManager, log, $, delegationManager }
+  const toolDeps = { client: typedClient, projectManager, issueStorage, log, $, delegationManager }
 
   return {
     tool: {
@@ -92,10 +98,10 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       "project-focus": createProjectFocus(toolDeps),
       "project-plan": createProjectPlan(toolDeps),
       "project-close": createProjectClose(toolDeps),
-      "project-create-issue": createIssueCreate(toolDeps),
-      "project-work-on-issue": createIssueClaim(toolDeps),
-      "project-update-issue": createIssueUpdate(toolDeps),
-      "project-internal-delegation-read": createDelegationRead(toolDeps),
+      "project-create-issue": createProjectCreateIssue(toolDeps),
+      "project-work-on-issue": createProjectWorkOnIssue(toolDeps),
+      "project-update-issue": createProjectUpdateIssue(toolDeps),
+      "project-internal-delegation-read": createProjectInternalDelegationRead(toolDeps),
     },
 
     "experimental.chat.system.transform": async (_input, output) => {
@@ -113,6 +119,12 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         const contextBlock = await buildFocusContext(projectManager)
         if (contextBlock) {
           output.system.push(contextBlock)
+        }
+
+        // Add planning context if planning is active
+        const planningContext = await buildPlanningContext(projectManager, projectId)
+        if (planningContext) {
+          output.system.push(planningContext)
         }
       }
     },
@@ -311,6 +323,20 @@ function buildDelegationCompactionContext(delegations: Delegation[]): string {
   lines.push("</delegation-context>")
 
   return lines.join("\n")
+}
+
+/**
+ * Build context for active planning sessions.
+ * This provides rich guidance for the planning conversation.
+ */
+async function buildPlanningContext(
+  projectManager: ProjectManager,
+  projectId: string
+): Promise<string | null> {
+  const planningManager = await projectManager.getPlanningManager(projectId)
+  if (!planningManager) return null
+
+  return planningManager.buildContext()
 }
 
 export default ProjectsPlugin

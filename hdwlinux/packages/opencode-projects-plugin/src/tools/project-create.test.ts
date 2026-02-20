@@ -28,6 +28,7 @@ describe("project_create tool", () => {
   let testDir: string
   let projectManager: ProjectManager
   let testShell: BunShell
+  let issueStorage: InMemoryIssueStorage
 
   beforeAll(async () => {
 
@@ -35,7 +36,7 @@ describe("project_create tool", () => {
 
 
     const config = await ConfigManager.load()
-    const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
+    issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
     testShell = createTestShell()
 
@@ -61,6 +62,7 @@ describe("project_create tool", () => {
     const tool = createProjectCreate({
       client: mockClient,
       projectManager,
+      issueStorage,
       log: mockLogger,
       $: testShell,
     })
@@ -116,6 +118,7 @@ describe("project_create tool", () => {
     const tool = createProjectCreate({
       client: mockClient,
       projectManager,
+      issueStorage,
       log: mockLogger,
       $: testShell,
     })

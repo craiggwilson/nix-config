@@ -27,6 +27,8 @@ export interface AgentSelectionContext {
   taskDescription: string
   /** Optional hint about the type of task */
   taskType?: "planning" | "coding" | "research" | "review" | "general"
+  /** Timeout for small model query in milliseconds */
+  timeoutMs: number
 }
 
 /**
@@ -56,7 +58,7 @@ export async function selectAgent(
   log: Logger,
   context: AgentSelectionContext
 ): Promise<string | null> {
-  const { agents, taskDescription, taskType } = context
+  const { agents, taskDescription, taskType, timeoutMs } = context
 
   if (agents.length === 0) {
     await log.info("No agents available for selection")
@@ -84,7 +86,7 @@ Respond with ONLY valid JSON in this exact format:
   const result = await promptSmallModel<AgentSelectionResponse>(client, log, {
     prompt,
     sessionTitle: "Agent Selection",
-    timeoutMs: 30000,
+    timeoutMs,
   })
 
   if (!result.success) {
@@ -109,43 +111,26 @@ Respond with ONLY valid JSON in this exact format:
 }
 
 /**
- * Cache for available agents (shared across selectors)
- */
-let cachedAgents: AgentInfo[] | null = null
-
-/**
  * Discover available agents from the OpenCode SDK.
- * Results are cached for performance.
+ *
+ * Always fetches fresh from the SDK to ensure the small model
+ * can make context-aware selections each time.
  *
  * @param client - OpenCode client
  * @param log - Logger for debugging
  * @returns List of available agents
  */
 export async function discoverAgents(client: OpencodeClient, log: Logger): Promise<AgentInfo[]> {
-  if (cachedAgents !== null) {
-    return cachedAgents
-  }
-
   try {
     const result = await client.app.agents({})
     const agents = result.data || []
 
-    cachedAgents = agents.map((a: { name: string; description?: string }) => ({
+    return agents.map((a: { name: string; description?: string }) => ({
       name: a.name,
       description: a.description,
     }))
-
-    return cachedAgents
   } catch (error) {
     await log.warn(`Failed to discover agents: ${error}`)
     return []
   }
-}
-
-/**
- * Clear the agent cache.
- * Call this if agents may have changed.
- */
-export function clearAgentCache(): void {
-  cachedAgents = null
 }

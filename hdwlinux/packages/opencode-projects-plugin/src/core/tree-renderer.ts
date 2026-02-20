@@ -23,7 +23,13 @@ const STATUS_ICONS: Record<string, string> = {
 }
 
 /**
- * Build a tree structure from a flat list of issues
+ * Build a tree structure from a flat list of issues.
+ *
+ * Organizes issues into a hierarchical tree based on parent-child relationships.
+ * Root nodes are issues without a parent or whose parent is not in the list.
+ *
+ * @param issues - Flat list of issues to organize
+ * @returns Array of root tree nodes with nested children
  */
 export function buildIssueTree(issues: Issue[]): TreeNode[] {
   const issueMap = new Map<string, Issue>()
@@ -57,7 +63,14 @@ export function buildIssueTree(issues: Issue[]): TreeNode[] {
 }
 
 /**
- * Render a tree as ASCII art
+ * Render a tree as ASCII art.
+ *
+ * Produces a visual tree representation with box-drawing characters.
+ *
+ * @param nodes - Tree nodes to render
+ * @param options - Rendering options
+ * @param options.showStatus - Whether to show status icons (default: true)
+ * @returns ASCII art string representation of the tree
  */
 export function renderTree(nodes: TreeNode[], options?: { showStatus?: boolean }): string {
   const lines: string[] = []
@@ -97,7 +110,14 @@ function getStatusIcon(issue: Issue): string {
 }
 
 /**
- * Render issues as a dependency tree
+ * Render issues as a dependency tree.
+ *
+ * Convenience function that builds and renders an issue tree in one step.
+ *
+ * @param issues - Issues to render as a tree
+ * @param options - Rendering options
+ * @param options.showStatus - Whether to show status icons (default: true)
+ * @returns ASCII art string representation of the issue tree
  */
 export function renderIssueTree(issues: Issue[], options?: { showStatus?: boolean }): string {
   if (issues.length === 0) {

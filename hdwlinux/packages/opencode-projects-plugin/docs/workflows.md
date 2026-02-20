@@ -16,30 +16,40 @@ This creates:
 ### 2. Start Planning
 
 ```
-project-plan(action="start", phase="discovery")
+project-plan(action="start")
 ```
 
-The planning interview will ask about:
-- Vision and goals
-- Key milestones
-- Success criteria
-- Risks and constraints
+The planning session guides you through phases:
+- **Discovery** - Understand the problem, stakeholders, timeline, constraints
+- **Synthesis** - Consolidate research, make decisions, identify risks
+- **Breakdown** - Create actionable issues in beads
 
-### 3. Generate Artifacts
+### 3. Conduct Research During Planning
 
-After completing the interview, artifacts are generated:
-- `plans/roadmap.md` - Timeline and milestones
-- `plans/architecture.md` - Technical design
-- `plans/risks.md` - Risk assessment
-- `plans/success-criteria.md` - KPIs and metrics
-
-### 4. Break Down into Issues
+When you need to research something:
 
 ```
-project-plan(action="start", phase="breakdown")
+project-create-issue(title="Research: Authentication patterns for multi-tenant SaaS")
+project-work-on-issue(issueId="auth-system.2")
 ```
 
-This creates issues from the roadmap with proper dependencies.
+This starts a background agent to research the topic. You'll be notified when complete.
+
+### 4. Advance Through Phases
+
+```
+project-plan(action="advance")
+```
+
+Move from discovery → synthesis → breakdown → complete.
+
+### 5. Save Progress
+
+```
+project-plan(action="save", understanding='{"problem": "...", "goals": ["..."]}')
+```
+
+Save accumulated understanding to resume later.
 
 ---
 
@@ -57,58 +67,64 @@ Shows the issue tree with status icons:
 - ✅ Completed
 - ⏳ Blocked
 
-### 2. Claim an Issue
+### 2. Start Work on an Issue
 
+**For research, analysis, or documentation (no code changes):**
 ```
 project-work-on-issue(issueId="auth-system.2")
 ```
 
-This:
-- Sets the issue status to "in_progress"
-- Sets your focus to this issue
-- Optionally creates an isolated worktree
-
-### 3. Work in Isolation (Optional)
-
+**For code changes (requires isolation):**
 ```
-project-work-on-issue(issueId="auth-system.2", isolated=true)
-```
-
-Creates a worktree at `../repo-worktrees/auth-system/auth-system.2/` where you can work without affecting the main branch.
-
-### 4. Complete the Issue
-
-```
-project-update-issue(
-  issueId="auth-system.2",
-  status="closed",
-  comment="Implemented login flow with OAuth support",
-  mergeWorktree=true
-)
+project-work-on-issue(issueId="auth-system.3", isolate=true)
 ```
 
 This:
-- Merges the worktree back (squash by default)
-- Cleans up the worktree
-- Adds a completion comment
-- Updates the issue status
+- Claims the issue (sets status to in_progress)
+- Creates an isolated git worktree or jj workspace (if isolate=true)
+- Delegates work to a background agent
+- Returns immediately
+
+You'll be notified via `<delegation-notification>` when the work completes.
+
+### 3. Review and Merge Completed Work
+
+When a delegation with `isolate=true` completes, the notification includes merge instructions.
+
+**For jj:**
+```bash
+jj diff --from main --to <branch>     # Review
+jj squash --from <branch>              # Merge
+jj workspace forget <branch>           # Clean up
+```
+
+**For git:**
+```bash
+git diff main..<branch>                # Review
+git merge <branch>                     # Merge
+git worktree remove <path> && git branch -d <branch>  # Clean up
+```
+
+Then close the issue:
+```
+project-update-issue(issueId="auth-system.2", status="closed")
+```
 
 ---
 
-## Delegating Work
+## Parallel Work
 
-### 1. Delegate to Background Agent
+### Start Multiple Issues
 
 ```
-project-work-on-issue(issueId="auth-system.3", isolated=true, delegate=true)
+project-work-on-issue(issueId="auth-system.2")                  # Research (no isolation)
+project-work-on-issue(issueId="auth-system.3", isolate=true)    # Code changes (isolated)
+project-work-on-issue(issueId="auth-system.4", isolate=true)    # Code changes (isolated)
 ```
 
-This:
-- Creates an isolated worktree
-- Starts a background agent session
-- Tracks delegation status
+Each issue runs with a background agent. Isolated issues get their own worktree.
 
-### 2. Check Delegation Status
+### Monitor Progress
 
 ```
 project-status()
@@ -116,15 +132,12 @@ project-status()
 
 Shows active delegations and their status.
 
-### 3. Review and Merge
+### Retrieve Results After Compaction
 
-When the delegation completes:
-- Results are saved to `research/delegation-{id}.md`
-- Review the changes in the worktree
-- Merge when ready:
+If the session is compacted, use:
 
 ```
-project-update-issue(issueId="auth-system.3", status="closed", mergeWorktree=true)
+project-internal-delegation-read(id="del-abc123")
 ```
 
 ---
@@ -181,6 +194,6 @@ project-list()
 
 Each project maintains its own:
 - Issue tree
-- Planning artifacts
+- Planning state
 - Worktrees
 - Delegation history

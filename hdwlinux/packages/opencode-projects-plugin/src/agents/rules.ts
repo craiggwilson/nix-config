@@ -1,7 +1,17 @@
 /**
- * System prompt rules for project management
+ * System prompt rules for project management.
+ *
+ * This constant contains the system prompt rules that are injected into
+ * agent conversations to provide context about available project management
+ * tools and workflows.
+ *
+ * The rules cover:
+ * - Available project and issue management tools
+ * - Workflow guidelines for starting projects and working on issues
+ * - Background delegation behavior and notifications
+ * - Worktree merge instructions for isolated work
+ * - Disabled tools in delegated sessions
  */
-
 export const PROJECT_RULES = `<project-management-system>
 
 ## Project Management Tools
@@ -18,7 +28,9 @@ You have access to project planning and tracking tools:
 
 ### Issue Tools
 - \`project-create-issue(title, projectId?, description?, priority?, parent?, blockedBy?, labels?)\` - Create a beads issue
-- \`project-work-on-issue(issueId, isolate?, delegate?)\` - Claim an issue and optionally start isolated work
+- \`project-work-on-issue(issueId, isolate?, agent?)\` - Start work on an issue with background agent
+  - isolate=false (default): Runs in repo root, good for research/analysis
+  - isolate=true: Creates isolated worktree, required for code changes
 - \`project-update-issue(issueId, status?, ...)\` - Update issue status and fields
 
 ### Delegation Tools
@@ -35,8 +47,8 @@ You have access to project planning and tracking tools:
 ### Working on Issues
 1. Use \`project-focus\` to set context
 2. Use \`project-status\` to see ready work
-3. Use \`project-work-on-issue\` to start work
-4. For parallel work, use \`project-work-on-issue(id, isolate=true, delegate=true)\`
+3. Use \`project-work-on-issue(issueId)\` for research/analysis (no isolation)
+4. Use \`project-work-on-issue(issueId, isolate=true)\` for code changes (creates worktree)
 
 ### Project Types
 - **Roadmap** (6+ months): Strategic planning with milestones, risks, architecture
@@ -77,13 +89,40 @@ Notifications arrive in this format:
 </delegation-notification>
 \`\`\`
 
-When all delegations complete:
+When the delegation used \`isolate=true\`, the notification includes worktree info:
 \`\`\`xml
 <delegation-notification>
-  <status>all-complete</status>
-  <summary>All delegations complete. Review the results above and continue.</summary>
+  <delegation-id>del-abc123</delegation-id>
+  <issue>issue-id</issue>
+  <status>complete</status>
+  <worktree>
+    <path>/path/to/worktree</path>
+    <branch>project-id/issue-id</branch>
+    <vcs>jj|git</vcs>
+  </worktree>
+  <merge-instructions>
+    VCS-specific instructions for merging the changes...
+  </merge-instructions>
+  <result>The full delegation result...</result>
 </delegation-notification>
 \`\`\`
+
+### Merging Isolated Worktree Changes
+
+When a delegation with \`isolate=true\` completes, you must merge the changes.
+The notification includes VCS-specific merge instructions.
+
+**For jj:**
+1. Review: \`jj diff --from main --to <branch>\`
+2. Squash: \`jj squash --from <branch>\` (from main workspace)
+3. Clean up: \`jj workspace forget <branch>\`
+
+**For git:**
+1. Review: \`git diff main..<branch>\`
+2. Merge: \`git merge <branch>\`
+3. Clean up: \`git worktree remove <path> && git branch -d <branch>\`
+
+After merging, update the issue: \`project-update-issue(issueId, status='closed')\`
 
 ### Disabled Tools in Delegations
 

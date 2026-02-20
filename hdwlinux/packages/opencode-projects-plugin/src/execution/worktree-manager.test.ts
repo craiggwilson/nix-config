@@ -84,21 +84,22 @@ describe("WorktreeManager", () => {
   test("createIsolatedWorktree creates worktree for issue", async () => {
     if (!gitAvailable) return
 
-    const info = await manager.createIsolatedWorktree({
+    const result = await manager.createIsolatedWorktree({
       projectId: "test-project",
       issueId: "issue-123",
     })
 
-    expect(info).not.toBeNull()
-    expect(info!.name).toBe("test-project/issue-123")
-    expect(info!.isMain).toBe(false)
+    expect(result.success).toBe(true)
+    expect(result.info).not.toBeNull()
+    expect(result.info!.name).toBe("test-project/issue-123")
+    expect(result.info!.isMain).toBe(false)
 
     // Verify directory exists
-    const stat = await fs.stat(info!.path)
+    const stat = await fs.stat(result.info!.path)
     expect(stat.isDirectory()).toBe(true)
 
     // Clean up
-    await manager.removeWorktree(info!.name)
+    await manager.removeWorktree(result.info!.name)
   })
 
   test("listProjectWorktrees filters by project", async () => {
@@ -166,12 +167,12 @@ describe("WorktreeManager", () => {
   test("removeWorktree removes the worktree", async () => {
     if (!gitAvailable) return
 
-    const info = await manager.createIsolatedWorktree({
+    const result = await manager.createIsolatedWorktree({
       projectId: "remove-test",
       issueId: "issue",
     })
 
-    const removed = await manager.removeWorktree(info!.name)
+    const removed = await manager.removeWorktree(result.info!.name)
 
     expect(removed).toBe(true)
 

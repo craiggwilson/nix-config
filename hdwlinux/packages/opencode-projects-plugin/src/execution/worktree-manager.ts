@@ -29,6 +29,15 @@ export interface CreateWorktreeOptions {
 }
 
 /**
+ * Result of creating a worktree
+ */
+export interface CreateWorktreeResult {
+  success: boolean
+  info?: WorktreeInfo
+  error?: string
+}
+
+/**
  * Options for merging a worktree
  */
 export interface MergeWorktreeOptions {
@@ -106,10 +115,10 @@ export class WorktreeManager {
    *
    * The worktree name is derived from projectId and issueId
    */
-  async createIsolatedWorktree(options: CreateWorktreeOptions): Promise<WorktreeInfo | null> {
+  async createIsolatedWorktree(options: CreateWorktreeOptions): Promise<CreateWorktreeResult> {
     const adapter = await this.detectVCS()
     if (!adapter) {
-      return null
+      return { success: false, error: "No VCS detected" }
     }
 
     const { projectId, issueId, baseBranch } = options
@@ -120,10 +129,11 @@ export class WorktreeManager {
     try {
       const info = await adapter.createWorktree(name, baseBranch)
       await this.log.info(`Created worktree for ${issueId} at ${info.path}`)
-      return info
+      return { success: true, info }
     } catch (error) {
-      await this.log.error(`Failed to create worktree: ${error}`)
-      return null
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      await this.log.error(`Failed to create worktree: ${errorMessage}`)
+      return { success: false, error: errorMessage }
     }
   }
 

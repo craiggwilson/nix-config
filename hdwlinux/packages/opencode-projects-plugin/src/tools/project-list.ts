@@ -4,8 +4,9 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDepsV2, ProjectToolContext } from "../core/types.js"
+import type { ToolDeps, ProjectToolContext } from "../core/types.js"
 import type { ProjectMetadata } from "../core/project-manager.js"
+import { formatError } from "../core/errors.js"
 
 interface ProjectListArgs {
   scope?: "local" | "global" | "all"
@@ -15,7 +16,7 @@ interface ProjectListArgs {
 /**
  * Create the project_list tool
  */
-export function createProjectList(deps: ToolDepsV2) {
+export function createProjectList(deps: ToolDeps) {
   const { projectManager, log } = deps
 
   return tool({
@@ -35,49 +36,51 @@ Shows project name, status, and issue counts.`,
     },
 
     async execute(args: ProjectListArgs, _ctx: ProjectToolContext): Promise<string> {
-      const { scope = "all", status = "all" } = args
+      try {
+        const { scope = "all", status = "all" } = args
 
-      await log.info(`Listing projects: scope=${scope}, status=${status}`)
+        await log.info(`Listing projects: scope=${scope}, status=${status}`)
 
-      const projects = await projectManager.listProjects({ scope, status })
+        const projects = await projectManager.listProjects({ scope, status })
 
-      if (projects.length === 0) {
-        const scopeText = scope === "all" ? "" : ` in ${scope} storage`
-        const statusText = status === "all" ? "" : ` with status '${status}'`
-        return `No projects found${scopeText}${statusText}.\n\nUse \`project_create\` to create a new project.`
-      }
-
-
-      const lines: string[] = ["## Projects", ""]
-
-
-      const localProjects = projects.filter((p) => p.storage === "local")
-      const globalProjects = projects.filter((p) => p.storage === "global")
-
-      if (localProjects.length > 0 && (scope === "local" || scope === "all")) {
-        lines.push("### Local (Repository)")
-        lines.push("")
-        for (const project of localProjects) {
-          lines.push(formatProject(project))
+        if (projects.length === 0) {
+          const scopeText = scope === "all" ? "" : ` in ${scope} storage`
+          const statusText = status === "all" ? "" : ` with status '${status}'`
+          return `No projects found${scopeText}${statusText}.\n\nUse \`project_create\` to create a new project.`
         }
-        lines.push("")
-      }
 
-      if (globalProjects.length > 0 && (scope === "global" || scope === "all")) {
-        lines.push("### Global")
-        lines.push("")
-        for (const project of globalProjects) {
-          lines.push(formatProject(project))
+        const lines: string[] = ["## Projects", ""]
+
+        const localProjects = projects.filter((p) => p.storage === "local")
+        const globalProjects = projects.filter((p) => p.storage === "global")
+
+        if (localProjects.length > 0 && (scope === "local" || scope === "all")) {
+          lines.push("### Local (Repository)")
+          lines.push("")
+          for (const project of localProjects) {
+            lines.push(formatProject(project))
+          }
+          lines.push("")
         }
+
+        if (globalProjects.length > 0 && (scope === "global" || scope === "all")) {
+          lines.push("### Global")
+          lines.push("")
+          for (const project of globalProjects) {
+            lines.push(formatProject(project))
+          }
+          lines.push("")
+        }
+
+        lines.push("---")
         lines.push("")
+        lines.push("Use `project_focus(projectId)` to set context for a project.")
+        lines.push("Use `project_status(projectId)` to see detailed progress.")
+
+        return lines.join("\n")
+      } catch (error) {
+        return formatError(error)
       }
-
-      lines.push("---")
-      lines.push("")
-      lines.push("Use `project_focus(projectId)` to set context for a project.")
-      lines.push("Use `project_status(projectId)` to see detailed progress.")
-
-      return lines.join("\n")
     },
   })
 }

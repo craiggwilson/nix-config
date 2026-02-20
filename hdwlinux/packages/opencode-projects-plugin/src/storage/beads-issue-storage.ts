@@ -18,12 +18,7 @@ import type {
   ProjectStatus,
 } from "./issue-storage.js"
 import type { BunShell, Logger } from "../core/types.js"
-
-interface ShellResult {
-  exitCode: number
-  stdout: string
-  stderr: string
-}
+import { runShell, runShellInDir, type ShellResult } from "../core/shell-utils.js"
 
 /**
  * BeadsIssueStorage - uses beads CLI for issue management
@@ -63,22 +58,10 @@ export class BeadsIssueStorage implements IssueStorage {
     const bdCmd = ["bd", "--no-daemon", ...args].filter(Boolean).join(" ")
 
     // Use cd to change to repo directory before running bd
-    const cmd = repoPath ? `cd ${JSON.stringify(repoPath)} && ${bdCmd}` : bdCmd
-
-    try {
-      const result = await $`${{ raw: cmd }}`.nothrow().quiet()
-      return {
-        exitCode: result.exitCode,
-        stdout: result.stdout.toString(),
-        stderr: result.stderr.toString(),
-      }
-    } catch (error) {
-      return {
-        exitCode: 1,
-        stdout: "",
-        stderr: String(error),
-      }
+    if (repoPath) {
+      return runShellInDir($, bdCmd, repoPath)
     }
+    return runShell($, bdCmd)
   }
 
   async isAvailable(): Promise<boolean> {
@@ -163,16 +146,19 @@ export class BeadsIssueStorage implements IssueStorage {
       const result = await this.runBd(["show", issueId, "--json"], projectDir)
 
       if (result.exitCode !== 0) {
+        await this.log.debug(`beads show ${issueId} failed: ${result.stderr}`)
         return null
       }
 
       const issues = JSON.parse(result.stdout)
       if (!Array.isArray(issues) || issues.length === 0) {
+        await this.log.debug(`beads show ${issueId} returned empty or invalid response`)
         return null
       }
 
       return this.parseIssue(issues[0])
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads getIssue ${issueId} failed: ${error}`)
       return null
     }
   }
@@ -188,16 +174,19 @@ export class BeadsIssueStorage implements IssueStorage {
       const result = await this.runBd(args, projectDir)
 
       if (result.exitCode !== 0) {
+        await this.log.debug(`beads list failed: ${result.stderr}`)
         return []
       }
 
       const issues = JSON.parse(result.stdout)
       if (!Array.isArray(issues)) {
+        await this.log.debug(`beads list returned non-array response`)
         return []
       }
 
       return issues.map((i) => this.parseIssue(i))
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads listIssues failed: ${error}`)
       return []
     }
   }
@@ -237,6 +226,7 @@ export class BeadsIssueStorage implements IssueStorage {
       const result = await this.runBd(["list", "--ready", "--json"], projectDir)
 
       if (result.exitCode !== 0) {
+        await this.log.debug(`beads list --ready failed, falling back to filter: ${result.stderr}`)
         // Fallback: get all open issues and filter
         const allIssues = await this.listIssues(projectDir, { status: "open" })
         return allIssues.filter((i) => !i.blockedBy || i.blockedBy.length === 0)
@@ -244,11 +234,13 @@ export class BeadsIssueStorage implements IssueStorage {
 
       const issues = JSON.parse(result.stdout)
       if (!Array.isArray(issues)) {
+        await this.log.debug(`beads list --ready returned non-array response`)
         return []
       }
 
       return issues.map((i) => this.parseIssue(i))
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads getReadyIssues failed: ${error}`)
       return []
     }
   }
@@ -261,6 +253,9 @@ export class BeadsIssueStorage implements IssueStorage {
       }
 
       const result = await this.runBd(args, projectDir)
+      if (result.exitCode !== 0) {
+        await this.log.debug(`beads claim ${issueId} failed: ${result.stderr}`)
+      }
       return result.exitCode === 0
     } catch (error) {
       await this.log.error(`beads claim failed: ${error}`)
@@ -272,6 +267,9 @@ export class BeadsIssueStorage implements IssueStorage {
     try {
       const beadsStatus = this.statusToBeads(status)
       const result = await this.runBd(["update", issueId, "--status", beadsStatus], projectDir)
+      if (result.exitCode !== 0) {
+        await this.log.debug(`beads updateStatus ${issueId} to ${status} failed: ${result.stderr}`)
+      }
       return result.exitCode === 0
     } catch (error) {
       await this.log.error(`beads status update failed: ${error}`)
@@ -313,7 +311,8 @@ export class BeadsIssueStorage implements IssueStorage {
         delegationId: parts[1],
         delegationStatus: parts[2],
       }
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads getDelegationMetadata ${issueId} failed: ${error}`)
       return null
     }
   }
@@ -385,7 +384,8 @@ export class BeadsIssueStorage implements IssueStorage {
         blocked,
         blockers,
       }
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads getProjectStatus failed: ${error}`)
       return null
     }
   }
@@ -395,16 +395,19 @@ export class BeadsIssueStorage implements IssueStorage {
       const result = await this.runBd(["list", "--parent", issueId, "--json"], projectDir)
 
       if (result.exitCode !== 0) {
+        await this.log.debug(`beads getChildren ${issueId} failed: ${result.stderr}`)
         return []
       }
 
       const issues = JSON.parse(result.stdout)
       if (!Array.isArray(issues)) {
+        await this.log.debug(`beads getChildren ${issueId} returned non-array response`)
         return []
       }
 
       return issues.map((i) => this.parseIssue(i))
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads getChildren ${issueId} failed: ${error}`)
       return []
     }
   }
@@ -419,16 +422,19 @@ export class BeadsIssueStorage implements IssueStorage {
       const result = await this.runBd(args, projectDir)
 
       if (result.exitCode !== 0) {
+        await this.log.debug(`beads getTree failed: ${result.stderr}`)
         return []
       }
 
       const issues = JSON.parse(result.stdout)
       if (!Array.isArray(issues)) {
+        await this.log.debug(`beads getTree returned non-array response`)
         return []
       }
 
       return issues.map((i) => this.parseIssue(i))
-    } catch {
+    } catch (error) {
+      await this.log.debug(`beads getTree failed: ${error}`)
       return []
     }
   }

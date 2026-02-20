@@ -16,6 +16,7 @@ export { JujutsuAdapter } from "./jujutsu-adapter.js"
 export { WorktreeManager } from "./worktree-manager.js"
 export type {
   CreateWorktreeOptions,
+  CreateWorktreeResult,
   MergeWorktreeOptions,
 } from "./worktree-manager.js"
 

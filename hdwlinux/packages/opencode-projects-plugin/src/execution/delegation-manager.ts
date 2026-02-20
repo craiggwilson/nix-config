@@ -13,7 +13,7 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as crypto from "node:crypto"
 
-import type { Logger, OpencodeClient } from "../core/types.js"
+import type { Logger, OpencodeClient, MessageItem, Part } from "../core/types.js"
 import { selectAgent, discoverAgents } from "../core/agent-selector.js"
 import { promptSmallModel } from "../core/small-model.js"
 
@@ -30,6 +30,8 @@ export interface Delegation {
   projectId: string
   issueId: string
   worktreePath?: string
+  worktreeBranch?: string
+  vcs?: "git" | "jj"
   status: DelegationStatus
   sessionId?: string
   parentSessionId?: string
@@ -51,6 +53,8 @@ export interface CreateDelegationOptions {
   issueId: string
   prompt: string
   worktreePath?: string
+  worktreeBranch?: string
+  vcs?: "git" | "jj"
   agent?: string
   parentSessionId?: string
 }
@@ -59,7 +63,10 @@ export interface CreateDelegationOptions {
  * Options for DelegationManager constructor
  */
 export interface DelegationManagerOptions {
-  timeoutMs?: number
+  /** Timeout for delegations in milliseconds */
+  timeoutMs: number
+  /** Timeout for small model queries in milliseconds */
+  smallModelTimeoutMs: number
 }
 
 /**
@@ -80,8 +87,6 @@ const DISABLED_TOOLS: Record<string, boolean> = {
   "project-work-on-issue": false,
 }
 
-const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000 // 15 minutes
-
 /**
  * DelegationManager - manages background delegations with fire-and-forget execution
  */
@@ -91,6 +96,7 @@ export class DelegationManager {
   private log: Logger
   private client?: OpencodeClient
   private timeoutMs: number
+  private smallModelTimeoutMs: number
 
   // Session ID -> Delegation ID mapping for event lookup
   private sessionToDelegation: Map<string, string> = new Map()
@@ -98,20 +104,18 @@ export class DelegationManager {
   // Track pending delegations per root session for batched notifications
   private pendingByRoot: Map<string, Set<string>> = new Map()
 
-  // In-memory cache of delegations for fast lookup
-  private delegationCache: Map<string, Delegation> = new Map()
-
   constructor(
     projectDir: string,
     log: Logger,
-    client?: OpencodeClient,
-    options?: DelegationManagerOptions
+    client: OpencodeClient | undefined,
+    options: DelegationManagerOptions
   ) {
     this.projectDir = projectDir
     this.delegationsDir = path.join(projectDir, "delegations")
     this.log = log
     this.client = client
-    this.timeoutMs = options?.timeoutMs ?? DEFAULT_TIMEOUT_MS
+    this.timeoutMs = options.timeoutMs
+    this.smallModelTimeoutMs = options.smallModelTimeoutMs
   }
 
   /**
@@ -133,6 +137,7 @@ export class DelegationManager {
             agents,
             taskDescription: prompt,
             taskType: "coding",
+            timeoutMs: this.smallModelTimeoutMs,
           })) || undefined
       }
     }
@@ -150,6 +155,8 @@ export class DelegationManager {
       projectId,
       issueId,
       worktreePath,
+      worktreeBranch: options.worktreeBranch,
+      vcs: options.vcs,
       status: "pending",
       sessionId: undefined,
       parentSessionId,
@@ -287,16 +294,10 @@ export class DelegationManager {
    * Get a delegation by ID
    */
   async get(delegationId: string): Promise<Delegation | null> {
-    // Check cache first
-    const cached = this.delegationCache.get(delegationId)
-    if (cached) return cached
-
     try {
       const filePath = path.join(this.delegationsDir, `${delegationId}.json`)
       const content = await fs.readFile(filePath, "utf8")
-      const delegation = JSON.parse(content) as Delegation
-      this.delegationCache.set(delegationId, delegation)
-      return delegation
+      return JSON.parse(content) as Delegation
     } catch {
       return null
     }
@@ -480,40 +481,6 @@ export class DelegationManager {
   }
 
   /**
-   * Check if a session has done meaningful work (has tool calls)
-   */
-  private async sessionHasWork(sessionId: string): Promise<boolean> {
-    if (!this.client) return false
-
-    try {
-      const messages = await this.client.session.messages({
-        path: { id: sessionId },
-      })
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const messageData = messages.data as any[] | undefined
-      if (!messageData) return false
-
-      // Check for tool_use parts in assistant messages
-      for (const message of messageData) {
-        if (message.info?.role !== "assistant") continue
-        
-        const parts = message.parts || []
-        for (const part of parts) {
-          if (part.type === "tool_use") {
-            return true
-          }
-        }
-      }
-
-      return false
-    } catch (error) {
-      await this.log.error(`Failed to check session work: ${error}`)
-      return false
-    }
-  }
-
-  /**
    * Get result text from a session's messages
    */
   private async getSessionResult(sessionId: string): Promise<string> {
@@ -524,8 +491,7 @@ export class DelegationManager {
         path: { id: sessionId },
       })
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const messageData = messages.data as any[] | undefined
+      const messageData: MessageItem[] | undefined = messages.data
 
       await this.log.debug(`getSessionResult: ${messageData?.length || 0} messages in session ${sessionId}`)
 
@@ -553,8 +519,8 @@ export class DelegationManager {
           continue
         }
         
-        const parts = message.parts || []
-        const textParts = parts.filter((p: { type: string }) => p.type === "text")
+        const parts: Part[] = message.parts || []
+        const textParts = parts.filter((p) => p.type === "text")
         
         for (const part of textParts) {
           if (part.text) {
@@ -636,12 +602,27 @@ export class DelegationManager {
         ? `\n\n**${remainingCount} delegation(s) still in progress.** You will be notified when ALL complete.`
         : ""
 
+    // Build worktree section with VCS-specific merge instructions
+    let worktreeSection = ""
+    if (delegation.worktreePath && delegation.vcs) {
+      const mergeInstructions = this.getMergeInstructions(delegation)
+      worktreeSection = `
+<worktree>
+  <path>${delegation.worktreePath}</path>
+  <branch>${delegation.worktreeBranch || delegation.issueId}</branch>
+  <vcs>${delegation.vcs}</vcs>
+</worktree>
+<merge-instructions>
+${mergeInstructions}
+</merge-instructions>`
+    }
+
     const notification = `<delegation-notification>
 <delegation-id>${delegation.id}</delegation-id>
 <issue>${delegation.issueId}</issue>
 <status>${statusText}</status>
 ${delegation.title ? `<title>${delegation.title}</title>` : ""}
-${delegation.description ? `<description>${delegation.description}</description>` : ""}
+${delegation.description ? `<description>${delegation.description}</description>` : ""}${worktreeSection}
 <result>
 ${delegation.result || "(no result)"}
 </result>
@@ -708,7 +689,7 @@ ${result.slice(0, 2000)}
 Respond with ONLY valid JSON:
 {"title": "Your Title", "description": "Your description."}`,
         sessionTitle: "Metadata Generation",
-        timeoutMs: 30000,
+        timeoutMs: this.smallModelTimeoutMs,
       }
     )
 
@@ -734,6 +715,27 @@ Respond with ONLY valid JSON:
   }
 
   /**
+   * Get VCS-specific merge instructions for a delegation
+   */
+  private getMergeInstructions(delegation: Delegation): string {
+    const branch = delegation.worktreeBranch || delegation.issueId
+    const worktreePath = delegation.worktreePath || ""
+
+    if (delegation.vcs === "jj") {
+      return `Review and merge the changes from the jj workspace:
+1. Review: \`jj diff --from main --to ${branch}\`
+2. Squash: \`jj squash --from ${branch}\` (from main workspace)
+3. Clean up: \`jj workspace forget ${branch}\``
+    } else {
+      // git
+      return `Review and merge the changes from the git worktree:
+1. Review: \`git diff main..${branch}\`
+2. Merge: \`git merge ${branch}\`
+3. Clean up: \`git worktree remove ${worktreePath} && git branch -d ${branch}\``
+    }
+  }
+
+  /**
    * Generate a unique delegation ID
    */
   private generateId(): string {
@@ -743,13 +745,12 @@ Respond with ONLY valid JSON:
   }
 
   /**
-   * Save a delegation to disk and cache
+   * Save a delegation to disk
    */
   private async save(delegation: Delegation): Promise<void> {
     await fs.mkdir(this.delegationsDir, { recursive: true })
     const filePath = path.join(this.delegationsDir, `${delegation.id}.json`)
     await fs.writeFile(filePath, JSON.stringify(delegation, null, 2), "utf8")
-    this.delegationCache.set(delegation.id, delegation)
   }
 
   /**

@@ -1,254 +1,150 @@
 /**
- * project-work-on-issue tool - Claim an issue and optionally start isolated work
+ * project-work-on-issue tool - Start work on an issue with a background agent
+ *
+ * Delegates work to a background agent. Optionally creates an isolated worktree
+ * for code changes that need to be merged back.
  */
 
 import { tool } from "@opencode-ai/plugin"
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
 
-import type { ToolDepsV2, ProjectToolContext, VCSType, BunShell } from "../core/types.js"
-import { selectAgent, discoverAgents } from "../core/agent-selector.js"
+import type { ToolDeps, ProjectToolContext } from "../core/types.js"
+import { formatError } from "../core/errors.js"
 
-interface IssueClaimArgs {
+interface IssueWorkArgs {
   issueId: string
   isolate?: boolean
-  delegate?: boolean
   agent?: string
 }
 
 /**
  * Create the project-work-on-issue tool
  */
-export function createIssueClaim(deps: ToolDepsV2) {
-  const { client, projectManager, log, $, delegationManager } = deps
+export function createProjectWorkOnIssue(deps: ToolDeps) {
+  const { projectManager, log, delegationManager } = deps
 
   return tool({
-    description: `Claim an issue and optionally start work in an isolated worktree.
+    description: `Start work on an issue with a background agent.
 
-Options:
-- isolate: Create a git worktree or jj workspace for isolated work
-- delegate: Delegate to a background agent (requires isolate=true)
+This tool:
+1. Claims the issue (sets status to in_progress)
+2. Optionally creates an isolated git worktree or jj workspace (if isolate=true)
+3. Delegates work to a background agent
+4. Returns immediately - you'll be notified when complete
 
-This atomically claims the issue (sets assignee and status to in_progress).`,
+Parameters:
+- isolate=false (default): Runs in repo root. Good for research, analysis, documentation.
+- isolate=true: Creates isolated worktree. Required for code changes that need merging.
+
+When isolate=true, the completion notification includes merge instructions.`,
 
     args: {
-      issueId: tool.schema.string().describe("Issue ID to claim (e.g., 'bd-a3f8')"),
+      issueId: tool.schema.string().describe("Issue ID to work on (e.g., 'proj-abc.1')"),
       isolate: tool.schema
         .boolean()
         .optional()
-        .describe("Create worktree/workspace for isolated work"),
-      delegate: tool.schema
-        .boolean()
-        .optional()
-        .describe("Delegate to background agent (requires isolate)"),
+        .describe("Create isolated worktree (default: false). Use true for code changes."),
       agent: tool.schema
         .string()
         .optional()
-        .describe("Agent for delegation (auto-selected if not specified)"),
+        .describe("Agent to use for delegation (auto-selected if not specified)"),
     },
 
-    async execute(args: IssueClaimArgs, ctx: ProjectToolContext): Promise<string> {
-      const { issueId, isolate = false, delegate = false, agent } = args
+    async execute(args: IssueWorkArgs, ctx: ProjectToolContext): Promise<string> {
+      try {
+        const { issueId, isolate = false, agent } = args
 
+        const projectId = projectManager.getFocusedProjectId()
 
-      const projectId = projectManager.getFocusedProjectId()
-
-      if (!projectId) {
-        return "No project is currently focused.\n\nUse `project-focus(projectId)` to set context before claiming issues."
-      }
-
-      await log.info(`Claiming issue ${issueId} in project ${projectId}`)
-
-
-      const issue = await projectManager.getIssue(projectId, issueId)
-
-      if (!issue) {
-        return `Issue '${issueId}' not found in project '${projectId}'.\n\nUse \`project-status\` to see available issues.`
-      }
-
-
-      if (issue.status === "in_progress") {
-        return `Issue '${issueId}' is already in progress${issue.assignee ? ` (assigned to ${issue.assignee})` : ""}.\n\nUse \`project-status\` to see other available issues.`
-      }
-
-
-      const claimed = await projectManager.claimIssue(projectId, issueId)
-
-      if (!claimed) {
-        return `Failed to claim issue '${issueId}'. Check issue storage configuration.`
-      }
-
-
-      const lines: string[] = []
-
-      lines.push(`## Issue Claimed: ${issueId}`)
-      lines.push("")
-      lines.push(`**Title:** ${issue.title}`)
-      lines.push(`**Status:** in_progress`)
-
-      if (issue.description) {
-        lines.push("")
-        lines.push("**Description:**")
-        lines.push(issue.description)
-      }
-
-
-      if (isolate) {
-        const projectDir = await projectManager.getProjectDir(projectId)
-        if (!projectDir) {
-          lines.push("")
-          lines.push("**Warning:** Could not find project directory for worktree creation.")
-        } else {
-          // Get the repo root (parent of .projects directory)
-          const repoRoot = path.dirname(path.dirname(projectDir))
-          const vcs = await detectVCS(repoRoot)
-
-          if (!vcs) {
-            lines.push("")
-            lines.push("**Warning:** No VCS detected. Cannot create isolated worktree.")
-          } else {
-            const worktreeResult = await createWorktree(vcs, repoRoot, projectId, issueId, log, $)
-
-            if (worktreeResult.success) {
-              lines.push("")
-              lines.push("### Isolated Worktree Created")
-              lines.push("")
-              lines.push(`**Path:** ${worktreeResult.path}`)
-              lines.push(`**Branch:** ${worktreeResult.branch}`)
-              lines.push(`**VCS:** ${vcs}`)
-
-              // Handle delegation
-              if (delegate && delegationManager) {
-                lines.push("")
-                lines.push("### Background Delegation")
-                lines.push("")
-
-                // Create delegation (fires in background, returns immediately)
-                const delegation = await delegationManager.create(projectId, {
-                  issueId,
-                  prompt: `Work on issue: ${issue.title}\n\n${issue.description || ""}`,
-                  worktreePath: worktreeResult.path,
-                  agent,
-                  parentSessionId: ctx.sessionID,
-                })
-
-                if (delegation.agent) {
-                  lines.push(`**Agent:** ${delegation.agent}`)
-                } else {
-                  lines.push(`**Agent:** (OpenCode will decide)`)
-                }
-                lines.push(`**Delegation ID:** ${delegation.id}`)
-                lines.push(`**Status:** Running in background`)
-                lines.push("")
-                lines.push("You will be notified via `<delegation-notification>` when complete.")
-                lines.push("Continue with other work - do NOT poll for status.")
-                lines.push("")
-                lines.push("Use `project-internal-delegation-read(id)` to retrieve results after compaction.")
-              } else if (delegate && !delegationManager) {
-                lines.push("")
-                lines.push("### Background Delegation")
-                lines.push("")
-                lines.push("**Warning:** Delegation manager not available.")
-              }
-            } else {
-              lines.push("")
-              lines.push(`**Warning:** Failed to create worktree: ${worktreeResult.error}`)
-            }
-          }
+        if (!projectId) {
+          return "No project is currently focused.\n\nUse `project-focus(projectId)` to set context before working on issues."
         }
+
+        // Verify delegation manager is available
+        if (!delegationManager) {
+          return "Delegation manager not available. Cannot start background work."
+        }
+
+        await log.info(`Starting work on issue ${issueId} in project ${projectId} (isolate=${isolate})`)
+
+        // Delegate to ProjectManager
+        const result = await projectManager.startWorkOnIssue(projectId, issueId, {
+          isolate,
+          agent,
+          parentSessionId: ctx.sessionID,
+        })
+
+        if (!result.success) {
+          return result.error || "Failed to start work on issue."
+        }
+
+        // Format response
+        return formatStartWorkResponse(result)
+      } catch (error) {
+        return formatError(error)
       }
-
-      lines.push("")
-      lines.push("---")
-      lines.push("")
-      lines.push("**Next Steps:**")
-
-      if (isolate && !delegate) {
-        lines.push("- Work in the isolated worktree")
-        lines.push("- Commit changes when ready")
-        lines.push("- Merge back to main branch")
-      } else if (!isolate) {
-        lines.push("- Start working on the issue")
-        lines.push("- Use `bd update <id> --status closed` when complete")
-      }
-
-      lines.push("- `project-status` - Check project progress")
-
-      return lines.join("\n")
     },
   })
 }
 
 /**
- * Detect VCS type
+ * Format the response for starting work on an issue
  */
-async function detectVCS(directory: string): Promise<VCSType | null> {
-  // Check for jj first (preferred)
-  try {
-    await fs.access(path.join(directory, ".jj"))
-    return "jj"
-  } catch {
-    // Not jj
+function formatStartWorkResponse(result: {
+  issue: { id: string; title: string; description?: string }
+  delegation?: { id: string; agent?: string }
+  worktreePath?: string
+  worktreeBranch?: string
+  vcs?: string
+}): string {
+  const { issue, delegation, worktreePath, worktreeBranch, vcs } = result
+  const lines: string[] = []
+
+  lines.push(`## Work Started: ${issue.id}`)
+  lines.push("")
+  lines.push(`**Title:** ${issue.title}`)
+  lines.push(`**Status:** in_progress`)
+  lines.push("")
+
+  if (issue.description) {
+    lines.push("**Description:**")
+    lines.push(issue.description)
+    lines.push("")
   }
 
-  // Check for git
-  try {
-    await fs.access(path.join(directory, ".git"))
-    return "git"
-  } catch {
-    // Not git
+  if (worktreePath) {
+    lines.push("### Isolated Worktree")
+    lines.push("")
+    lines.push(`**Path:** ${worktreePath}`)
+    lines.push(`**Branch:** ${worktreeBranch}`)
+    lines.push(`**VCS:** ${vcs}`)
+    lines.push("")
+    lines.push("*Changes will need to be merged back when complete.*")
+    lines.push("")
+  } else {
+    lines.push("### Execution")
+    lines.push("")
+    lines.push("**Mode:** Running in repo root (no isolation)")
+    lines.push("")
   }
 
-  return null
-}
-
-/**
- * Create a worktree/workspace for isolated work
- */
-async function createWorktree(
-  vcs: VCSType,
-  repoRoot: string,
-  projectId: string,
-  issueId: string,
-  log: ToolDepsV2["log"],
-  $: BunShell
-): Promise<{ success: boolean; path?: string; branch?: string; error?: string }> {
-  // Determine worktree base path
-  const repoName = path.basename(repoRoot)
-  const basePath = path.join(path.dirname(repoRoot), `${repoName}-worktrees`)
-
-  // Create worktree path
-  const worktreePath = path.join(basePath, issueId)
-  const branchName = `${projectId}/${issueId}`
-
-  try {
-    // Ensure base directory exists
-    await fs.mkdir(basePath, { recursive: true })
-
-    if (vcs === "jj") {
-      // Create jj workspace
-      const cmd = `cd ${JSON.stringify(repoRoot)} && jj workspace add --name ${issueId} ${JSON.stringify(worktreePath)}`
-      const result = await $`${{ raw: cmd }}`.nothrow().quiet()
-
-      if (result.exitCode !== 0) {
-        return { success: false, error: result.stderr.toString() }
-      }
-
-      await log.info(`Created jj workspace at ${worktreePath}`)
-      return { success: true, path: worktreePath, branch: issueId }
-    } else {
-      // Create git worktree
-      const cmd = `cd ${JSON.stringify(repoRoot)} && git worktree add -b ${branchName} ${JSON.stringify(worktreePath)}`
-      const result = await $`${{ raw: cmd }}`.nothrow().quiet()
-
-      if (result.exitCode !== 0) {
-        return { success: false, error: result.stderr.toString() }
-      }
-
-      await log.info(`Created git worktree at ${worktreePath}`)
-      return { success: true, path: worktreePath, branch: branchName }
-    }
-  } catch (error) {
-    return { success: false, error: String(error) }
+  lines.push("### Background Delegation")
+  lines.push("")
+  if (delegation?.agent) {
+    lines.push(`**Agent:** ${delegation.agent}`)
+  } else {
+    lines.push(`**Agent:** (OpenCode will decide)`)
   }
+  if (delegation) {
+    lines.push(`**Delegation ID:** ${delegation.id}`)
+  }
+  lines.push(`**Status:** Running in background`)
+  lines.push("")
+  lines.push("---")
+  lines.push("")
+  lines.push("You will be notified via `<delegation-notification>` when complete.")
+  lines.push("Continue with other work - do NOT poll for status.")
+  lines.push("")
+  lines.push("Use `project-internal-delegation-read(id)` to retrieve results after compaction.")
+
+  return lines.join("\n")
 }

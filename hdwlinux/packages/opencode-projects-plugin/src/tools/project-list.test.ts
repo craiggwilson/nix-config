@@ -20,7 +20,7 @@ import {
   createTestShell,
   createMockContext,
 } from "../core/test-utils.js"
-import type { BunShell, ToolDepsV2 } from "../core/types.js"
+import type { BunShell, ToolDeps } from "../core/types.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()
@@ -30,7 +30,7 @@ describe("project_list and project_status tools", () => {
   let testDir: string
   let projectManager: ProjectManager
   let testShell: BunShell
-  let toolDeps: ToolDepsV2
+  let toolDeps: ToolDeps
   let projectId: string
 
   beforeAll(async () => {
@@ -54,6 +54,7 @@ describe("project_list and project_status tools", () => {
     toolDeps = {
       client: mockClient,
       projectManager,
+      issueStorage,
       log: mockLogger,
       $: testShell,
     }
@@ -110,6 +111,7 @@ describe("project_list and project_status tools", () => {
       const tool = createProjectList({
         client: mockClient,
         projectManager: emptyManager,
+        issueStorage: new InMemoryIssueStorage(),
         log: mockLogger,
         $: testShell,
       })

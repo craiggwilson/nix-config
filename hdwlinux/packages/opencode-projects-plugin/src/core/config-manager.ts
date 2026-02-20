@@ -10,6 +10,12 @@ import type { ProjectConfig, ProjectOverrides } from "./types.js"
 
 const CONFIG_FILENAME = "opencode-projects.json"
 
+/** Default timeout for background delegations (15 minutes) */
+const DEFAULT_DELEGATION_TIMEOUT_MS = 15 * 60 * 1000
+
+/** Default timeout for small model queries (30 seconds) */
+const DEFAULT_SMALL_MODEL_TIMEOUT_MS = 30000
+
 /**
  * Validation error for configuration
  */
@@ -45,7 +51,8 @@ const DEFAULT_CONFIG: ProjectConfig = {
     autoCleanup: true,
   },
   delegation: {
-    timeoutMs: 15 * 60 * 1000, // 15 minutes
+    timeoutMs: DEFAULT_DELEGATION_TIMEOUT_MS,
+    smallModelTimeoutMs: DEFAULT_SMALL_MODEL_TIMEOUT_MS,
   },
 }
 
@@ -242,6 +249,20 @@ export class ConfigManager {
    */
   getWorktreeSettings(): { autoCleanup: boolean; basePath?: string } {
     return this.config.worktrees
+  }
+
+  /**
+   * Get delegation timeout in milliseconds
+   */
+  getDelegationTimeoutMs(): number {
+    return this.config.delegation?.timeoutMs ?? DEFAULT_DELEGATION_TIMEOUT_MS
+  }
+
+  /**
+   * Get small model timeout in milliseconds
+   */
+  getSmallModelTimeoutMs(): number {
+    return this.config.delegation?.smallModelTimeoutMs ?? DEFAULT_SMALL_MODEL_TIMEOUT_MS
   }
 
   /**
