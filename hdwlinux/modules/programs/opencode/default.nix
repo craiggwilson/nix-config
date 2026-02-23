@@ -14,7 +14,32 @@
         ...
       }:
       let
-        resolveModel = config.hdwlinux.ai.agent.resolveModel "opencode";
+        # Mapping from canonical model names to OpenCode model IDs (provider/model-id format)
+        opencodeModelIds = {
+          "Claude Haiku 4.5" = "claude-haiku-4-5";
+          "Claude Opus 4.5" = "claude-opus-4-5";
+          "Claude Opus 4.6" = "claude-opus-4-6";
+          "Claude Sonnet 4" = "claude-sonnet-4";
+          "Claude Sonnet 4.5" = "claude-sonnet-4-5";
+          "Claude Sonnet 4.6" = "claude-sonnet-4-6";
+          "GPT 5" = "gpt-5";
+          "GPT 5.1" = "gpt-5-1";
+          "GPT 5.2" = "gpt-5-2";
+        };
+
+        # Get all models resolved with OpenCode-specific names
+        resolvedModels = config.hdwlinux.ai.agent.resolveModels (name: opencodeModelIds.${name} or null);
+
+        # Resolve a single model name to an OpenCode model ID
+        resolveModel =
+          modelName:
+          let
+            resolved = resolvedModels.${modelName} or null;
+          in
+          if resolved == null then
+            throw "Model ${modelName} is not available for opencode"
+          else
+            resolved.name;
 
         # Transform MCP servers to OpenCode format
         mcpConfig = lib.mapAttrs (
@@ -91,61 +116,30 @@
             };
           })
           // (lib.optionalAttrs (hasTag "users:craig:work") {
-            augment = {
-              npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
-              name = "Augment Code";
-              models = {
-                "claude-haiku-4-5" = {
-                  name = "Claude Haiku 4.5";
-                  limit = {
-                    context = 200000;
-                    output = 8000;
-                  };
-                };
-                "claude-opus-4-6" = {
-                  name = "Claude Opus 4.6";
-                  limit = {
-                    context = 200000;
-                    output = 32000;
-                  };
-                };
-                "claude-opus-4-5" = {
-                  name = "Claude Opus 4.5";
-                  limit = {
-                    context = 200000;
-                    output = 32000;
-                  };
-                };
-                "claude-sonnet-4" = {
-                  name = "Claude Sonnet 4";
-                  limit = {
-                    context = 200000;
-                    output = 16000;
-                  };
-                };
-                "claude-sonnet-4-5" = {
-                  name = "Claude Sonnet 4.5";
-                  limit = {
-                    context = 200000;
-                    output = 16000;
-                  };
-                };
-                "gpt-5-1" = {
-                  name = "GPT 5.1";
-                  limit = {
-                    context = 400000;
-                    output = 32000;
-                  };
-                };
-                "gpt-5-2" = {
-                  name = "GPT 5.2";
-                  limit = {
-                    context = 400000;
-                    output = 32000;
-                  };
-                };
+            augment =
+              let
+                # Filter to only models with "augment" provider and transform to opencode format
+                augmentModels = lib.filterAttrs (
+                  _: model: builtins.elem "augment" model.providers
+                ) resolvedModels;
+
+                # Transform to opencode format: key is the model ID part after "augment/"
+                models = lib.mapAttrs' (
+                  displayName: model:
+                  lib.nameValuePair model.name {
+                    name = displayName;
+                    limit = {
+                      context = model.limits.context;
+                      output = model.limits.output;
+                    };
+                  }
+                ) augmentModels;
+              in
+              {
+                npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
+                name = "Augment Code";
+                inherit models;
               };
-            };
           });
 
         # OpenCode configuration
@@ -169,16 +163,6 @@
 
       in
       {
-        hdwlinux.ai.agent.models = {
-          "haiku4.5".providers.opencode = "augment/claude-haiku-4-5";
-          "opus4.5".providers.opencode = "augment/claude-opus-4-5";
-          "opus4.6".providers.opencode = "augment/claude-opus-4-6";
-          "sonnet4".providers.opencode = "augment/claude-sonnet-4";
-          "sonnet4.5".providers.opencode = "augment/claude-sonnet-4-5";
-          "gpt5.1".providers.opencode = "augment/gpt-5-1";
-          "gpt5.2".providers.opencode = "augment/gpt-5-2";
-        };
-
         home.packages = [
           inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode
           pkgs.beads

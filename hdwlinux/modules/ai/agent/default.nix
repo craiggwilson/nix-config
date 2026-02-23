@@ -6,34 +6,44 @@
     homeManager =
       { config, lib, ... }:
       let
-        # Resolve canonical model name to provider-specific identifier
-        # Follows fallback chain if model not available for the provider
-        resolveModel =
-          provider: canonicalName:
+        # Resolve all models to their program-specific names.
+        # Takes a callback that maps canonical model names to program-specific names (or null).
+        # Returns an attrset of models (keyed by canonical name) that have a valid local name,
+        # with `name` set to the program-specific name.
+        resolveModels =
+          getLocalName:
           let
-            resolve =
-              modelName: visited:
+            # Resolve a single model, following fallback chain
+            resolveOne =
+              canonicalName:
               let
-                model = config.hdwlinux.ai.agent.models.${modelName} or (throw "Unknown model: ${modelName}");
-
-                # Check for cycles
-                hasCycle = builtins.elem modelName visited;
-                visited' = visited ++ [ modelName ];
-                cycleError = throw "Cycle detected in model fallback chain: ${builtins.concatStringsSep " -> " visited'}";
-
-                # Try to get provider-specific name
-                providerModel = model.providers.${provider} or null;
+                resolve =
+                  modelName: visited:
+                  let
+                    model = config.hdwlinux.ai.agent.models.${modelName} or null;
+                    hasCycle = builtins.elem modelName visited;
+                    visited' = visited ++ [ modelName ];
+                    localName = if model != null then getLocalName modelName else null;
+                  in
+                  if model == null then
+                    null
+                  else if hasCycle then
+                    throw "Cycle detected in model fallback chain: ${builtins.concatStringsSep " -> " visited'}"
+                  else if localName != null then
+                    model // { name = localName; }
+                  else if model.fallback != null then
+                    resolve model.fallback visited'
+                  else
+                    null;
               in
-              if hasCycle then
-                cycleError
-              else if providerModel != null then
-                providerModel
-              else if model.fallback != null then
-                resolve model.fallback visited'
-              else
-                throw "Model ${canonicalName} (resolved to ${modelName}) is not available for ${provider}";
+              resolve canonicalName [ ];
+
+            # Resolve all models and filter out nulls
+            allResolved =
+              lib.mapAttrs (_: _: null) config.hdwlinux.ai.agent.models
+              // lib.mapAttrs (name: _: resolveOne name) config.hdwlinux.ai.agent.models;
           in
-          resolve canonicalName [ ];
+          lib.filterAttrs (_: model: model != null) allResolved;
 
         toolPermission = lib.types.enum [
           "allow"
@@ -122,11 +132,17 @@
       in
       {
         options.hdwlinux.ai.agent = {
-          resolveModel = lib.mkOption {
-            description = "Function to resolve a canonical model name to a provider-specific identifier. Takes provider name and canonical model name.";
-            type = lib.types.functionTo (lib.types.functionTo lib.types.str);
+          resolveModels = lib.mkOption {
+            description = ''
+              Function to resolve all models to their program-specific names.
+              Takes a callback (getLocalName) that maps canonical model names to program-specific names (or null).
+              Returns an attrset of models (keyed by canonical name) that have a valid local name,
+              with `name` set to the program-specific name.
+              Usage: resolveModels (name: myModelIds.''${name} or null)
+            '';
+            type = lib.types.functionTo lib.types.anything;
             readOnly = true;
-            default = resolveModel;
+            default = resolveModels;
           };
 
           agents = lib.mkOption {

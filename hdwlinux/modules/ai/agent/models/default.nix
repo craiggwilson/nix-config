@@ -8,9 +8,23 @@
         modelType = lib.types.submodule {
           options = {
             providers = lib.mkOption {
-              description = "Program-specific model identifiers. Key is program name (e.g., opencode, augment).";
-              type = lib.types.attrsOf lib.types.str;
-              default = { };
+              description = "List of provider names that support this model (e.g., augment, github).";
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
+
+            limits = {
+              context = lib.mkOption {
+                description = "Maximum context window size in tokens.";
+                type = lib.types.int;
+                default = 200000;
+              };
+
+              output = lib.mkOption {
+                description = "Maximum output tokens.";
+                type = lib.types.int;
+                default = 8000;
+              };
             };
 
             fallback = lib.mkOption {
@@ -29,23 +43,73 @@
         };
 
         config.hdwlinux.ai.agent.models = {
-          # Actual models
-          "haiku4.5" = { };
-          "opus4.5" = { };
-          "opus4.6".fallback = "opus4.5";
-          "sonnet4" = { };
-          "sonnet4.5".fallback = "sonnet4";
-          "gpt5" = { };
-          "gpt5.1".fallback = "gpt5";
-          "gpt5.2".fallback = "gpt5.1";
+          "Claude Haiku 4.5" = {
+            limits = {
+              context = 200000;
+              output = 8000;
+            };
+          };
+          "Claude Opus 4.5" = {
+            limits = {
+              context = 200000;
+              output = 32000;
+            };
+          };
+          "Claude Opus 4.6" = {
+            limits = {
+              context = 200000;
+              output = 32000;
+            };
+            fallback = "Claude Opus 4.5";
+          };
+          "Claude Sonnet 4" = {
+            limits = {
+              context = 200000;
+              output = 16000;
+            };
+          };
+          "Claude Sonnet 4.5" = {
+            limits = {
+              context = 200000;
+              output = 16000;
+            };
+            fallback = "Claude Sonnet 4";
+          };
+          "Claude Sonnet 4.6" = {
+            limits = {
+              context = 200000;
+              output = 16000;
+            };
+            fallback = "Claude Sonnet 4";
+          };
+          "GPT 5" = {
+            limits = {
+              context = 400000;
+              output = 32000;
+            };
+          };
+          "GPT 5.1" = {
+            limits = {
+              context = 400000;
+              output = 32000;
+            };
+            fallback = "GPT 5";
+          };
+          "GPT 5.2" = {
+            limits = {
+              context = 400000;
+              output = 32000;
+            };
+            fallback = "GPT 5.1";
+          };
 
           # Aliases
-          "small".fallback = "haiku4.5";
-          "default".fallback = "sonnet4.5";
-          "coding".fallback = "sonnet4.5";
-          "reasoning".fallback = "opus4.5";
-          "planning".fallback = "sonnet4.5";
-          "explore".fallback = "haiku4.5";
+          "small".fallback = "Claude Haiku 4.5";
+          "default".fallback = "Claude Sonnet 4.5";
+          "coding".fallback = "Claude Sonnet 4.5";
+          "reasoning".fallback = "Claude Opus 4.5";
+          "planning".fallback = "Claude Sonnet 4.5";
+          "explore".fallback = "Claude Haiku 4.5";
         };
       };
   };

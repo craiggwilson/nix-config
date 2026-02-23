@@ -13,7 +13,29 @@
         ...
       }:
       let
-        resolveModel = config.hdwlinux.ai.agent.resolveModel "augment";
+        # Mapping from canonical model names to Augment-specific model IDs
+        augmentModelIds = {
+          "Claude Haiku 4.5" = "haiku4.5";
+          "Claude Opus 4.5" = "opus4.5";
+          "Claude Opus 4.6" = "opus4.6";
+          "Claude Sonnet 4" = "sonnet4";
+          "Claude Sonnet 4.5" = "sonnet4.5";
+          "Claude Sonnet 4.6" = "sonnet4.6";
+          "GPT 5" = "gpt5";
+          "GPT 5.1" = "gpt5.1";
+          "GPT 5.2" = "gpt5.2";
+        };
+
+        # Get all models resolved with Augment-specific names
+        resolvedModels = config.hdwlinux.ai.agent.resolveModels (name: augmentModelIds.${name} or null);
+
+        # Resolve a single model name to an Augment model ID
+        resolveModel =
+          modelName:
+          let
+            resolved = resolvedModels.${modelName} or null;
+          in
+          if resolved == null then throw "Model ${modelName} is not available for augment" else resolved.name;
 
         # Generate YAML frontmatter from extraMeta.augment attrset (for commands/rules)
         extraMetaToFrontmatter =
@@ -119,15 +141,6 @@
 
       in
       {
-        hdwlinux.ai.agent.models = {
-          "haiku4.5".providers.augment = "haiku4.5";
-          "opus4.5".providers.augment = "opus4.5";
-          "sonnet4".providers.augment = "sonnet4";
-          "sonnet4.5".providers.augment = "sonnet4.5";
-          "gpt5".providers.augment = "gpt5";
-          "gpt5.1".providers.augment = "gpt5.1";
-        };
-
         home.packages = [
           (pkgs.writeShellScriptBin "auggie" ''
             ${pkgs.hdwlinux.auggie}/bin/auggie --mcp-config ~/.augment/mcp-servers.json "$@"
