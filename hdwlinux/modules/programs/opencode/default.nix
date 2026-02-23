@@ -78,7 +78,7 @@
 
         providers =
           { }
-          // (lib.optionalAttrs (config.hdwlinux.services ? llama-cpp) {
+          // (lib.optionalAttrs (config.hdwlinux ? services ? llama-cpp) {
             "llama.cpp" = {
               npm = "@ai-sdk/openai-compatible";
               name = "LLaMA C++ (local)";
