@@ -10,11 +10,11 @@
         config,
         lib,
         pkgs,
-        hasTag,
         ...
       }:
       let
-        # Mapping from canonical model names to OpenCode model IDs (provider/model-id format)
+        # Mapping from canonical model names to OpenCode model IDs
+        # LLM models use their name directly as the ID
         opencodeModelIds = {
           "Claude Haiku 4.5" = "claude-haiku-4-5";
           "Claude Opus 4.5" = "claude-opus-4-5";
@@ -25,10 +25,23 @@
           "GPT 5" = "gpt-5";
           "GPT 5.1" = "gpt-5-1";
           "GPT 5.2" = "gpt-5-2";
-        };
+        }
+        // lib.mapAttrs (_: _: null) (config.hdwlinux.ai.llm.models or { });
 
         # Get all models resolved with OpenCode-specific names
-        resolvedModels = config.hdwlinux.ai.agent.resolveModels (name: opencodeModelIds.${name} or null);
+        # For LLM models, use the model name as the ID (null in opencodeModelIds means use the key)
+        resolvedModels = config.hdwlinux.ai.agent.resolveModels (
+          name:
+          let
+            mapped = opencodeModelIds.${name} or "not-found";
+          in
+          if mapped == "not-found" then
+            null
+          else if mapped == null then
+            name
+          else
+            mapped
+        );
 
         # Resolve a single model name to an OpenCode model ID
         resolveModel =
@@ -101,46 +114,74 @@
           _: rule: builtins.unsafeDiscardStringContext (toString rule.prompt)
         ) config.hdwlinux.ai.agent.rules;
 
-        providers =
-          { }
-          // (lib.optionalAttrs (config.hdwlinux ? services ? llama-cpp) {
-            "llama.cpp" = {
-              npm = "@ai-sdk/openai-compatible";
-              name = "LLaMA C++ (local)";
-              options = {
-                baseURL = "http://${config.hdwlinux.services.llama-cpp.host}:${lib.toString config.hdwlinux.services.llama-cpp.port}/v1";
+        # Provider metadata: how to configure each provider for OpenCode
+        providerMeta = {
+          augment = {
+            npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
+            name = "Augment Code";
+            transformModel = displayName: model: {
+              name = displayName;
+              limit = {
+                context = model.limits.context;
+                output = model.limits.output;
               };
-              models = lib.mapAttrs (
-                _: v: { name = v.name; } // (v.settings.opencode or { })
-              ) config.hdwlinux.ai.llm.models;
             };
-          })
-          // (lib.optionalAttrs (hasTag "users:craig:work") {
-            augment =
-              let
-                # Filter to only models with "augment" provider and transform to opencode format
-                augmentModels = lib.filterAttrs (
-                  _: model: builtins.elem "augment" model.providers
-                ) resolvedModels;
+          };
 
-                # Transform to opencode format: key is the model ID part after "augment/"
-                models = lib.mapAttrs' (
-                  displayName: model:
-                  lib.nameValuePair model.name {
-                    name = displayName;
-                    limit = {
-                      context = model.limits.context;
-                      output = model.limits.output;
-                    };
-                  }
-                ) augmentModels;
+          "llama.cpp" = {
+            npm = "@ai-sdk/openai-compatible";
+            name = "LLaMA C++ (local)";
+            options = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
+              baseURL = "http://${config.hdwlinux.services.llama-cpp.host}:${toString config.hdwlinux.services.llama-cpp.port}/v1";
+            };
+            transformModel =
+              displayName: model:
+              let
+                llmModel = config.hdwlinux.ai.llm.models.${displayName} or { };
+                oc = llmModel.settings.opencode or { };
               in
               {
-                npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
-                name = "Augment Code";
-                inherit models;
+                name = oc.name or displayName;
+                limit = {
+                  context = model.limits.context;
+                  output = model.limits.output;
+                };
+              }
+              // lib.optionalAttrs (oc ? reasoning) { inherit (oc) reasoning; }
+              // lib.optionalAttrs (oc ? tool_call) { inherit (oc) tool_call; };
+          };
+        };
+
+        # Group resolved models by provider
+        modelsByProvider = lib.foldlAttrs (
+          acc: displayName: model:
+          lib.foldl' (
+            innerAcc: provider:
+            innerAcc
+            // {
+              ${provider} = (innerAcc.${provider} or { }) // {
+                ${displayName} = model;
               };
-          });
+            }
+          ) acc model.providers
+        ) { } resolvedModels;
+
+        # Build providers config from models grouped by provider
+        providers = lib.mapAttrs (
+          providerName: models:
+          let
+            meta = providerMeta.${providerName};
+          in
+          {
+            inherit (meta) npm name;
+          }
+          // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
+          // {
+            models = lib.mapAttrs' (
+              displayName: model: lib.nameValuePair model.name (meta.transformModel displayName model)
+            ) models;
+          }
+        ) modelsByProvider;
 
         # OpenCode configuration
         opencodeConfig = {
@@ -158,8 +199,7 @@
           keybinds = {
             "app_exit" = "ctrl+q";
           };
-        }
-        // lib.optionalAttrs (hasTag "ai:llm") { provider = providers; };
+        };
 
       in
       {
