@@ -13,31 +13,42 @@
         ...
       }:
       let
-        # Mapping from canonical model names to Augment-specific model IDs
-        augmentModelIds = {
-          "Claude Haiku 4.5" = "haiku4.5";
-          "Claude Opus 4.5" = "opus4.5";
-          "Claude Opus 4.6" = "opus4.6";
-          "Claude Sonnet 4" = "sonnet4";
-          "Claude Sonnet 4.5" = "sonnet4.5";
-          "Claude Sonnet 4.6" = "sonnet4.6";
-          "GPT 5" = "gpt5";
-          "GPT 5.1" = "gpt5.1";
-          "GPT 5.2" = "gpt5.2";
-        };
-
-        # Get all models resolved with Augment-specific names
-        resolvedModels = config.hdwlinux.ai.agent.resolveModels (name: augmentModelIds.${name} or null);
-
-        # Resolve a single model name to an Augment model ID
-        resolveModel =
-          modelName:
+        toAuggieSlug =
+          slug:
           let
-            resolved = resolvedModels.${modelName} or null;
+            parts = lib.splitString "-" slug;
+            isNumeric = s: builtins.match "[0-9]+" s != null;
+            knownProviders = [
+              "claude"
+              "gpt"
+              "gemini"
+            ];
+            partsWithoutProvider =
+              if builtins.length parts > 0 && builtins.elem (builtins.head parts) knownProviders then
+                builtins.tail parts
+              else
+                parts;
+            firstNumIdx =
+              lib.lists.findFirstIndex isNumeric (builtins.length partsWithoutProvider)
+                partsWithoutProvider;
           in
-          if resolved == null then throw "Model ${modelName} is not available for augment" else resolved.name;
+          if firstNumIdx == 0 || firstNumIdx >= builtins.length partsWithoutProvider then
+            throw "Invalid model slug format: ${slug} (expected format: [provider-]family-version)"
+          else
+            let
+              family = builtins.elemAt partsWithoutProvider (firstNumIdx - 1);
+              versionParts = lib.drop firstNumIdx partsWithoutProvider;
+              version = lib.concatStringsSep "." versionParts;
+            in
+            "${family}${version}";
 
-        # Generate YAML frontmatter from extraMeta.augment attrset (for commands/rules)
+        resolveAlias =
+          aliasName:
+          let
+            alias = config.hdwlinux.ai.agent.models.aliases.${aliasName};
+          in
+          toAuggieSlug alias.model;
+
         extraMetaToFrontmatter =
           extraMeta:
           let
@@ -45,21 +56,17 @@
           in
           lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key}: ${value}") augmentMeta);
 
-        # Format tools attrset as comma-separated string (just the tool names)
         formatTools = tools: lib.concatStringsSep ", " (lib.attrNames tools);
 
-        # Generate agent markdown with formal fields + any extra metadata
         generateAgentMd =
           name: agent:
           let
-            # Build frontmatter from formal fields
             formalFields = [
               "name: ${name}"
               "description: ${agent.description}"
-              "model: ${resolveModel agent.model}"
+              "model: ${resolveAlias agent.model}"
               "tools: ${formatTools agent.tools}"
             ];
-            # Add any extra metadata fields from augment-specific config
             augmentMeta = agent.extraMeta.augment or { };
             extraFields = lib.mapAttrsToList (key: value: "${key}: ${value}") augmentMeta;
             allFields = formalFields ++ extraFields;
@@ -73,11 +80,9 @@
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
-        # Generate markdown with frontmatter from description + extraMeta (for commands/rules)
         generateMd =
           name: item:
           let
-            # Build frontmatter from description + any extra metadata fields
             descriptionField = "description: ${item.description}";
             extraFields = extraMetaToFrontmatter item.extraMeta;
             allFields = if extraFields == "" then descriptionField else "${descriptionField}\n${extraFields}";
@@ -91,7 +96,6 @@
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
-        # Build a derivation containing symlinks to all agent markdown files
         agentsDir = pkgs.linkFarm "augment-agents" (
           lib.mapAttrsToList (name: agent: {
             name = "${name}.md";
@@ -99,7 +103,6 @@
           }) config.hdwlinux.ai.agent.agents
         );
 
-        # Build a derivation containing symlinks to all command markdown files
         commandsDir = pkgs.linkFarm "augment-commands" (
           lib.mapAttrsToList (name: command: {
             name = "${name}.md";
@@ -107,7 +110,6 @@
           }) config.hdwlinux.ai.agent.commands
         );
 
-        # Build a derivation containing symlinks to all rule markdown files
         rulesDir = pkgs.linkFarm "augment-rules" (
           lib.mapAttrsToList (name: rule: {
             name = "${name}.md";
@@ -115,14 +117,12 @@
           }) config.hdwlinux.ai.agent.rules
         );
 
-        # Build a derivation containing symlinks to all skills
         skillsDir = pkgs.linkFarm "augment-skills" (
           lib.mapAttrsToList (name: path: {
             inherit name path;
           }) config.hdwlinux.ai.agent.skills
         );
 
-        # Transform MCP servers to Augment format
         mcpServers = lib.mapAttrs (
           name: server:
           if server ? stdio then

@@ -13,46 +13,13 @@
         ...
       }:
       let
-        # Mapping from canonical model names to OpenCode model IDs
-        # LLM models use their name directly as the ID
-        opencodeModelIds = {
-          "Claude Haiku 4.5" = "claude-haiku-4-5";
-          "Claude Opus 4.5" = "claude-opus-4-5";
-          "Claude Opus 4.6" = "claude-opus-4-6";
-          "Claude Sonnet 4" = "claude-sonnet-4";
-          "Claude Sonnet 4.5" = "claude-sonnet-4-5";
-          "Claude Sonnet 4.6" = "claude-sonnet-4-6";
-          "GPT 5" = "gpt-5";
-          "GPT 5.1" = "gpt-5-1";
-          "GPT 5.2" = "gpt-5-2";
-        }
-        // lib.mapAttrs (_: _: null) (config.hdwlinux.ai.llm.models or { });
-
-        # Get all models resolved with OpenCode-specific names
-        # For LLM models, use the model name as the ID (null in opencodeModelIds means use the key)
-        resolvedModels = config.hdwlinux.ai.agent.resolveModels (
-          name:
+        # Resolve an alias to "provider/model" format for OpenCode
+        resolveAlias =
+          aliasName:
           let
-            mapped = opencodeModelIds.${name} or "not-found";
+            alias = config.hdwlinux.ai.agent.models.aliases.${aliasName};
           in
-          if mapped == "not-found" then
-            null
-          else if mapped == null then
-            name
-          else
-            mapped
-        );
-
-        # Resolve a single model name to an OpenCode model ID
-        resolveModel =
-          modelName:
-          let
-            resolved = resolvedModels.${modelName} or null;
-          in
-          if resolved == null then
-            throw "Model ${modelName} is not available for opencode"
-          else
-            resolved.name;
+          "${alias.provider}/${alias.model}";
 
         # Transform MCP servers to OpenCode format
         mcpConfig = lib.mapAttrs (
@@ -85,7 +52,7 @@
           {
             description = agent.description;
             mode = agent.mode;
-            model = resolveModel agent.model;
+            model = resolveAlias agent.model;
             prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.prompt)}}";
           }
           // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
@@ -114,34 +81,26 @@
           _: rule: builtins.unsafeDiscardStringContext (toString rule.prompt)
         ) config.hdwlinux.ai.agent.rules;
 
-        # Provider metadata: how to configure each provider for OpenCode
+        # Provider metadata: OpenCode-specific configuration for each provider
         providerMeta = {
           augment = {
             npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
-            name = "Augment Code";
-            transformModel = displayName: model: {
-              name = displayName;
-              limit = {
-                context = model.limits.context;
-                output = model.limits.output;
-              };
-            };
           };
 
           "llama.cpp" = {
             npm = "@ai-sdk/openai-compatible";
-            name = "LLaMA C++ (local)";
             options = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
               baseURL = "http://${config.hdwlinux.services.llama-cpp.host}:${toString config.hdwlinux.services.llama-cpp.port}/v1";
             };
+            # llama.cpp models may have additional opencode-specific settings
             transformModel =
-              displayName: model:
+              slug: model:
               let
-                llmModel = config.hdwlinux.ai.llm.models.${displayName} or { };
+                llmModel = config.hdwlinux.ai.llm.models.${slug} or { };
                 oc = llmModel.settings.opencode or { };
               in
               {
-                name = oc.name or displayName;
+                name = model.displayName;
                 limit = {
                   context = model.limits.context;
                   output = model.limits.output;
@@ -152,36 +111,28 @@
           };
         };
 
-        # Group resolved models by provider
-        modelsByProvider = lib.foldlAttrs (
-          acc: displayName: model:
-          lib.foldl' (
-            innerAcc: provider:
-            innerAcc
-            // {
-              ${provider} = (innerAcc.${provider} or { }) // {
-                ${displayName} = model;
-              };
-            }
-          ) acc model.providers
-        ) { } resolvedModels;
-
-        # Build providers config from models grouped by provider
+        # Build providers config from hdwlinux.ai.agent.models.providers
+        # Only include providers that have metadata defined
         providers = lib.mapAttrs (
-          providerName: models:
+          providerKey: provider:
           let
-            meta = providerMeta.${providerName};
+            meta = providerMeta.${providerKey} or { };
+            transformModel =
+              meta.transformModel or (slug: model: {
+                name = model.displayName;
+                limit = {
+                  context = model.limits.context;
+                  output = model.limits.output;
+                };
+              });
           in
           {
-            inherit (meta) npm name;
+            npm = meta.npm or null;
+            name = provider.displayName;
+            models = lib.mapAttrs (slug: model: transformModel slug model) provider.models;
           }
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
-          // {
-            models = lib.mapAttrs' (
-              displayName: model: lib.nameValuePair model.name (meta.transformModel displayName model)
-            ) models;
-          }
-        ) modelsByProvider;
+        ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
 
         # OpenCode configuration
         opencodeConfig = {
@@ -192,7 +143,7 @@
           command = commandConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;
-          small_model = resolveModel "small";
+          small_model = resolveAlias "small";
           plugin = [
             "file://${config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/packages/opencode-projects-plugin"}"
           ];

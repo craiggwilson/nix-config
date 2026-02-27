@@ -39,6 +39,11 @@
                       description = "The url to download the model.";
                       type = lib.types.enum [ "gguf" ];
                     };
+                    categories = lib.mkOption {
+                      description = "Alias categories this model should be used for (e.g., coding, reasoning, small).";
+                      type = lib.types.listOf lib.types.str;
+                      default = [ ];
+                    };
                     settings = lib.mkOption {
                       type = lib.types.attrsOf lib.types.anything;
                       default = { };

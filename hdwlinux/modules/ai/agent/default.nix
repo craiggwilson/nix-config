@@ -6,44 +6,31 @@
     homeManager =
       { config, lib, ... }:
       let
-        # Resolve all models to their program-specific names.
-        # Takes a callback that maps canonical model names to program-specific names (or null).
-        # Returns an attrset of models (keyed by canonical name) that have a valid local name,
-        # with `name` set to the program-specific name.
-        resolveModels =
-          getLocalName:
+        # Resolve an alias to its full model info including provider.
+        # Returns the model with provider info attached.
+        resolveAlias =
+          aliasName:
           let
-            # Resolve a single model, following fallback chain
-            resolveOne =
-              canonicalName:
-              let
-                resolve =
-                  modelName: visited:
-                  let
-                    model = config.hdwlinux.ai.agent.models.${modelName} or null;
-                    hasCycle = builtins.elem modelName visited;
-                    visited' = visited ++ [ modelName ];
-                    localName = if model != null then getLocalName modelName else null;
-                  in
-                  if model == null then
-                    null
-                  else if hasCycle then
-                    throw "Cycle detected in model fallback chain: ${builtins.concatStringsSep " -> " visited'}"
-                  else if localName != null then
-                    model // { name = localName; }
-                  else if model.fallback != null then
-                    resolve model.fallback visited'
-                  else
-                    null;
-              in
-              resolve canonicalName [ ];
-
-            # Resolve all models and filter out nulls
-            allResolved =
-              lib.mapAttrs (_: _: null) config.hdwlinux.ai.agent.models
-              // lib.mapAttrs (name: _: resolveOne name) config.hdwlinux.ai.agent.models;
+            aliases = config.hdwlinux.ai.agent.models.aliases;
+            providers = config.hdwlinux.ai.agent.models.providers;
+            alias = aliases.${aliasName} or null;
+            provider = if alias != null then providers.${alias.provider} or null else null;
+            model = if provider != null then provider.models.${alias.model} or null else null;
           in
-          lib.filterAttrs (_: model: model != null) allResolved;
+          if alias == null then
+            throw "Alias '${aliasName}' not found"
+          else if provider == null then
+            throw "Provider '${alias.provider}' not found for alias '${aliasName}'"
+          else if model == null then
+            throw "Model '${alias.model}' not found in provider '${alias.provider}'"
+          else
+            model
+            // {
+              provider = {
+                name = provider.name;
+                displayName = provider.displayName;
+              };
+            };
 
         toolPermission = lib.types.enum [
           "allow"
@@ -132,17 +119,15 @@
       in
       {
         options.hdwlinux.ai.agent = {
-          resolveModels = lib.mkOption {
+          resolveAlias = lib.mkOption {
             description = ''
-              Function to resolve all models to their program-specific names.
-              Takes a callback (getLocalName) that maps canonical model names to program-specific names (or null).
-              Returns an attrset of models (keyed by canonical name) that have a valid local name,
-              with `name` set to the program-specific name.
-              Usage: resolveModels (name: myModelIds.''${name} or null)
+              Function to resolve an alias to its full model info including provider.
+              Returns the model with provider info attached.
+              Usage: resolveAlias "coding"
             '';
             type = lib.types.functionTo lib.types.anything;
             readOnly = true;
-            default = resolveModels;
+            default = resolveAlias;
           };
 
           agents = lib.mkOption {

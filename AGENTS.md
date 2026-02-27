@@ -105,14 +105,16 @@ Users can have multiple profiles (e.g., `craig@personal`, `craig@work`).
 
 ### Comments
 
-**Only explain "why", never "what":**
+**Only explain "why" or "how" when non-obvious, never "what":**
 
 - ✅ Document complex business logic or architectural decisions
 - ✅ Explain non-obvious design choices or workarounds
 - ✅ Note external dependencies or constraints
-- ❌ Do not describe what code does if it's readable
+- ✅ Explain *how* something works if the mechanism is subtle
+- ❌ Do not describe what code does if it's readable from the code itself
 - ❌ Do not add comments for simple/obvious functionality
 - ❌ Do not use comments as code documentation for straightforward Nix expressions
+- ❌ Do not add comments that merely restate variable/function names
 
 ### Nix Style
 

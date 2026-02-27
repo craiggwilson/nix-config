@@ -3,114 +3,140 @@
     tags = [ "ai:agent" ];
 
     homeManager =
-      { lib, ... }:
+      { config, lib, ... }:
       let
-        modelType = lib.types.submodule {
+        aliasNames = [
+          "small"
+          "default"
+          "coding"
+          "reasoning"
+          "planning"
+          "explore"
+        ];
+
+        modelType = lib.types.submodule (
+          { name, ... }:
+          {
+            options = {
+              name = lib.mkOption {
+                description = "Model identifier for programmatic use.";
+                type = lib.types.str;
+                default = name;
+              };
+
+              displayName = lib.mkOption {
+                description = "Human-readable model name for UI display.";
+                type = lib.types.str;
+                default = name;
+              };
+
+              limits = lib.mkOption {
+                description = "Model token limits.";
+                type = lib.types.submodule {
+                  options = {
+                    context = lib.mkOption {
+                      description = "Maximum context window size in tokens.";
+                      type = lib.types.int;
+                      default = 200000;
+                    };
+
+                    output = lib.mkOption {
+                      description = "Maximum output tokens.";
+                      type = lib.types.int;
+                      default = 8000;
+                    };
+                  };
+                };
+                default = { };
+              };
+            };
+          }
+        );
+
+        providerType = lib.types.submodule (
+          { name, ... }:
+          {
+            options = {
+              name = lib.mkOption {
+                description = "Provider identifier for programmatic use.";
+                type = lib.types.str;
+                default = name;
+              };
+
+              displayName = lib.mkOption {
+                description = "Human-readable provider name for UI display.";
+                type = lib.types.str;
+                default = name;
+              };
+
+              models = lib.mkOption {
+                description = "Models available from this provider.";
+                type = lib.types.attrsOf modelType;
+                default = { };
+              };
+            };
+          }
+        );
+
+        aliasType = lib.types.submodule {
           options = {
-            providers = lib.mkOption {
-              description = "List of provider names that support this model (e.g., augment, github).";
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
+            provider = lib.mkOption {
+              description = "Provider name (key) that provides this model.";
+              type = lib.types.str;
             };
 
-            limits = {
-              context = lib.mkOption {
-                description = "Maximum context window size in tokens.";
-                type = lib.types.int;
-                default = 200000;
-              };
-
-              output = lib.mkOption {
-                description = "Maximum output tokens.";
-                type = lib.types.int;
-                default = 8000;
-              };
-            };
-
-            fallback = lib.mkOption {
-              description = "Model to fall back to if this model isn't available for a program. Also used for aliases.";
-              type = lib.types.nullOr lib.types.str;
-              default = null;
+            model = lib.mkOption {
+              description = "Model name (key) within the provider.";
+              type = lib.types.str;
             };
           };
         };
+
+        cfg = config.hdwlinux.ai.agent.models;
+        configuredAliases = builtins.attrNames cfg.aliases;
+        invalidAliases = lib.filter (key: !(builtins.elem key aliasNames)) configuredAliases;
+        invalidRefs = lib.filter (
+          aliasName:
+          let
+            alias = cfg.aliases.${aliasName};
+            providerExists = cfg.providers ? ${alias.provider};
+            modelExists = providerExists && (cfg.providers.${alias.provider}.models ? ${alias.model});
+          in
+          !modelExists
+        ) configuredAliases;
       in
       {
-        options.hdwlinux.ai.agent.models = lib.mkOption {
-          description = "Model definitions and aliases with provider mappings and fallback chains.";
-          type = lib.types.attrsOf modelType;
-          default = { };
-        };
-
-        config.hdwlinux.ai.agent.models = {
-          "Claude Haiku 4.5" = {
-            limits = {
-              context = 200000;
-              output = 8000;
-            };
-          };
-          "Claude Opus 4.5" = {
-            limits = {
-              context = 200000;
-              output = 32000;
-            };
-          };
-          "Claude Opus 4.6" = {
-            limits = {
-              context = 200000;
-              output = 32000;
-            };
-            fallback = "Claude Opus 4.5";
-          };
-          "Claude Sonnet 4" = {
-            limits = {
-              context = 200000;
-              output = 16000;
-            };
-          };
-          "Claude Sonnet 4.5" = {
-            limits = {
-              context = 200000;
-              output = 16000;
-            };
-            fallback = "Claude Sonnet 4";
-          };
-          "Claude Sonnet 4.6" = {
-            limits = {
-              context = 200000;
-              output = 16000;
-            };
-            fallback = "Claude Sonnet 4";
-          };
-          "GPT 5" = {
-            limits = {
-              context = 400000;
-              output = 32000;
-            };
-          };
-          "GPT 5.1" = {
-            limits = {
-              context = 400000;
-              output = 32000;
-            };
-            fallback = "GPT 5";
-          };
-          "GPT 5.2" = {
-            limits = {
-              context = 400000;
-              output = 32000;
-            };
-            fallback = "GPT 5.1";
+        options.hdwlinux.ai.agent.models = {
+          aliasNames = lib.mkOption {
+            description = "Valid alias names for model aliases.";
+            type = lib.types.listOf lib.types.str;
+            readOnly = true;
+            default = aliasNames;
           };
 
-          # Aliases
-          "small".fallback = "Claude Haiku 4.5";
-          "default".fallback = "Claude Sonnet 4.5";
-          "coding".fallback = "Claude Sonnet 4.5";
-          "reasoning".fallback = "Claude Opus 4.5";
-          "planning".fallback = "Claude Sonnet 4.5";
-          "explore".fallback = "Claude Haiku 4.5";
+          providers = lib.mkOption {
+            description = "AI model providers with their available models.";
+            type = lib.types.attrsOf providerType;
+            default = { };
+          };
+
+          aliases = lib.mkOption {
+            description = "Model aliases that map to a specific provider and model.";
+            type = lib.types.attrsOf aliasType;
+            default = { };
+          };
         };
+
+        config.assertions = [
+          {
+            assertion = invalidAliases == [ ];
+            message = "Invalid alias names: ${builtins.concatStringsSep ", " invalidAliases}. Valid names are: ${builtins.concatStringsSep ", " aliasNames}";
+          }
+          {
+            assertion = invalidRefs == [ ];
+            message = "Aliases reference non-existent provider/model combinations: ${builtins.concatStringsSep ", " invalidRefs}";
+          }
+        ];
       };
   };
 }

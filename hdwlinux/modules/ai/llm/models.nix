@@ -35,6 +35,10 @@
         config.hdwlinux.ai.llm.models = {
           "Llama-3.1-8B-Instruct-Q4_0" = {
             type = "gguf";
+            categories = [
+              "small"
+              "explore"
+            ];
             settings = {
               opencode = {
                 name = "Llama 3.1 8B Q8 60K";
@@ -69,6 +73,12 @@
           };
           "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M" = {
             type = "gguf";
+            categories = [
+              "default"
+              "coding"
+              "reasoning"
+              "planning"
+            ];
             settings = {
               opencode = {
                 name = "Qwen3-Coder 30B Q4 32K";
