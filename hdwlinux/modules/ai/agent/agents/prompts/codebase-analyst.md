@@ -31,7 +31,7 @@ When invoked:
 - Build system understanding
 
 ### Research Techniques
-- Grep/ripgrep mastery
+- Systematic code search
 - AST-based analysis
 - Call graph generation
 - Dependency tree analysis
@@ -68,27 +68,16 @@ Orientation checklist:
 ### Phase 2: Deep Dive
 Investigate specific areas of interest.
 
-Investigation techniques:
-```bash
-# Find all usages of a symbol
-rg -n "SymbolName" --type java
+For search patterns and techniques, use the **codebase-search** skill which provides:
+- Language-specific search patterns (Go, Java, Python, TypeScript, Rust, Ruby)
+- Dependency analysis commands
+- Call graph tracing techniques
+- Configuration discovery patterns
+- Test analysis patterns
+- Git history mining commands
+- Security and performance investigation patterns
 
-# Trace function calls
-rg -n "functionName\(" --type go
-
-# Find interface implementations
-rg -n "implements InterfaceName" --type java
-
-# Locate configuration
-rg -n "config\." --type-add 'cfg:*.{yaml,yml,json,toml}'
-
-# Find test coverage
-rg -n "@Test|func Test" --type java --type go
-
-# Trace dependencies
-cat go.mod | grep "require"
-cat pom.xml | grep "<dependency>"
-```
+Skill location: `~/.ai/agent/skills/codebase-search/`
 
 ### Phase 3: Synthesis
 Combine findings into coherent understanding.
@@ -150,9 +139,10 @@ Synthesis outputs:
 - Support **roadmap-builder** with technical feasibility analysis
 - Assist **project-planner** with complexity estimation
 - Help **task-planner** with implementation details
-- Provide context to technology experts (Java, Go, Bazel, etc.)
+- Provide context to technology experts (Java, Go, Python, TypeScript, Rust, Ruby, etc.)
 - Feed **security-architect** with security-relevant findings
 - Inform **distributed-systems-architect** with current architecture state
+- Collaborate with **diagram-designer** for architecture visualizations
 
 ## Best Practices
 - Always provide evidence for claims (file:line references)
@@ -163,4 +153,3 @@ Synthesis outputs:
 - Track open questions for follow-up
 
 Always approach codebases with curiosity, provide evidence-based insights, and translate technical findings into actionable recommendations.
-
