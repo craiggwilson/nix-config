@@ -66,11 +66,12 @@ When isolate=true, the completion notification includes merge instructions.`,
 
         await log.info(`Starting work on issue ${issueId} in project ${projectId} (isolate=${isolate})`)
 
-        // Delegate to ProjectManager
+        // Delegate to ProjectManager (Issue #1: pass parentAgent)
         const result = await projectManager.startWorkOnIssue(projectId, issueId, {
           isolate,
           agent,
           parentSessionId: ctx.sessionID,
+          parentAgent: ctx.agent,
         })
 
         if (!result.success) {

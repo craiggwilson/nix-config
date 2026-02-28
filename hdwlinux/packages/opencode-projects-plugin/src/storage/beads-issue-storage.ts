@@ -200,7 +200,7 @@ export class BeadsIssueStorage implements IssueStorage {
       const args = ["update", issueId]
 
       if (options.status) {
-        args.push("--status", this.statusToBeads(options.status))
+        args.push("--status", options.status)
       }
       if (options.priority !== undefined) {
         args.push("-p", String(options.priority))
@@ -265,8 +265,7 @@ export class BeadsIssueStorage implements IssueStorage {
 
   async updateStatus(issueId: string, status: IssueStatus, projectDir: string): Promise<boolean> {
     try {
-      const beadsStatus = this.statusToBeads(status)
-      const result = await this.runBd(["update", issueId, "--status", beadsStatus], projectDir)
+      const result = await this.runBd(["update", issueId, "--status", status], projectDir)
       if (result.exitCode !== 0) {
         await this.log.debug(`beads updateStatus ${issueId} to ${status} failed: ${result.stderr}`)
       }
@@ -468,19 +467,4 @@ export class BeadsIssueStorage implements IssueStorage {
     return "open"
   }
 
-  /**
-   * Convert IssueStatus to beads status string
-   */
-  private statusToBeads(status: IssueStatus): string {
-    switch (status) {
-      case "open":
-        return "todo"
-      case "in_progress":
-        return "in_progress"
-      case "closed":
-        return "done"
-      default:
-        return "todo"
-    }
-  }
 }

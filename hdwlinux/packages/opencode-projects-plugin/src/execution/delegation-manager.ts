@@ -35,7 +35,7 @@ export interface Delegation {
   status: DelegationStatus
   sessionId?: string
   parentSessionId?: string
-  rootSessionId?: string
+  parentAgent?: string
   agent?: string
   prompt: string
   title?: string
@@ -57,6 +57,7 @@ export interface CreateDelegationOptions {
   vcs?: "git" | "jj"
   agent?: string
   parentSessionId?: string
+  parentAgent?: string
 }
 
 /**
@@ -101,8 +102,11 @@ export class DelegationManager {
   // Session ID -> Delegation ID mapping for event lookup
   private sessionToDelegation: Map<string, string> = new Map()
 
-  // Track pending delegations per root session for batched notifications
-  private pendingByRoot: Map<string, Set<string>> = new Map()
+  // In-memory delegation cache for fast lookup (Issue #6)
+  private delegations: Map<string, Delegation> = new Map()
+
+  // Track pending delegations per parent session for batched notifications (Issue #5)
+  private pendingByParent: Map<string, Set<string>> = new Map()
 
   constructor(
     projectDir: string,
@@ -125,7 +129,7 @@ export class DelegationManager {
    * after firing the prompt. Completion is handled via session.idle events.
    */
   async create(projectId: string, options: CreateDelegationOptions): Promise<Delegation> {
-    const { issueId, prompt, worktreePath, parentSessionId } = options
+    const { issueId, prompt, worktreePath, parentSessionId, parentAgent } = options
     let { agent } = options
 
     // If no agent specified and we have a client, use small model to select
@@ -145,11 +149,6 @@ export class DelegationManager {
     const id = this.generateId()
     const now = new Date().toISOString()
 
-    // Resolve root session ID for batched notifications
-    const rootSessionId = parentSessionId
-      ? await this.resolveRootSession(parentSessionId)
-      : undefined
-
     const delegation: Delegation = {
       id,
       projectId,
@@ -160,11 +159,14 @@ export class DelegationManager {
       status: "pending",
       sessionId: undefined,
       parentSessionId,
-      rootSessionId,
+      parentAgent,
       agent,
       prompt,
       startedAt: now,
     }
+
+    // Store in memory cache (Issue #6)
+    this.delegations.set(delegation.id, delegation)
 
     await this.save(delegation)
     await this.log.info(`Created delegation ${id} for issue ${issueId}`)
@@ -185,12 +187,12 @@ export class DelegationManager {
 
     try {
       delegation.status = "running"
+      this.delegations.set(delegation.id, delegation)
       await this.save(delegation)
 
-      // Create a session for the delegation
+      // Create a session for the delegation (Issue #3: don't set agent here)
       const sessionResult = await this.client.session.create({
         body: {
-          agent: delegation.agent,
           title: `Delegation: ${delegation.issueId}`,
           parentID: delegation.parentSessionId,
         },
@@ -204,13 +206,14 @@ export class DelegationManager {
 
       delegation.sessionId = sessionId
       this.sessionToDelegation.set(sessionId, delegation.id)
+      this.delegations.set(delegation.id, delegation)
       await this.save(delegation)
 
-      // Track for batched notifications
-      if (delegation.rootSessionId) {
-        const pending = this.pendingByRoot.get(delegation.rootSessionId) || new Set()
+      // Track for batched notifications (Issue #5: use parent, not root)
+      if (delegation.parentSessionId) {
+        const pending = this.pendingByParent.get(delegation.parentSessionId) || new Set()
         pending.add(delegation.id)
-        this.pendingByRoot.set(delegation.rootSessionId, pending)
+        this.pendingByParent.set(delegation.parentSessionId, pending)
       }
 
       // Set up timeout handler
@@ -219,6 +222,7 @@ export class DelegationManager {
       }, this.timeoutMs)
 
       // Fire the prompt (fire-and-forget)
+      // Agent is set here, not in session.create (Issue #3)
       // Completion is handled via session.idle events
       this.client.session
         .prompt({
@@ -240,6 +244,7 @@ export class DelegationManager {
       await this.log.error(`Failed to start delegation: ${error}`)
       delegation.status = "failed"
       delegation.error = String(error)
+      this.delegations.set(delegation.id, delegation)
       await this.save(delegation)
     }
   }
@@ -254,7 +259,11 @@ export class DelegationManager {
     const delegationId = this.sessionToDelegation.get(sessionId)
     if (!delegationId) return
 
-    const delegation = await this.get(delegationId)
+    // Issue #6: Try in-memory cache first, fall back to disk
+    let delegation: Delegation | null | undefined = this.delegations.get(delegationId)
+    if (!delegation) {
+      delegation = await this.get(delegationId)
+    }
     if (!delegation || delegation.status !== "running") return
 
     await this.log.info(`Delegation ${delegation.id} session idle, marking complete`)
@@ -271,6 +280,9 @@ export class DelegationManager {
     delegation.title = metadata.title
     delegation.description = metadata.description
     delegation.completedAt = new Date().toISOString()
+
+    // Update in-memory cache and persist
+    this.delegations.set(delegation.id, delegation)
     await this.save(delegation)
 
     // Persist result to file
@@ -294,10 +306,17 @@ export class DelegationManager {
    * Get a delegation by ID
    */
   async get(delegationId: string): Promise<Delegation | null> {
+    // Issue #6: Check in-memory cache first
+    const cached = this.delegations.get(delegationId)
+    if (cached) return cached
+
     try {
       const filePath = path.join(this.delegationsDir, `${delegationId}.json`)
       const content = await fs.readFile(filePath, "utf8")
-      return JSON.parse(content) as Delegation
+      const delegation = JSON.parse(content) as Delegation
+      // Cache for future lookups
+      this.delegations.set(delegationId, delegation)
+      return delegation
     } catch {
       return null
     }
@@ -347,10 +366,20 @@ export class DelegationManager {
   }
 
   /**
-   * Get count of pending delegations for a root session
+   * Get recent completed delegations for compaction context (Issue #7)
    */
-  getPendingCount(rootSessionId: string): number {
-    return this.pendingByRoot.get(rootSessionId)?.size || 0
+  async getRecentCompletedDelegations(limit: number = 10): Promise<Delegation[]> {
+    const all = await this.list()
+    return all
+      .filter((d) => d.status === "completed" || d.status === "failed" || d.status === "timeout")
+      .slice(0, limit)
+  }
+
+  /**
+   * Get count of pending delegations for a parent session
+   */
+  getPendingCount(parentSessionId: string): number {
+    return this.pendingByParent.get(parentSessionId)?.size || 0
   }
 
   /**
@@ -482,6 +511,9 @@ export class DelegationManager {
 
   /**
    * Get result text from a session's messages
+   * 
+   * Issue #4: Only extract text from the LAST assistant message, not all messages.
+   * This avoids including intermediate tool results and partial responses.
    */
   private async getSessionResult(sessionId: string): Promise<string> {
     if (!this.client) return "(no client)"
@@ -499,50 +531,49 @@ export class DelegationManager {
         return "(no messages)"
       }
 
-      // Log message roles for debugging
-      const roles = messageData.map((m) => m.info?.role).join(", ")
-      await this.log.debug(`getSessionResult: message roles: ${roles}`)
-
       // Find assistant messages
       const assistantMessages = messageData.filter((m) => m.info?.role === "assistant")
       if (assistantMessages.length === 0) {
         return "(no assistant response)"
       }
 
-      // Collect text from all assistant messages, skipping aborted ones
-      const allTextParts: string[] = []
-      
-      for (const message of assistantMessages) {
-        // Skip messages with errors (aborted, etc.)
-        if (message.info?.error) {
-          await this.log.debug(`getSessionResult: skipping message with error: ${message.info.error.name}`)
-          continue
-        }
-        
-        const parts: Part[] = message.parts || []
-        const textParts = parts.filter((p) => p.type === "text")
-        
-        for (const part of textParts) {
-          if (part.text) {
-            allTextParts.push(part.text)
+      await this.log.debug(`getSessionResult: found ${assistantMessages.length} assistant messages`)
+
+      // Issue #4: Take only the LAST assistant message
+      const lastMessage = assistantMessages[assistantMessages.length - 1]
+
+      // If last message has an error, try the second-to-last
+      if (lastMessage.info?.error) {
+        await this.log.debug(`getSessionResult: last message has error: ${lastMessage.info.error.name}`)
+        if (assistantMessages.length > 1) {
+          const fallback = assistantMessages[assistantMessages.length - 2]
+          if (!fallback.info?.error) {
+            await this.log.debug(`getSessionResult: using second-to-last message as fallback`)
+            return this.extractTextFromMessage(fallback)
           }
         }
+        return "(last message had error)"
       }
-      
-      await this.log.debug(`getSessionResult: collected ${allTextParts.length} text parts from ${assistantMessages.length} assistant messages`)
 
-      const result = allTextParts.join("\n")
-      
-      await this.log.debug(`getSessionResult: result length: ${result.length}`)
-      
-      return result || "(no text content)"
+      return this.extractTextFromMessage(lastMessage)
     } catch (error) {
       return `(error retrieving result: ${error})`
     }
   }
 
   /**
+   * Extract text content from a message
+   */
+  private extractTextFromMessage(message: MessageItem): string {
+    const parts: Part[] = message.parts || []
+    const textParts = parts.filter((p) => p.type === "text")
+    const text = textParts.map((p) => (p as { text?: string }).text || "").join("\n")
+    return text || "(no text content)"
+  }
+
+  /**
    * Resolve the root session ID by walking up the parent chain
+   * @deprecated No longer used - we notify parent directly (Issue #5)
    */
   private async resolveRootSession(sessionId: string): Promise<string> {
     if (!this.client) return sessionId
@@ -574,15 +605,20 @@ export class DelegationManager {
   /**
    * Notify parent session that delegation is complete.
    * Uses batching: individual notifications are silent (noReply: true),
-   * but when ALL delegations for a root complete, triggers a response.
+   * but when ALL delegations for a parent complete, triggers a response.
+   * 
+   * Issue #1: Include parentAgent in prompt calls
+   * Issue #2: Always use noReply: true for individual notifications
+   * Issue #5: Notify parent session directly, not root
    */
   private async notifyParent(delegation: Delegation): Promise<void> {
-    if (!this.client || !delegation.rootSessionId) return
+    // Issue #5: Use parentSessionId instead of rootSessionId
+    if (!this.client || !delegation.parentSessionId) return
 
-    const rootSessionId = delegation.rootSessionId
+    const parentSessionId = delegation.parentSessionId
 
-    // Remove from pending set
-    const pendingSet = this.pendingByRoot.get(rootSessionId)
+    // Remove from pending set (Issue #5: use pendingByParent)
+    const pendingSet = this.pendingByParent.get(parentSessionId)
     if (pendingSet) {
       pendingSet.delete(delegation.id)
     }
@@ -592,7 +628,7 @@ export class DelegationManager {
 
     // Clean up if all complete
     if (allComplete && pendingSet) {
-      this.pendingByRoot.delete(rootSessionId)
+      this.pendingByParent.delete(parentSessionId)
     }
 
     // Build notification
@@ -630,21 +666,25 @@ ${delegation.error ? `<error>${delegation.error}</error>` : ""}
 </delegation-notification>${progressNote}`
 
     try {
-      // Send notification (noReply unless all complete)
+      // Issue #2: Always use noReply: true for individual notifications
+      // Issue #1: Include parentAgent in prompt
       await this.client.session.prompt({
-        path: { id: rootSessionId },
+        path: { id: parentSessionId },
         body: {
-          noReply: !allComplete,
+          noReply: true,
+          agent: delegation.parentAgent,
           parts: [{ type: "text", text: notification }],
         },
       })
 
       // If all complete, send a final notification that triggers response
       if (allComplete) {
+        // Issue #1: Include parentAgent in prompt
         await this.client.session.prompt({
-          path: { id: rootSessionId },
+          path: { id: parentSessionId },
           body: {
             noReply: false,
+            agent: delegation.parentAgent,
             parts: [
               {
                 type: "text",
@@ -656,7 +696,7 @@ ${delegation.error ? `<error>${delegation.error}</error>` : ""}
       }
 
       await this.log.info(
-        `Notified root session ${rootSessionId} (allComplete=${allComplete}, remaining=${remainingCount})`
+        `Notified parent session ${parentSessionId} (allComplete=${allComplete}, remaining=${remainingCount})`
       )
     } catch (error) {
       await this.log.warn(`Failed to notify parent: ${error}`)

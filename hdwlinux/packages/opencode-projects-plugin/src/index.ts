@@ -129,7 +129,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       }
     },
 
-    "experimental.session.compacting": async (_input, output) => {
+    "experimental.session.compacting": async (input, output) => {
       const projectId = projectManager.getFocusedProjectId()
       if (!projectId) return
 
@@ -138,10 +138,26 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         output.context.push(contextBlock)
       }
 
-      // Add running delegations context
-      const runningDelegations = await delegationManager.getRunningDelegations()
-      if (runningDelegations.length > 0) {
-        const delegationContext = buildDelegationCompactionContext(runningDelegations)
+      // Issue #8: Get session ID for filtering delegations
+      const sessionId = (input as { sessionID?: string }).sessionID
+
+      // Issue #7 & #8: Add running and completed delegations, filtered by session
+      const allRunning = await delegationManager.getRunningDelegations()
+      const allCompleted = await delegationManager.getRecentCompletedDelegations(10)
+
+      // Filter to delegations for this session (Issue #8)
+      const runningDelegations = sessionId
+        ? allRunning.filter((d) => d.parentSessionId === sessionId)
+        : allRunning
+      const completedDelegations = sessionId
+        ? allCompleted.filter((d) => d.parentSessionId === sessionId)
+        : allCompleted
+
+      if (runningDelegations.length > 0 || completedDelegations.length > 0) {
+        const delegationContext = buildDelegationCompactionContext(
+          runningDelegations,
+          completedDelegations
+        )
         output.context.push(delegationContext)
       }
     },
@@ -299,27 +315,56 @@ async function buildCompactionContext(projectManager: ProjectManager): Promise<s
 }
 
 /**
- * Build context for running delegations during compaction.
+ * Build context for delegations during compaction.
+ * Issue #7: Include both running and recent completed delegations.
  */
-function buildDelegationCompactionContext(delegations: Delegation[]): string {
+function buildDelegationCompactionContext(
+  running: Delegation[],
+  completed: Delegation[]
+): string {
   const lines = ["<delegation-context>"]
-  lines.push("## Running Delegations")
-  lines.push("")
 
-  for (const d of delegations) {
-    lines.push(`### ${d.id}`)
-    lines.push(`- **Issue:** ${d.issueId}`)
-    lines.push(`- **Agent:** ${d.agent || "(auto)"}`)
-    lines.push(`- **Started:** ${d.startedAt}`)
-    if (d.worktreePath) {
-      lines.push(`- **Worktree:** ${d.worktreePath}`)
+  if (running.length > 0) {
+    lines.push("## Running Delegations")
+    lines.push("")
+
+    for (const d of running) {
+      lines.push(`### ${d.id}`)
+      lines.push(`- **Issue:** ${d.issueId}`)
+      lines.push(`- **Agent:** ${d.agent || "(auto)"}`)
+      lines.push(`- **Started:** ${d.startedAt}`)
+      if (d.worktreePath) {
+        lines.push(`- **Worktree:** ${d.worktreePath}`)
+      }
+      lines.push("")
     }
+
+    lines.push("> You will be notified via `<delegation-notification>` when delegations complete.")
+    lines.push("> Do NOT poll for status - continue productive work.")
     lines.push("")
   }
 
-  lines.push("> You will be notified via `<delegation-notification>` when delegations complete.")
-  lines.push("> Do NOT poll for status - continue productive work.")
-  lines.push("> Use `project-internal-delegation-read(id)` to retrieve results after compaction.")
+  if (completed.length > 0) {
+    lines.push("## Recent Completed Delegations")
+    lines.push("")
+
+    for (const d of completed) {
+      const statusIcon =
+        d.status === "completed" ? "✅" : d.status === "failed" ? "❌" : "⏱️"
+      lines.push(`### ${statusIcon} ${d.id}`)
+      lines.push(`- **Title:** ${d.title || "(no title)"}`)
+      lines.push(`- **Issue:** ${d.issueId}`)
+      lines.push(`- **Status:** ${d.status}`)
+      if (d.completedAt) {
+        lines.push(`- **Completed:** ${d.completedAt}`)
+      }
+      lines.push("")
+    }
+
+    lines.push("> Use `project-internal-delegation-read(id)` to retrieve full results.")
+    lines.push("")
+  }
+
   lines.push("</delegation-context>")
 
   return lines.join("\n")

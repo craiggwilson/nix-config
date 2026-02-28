@@ -2,16 +2,6 @@
 
 This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
 
-## Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync               # Sync with git
-```
-
 ## Development
 
 ### Prerequisites
@@ -45,11 +35,10 @@ nix-shell -p bun --run "bun test src/tools/project-create.test.ts"
 
 To test the plugin with a live OpenCode instance:
 
-1. **Create a test directory with the plugin symlinked:**
+1. **Create a test directory:**
 
 ```bash
-mkdir -p /tmp/opencode-test/.opencode/plugins
-ln -sf $(pwd)/dist/index.js /tmp/opencode-test/.opencode/plugins/opencode-projects.js
+mkdir -p /tmp/opencode-testode
 cd /tmp/opencode-test
 jj git init  # or: git init
 echo "# Test" > README.md

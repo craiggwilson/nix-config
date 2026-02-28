@@ -105,6 +105,8 @@ export interface StartWorkOptions {
   agent?: string
   /** Parent session ID for notifications */
   parentSessionId?: string
+  /** Parent agent for notifications (Issue #1) */
+  parentAgent?: string
 }
 
 /**
@@ -560,7 +562,7 @@ export class ProjectManager {
       }
     }
 
-    // Create delegation
+    // Create delegation (Issue #1: pass parentAgent)
     const delegation = await this.delegationManager.create(projectId, {
       issueId,
       prompt: `Work on issue: ${issue.title}\n\n${issue.description || ""}`,
@@ -569,6 +571,7 @@ export class ProjectManager {
       vcs,
       agent,
       parentSessionId,
+      parentAgent: options.parentAgent,
     })
 
     // Store delegation metadata on the issue
