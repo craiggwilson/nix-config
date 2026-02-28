@@ -116,6 +116,7 @@
         shells = [
           ./shells/automation
           ./shells/go
+          ./shells/hdwlinux
           ./shells/mms
           ./shells/mongotune
           ./shells/observability
