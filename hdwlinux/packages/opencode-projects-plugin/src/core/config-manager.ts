@@ -16,6 +16,18 @@ const DEFAULT_DELEGATION_TIMEOUT_MS = 15 * 60 * 1000
 /** Default timeout for small model queries (30 seconds) */
 const DEFAULT_SMALL_MODEL_TIMEOUT_MS = 30000
 
+/** Default number of discussion rounds for teams */
+const DEFAULT_TEAM_DISCUSSION_ROUNDS = 2
+
+/** Default timeout per discussion round (5 minutes) */
+const DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS = 5 * 60 * 1000
+
+/** Default maximum team size */
+const DEFAULT_TEAM_MAX_SIZE = 5
+
+/** Default retry failed members setting */
+const DEFAULT_TEAM_RETRY_FAILED_MEMBERS = true
+
 /**
  * Validation error for configuration
  */
@@ -53,6 +65,12 @@ const DEFAULT_CONFIG: ProjectConfig = {
   delegation: {
     timeoutMs: DEFAULT_DELEGATION_TIMEOUT_MS,
     smallModelTimeoutMs: DEFAULT_SMALL_MODEL_TIMEOUT_MS,
+  },
+  teams: {
+    discussionRounds: DEFAULT_TEAM_DISCUSSION_ROUNDS,
+    discussionRoundTimeoutMs: DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS,
+    maxTeamSize: DEFAULT_TEAM_MAX_SIZE,
+    retryFailedMembers: DEFAULT_TEAM_RETRY_FAILED_MEMBERS,
   },
 }
 
@@ -167,7 +185,7 @@ export class ConfigManager {
     }
 
     // Warn about unknown top-level fields
-    const knownFields = ["version", "defaults", "projects", "agents", "worktrees", "delegation"]
+    const knownFields = ["version", "defaults", "projects", "agents", "worktrees", "delegation", "teams"]
     for (const key of Object.keys(this.config)) {
       if (!knownFields.includes(key)) {
         warnings.push({
@@ -263,6 +281,34 @@ export class ConfigManager {
    */
   getSmallModelTimeoutMs(): number {
     return this.config.delegation?.smallModelTimeoutMs ?? DEFAULT_SMALL_MODEL_TIMEOUT_MS
+  }
+
+  /**
+   * Get team discussion rounds (0 = disabled)
+   */
+  getTeamDiscussionRounds(): number {
+    return this.config.teams?.discussionRounds ?? DEFAULT_TEAM_DISCUSSION_ROUNDS
+  }
+
+  /**
+   * Get team discussion round timeout in milliseconds
+   */
+  getTeamDiscussionRoundTimeoutMs(): number {
+    return this.config.teams?.discussionRoundTimeoutMs ?? DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS
+  }
+
+  /**
+   * Get maximum team size
+   */
+  getTeamMaxSize(): number {
+    return this.config.teams?.maxTeamSize ?? DEFAULT_TEAM_MAX_SIZE
+  }
+
+  /**
+   * Get whether to retry failed team members
+   */
+  getTeamRetryFailedMembers(): boolean {
+    return this.config.teams?.retryFailedMembers ?? DEFAULT_TEAM_RETRY_FAILED_MEMBERS
   }
 
   /**

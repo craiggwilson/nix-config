@@ -10,8 +10,6 @@ export type {
   CloseProjectOptions,
   CreateProjectResult,
   ProjectManagerDeps,
-  StartWorkOptions,
-  StartWorkResult,
 } from "./project-manager.js"
 
 export { IssueManager } from "./issue-manager.js"

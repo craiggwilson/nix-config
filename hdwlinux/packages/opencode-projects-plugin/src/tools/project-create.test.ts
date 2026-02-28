@@ -17,8 +17,9 @@ import {
   createMockClient,
   createTestShell,
   createMockContext,
+  createMockTeamManager,
 } from "../core/test-utils.js"
-import type { BunShell } from "../core/types.js"
+import type { BunShell, TeamManager } from "../core/types.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()
@@ -29,6 +30,7 @@ describe("project_create tool", () => {
   let projectManager: ProjectManager
   let testShell: BunShell
   let issueStorage: InMemoryIssueStorage
+  let teamManager: TeamManager
 
   beforeAll(async () => {
 
@@ -40,12 +42,15 @@ describe("project_create tool", () => {
     const focus = new FocusManager()
     testShell = createTestShell()
 
+    teamManager = createMockTeamManager()
+
     projectManager = new ProjectManager({
       config,
       issueStorage,
       focus,
       log: mockLogger,
       repoRoot: testDir,
+      teamManager,
     })
   })
 
@@ -65,6 +70,7 @@ describe("project_create tool", () => {
       issueStorage,
       log: mockLogger,
       $: testShell,
+      teamManager,
     })
 
     const result = await tool.execute(
@@ -121,6 +127,7 @@ describe("project_create tool", () => {
       issueStorage,
       log: mockLogger,
       $: testShell,
+      teamManager,
     })
 
 

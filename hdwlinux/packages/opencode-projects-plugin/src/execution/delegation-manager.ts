@@ -4,18 +4,20 @@
  * Implements fire-and-forget delegation with:
  * - Background execution (no await on prompts)
  * - Session idle event handling for completion
- * - Batched notifications for parallel delegations
  * - Configurable timeout
  * - Title/description generation via small model
+ *
+ * Note: Parent notification is handled by TeamManager.
+ * All delegations are now part of a team (even single-agent work).
  */
 
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as crypto from "node:crypto"
 
-import type { Logger, OpencodeClient, MessageItem, Part } from "../core/types.js"
-import { selectAgent, discoverAgents } from "../core/agent-selector.js"
+import type { Logger, OpencodeClient, MessageItem, Part, TeamMemberRole } from "../core/types.js"
 import { promptSmallModel } from "../core/small-model.js"
+import type { TeamManager } from "./team-manager.js"
 
 /**
  * Delegation status
@@ -29,6 +31,8 @@ export interface Delegation {
   id: string
   projectId: string
   issueId: string
+  teamId: string
+  role: TeamMemberRole
   worktreePath?: string
   worktreeBranch?: string
   vcs?: "git" | "jj"
@@ -52,6 +56,8 @@ export interface Delegation {
 export interface CreateDelegationOptions {
   issueId: string
   prompt: string
+  teamId: string
+  role: TeamMemberRole
   worktreePath?: string
   worktreeBranch?: string
   vcs?: "git" | "jj"
@@ -98,15 +104,13 @@ export class DelegationManager {
   private client?: OpencodeClient
   private timeoutMs: number
   private smallModelTimeoutMs: number
+  private teamManager!: TeamManager
 
   // Session ID -> Delegation ID mapping for event lookup
   private sessionToDelegation: Map<string, string> = new Map()
 
-  // In-memory delegation cache for fast lookup (Issue #6)
+  // In-memory delegation cache for fast lookup
   private delegations: Map<string, Delegation> = new Map()
-
-  // Track pending delegations per parent session for batched notifications (Issue #5)
-  private pendingByParent: Map<string, Set<string>> = new Map()
 
   constructor(
     projectDir: string,
@@ -123,60 +127,10 @@ export class DelegationManager {
   }
 
   /**
-   * Create a new delegation and start it in the background.
-   *
-   * The delegation runs asynchronously - this method returns immediately
-   * after firing the prompt. Completion is handled via session.idle events.
+   * Set the team manager (called after construction to resolve circular dependency)
    */
-  async create(projectId: string, options: CreateDelegationOptions): Promise<Delegation> {
-    const { issueId, prompt, worktreePath, parentSessionId, parentAgent } = options
-    let { agent } = options
-
-    // If no agent specified and we have a client, use small model to select
-    if (!agent && this.client) {
-      const agents = await discoverAgents(this.client, this.log)
-      if (agents.length > 0) {
-        agent =
-          (await selectAgent(this.client, this.log, {
-            agents,
-            taskDescription: prompt,
-            taskType: "coding",
-            timeoutMs: this.smallModelTimeoutMs,
-          })) || undefined
-      }
-    }
-
-    const id = this.generateId()
-    const now = new Date().toISOString()
-
-    const delegation: Delegation = {
-      id,
-      projectId,
-      issueId,
-      worktreePath,
-      worktreeBranch: options.worktreeBranch,
-      vcs: options.vcs,
-      status: "pending",
-      sessionId: undefined,
-      parentSessionId,
-      parentAgent,
-      agent,
-      prompt,
-      startedAt: now,
-    }
-
-    // Store in memory cache (Issue #6)
-    this.delegations.set(delegation.id, delegation)
-
-    await this.save(delegation)
-    await this.log.info(`Created delegation ${id} for issue ${issueId}`)
-
-    // If we have a client, start the delegation in the background
-    if (this.client) {
-      await this.startDelegation(delegation)
-    }
-
-    return delegation
+  setTeamManager(teamManager: TeamManager): void {
+    this.teamManager = teamManager
   }
 
   /**
@@ -190,10 +144,10 @@ export class DelegationManager {
       this.delegations.set(delegation.id, delegation)
       await this.save(delegation)
 
-      // Create a session for the delegation (Issue #3: don't set agent here)
+      // Create a session for the delegation
       const sessionResult = await this.client.session.create({
         body: {
-          title: `Delegation: ${delegation.issueId}`,
+          title: `Delegation: ${delegation.issueId} (${delegation.role})`,
           parentID: delegation.parentSessionId,
         },
       })
@@ -209,34 +163,27 @@ export class DelegationManager {
       this.delegations.set(delegation.id, delegation)
       await this.save(delegation)
 
-      // Track for batched notifications (Issue #5: use parent, not root)
-      if (delegation.parentSessionId) {
-        const pending = this.pendingByParent.get(delegation.parentSessionId) || new Set()
-        pending.add(delegation.id)
-        this.pendingByParent.set(delegation.parentSessionId, pending)
-      }
-
       // Set up timeout handler
       setTimeout(() => {
         this.handleTimeout(delegation.id)
       }, this.timeoutMs)
 
       // Fire the prompt (fire-and-forget)
-      // Agent is set here, not in session.create (Issue #3)
-      // Completion is handled via session.idle events
+      // Prompt is built by TeamManager, we just send it
       this.client.session
         .prompt({
           path: { id: sessionId },
           body: {
             agent: delegation.agent,
-            parts: [{ type: "text", text: this.buildPrompt(delegation) }],
+            parts: [{ type: "text", text: delegation.prompt }],
             tools: DISABLED_TOOLS,
           },
         })
         .catch(async (error: Error) => {
           await this.log.error(`Delegation ${delegation.id} prompt failed: ${error.message}`)
           await this.fail(delegation.id, error.message)
-          await this.notifyParent(delegation)
+          // Notify TeamManager of failure
+          await this.teamManager.handleDelegationComplete(delegation.id)
         })
 
       await this.log.info(`Delegation ${delegation.id} started in background (session: ${sessionId})`)
@@ -259,7 +206,7 @@ export class DelegationManager {
     const delegationId = this.sessionToDelegation.get(sessionId)
     if (!delegationId) return
 
-    // Issue #6: Try in-memory cache first, fall back to disk
+    // Try in-memory cache first, fall back to disk
     let delegation: Delegation | null | undefined = this.delegations.get(delegationId)
     if (!delegation) {
       delegation = await this.get(delegationId)
@@ -288,8 +235,8 @@ export class DelegationManager {
     // Persist result to file
     await this.persistResult(delegation)
 
-    // Notify parent session
-    await this.notifyParent(delegation)
+    // Notify TeamManager (handles parent notification)
+    await this.teamManager.handleDelegationComplete(delegation.id)
 
     // Clean up session mapping
     this.sessionToDelegation.delete(sessionId)
@@ -358,11 +305,55 @@ export class DelegationManager {
     )
   }
 
-  /**
-   * Get all running delegations
+/**
+   * Create and start a new delegation
    */
-  async getRunningDelegations(): Promise<Delegation[]> {
-    return this.list({ status: "running" })
+  async create(projectId: string, options: CreateDelegationOptions): Promise<Delegation> {
+    const {
+      issueId,
+      prompt,
+      teamId,
+      role,
+      worktreePath,
+      worktreeBranch,
+      vcs,
+      agent,
+      parentSessionId,
+      parentAgent,
+    } = options
+
+    // Generate delegation ID
+    const delegationId = this.generateId()
+    const now = new Date().toISOString()
+
+    // Create delegation record
+    const delegation: Delegation = {
+      id: delegationId,
+      projectId,
+      issueId,
+      teamId,
+      role,
+      worktreePath,
+      worktreeBranch,
+      vcs,
+      status: "pending",
+      parentSessionId,
+      parentAgent,
+      agent,
+      prompt,
+      startedAt: now,
+    }
+
+    // Save initial state
+    this.delegations.set(delegationId, delegation)
+    await this.save(delegation)
+
+    await this.log.info(`Created delegation ${delegationId} for issue ${issueId} (team: ${teamId}, role: ${role})`)
+
+    // Start the delegation
+    await this.startDelegation(delegation)
+
+    return delegation
   }
 
   /**
@@ -373,13 +364,6 @@ export class DelegationManager {
     return all
       .filter((d) => d.status === "completed" || d.status === "failed" || d.status === "timeout")
       .slice(0, limit)
-  }
-
-  /**
-   * Get count of pending delegations for a parent session
-   */
-  getPendingCount(parentSessionId: string): number {
-    return this.pendingByParent.get(parentSessionId)?.size || 0
   }
 
   /**
@@ -500,13 +484,14 @@ export class DelegationManager {
     delegation.error = `Timed out after ${this.timeoutMs / 1000}s`
     delegation.result = result
     delegation.completedAt = new Date().toISOString()
+    this.delegations.set(delegation.id, delegation)
     await this.save(delegation)
 
     // Persist partial result
     await this.persistResult(delegation)
 
-    // Notify parent
-    await this.notifyParent(delegation)
+    // Notify TeamManager (handles parent notification)
+    await this.teamManager.handleDelegationComplete(delegation.id)
   }
 
   /**
@@ -572,138 +557,6 @@ export class DelegationManager {
   }
 
   /**
-   * Resolve the root session ID by walking up the parent chain
-   * @deprecated No longer used - we notify parent directly (Issue #5)
-   */
-  private async resolveRootSession(sessionId: string): Promise<string> {
-    if (!this.client) return sessionId
-
-    let currentId = sessionId
-    const visited = new Set<string>()
-
-    while (true) {
-      if (visited.has(currentId)) break
-      visited.add(currentId)
-
-      try {
-        const session = await this.client.session.get({
-          path: { id: currentId },
-        })
-
-        const parentId = session.data?.parentID
-        if (!parentId) break
-
-        currentId = parentId
-      } catch {
-        break
-      }
-    }
-
-    return currentId
-  }
-
-  /**
-   * Notify parent session that delegation is complete.
-   * Uses batching: individual notifications are silent (noReply: true),
-   * but when ALL delegations for a parent complete, triggers a response.
-   * 
-   * Issue #1: Include parentAgent in prompt calls
-   * Issue #2: Always use noReply: true for individual notifications
-   * Issue #5: Notify parent session directly, not root
-   */
-  private async notifyParent(delegation: Delegation): Promise<void> {
-    // Issue #5: Use parentSessionId instead of rootSessionId
-    if (!this.client || !delegation.parentSessionId) return
-
-    const parentSessionId = delegation.parentSessionId
-
-    // Remove from pending set (Issue #5: use pendingByParent)
-    const pendingSet = this.pendingByParent.get(parentSessionId)
-    if (pendingSet) {
-      pendingSet.delete(delegation.id)
-    }
-
-    const allComplete = !pendingSet || pendingSet.size === 0
-    const remainingCount = pendingSet?.size || 0
-
-    // Clean up if all complete
-    if (allComplete && pendingSet) {
-      this.pendingByParent.delete(parentSessionId)
-    }
-
-    // Build notification
-    const statusText = delegation.status === "completed" ? "complete" : delegation.status
-    const progressNote =
-      remainingCount > 0
-        ? `\n\n**${remainingCount} delegation(s) still in progress.** You will be notified when ALL complete.`
-        : ""
-
-    // Build worktree section with VCS-specific merge instructions
-    let worktreeSection = ""
-    if (delegation.worktreePath && delegation.vcs) {
-      const mergeInstructions = this.getMergeInstructions(delegation)
-      worktreeSection = `
-<worktree>
-  <path>${delegation.worktreePath}</path>
-  <branch>${delegation.worktreeBranch || delegation.issueId}</branch>
-  <vcs>${delegation.vcs}</vcs>
-</worktree>
-<merge-instructions>
-${mergeInstructions}
-</merge-instructions>`
-    }
-
-    const notification = `<delegation-notification>
-<delegation-id>${delegation.id}</delegation-id>
-<issue>${delegation.issueId}</issue>
-<status>${statusText}</status>
-${delegation.title ? `<title>${delegation.title}</title>` : ""}
-${delegation.description ? `<description>${delegation.description}</description>` : ""}${worktreeSection}
-<result>
-${delegation.result || "(no result)"}
-</result>
-${delegation.error ? `<error>${delegation.error}</error>` : ""}
-</delegation-notification>${progressNote}`
-
-    try {
-      // Issue #2: Always use noReply: true for individual notifications
-      // Issue #1: Include parentAgent in prompt
-      await this.client.session.prompt({
-        path: { id: parentSessionId },
-        body: {
-          noReply: true,
-          agent: delegation.parentAgent,
-          parts: [{ type: "text", text: notification }],
-        },
-      })
-
-      // If all complete, send a final notification that triggers response
-      if (allComplete) {
-        // Issue #1: Include parentAgent in prompt
-        await this.client.session.prompt({
-          path: { id: parentSessionId },
-          body: {
-            noReply: false,
-            agent: delegation.parentAgent,
-            parts: [
-              {
-                type: "text",
-                text: "<delegation-notification>\n<status>all-complete</status>\n<summary>All delegations complete. Review the results above and continue.</summary>\n</delegation-notification>",
-              },
-            ],
-          },
-        })
-      }
-
-      await this.log.info(
-        `Notified parent session ${parentSessionId} (allComplete=${allComplete}, remaining=${remainingCount})`
-      )
-    } catch (error) {
-      await this.log.warn(`Failed to notify parent: ${error}`)
-    }
-  }
-
-  /**
    * Generate title and description for a delegation result using small model
    */
   private async generateMetadata(
@@ -755,27 +608,6 @@ Respond with ONLY valid JSON:
   }
 
   /**
-   * Get VCS-specific merge instructions for a delegation
-   */
-  private getMergeInstructions(delegation: Delegation): string {
-    const branch = delegation.worktreeBranch || delegation.issueId
-    const worktreePath = delegation.worktreePath || ""
-
-    if (delegation.vcs === "jj") {
-      return `Review and merge the changes from the jj workspace:
-1. Review: \`jj diff --from main --to ${branch}\`
-2. Squash: \`jj squash --from ${branch}\` (from main workspace)
-3. Clean up: \`jj workspace forget ${branch}\``
-    } else {
-      // git
-      return `Review and merge the changes from the git worktree:
-1. Review: \`git diff main..${branch}\`
-2. Merge: \`git merge ${branch}\`
-3. Clean up: \`git worktree remove ${worktreePath} && git branch -d ${branch}\``
-    }
-  }
-
-  /**
    * Generate a unique delegation ID
    */
   private generateId(): string {
@@ -791,45 +623,6 @@ Respond with ONLY valid JSON:
     await fs.mkdir(this.delegationsDir, { recursive: true })
     const filePath = path.join(this.delegationsDir, `${delegation.id}.json`)
     await fs.writeFile(filePath, JSON.stringify(delegation, null, 2), "utf8")
-  }
-
-  /**
-   * Build the full prompt for a delegation
-   */
-  private buildPrompt(delegation: Delegation): string {
-    const lines: string[] = []
-
-    lines.push(`# Delegated Task: ${delegation.issueId}`)
-    lines.push("")
-    lines.push(`**Project:** ${delegation.projectId}`)
-    lines.push(`**Delegation ID:** ${delegation.id}`)
-
-    if (delegation.worktreePath) {
-      lines.push(`**Worktree:** ${delegation.worktreePath}`)
-      lines.push("")
-      lines.push("You are working in an isolated worktree. Make your changes there.")
-    }
-
-    lines.push("")
-    lines.push("## Task")
-    lines.push("")
-    lines.push(delegation.prompt)
-    lines.push("")
-    lines.push("## Instructions")
-    lines.push("")
-    lines.push("1. Complete the task described above")
-    lines.push("2. Commit your changes with clear commit messages")
-    lines.push("3. Provide a summary of what you accomplished")
-    lines.push("")
-    lines.push("## Constraints")
-    lines.push("")
-    lines.push("You are running as a background delegation. The following tools are disabled:")
-    lines.push("- project-create, project-close, project-create-issue, project-update-issue, project-work-on-issue")
-    lines.push("- task, delegate (no recursive delegation)")
-    lines.push("")
-    lines.push("Focus on completing the assigned task. Do not create new issues or projects.")
-
-    return lines.join("\n")
   }
 
   /**

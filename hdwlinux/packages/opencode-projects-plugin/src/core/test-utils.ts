@@ -4,7 +4,8 @@
 
 import { $ } from "bun"
 
-import type { Logger, BunShell, OpencodeClient, ProjectToolContext } from "./types.js"
+import type { Logger, BunShell, OpencodeClient, ProjectToolContext, Team, CreateTeamOptions } from "./types.js"
+import type { TeamManager } from "../execution/team-manager.js"
 
 /**
  * Create a mock logger that does nothing
@@ -104,4 +105,48 @@ export function createMockContext(overrides?: Partial<ProjectToolContext>): Proj
     ask: async () => {},
     ...overrides,
   }
+}
+
+/**
+ * Create a mock TeamManager for testing
+ */
+export function createMockTeamManager(): TeamManager {
+  const teams = new Map<string, Team>()
+  let teamCounter = 0
+
+  return {
+    setDelegationManager: () => {},
+    create: async (options: CreateTeamOptions): Promise<Team> => {
+      teamCounter++
+      const teamId = `team-test-${teamCounter}`
+      const agentName = options.agents?.[0] || "test-agent"
+      const team: Team = {
+        id: teamId,
+        projectId: options.projectId,
+        issueId: options.issueId,
+        members: [
+          {
+            agent: agentName,
+            role: "primary",
+            status: "running",
+            retryCount: 0,
+          },
+        ],
+        status: "running",
+        discussionRounds: 2,
+        currentRound: 0,
+        results: {},
+        discussionHistory: [],
+        parentSessionId: options.parentSessionId,
+        parentAgent: options.parentAgent,
+        startedAt: new Date().toISOString(),
+      }
+      teams.set(teamId, team)
+      return team
+    },
+    handleDelegationComplete: async () => {},
+    get: async (teamId: string) => teams.get(teamId) || null,
+    listByIssue: async () => [],
+    getRunningTeams: async () => Array.from(teams.values()).filter((t) => t.status === "running"),
+  } as unknown as TeamManager
 }

@@ -7,10 +7,21 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as os from "node:os"
 
-import { DelegationManager } from "./delegation-manager.js"
+import { DelegationManager, type CreateDelegationOptions } from "./delegation-manager.js"
 import { createMockLogger } from "../core/test-utils.js"
 
 const mockLogger = createMockLogger()
+
+/**
+ * Helper to create delegation options with required fields
+ */
+function createOptions(overrides: Partial<CreateDelegationOptions> & { issueId: string; prompt: string }): CreateDelegationOptions {
+  return {
+    teamId: "team-test",
+    role: "primary",
+    ...overrides,
+  }
+}
 
 describe("DelegationManager", () => {
   let testDir: string
@@ -42,24 +53,26 @@ describe("DelegationManager", () => {
 
   describe("create", () => {
     test("creates a new delegation", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Implement the feature",
-      })
+      }))
 
       expect(delegation.id).toMatch(/^del-/)
       expect(delegation.projectId).toBe("test-project")
       expect(delegation.issueId).toBe("issue-123")
       expect(delegation.prompt).toBe("Implement the feature")
       expect(delegation.status).toBe("pending")
+      expect(delegation.teamId).toBe("team-test")
+      expect(delegation.role).toBe("primary")
       expect(delegation.startedAt).toBeDefined()
     })
 
     test("persists delegation to disk", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       const filePath = path.join(testDir, "delegations", `${delegation.id}.json`)
       const content = await fs.readFile(filePath, "utf8")
@@ -67,27 +80,53 @@ describe("DelegationManager", () => {
 
       expect(saved.id).toBe(delegation.id)
       expect(saved.issueId).toBe("issue-123")
+      expect(saved.teamId).toBe("team-test")
+      expect(saved.role).toBe("primary")
     })
 
     test("includes optional fields", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
         worktreePath: "/path/to/worktree",
         agent: "coder",
-      })
+      }))
 
       expect(delegation.worktreePath).toBe("/path/to/worktree")
       expect(delegation.agent).toBe("coder")
+    })
+
+    test("supports different roles", async () => {
+      const primary = await manager.create("test-project", createOptions({
+        issueId: "issue-123",
+        prompt: "Primary work",
+        role: "primary",
+      }))
+
+      const secondary = await manager.create("test-project", createOptions({
+        issueId: "issue-123",
+        prompt: "Secondary review",
+        role: "secondary",
+      }))
+
+      const devilsAdvocate = await manager.create("test-project", createOptions({
+        issueId: "issue-123",
+        prompt: "Critical review",
+        role: "devilsAdvocate",
+      }))
+
+      expect(primary.role).toBe("primary")
+      expect(secondary.role).toBe("secondary")
+      expect(devilsAdvocate.role).toBe("devilsAdvocate")
     })
   })
 
   describe("get", () => {
     test("retrieves a delegation by ID", async () => {
-      const created = await manager.create("test-project", {
+      const created = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       const retrieved = await manager.get(created.id)
 
@@ -105,9 +144,9 @@ describe("DelegationManager", () => {
 
   describe("list", () => {
     test("lists all delegations", async () => {
-      await manager.create("test-project", { issueId: "issue-1", prompt: "Prompt 1" })
-      await manager.create("test-project", { issueId: "issue-2", prompt: "Prompt 2" })
-      await manager.create("test-project", { issueId: "issue-3", prompt: "Prompt 3" })
+      await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
+      await manager.create("test-project", createOptions({ issueId: "issue-2", prompt: "Prompt 2" }))
+      await manager.create("test-project", createOptions({ issueId: "issue-3", prompt: "Prompt 3" }))
 
       const delegations = await manager.list()
 
@@ -115,8 +154,8 @@ describe("DelegationManager", () => {
     })
 
     test("filters by status", async () => {
-      const d1 = await manager.create("test-project", { issueId: "issue-1", prompt: "Prompt 1" })
-      await manager.create("test-project", { issueId: "issue-2", prompt: "Prompt 2" })
+      const d1 = await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
+      await manager.create("test-project", createOptions({ issueId: "issue-2", prompt: "Prompt 2" }))
 
       await manager.complete(d1.id, "Done")
 
@@ -128,9 +167,9 @@ describe("DelegationManager", () => {
     })
 
     test("filters by issueId", async () => {
-      await manager.create("test-project", { issueId: "issue-1", prompt: "Prompt 1" })
-      await manager.create("test-project", { issueId: "issue-1", prompt: "Prompt 2" })
-      await manager.create("test-project", { issueId: "issue-2", prompt: "Prompt 3" })
+      await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
+      await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 2" }))
+      await manager.create("test-project", createOptions({ issueId: "issue-2", prompt: "Prompt 3" }))
 
       const issue1Delegations = await manager.list({ issueId: "issue-1" })
       const issue2Delegations = await manager.list({ issueId: "issue-2" })
@@ -142,10 +181,10 @@ describe("DelegationManager", () => {
 
   describe("complete", () => {
     test("marks delegation as completed", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       const success = await manager.complete(delegation.id, "Task completed successfully")
 
@@ -158,10 +197,10 @@ describe("DelegationManager", () => {
     })
 
     test("persists result to delegations directory", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       await manager.complete(delegation.id, "Task completed")
 
@@ -178,10 +217,10 @@ describe("DelegationManager", () => {
 
   describe("fail", () => {
     test("marks delegation as failed", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       const success = await manager.fail(delegation.id, "Something went wrong")
 
@@ -195,10 +234,10 @@ describe("DelegationManager", () => {
 
   describe("cancel", () => {
     test("cancels a pending delegation", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       const success = await manager.cancel(delegation.id)
 
@@ -209,10 +248,10 @@ describe("DelegationManager", () => {
     })
 
     test("cannot cancel completed delegation", async () => {
-      const delegation = await manager.create("test-project", {
+      const delegation = await manager.create("test-project", createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
-      })
+      }))
 
       await manager.complete(delegation.id, "Done")
       const success = await manager.cancel(delegation.id)
@@ -229,7 +268,7 @@ describe("DelegationManager", () => {
     })
 
     test("returns false when delegations are pending", async () => {
-      await manager.create("test-project", { issueId: "issue-123", prompt: "Prompt" })
+      await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt" }))
 
       const allComplete = await manager.areAllComplete("issue-123")
 
@@ -237,8 +276,8 @@ describe("DelegationManager", () => {
     })
 
     test("returns true when all delegations are complete", async () => {
-      const d1 = await manager.create("test-project", { issueId: "issue-123", prompt: "Prompt 1" })
-      const d2 = await manager.create("test-project", { issueId: "issue-123", prompt: "Prompt 2" })
+      const d1 = await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 1" }))
+      const d2 = await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 2" }))
 
       await manager.complete(d1.id, "Done 1")
       await manager.complete(d2.id, "Done 2")
@@ -251,8 +290,8 @@ describe("DelegationManager", () => {
 
   describe("getActiveDelegations", () => {
     test("returns only pending/running delegations", async () => {
-      const d1 = await manager.create("test-project", { issueId: "issue-123", prompt: "Prompt 1" })
-      await manager.create("test-project", { issueId: "issue-123", prompt: "Prompt 2" })
+      const d1 = await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 1" }))
+      await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 2" }))
 
       await manager.complete(d1.id, "Done")
 

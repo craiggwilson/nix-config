@@ -23,8 +23,7 @@ import type {
 } from "./types.js"
 import { PlanningManager } from "../planning/index.js"
 import { IssueManager, type UpdateIssueOptions, type CompletionCommentOptions } from "./issue-manager.js"
-import { WorktreeManager } from "../execution/worktree-manager.js"
-import type { DelegationManager, Delegation } from "../execution/delegation-manager.js"
+import type { TeamManager } from "../execution/team-manager.js"
 
 /**
  * Project metadata stored in project.json
@@ -92,35 +91,10 @@ export interface ProjectManagerDeps {
   repoRoot: string
   client?: OpencodeClient
   $?: BunShell
-  delegationManager?: DelegationManager
+  teamManager?: TeamManager
 }
 
-/**
- * Options for starting work on an issue
- */
-export interface StartWorkOptions {
-  /** Create isolated worktree for code changes */
-  isolate?: boolean
-  /** Agent to use for delegation (auto-selected if not specified) */
-  agent?: string
-  /** Parent session ID for notifications */
-  parentSessionId?: string
-  /** Parent agent for notifications (Issue #1) */
-  parentAgent?: string
-}
 
-/**
- * Result of starting work on an issue
- */
-export interface StartWorkResult {
-  success: boolean
-  issue: Issue
-  delegation?: Delegation
-  worktreePath?: string
-  worktreeBranch?: string
-  vcs?: VCSType
-  error?: string
-}
 
 /**
  * Generate a project ID from name
@@ -148,7 +122,7 @@ export class ProjectManager {
   private repoRoot: string
   private client?: OpencodeClient
   private $?: BunShell
-  private delegationManager?: DelegationManager
+  private teamManager?: TeamManager
 
   constructor(deps: ProjectManagerDeps) {
     this.config = deps.config
@@ -158,7 +132,7 @@ export class ProjectManager {
     this.repoRoot = deps.repoRoot
     this.client = deps.client
     this.$ = deps.$
-    this.delegationManager = deps.delegationManager
+    this.teamManager = deps.teamManager
 
     // Create IssueManager with shared dependencies
     this.issueManager = new IssueManager({
@@ -176,10 +150,10 @@ export class ProjectManager {
   }
 
   /**
-   * Set the delegation manager (for late binding)
+   * Set the team manager (for late binding)
    */
-  setDelegationManager(delegationManager: DelegationManager): void {
-    this.delegationManager = delegationManager
+  setTeamManager(teamManager: TeamManager): void {
+    this.teamManager = teamManager
   }
 
   /**
@@ -446,151 +420,6 @@ export class ProjectManager {
   }
 
   /**
-   * Start work on an issue with a background agent.
-   *
-   * This method:
-   * 1. Validates the issue exists and is not already in progress
-   * 2. Optionally creates an isolated worktree (if isolate=true)
-   * 3. Claims the issue (sets status to in_progress)
-   * 4. Creates a delegation to a background agent
-   * 5. Stores delegation metadata on the issue
-   *
-   * @param projectId - Project ID
-   * @param issueId - Issue ID to work on
-   * @param options - Options for starting work
-   * @returns Result with delegation info or error
-   */
-  async startWorkOnIssue(
-    projectId: string,
-    issueId: string,
-    options: StartWorkOptions = {}
-  ): Promise<StartWorkResult> {
-    const { isolate = false, agent, parentSessionId } = options
-
-    // Validate delegation manager is available
-    if (!this.delegationManager) {
-      return {
-        success: false,
-        issue: { id: issueId, title: "", status: "open", priority: 2, createdAt: "", updatedAt: "" },
-        error: "Delegation manager not available. Cannot start background work.",
-      }
-    }
-
-    // Get project directory
-    const projectDir = await this.findProjectDir(projectId)
-    if (!projectDir) {
-      return {
-        success: false,
-        issue: { id: issueId, title: "", status: "open", priority: 2, createdAt: "", updatedAt: "" },
-        error: `Project '${projectId}' not found.`,
-      }
-    }
-
-    // Get the issue
-    const issue = await this.issueManager.getIssue(projectDir, issueId)
-    if (!issue) {
-      return {
-        success: false,
-        issue: { id: issueId, title: "", status: "open", priority: 2, createdAt: "", updatedAt: "" },
-        error: `Issue '${issueId}' not found in project '${projectId}'.`,
-      }
-    }
-
-    // Check if already in progress
-    if (issue.status === "in_progress") {
-      return {
-        success: false,
-        issue,
-        error: `Issue '${issueId}' is already in progress${issue.assignee ? ` (assigned to ${issue.assignee})` : ""}.`,
-      }
-    }
-
-    await this.log.info(`Starting work on issue ${issueId} in project ${projectId} (isolate=${isolate})`)
-
-    // Variables for worktree (only used if isolate=true)
-    let worktreePath: string | undefined
-    let worktreeBranch: string | undefined
-    let vcs: VCSType | undefined
-
-    // Create worktree if isolate=true
-    if (isolate) {
-      if (!this.$) {
-        return {
-          success: false,
-          issue,
-          error: "Shell not available. Cannot create isolated worktree.",
-        }
-      }
-
-      const worktreeManager = new WorktreeManager(this.repoRoot, this.$, this.log)
-      const adapter = await worktreeManager.detectVCS()
-
-      if (!adapter) {
-        return {
-          success: false,
-          issue,
-          error: "No VCS detected (git or jj required). Cannot create isolated worktree.",
-        }
-      }
-
-      vcs = worktreeManager.getVCSType() || undefined
-
-      const worktreeResult = await worktreeManager.createIsolatedWorktree({
-        projectId,
-        issueId,
-      })
-
-      if (!worktreeResult.success || !worktreeResult.info) {
-        return {
-          success: false,
-          issue,
-          error: `Failed to create worktree: ${worktreeResult.error || "Unknown error"}`,
-        }
-      }
-
-      worktreePath = worktreeResult.info.path
-      worktreeBranch = worktreeResult.info.branch
-    }
-
-    // Claim the issue
-    const claimed = await this.issueManager.claimIssue(projectDir, issueId)
-    if (!claimed) {
-      return {
-        success: false,
-        issue,
-        error: `Failed to claim issue '${issueId}'. Check issue storage configuration.`,
-      }
-    }
-
-    // Create delegation (Issue #1: pass parentAgent)
-    const delegation = await this.delegationManager.create(projectId, {
-      issueId,
-      prompt: `Work on issue: ${issue.title}\n\n${issue.description || ""}`,
-      worktreePath,
-      worktreeBranch,
-      vcs,
-      agent,
-      parentSessionId,
-      parentAgent: options.parentAgent,
-    })
-
-    // Store delegation metadata on the issue
-    await this.issueManager.setDelegationMetadata(projectDir, issueId, {
-      delegationId: delegation.id,
-      delegationStatus: "running",
-    })
-
-    return {
-      success: true,
-      issue,
-      delegation,
-      worktreePath,
-      worktreeBranch,
-      vcs,
-    }
-  }
-
-  /**
    * Get the currently focused project ID
    */
   getFocusedProjectId(): string | null {
@@ -748,7 +577,7 @@ export class ProjectManager {
   /**
    * Find project directory by ID
    */
-  private async findProjectDir(projectId: string): Promise<string | null> {
+  async findProjectDir(projectId: string): Promise<string | null> {
     // Check local first
     const localDir = path.join(this.config.getLocalProjectsDir(this.repoRoot), projectId)
     try {

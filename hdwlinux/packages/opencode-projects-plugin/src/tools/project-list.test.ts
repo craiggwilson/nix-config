@@ -19,8 +19,9 @@ import {
   createMockClient,
   createTestShell,
   createMockContext,
+  createMockTeamManager,
 } from "../core/test-utils.js"
-import type { BunShell, ToolDeps } from "../core/types.js"
+import type { BunShell, ToolDeps, TeamManager } from "../core/types.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()
@@ -32,6 +33,7 @@ describe("project_list and project_status tools", () => {
   let testShell: BunShell
   let toolDeps: ToolDeps
   let projectId: string
+  let teamManager: TeamManager
 
   beforeAll(async () => {
 
@@ -42,6 +44,7 @@ describe("project_list and project_status tools", () => {
     const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
     testShell = createTestShell()
+    teamManager = createMockTeamManager()
 
     projectManager = new ProjectManager({
       config,
@@ -49,6 +52,7 @@ describe("project_list and project_status tools", () => {
       focus,
       log: mockLogger,
       repoRoot: testDir,
+      teamManager,
     })
 
     toolDeps = {
@@ -57,6 +61,7 @@ describe("project_list and project_status tools", () => {
       issueStorage,
       log: mockLogger,
       $: testShell,
+      teamManager,
     }
 
 
@@ -100,12 +105,14 @@ describe("project_list and project_status tools", () => {
 
       const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), "empty-test-"))
       const config = await ConfigManager.load()
+      const emptyTeamManager = createMockTeamManager()
       const emptyManager = new ProjectManager({
         config,
         issueStorage: new InMemoryIssueStorage(),
         focus: new FocusManager(),
         log: mockLogger,
         repoRoot: emptyDir,
+        teamManager: emptyTeamManager,
       })
 
       const tool = createProjectList({
@@ -114,6 +121,7 @@ describe("project_list and project_status tools", () => {
         issueStorage: new InMemoryIssueStorage(),
         log: mockLogger,
         $: testShell,
+        teamManager: emptyTeamManager,
       })
 
       const result = await tool.execute({ scope: "local" }, mockContext)

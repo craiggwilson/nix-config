@@ -26,3 +26,7 @@ export type {
   DelegationStatus,
   CreateDelegationOptions,
 } from "./delegation-manager.js"
+
+export { TeamManager } from "./team-manager.js"
+
+export { DEVILS_ADVOCATE_PROMPT, buildDevilsAdvocateSelectionPrompt } from "./devil-advocate.js"

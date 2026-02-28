@@ -35,7 +35,8 @@ import {
 import { BeadsIssueStorage } from "./storage/index.js"
 
 import { PROJECT_RULES } from "./agents/index.js"
-import { WorktreeManager, DelegationManager, type Delegation } from "./execution/index.js"
+import { WorktreeManager, DelegationManager, TeamManager, type Delegation } from "./execution/index.js"
+import type { Team } from "./core/types.js"
 
 // Re-exports removed to avoid plugin loader issues.
 // The plugin loader may try to call each export as a plugin function.
@@ -58,7 +59,11 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
   const repoRoot = worktree || directory
 
-  // Create delegation manager first (uses repoRoot as default project dir)
+  // Create worktree manager
+  const worktreeManager = new WorktreeManager(repoRoot, $, log)
+  await worktreeManager.detectVCS()
+
+  // Create delegation manager
   const delegationManager = new DelegationManager(
     repoRoot,
     log,
@@ -69,7 +74,29 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     }
   )
 
-  // Create project manager with all dependencies including shell and delegation manager
+  // Create team manager with team config
+  const teamConfig = {
+    discussionRounds: config.getTeamDiscussionRounds(),
+    discussionRoundTimeoutMs: config.getTeamDiscussionRoundTimeoutMs(),
+    maxTeamSize: config.getTeamMaxSize(),
+    retryFailedMembers: config.getTeamRetryFailedMembers(),
+    smallModelTimeoutMs: config.getSmallModelTimeoutMs(),
+    delegationTimeoutMs: config.getDelegationTimeoutMs(),
+  }
+
+  const teamManager = new TeamManager(
+    repoRoot,
+    log,
+    typedClient,
+    worktreeManager,
+    teamConfig
+  )
+
+  // Wire up circular dependency
+  delegationManager.setTeamManager(teamManager)
+  teamManager.setDelegationManager(delegationManager)
+
+  // Create project manager with all dependencies
   const projectManager = new ProjectManager({
     config,
     issueStorage,
@@ -78,7 +105,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     repoRoot,
     client: typedClient,
     $,
-    delegationManager,
+    teamManager,
   })
 
   const beadsAvailable = await issueStorage.isAvailable()
@@ -88,7 +115,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
   await log.info(`opencode-projects initialized in ${repoRoot}`)
 
-  const toolDeps = { client: typedClient, projectManager, issueStorage, log, $, delegationManager }
+  const toolDeps = { client: typedClient, projectManager, issueStorage, log, $, teamManager }
 
   return {
     tool: {
@@ -107,8 +134,6 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     "experimental.chat.system.transform": async (_input, output) => {
       output.system.push(PROJECT_RULES)
 
-      const worktreeManager = new WorktreeManager(repoRoot, $, log)
-      await worktreeManager.detectVCS()
       const vcsContext = worktreeManager.getVCSContext()
       if (vcsContext) {
         output.system.push(vcsContext)
@@ -138,19 +163,19 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         output.context.push(contextBlock)
       }
 
-      // Issue #8: Get session ID for filtering delegations
+      // Get session ID for filtering delegations
       const sessionId = (input as { sessionID?: string }).sessionID
 
-      // Issue #7 & #8: Add running and completed delegations, filtered by session
-      const allRunning = await delegationManager.getRunningDelegations()
+      // Add running and completed delegations, filtered by session
+      const allRunning = await delegationManager.list({ status: "running" })
       const allCompleted = await delegationManager.getRecentCompletedDelegations(10)
 
-      // Filter to delegations for this session (Issue #8)
+      // Filter to delegations for this session
       const runningDelegations = sessionId
-        ? allRunning.filter((d) => d.parentSessionId === sessionId)
+        ? allRunning.filter((d: Delegation) => d.parentSessionId === sessionId)
         : allRunning
       const completedDelegations = sessionId
-        ? allCompleted.filter((d) => d.parentSessionId === sessionId)
+        ? allCompleted.filter((d: Delegation) => d.parentSessionId === sessionId)
         : allCompleted
 
       if (runningDelegations.length > 0 || completedDelegations.length > 0) {
@@ -159,6 +184,17 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
           completedDelegations
         )
         output.context.push(delegationContext)
+      }
+
+      // Add running teams context
+      const runningTeams = await teamManager.getRunningTeams()
+      const sessionTeams = sessionId
+        ? runningTeams.filter((t) => t.parentSessionId === sessionId)
+        : runningTeams
+
+      if (sessionTeams.length > 0) {
+        const teamContext = buildTeamCompactionContext(sessionTeams)
+        output.context.push(teamContext)
       }
     },
 
@@ -382,6 +418,41 @@ async function buildPlanningContext(
   if (!planningManager) return null
 
   return planningManager.buildContext()
+}
+
+/**
+ * Build context for running teams during compaction.
+ */
+function buildTeamCompactionContext(teams: Team[]): string {
+  const lines = ["<team-context>"]
+
+  lines.push("## Running Teams")
+  lines.push("")
+
+  for (const team of teams) {
+    lines.push(`### Team ${team.id}`)
+    lines.push(`- **Issue:** ${team.issueId}`)
+    lines.push(`- **Status:** ${team.status}`)
+    lines.push(`- **Members:** ${team.members.map((m) => `${m.agent} (${m.role})`).join(", ")}`)
+    lines.push(`- **Started:** ${team.startedAt}`)
+
+    if (team.status === "discussing") {
+      lines.push(`- **Discussion Round:** ${team.currentRound}/${team.discussionRounds}`)
+    }
+
+    if (team.worktreePath) {
+      lines.push(`- **Worktree:** ${team.worktreePath}`)
+    }
+    lines.push("")
+  }
+
+  lines.push("> You will be notified via `<team-notification>` when teams complete.")
+  lines.push("> Do NOT poll for status - continue productive work.")
+  lines.push("")
+
+  lines.push("</team-context>")
+
+  return lines.join("\n")
 }
 
 export default ProjectsPlugin

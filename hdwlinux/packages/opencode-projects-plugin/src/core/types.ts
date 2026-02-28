@@ -176,6 +176,16 @@ export interface ProjectConfig {
     /** Timeout for small model queries in milliseconds (default: 30 seconds) */
     smallModelTimeoutMs?: number
   }
+  teams?: {
+    /** Number of discussion rounds (0 = disabled, default: 2) */
+    discussionRounds?: number
+    /** Timeout per discussion round in milliseconds (default: 300000 = 5 min) */
+    discussionRoundTimeoutMs?: number
+    /** Maximum team size (default: 5) */
+    maxTeamSize?: number
+    /** Retry failed members once (default: true) */
+    retryFailedMembers?: boolean
+  }
 }
 
 /**
@@ -250,6 +260,145 @@ export interface FocusState {
  */
 export type VCSType = "git" | "jj"
 
+// ============================================================================
+// TEAM TYPES
+// ============================================================================
+
+/**
+ * Role of a team member in multi-agent execution
+ */
+export type TeamMemberRole = "primary" | "secondary" | "devilsAdvocate"
+
+/**
+ * Status of a team
+ */
+export type TeamStatus = "running" | "discussing" | "completed" | "failed"
+
+/**
+ * Status of a team member
+ */
+export type TeamMemberStatus = "pending" | "running" | "completed" | "failed"
+
+/**
+ * A member of a team
+ */
+export interface TeamMember {
+  /** Agent name */
+  agent: string
+  /** Role in the team */
+  role: TeamMemberRole
+  /** Associated delegation ID */
+  delegationId?: string
+  /** Session ID for discussion continuity */
+  sessionId?: string
+  /** Current status */
+  status: TeamMemberStatus
+  /** Number of retry attempts */
+  retryCount: number
+}
+
+/**
+ * Result from a team member's work
+ */
+export interface TeamMemberResult {
+  /** Agent name */
+  agent: string
+  /** Full result text */
+  result: string
+  /** When the work completed */
+  completedAt: string
+}
+
+/**
+ * A single round of team discussion
+ */
+export interface DiscussionRound {
+  /** Round number (1-based) */
+  round: number
+  /** Responses from each agent */
+  responses: Record<string, string>
+}
+
+/**
+ * A team of agents working on an issue
+ */
+export interface Team {
+  /** Unique team identifier */
+  id: string
+  /** Project this team belongs to */
+  projectId: string
+  /** Issue being worked on */
+  issueId: string
+  /** Team members */
+  members: TeamMember[]
+  /** Current team status */
+  status: TeamStatus
+  /** Shared worktree path (if isolated) */
+  worktreePath?: string
+  /** Worktree branch name */
+  worktreeBranch?: string
+  /** VCS type for worktree */
+  vcs?: VCSType
+  /** Number of discussion rounds (0 = disabled) */
+  discussionRounds: number
+  /** Current discussion round */
+  currentRound: number
+  /** Results from each member's initial work */
+  results: Record<string, TeamMemberResult>
+  /** Discussion history */
+  discussionHistory: DiscussionRound[]
+  /** Parent session to notify on completion */
+  parentSessionId?: string
+  /** Parent agent for notification routing */
+  parentAgent?: string
+  /** Whether running in foreground mode (synchronous) */
+  foreground?: boolean
+  /** When the team was created */
+  startedAt: string
+  /** When the team completed */
+  completedAt?: string
+}
+
+/**
+ * Options for creating a team
+ */
+export interface CreateTeamOptions {
+  /** Project ID */
+  projectId: string
+  /** Issue ID to work on */
+  issueId: string
+  /** Issue context (title + description) for small model */
+  issueContext: string
+  /** Agents to use. If undefined, small model auto-selects a team. */
+  agents?: string[]
+  /** Create isolated worktree */
+  isolate?: boolean
+  /** Parent session ID for notifications */
+  parentSessionId?: string
+  /** Parent agent for notification routing */
+  parentAgent?: string
+  /** Wait for completion instead of fire-and-forget */
+  foreground?: boolean
+}
+
+/**
+ * Team configuration
+ */
+export interface TeamConfig {
+  /** Number of discussion rounds (0 = disabled, default: 2) */
+  discussionRounds: number
+  /** Timeout per discussion round in milliseconds (default: 300000 = 5 min) */
+  discussionRoundTimeoutMs: number
+  /** Maximum team size (default: 5) */
+  maxTeamSize: number
+  /** Retry failed members once (default: true) */
+  retryFailedMembers: boolean
+  /** Timeout for small model queries in milliseconds */
+  smallModelTimeoutMs: number
+  /** Timeout for delegations in milliseconds */
+  delegationTimeoutMs: number
+}
+
 /**
  * Worktree info
  */
@@ -278,8 +427,8 @@ export interface ToolDeps {
   log: Logger
   /** Bun shell for executing commands */
   $: BunShell
-  /** Delegation manager for background agent work (optional) */
-  delegationManager?: DelegationManager
+  /** Team manager for multi-agent execution */
+  teamManager: TeamManager
 }
 
 /**
@@ -327,3 +476,4 @@ export type FocusManager = import("./focus-manager.js").FocusManager
 export type ProjectManager = import("./project-manager.js").ProjectManager
 export type IssueStorage = import("../storage/issue-storage.js").IssueStorage
 export type DelegationManager = import("../execution/delegation-manager.js").DelegationManager
+export type TeamManager = import("../execution/team-manager.js").TeamManager
