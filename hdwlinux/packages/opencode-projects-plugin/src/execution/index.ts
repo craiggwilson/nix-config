@@ -1,24 +1,15 @@
 /**
- * Execution module - Worktree and delegation management
+ * Execution module - Delegation and team management
+ *
+ * Core components:
+ * - DelegationManager: Manages individual agent delegations
+ * - TeamManager: Orchestrates multi-agent team execution
+ *
+ * Supporting components (extracted for SRP):
+ * - TeamComposer: Agent selection and team composition
+ * - DiscussionCoordinator: Multi-round discussion logic
+ * - TeamNotifier: Parent notification and XML generation
  */
-
-export type {
-  VCSType,
-  MergeStrategy,
-  WorktreeInfo,
-  MergeResult,
-  VCSAdapter,
-} from "./vcs-adapter.js"
-
-export { GitAdapter } from "./git-adapter.js"
-export { JujutsuAdapter } from "./jujutsu-adapter.js"
-
-export { WorktreeManager } from "./worktree-manager.js"
-export type {
-  CreateWorktreeOptions,
-  CreateWorktreeResult,
-  MergeWorktreeOptions,
-} from "./worktree-manager.js"
 
 export { DelegationManager } from "./delegation-manager.js"
 export type {
@@ -28,5 +19,22 @@ export type {
 } from "./delegation-manager.js"
 
 export { TeamManager } from "./team-manager.js"
+export type {
+  TeamMemberRole,
+  TeamStatus,
+  TeamMemberStatus,
+  TeamMember,
+  TeamMemberResult,
+  DiscussionRound,
+  Team,
+  CreateTeamOptions,
+  TeamConfig,
+} from "./team-manager.js"
 
-export { DEVILS_ADVOCATE_PROMPT, buildDevilsAdvocateSelectionPrompt } from "./devil-advocate.js"
+export { TeamComposer } from "./team-composer.js"
+export type { TeamComposerConfig } from "./team-composer.js"
+
+export { DiscussionCoordinator } from "./discussion-coordinator.js"
+export type { DiscussionCoordinatorConfig } from "./discussion-coordinator.js"
+
+export { TeamNotifier } from "./team-notifier.js"

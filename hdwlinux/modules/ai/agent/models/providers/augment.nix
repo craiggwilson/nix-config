@@ -88,7 +88,7 @@
           };
           coding = {
             provider = "augment";
-            model = "claude-sonnet-4-5";
+            model = "claude-opus-4-5";
           };
           reasoning = {
             provider = "augment";
@@ -96,7 +96,7 @@
           };
           planning = {
             provider = "augment";
-            model = "claude-sonnet-4-5";
+            model = "claude-opus-4-5";
           };
           explore = {
             provider = "augment";

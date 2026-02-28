@@ -1,5 +1,35 @@
 # Tools Reference
 
+## Storage Locations
+
+Projects can be stored in two locations:
+
+- **global** (`~/.local/share/opencode/projects/`): Default. Projects are stored in your user data directory, shared across all repositories. Good for personal projects and cross-repository work.
+- **local** (`.projects/` in repository): Projects are stored in the repository's `.projects/` directory. Good for team collaboration and version control.
+
+### Configuring Default Storage
+
+The default storage location is **global**. To change it, edit `~/.config/opencode/opencode-projects.json`:
+
+```json
+{
+  "defaults": {
+    "storage": "local"
+  }
+}
+```
+
+### Storage Precedence
+
+When finding projects by ID, local storage is checked first, then global. If a project exists in both locations (unlikely), the local one takes precedence.
+
+### Environment Variables
+
+- `XDG_DATA_HOME`: Override the base directory for global storage (default: `~/.local/share`)
+- `XDG_CONFIG_HOME`: Override the config directory (default: `~/.config`)
+
+---
+
 ## Project Tools
 
 ### project-create
@@ -11,7 +41,7 @@ Create a new project with optional initial structure.
 |------|------|----------|-------------|
 | `name` | string | Yes | Project name (used to generate ID) |
 | `description` | string | No | Project description |
-| `storage` | `"local"` \| `"global"` | No | Where to store (default: local) |
+| `storage` | `"local"` \| `"global"` | No | Where to store (default: global) |
 
 **Returns:** Project creation confirmation with ID and path.
 

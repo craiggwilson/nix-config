@@ -6,23 +6,25 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext, PlanningPhase } from "../core/types.js"
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
 import { PlanningManager } from "../planning/index.js"
-import { formatError } from "../core/errors.js"
-
-interface ProjectPlanArgs {
-  projectId?: string
-  action?: "start" | "continue" | "save" | "advance" | "phase" | "status"
-  phase?: PlanningPhase
-  understanding?: string
-  openQuestions?: string
-}
+import {
+  ProjectPlanArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectPlanArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project-plan tool
  */
-export function createProjectPlan(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectPlan(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `Manage project planning sessions.
@@ -38,7 +40,7 @@ Actions:
 Phases:
 - discovery: Understand the problem, stakeholders, timeline, constraints
 - synthesis: Consolidate research, make decisions, identify risks
-- breakdown: Create issues in beads with proper hierarchy
+- breakdown: Create issues with proper hierarchy
 - complete: Planning is finished
 
 During planning, you can:
@@ -69,11 +71,16 @@ During planning, you can:
         .describe("Comma-separated list of open questions (for action='save')"),
     },
 
-    async execute(args: ProjectPlanArgs, _ctx: ProjectToolContext): Promise<string> {
-      try {
-        const { action = "continue", phase, understanding, openQuestions } = args
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectPlanArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
 
-        const projectId = args.projectId || projectManager.getFocusedProjectId()
+      try {
+        const { action = "continue", phase, understanding, openQuestions } = validationResult.value
+
+        const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
 
         if (!projectId) {
           return "No project specified and no project is currently focused.\n\nUse `project-create` to start a new project, or `project-focus(projectId)` to set context."

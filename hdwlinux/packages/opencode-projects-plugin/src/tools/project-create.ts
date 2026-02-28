@@ -4,32 +4,31 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import { formatError } from "../core/errors.js"
-
-interface ProjectCreateArgs {
-  name: string
-  type?: "roadmap" | "project"
-  workspace?: string
-  storage?: "local" | "global"
-  description?: string
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import {
+  ProjectCreateArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectCreateArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Creates the project_create tool for initializing new projects.
- *
- * @param deps - Tool dependencies including ProjectManager and logger
- * @returns OpenCode tool definition
  */
-export function createProjectCreate(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectCreate(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `Create a new project and initiate the planning process.
 
 This will:
 1. Create the project directory structure
-2. Initialize beads for issue tracking
+2. Initialize issue tracking
 3. Start a conversational planning interview
 
 Use this when starting a new initiative, feature, or long-term effort.`,
@@ -51,8 +50,13 @@ Use this when starting a new initiative, feature, or long-term effort.`,
       description: tool.schema.string().optional().describe("Initial project description"),
     },
 
-    async execute(args: ProjectCreateArgs, _ctx: ProjectToolContext): Promise<string> {
-      const { name, type, workspace, storage, description } = args
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectCreateArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
+
+      const { name, type, workspace, storage, description } = validationResult.value
 
       await log.info(`Creating project: ${name}`)
 

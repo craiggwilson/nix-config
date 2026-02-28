@@ -7,72 +7,137 @@
  * - Configurable timeout
  * - Title/description generation via small model
  *
- * Note: Parent notification is handled by TeamManager.
+ * Note: Parent notification is handled via the onComplete callback.
  * All delegations are now part of a team (even single-agent work).
  */
 
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as crypto from "node:crypto"
+import { z } from "zod"
 
-import type { Logger, OpencodeClient, MessageItem, Part, TeamMemberRole } from "../core/types.js"
-import { promptSmallModel } from "../core/small-model.js"
-import type { TeamManager } from "./team-manager.js"
+import type { Logger, OpencodeClient, MessageItem, Part } from "../utils/opencode-sdk/index.js"
+import type { TeamMemberRole } from "./team-manager.js"
+import { formatDelegationError, type DelegationError } from "../utils/errors/index.js"
+import { promptSmallModel } from "../agents/index.js"
+import { metadataGenerationTemplate } from "../utils/prompts/index.js"
+import type { Result } from "../utils/result/index.js"
 
 /**
- * Delegation status
+ * Zod schema for metadata generation response
+ */
+const MetadataResponseSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+})
+
+/**
+ * Lifecycle status of a delegation.
+ *
+ * State transitions:
+ * - pending → running (when session starts)
+ * - running → completed | failed | timeout | cancelled
  */
 export type DelegationStatus = "pending" | "running" | "completed" | "failed" | "cancelled" | "timeout"
 
 /**
- * Delegation record
+ * A delegation represents a background agent task.
+ *
+ * Delegations are created by TeamManager and executed asynchronously.
+ * The parent session is notified via callback when the delegation completes.
  */
 export interface Delegation {
+  /** Unique delegation identifier (format: del-{timestamp}-{random}) */
   id: string
+  /** Project this delegation belongs to */
   projectId: string
+  /** Filesystem path to the project directory */
+  projectDir: string
+  /** Issue being worked on */
   issueId: string
+  /** Team this delegation is part of */
   teamId: string
+  /** Role within the team (primary does implementation, others review) */
   role: TeamMemberRole
+  /** Isolated worktree path (only for primary role with isolation) */
   worktreePath?: string
+  /** Branch name in the worktree */
   worktreeBranch?: string
+  /** Version control system type */
   vcs?: "git" | "jj"
+  /** Current lifecycle status */
   status: DelegationStatus
+  /** OpenCode session ID for this delegation */
   sessionId?: string
+  /** Parent session to notify on completion */
   parentSessionId?: string
+  /** Parent agent for notification routing */
   parentAgent?: string
+  /** Agent assigned to this delegation */
   agent?: string
+  /** Full prompt sent to the agent */
   prompt: string
+  /** Generated title summarizing the work (via small model) */
   title?: string
+  /** Generated description of the work (via small model) */
   description?: string
+  /** Final result text from the agent */
   result?: string
+  /** Error message if failed or timed out */
   error?: string
+  /** ISO timestamp when delegation was created */
   startedAt: string
+  /** ISO timestamp when delegation completed */
   completedAt?: string
+  /**
+   * Callback invoked when delegation completes.
+   * Not serialized to disk - used for in-memory coordination.
+   */
+  onComplete?: DelegationCompleteCallback
 }
 
 /**
- * Options for creating a delegation
+ * Callback signature for delegation completion notification.
+ *
+ * @param delegationId - The ID of the completed delegation
+ */
+export type DelegationCompleteCallback = (delegationId: string) => Promise<void>
+
+/**
+ * Options for creating a new delegation.
  */
 export interface CreateDelegationOptions {
+  /** Issue to work on */
   issueId: string
+  /** Full prompt to send to the agent */
   prompt: string
+  /** Team this delegation belongs to */
   teamId: string
+  /** Role within the team */
   role: TeamMemberRole
+  /** Isolated worktree path (for primary role with isolation) */
   worktreePath?: string
+  /** Branch name in the worktree */
   worktreeBranch?: string
+  /** Version control system type */
   vcs?: "git" | "jj"
+  /** Agent to assign (uses default if not specified) */
   agent?: string
+  /** Parent session for notifications */
   parentSessionId?: string
+  /** Parent agent for notification routing */
   parentAgent?: string
+  /** Callback invoked when delegation completes */
+  onComplete?: DelegationCompleteCallback
 }
 
 /**
- * Options for DelegationManager constructor
+ * Configuration options for DelegationManager.
  */
 export interface DelegationManagerOptions {
-  /** Timeout for delegations in milliseconds */
+  /** Maximum time a delegation can run before timeout (milliseconds) */
   timeoutMs: number
-  /** Timeout for small model queries in milliseconds */
+  /** Maximum time for small model metadata generation (milliseconds) */
   smallModelTimeoutMs: number
 }
 
@@ -95,31 +160,58 @@ const DISABLED_TOOLS: Record<string, boolean> = {
 }
 
 /**
- * DelegationManager - manages background delegations with fire-and-forget execution
+ * Maximum number of completed delegations to keep in memory.
+ * Older completed delegations are cleaned up to prevent unbounded memory growth.
+ */
+const MAX_COMPLETED_DELEGATIONS = 50
+
+/**
+ * Manages background agent delegations with fire-and-forget execution.
+ *
+ * Key responsibilities:
+ * - Creating and starting delegations in background sessions
+ * - Tracking delegation lifecycle via session events
+ * - Generating metadata (title/description) via small model
+ * - Persisting delegation state and results to disk
+ *
+ * Delegations are fire-and-forget: the create() method returns immediately
+ * after starting the background session. Completion is detected via the
+ * session.idle event, which triggers the onComplete callback.
+ *
+ * @example
+ * ```typescript
+ * const manager = new DelegationManager(log, client, { timeoutMs: 300000, smallModelTimeoutMs: 30000 });
+ * const result = await manager.create(projectId, projectDir, {
+ *   issueId: "proj-123",
+ *   prompt: "Implement feature X",
+ *   teamId: "team-abc",
+ *   role: "primary",
+ *   onComplete: async (id) => console.log(`Delegation ${id} complete`)
+ * });
+ * ```
  */
 export class DelegationManager {
-  private projectDir: string
-  private delegationsDir: string
   private log: Logger
   private client?: OpencodeClient
   private timeoutMs: number
   private smallModelTimeoutMs: number
-  private teamManager!: TeamManager
 
-  // Session ID -> Delegation ID mapping for event lookup
+  /** Maps session IDs to delegation IDs for event routing */
   private sessionToDelegation: Map<string, string> = new Map()
 
-  // In-memory delegation cache for fast lookup
+  /** In-memory cache of delegations for fast lookup */
   private delegations: Map<string, Delegation> = new Map()
 
+  /**
+   * @param log - Logger for diagnostic output
+   * @param client - OpenCode client for session management (undefined disables execution)
+   * @param options - Configuration options
+   */
   constructor(
-    projectDir: string,
     log: Logger,
     client: OpencodeClient | undefined,
     options: DelegationManagerOptions
   ) {
-    this.projectDir = projectDir
-    this.delegationsDir = path.join(projectDir, "delegations")
     this.log = log
     this.client = client
     this.timeoutMs = options.timeoutMs
@@ -127,14 +219,10 @@ export class DelegationManager {
   }
 
   /**
-   * Set the team manager (called after construction to resolve circular dependency)
-   */
-  setTeamManager(teamManager: TeamManager): void {
-    this.teamManager = teamManager
-  }
-
-  /**
-   * Start a delegation in the background (fire-and-forget)
+   * Start a delegation in the background (fire-and-forget).
+   *
+   * Creates an OpenCode session, sets up timeout handling, and fires the prompt.
+   * Does not await the prompt response - completion is handled via session.idle event.
    */
   private async startDelegation(delegation: Delegation): Promise<void> {
     if (!this.client) return
@@ -142,7 +230,11 @@ export class DelegationManager {
     try {
       delegation.status = "running"
       this.delegations.set(delegation.id, delegation)
-      await this.save(delegation)
+      const saveResult = await this.save(delegation)
+      if (!saveResult.ok) {
+        await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
+        return
+      }
 
       // Create a session for the delegation
       const sessionResult = await this.client.session.create({
@@ -154,14 +246,20 @@ export class DelegationManager {
 
       const sessionId = sessionResult.data?.id
       if (!sessionId) {
-        await this.fail(delegation.id, "Failed to create session")
+        const failResult = await this.fail(delegation.id, "Failed to create session")
+        if (!failResult.ok) {
+          await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
+        }
         return
       }
 
       delegation.sessionId = sessionId
       this.sessionToDelegation.set(sessionId, delegation.id)
       this.delegations.set(delegation.id, delegation)
-      await this.save(delegation)
+      const saveResult2 = await this.save(delegation)
+      if (!saveResult2.ok) {
+        await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult2.error)}`)
+      }
 
       // Set up timeout handler
       setTimeout(() => {
@@ -181,9 +279,12 @@ export class DelegationManager {
         })
         .catch(async (error: Error) => {
           await this.log.error(`Delegation ${delegation.id} prompt failed: ${error.message}`)
-          await this.fail(delegation.id, error.message)
-          // Notify TeamManager of failure
-          await this.teamManager.handleDelegationComplete(delegation.id)
+          const failResult = await this.fail(delegation.id, error.message)
+          if (!failResult.ok) {
+            await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
+          }
+          // Notify via callback
+          if (delegation.onComplete) await delegation.onComplete(delegation.id)
         })
 
       await this.log.info(`Delegation ${delegation.id} started in background (session: ${sessionId})`)
@@ -192,26 +293,38 @@ export class DelegationManager {
       delegation.status = "failed"
       delegation.error = String(error)
       this.delegations.set(delegation.id, delegation)
-      await this.save(delegation)
+      const saveResult = await this.save(delegation)
+      if (!saveResult.ok) {
+        await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
+      }
     }
   }
 
   /**
-   * Handle session.idle event - called when a delegated session becomes idle
-   * 
-   * This is the primary completion handler. The session.idle event fires when
-   * the agent has finished processing and is waiting for input.
+   * Handle session.idle event from OpenCode.
+   *
+   * This is the primary completion handler. When a delegated session becomes idle
+   * (agent finished processing), this method:
+   * 1. Retrieves the result from session messages
+   * 2. Generates title/description via small model
+   * 3. Updates delegation status and persists to disk
+   * 4. Invokes the onComplete callback for parent notification
+   *
+   * @param sessionId - The OpenCode session ID that became idle
    */
   async handleSessionIdle(sessionId: string): Promise<void> {
     const delegationId = this.sessionToDelegation.get(sessionId)
     if (!delegationId) return
 
-    // Try in-memory cache first, fall back to disk
-    let delegation: Delegation | null | undefined = this.delegations.get(delegationId)
-    if (!delegation) {
-      delegation = await this.get(delegationId)
+    // Try in-memory cache first
+    const getResult = await this.get(delegationId)
+    if (!getResult.ok) {
+      await this.log.warn(`Delegation ${delegationId} not found for session ${sessionId}`)
+      return
     }
-    if (!delegation || delegation.status !== "running") return
+
+    const delegation = getResult.value
+    if (delegation.status !== "running") return
 
     await this.log.info(`Delegation ${delegation.id} session idle, marking complete`)
 
@@ -230,67 +343,77 @@ export class DelegationManager {
 
     // Update in-memory cache and persist
     this.delegations.set(delegation.id, delegation)
-    await this.save(delegation)
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
+    }
 
     // Persist result to file
     await this.persistResult(delegation)
 
-    // Notify TeamManager (handles parent notification)
-    await this.teamManager.handleDelegationComplete(delegation.id)
+    // Notify via callback (handles parent notification)
+    if (delegation.onComplete) await delegation.onComplete(delegation.id)
 
-    // Clean up session mapping
+    // Clean up session mapping and prune old completed delegations
     this.sessionToDelegation.delete(sessionId)
+    this.pruneCompletedDelegations()
   }
 
   /**
-   * Find a delegation by its session ID
+   * Prune old completed delegations from in-memory cache to prevent unbounded memory growth.
+   * Keeps the most recent MAX_COMPLETED_DELEGATIONS completed delegations.
+   */
+  private pruneCompletedDelegations(): void {
+    const completed = Array.from(this.delegations.values())
+      .filter((d) => d.status === "completed" || d.status === "failed" || d.status === "timeout" || d.status === "cancelled")
+      .sort((a, b) => new Date(b.completedAt || b.startedAt).getTime() - new Date(a.completedAt || a.startedAt).getTime())
+
+    if (completed.length > MAX_COMPLETED_DELEGATIONS) {
+      const toRemove = completed.slice(MAX_COMPLETED_DELEGATIONS)
+      for (const delegation of toRemove) {
+        this.delegations.delete(delegation.id)
+      }
+    }
+  }
+
+  /**
+   * Find a delegation ID by its associated session ID.
+   *
+   * @param sessionId - The OpenCode session ID
+   * @returns The delegation ID, or undefined if not found
    */
   findBySession(sessionId: string): string | undefined {
     return this.sessionToDelegation.get(sessionId)
   }
 
   /**
-   * Get a delegation by ID
+   * Get a delegation by ID from the in-memory cache.
+   *
+   * Note: Only returns delegations that are currently cached. Completed delegations
+   * may be pruned from cache but remain persisted on disk.
+   *
+   * @param delegationId - The delegation ID to look up
+   * @returns The delegation if found, or a not_found error
    */
-  async get(delegationId: string): Promise<Delegation | null> {
-    // Issue #6: Check in-memory cache first
-    const cached = this.delegations.get(delegationId)
-    if (cached) return cached
-
-    try {
-      const filePath = path.join(this.delegationsDir, `${delegationId}.json`)
-      const content = await fs.readFile(filePath, "utf8")
-      const delegation = JSON.parse(content) as Delegation
-      // Cache for future lookups
-      this.delegations.set(delegationId, delegation)
-      return delegation
-    } catch {
-      return null
+  async get(delegationId: string): Promise<Result<Delegation, DelegationError>> {
+    const delegation = this.delegations.get(delegationId)
+    if (!delegation) {
+      return { ok: false, error: { type: "not_found", delegationId } }
     }
+    return { ok: true, value: delegation }
   }
 
   /**
-   * List all delegations
+   * List delegations from the in-memory cache with optional filtering.
+   *
+   * @param options - Filter criteria
+   * @param options.status - Filter by delegation status
+   * @param options.issueId - Filter by issue ID
+   * @param options.projectId - Filter by project ID
+   * @returns Delegations matching the criteria, sorted by start time (newest first)
    */
-  async list(options?: { status?: DelegationStatus; issueId?: string }): Promise<Delegation[]> {
-    const delegations: Delegation[] = []
-
-    try {
-      await fs.mkdir(this.delegationsDir, { recursive: true })
-      const files = await fs.readdir(this.delegationsDir)
-
-      for (const file of files) {
-        if (file.endsWith(".json")) {
-          const content = await fs.readFile(path.join(this.delegationsDir, file), "utf8")
-          const delegation = JSON.parse(content) as Delegation
-          delegations.push(delegation)
-        }
-      }
-    } catch {
-      // Directory doesn't exist
-    }
-
-    let filtered = delegations
+  async list(options?: { status?: DelegationStatus; issueId?: string; projectId?: string }): Promise<Delegation[]> {
+    let filtered = Array.from(this.delegations.values())
 
     if (options?.status) {
       filtered = filtered.filter((d) => d.status === options.status)
@@ -300,15 +423,29 @@ export class DelegationManager {
       filtered = filtered.filter((d) => d.issueId === options.issueId)
     }
 
+    if (options?.projectId) {
+      filtered = filtered.filter((d) => d.projectId === options.projectId)
+    }
+
     return filtered.sort(
       (a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
     )
   }
 
-/**
-   * Create and start a new delegation
+  /**
+   * Create and start a new delegation.
+   *
+   * This is the main entry point for creating delegations. It:
+   * 1. Creates the delegation record
+   * 2. Persists initial state to disk
+   * 3. Starts the background session (fire-and-forget)
+   *
+   * @param projectId - Project this delegation belongs to
+   * @param projectDir - Filesystem path to the project directory
+   * @param options - Delegation configuration
+   * @returns The created delegation, or an error if creation failed
    */
-  async create(projectId: string, options: CreateDelegationOptions): Promise<Delegation> {
+  async create(projectId: string, projectDir: string, options: CreateDelegationOptions): Promise<Result<Delegation, DelegationError>> {
     const {
       issueId,
       prompt,
@@ -320,6 +457,7 @@ export class DelegationManager {
       agent,
       parentSessionId,
       parentAgent,
+      onComplete,
     } = options
 
     // Generate delegation ID
@@ -330,6 +468,7 @@ export class DelegationManager {
     const delegation: Delegation = {
       id: delegationId,
       projectId,
+      projectDir,
       issueId,
       teamId,
       role,
@@ -342,22 +481,31 @@ export class DelegationManager {
       agent,
       prompt,
       startedAt: now,
+      onComplete,
     }
 
     // Save initial state
     this.delegations.set(delegationId, delegation)
-    await this.save(delegation)
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      return saveResult
+    }
 
     await this.log.info(`Created delegation ${delegationId} for issue ${issueId} (team: ${teamId}, role: ${role})`)
 
     // Start the delegation
     await this.startDelegation(delegation)
 
-    return delegation
+    return { ok: true, value: delegation }
   }
 
   /**
-   * Get recent completed delegations for compaction context (Issue #7)
+   * Get recent completed delegations for session compaction context.
+   *
+   * Used to provide context about recent work when compacting long sessions.
+   *
+   * @param limit - Maximum number of delegations to return (default: 10)
+   * @returns Recent completed/failed/timed-out delegations, newest first
    */
   async getRecentCompletedDelegations(limit: number = 10): Promise<Delegation[]> {
     const all = await this.list()
@@ -367,50 +515,163 @@ export class DelegationManager {
   }
 
   /**
-   * Mark a delegation as complete with result
+   * Mark a delegation as complete with the given result.
+   *
+   * Typically called internally via handleSessionIdle, but can be called
+   * directly for manual completion.
+   *
+   * @param delegationId - The delegation to complete
+   * @param result - The result text from the agent
+   * @returns The updated delegation, or an error if not found or already complete
    */
-  async complete(delegationId: string, result: string): Promise<boolean> {
-    const delegation = await this.get(delegationId)
-    if (!delegation) return false
+  async complete(delegationId: string, result: string): Promise<Result<Delegation, DelegationError>> {
+    const getResult = await this.get(delegationId)
+    if (!getResult.ok) {
+      return getResult
+    }
+
+    const delegation = getResult.value
+
+    if (delegation.status !== "running" && delegation.status !== "pending") {
+      return {
+        ok: false,
+        error: {
+          type: "already_completed",
+          delegationId,
+          status: delegation.status,
+        },
+      }
+    }
 
     delegation.status = "completed"
     delegation.result = result
     delegation.completedAt = new Date().toISOString()
 
-    await this.save(delegation)
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      return saveResult
+    }
+
     await this.persistResult(delegation)
     await this.log.info(`Delegation ${delegationId} completed`)
 
-    return true
+    // Prune old completed delegations to prevent unbounded memory growth
+    this.pruneCompletedDelegations()
+
+    return { ok: true, value: delegation }
   }
 
   /**
-   * Mark a delegation as failed
+   * Mark a delegation as failed with an error message.
+   *
+   * @param delegationId - The delegation to mark as failed
+   * @param error - Error message describing the failure
+   * @returns The updated delegation, or an error if not found or already complete
    */
-  async fail(delegationId: string, error: string): Promise<boolean> {
-    const delegation = await this.get(delegationId)
-    if (!delegation) return false
+  async fail(delegationId: string, error: string): Promise<Result<Delegation, DelegationError>> {
+    const getResult = await this.get(delegationId)
+    if (!getResult.ok) {
+      return getResult
+    }
+
+    const delegation = getResult.value
+
+    if (delegation.status !== "running" && delegation.status !== "pending") {
+      return {
+        ok: false,
+        error: {
+          type: "already_completed",
+          delegationId,
+          status: delegation.status,
+        },
+      }
+    }
 
     delegation.status = "failed"
     delegation.error = error
     delegation.completedAt = new Date().toISOString()
 
-    await this.save(delegation)
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      return saveResult
+    }
+
     await this.persistResult(delegation)
     await this.log.warn(`Delegation ${delegationId} failed: ${error}`)
 
-    return true
+    // Prune old completed delegations to prevent unbounded memory growth
+    this.pruneCompletedDelegations()
+
+    return { ok: true, value: delegation }
   }
 
   /**
-   * Cancel a delegation
+   * Mark a delegation as timed out.
+   *
+   * Called by the timeout handler when a delegation exceeds its time limit.
+   *
+   * @param delegationId - The delegation to mark as timed out
+   * @returns The updated delegation, or an error if not found or already complete
    */
-  async cancel(delegationId: string): Promise<boolean> {
-    const delegation = await this.get(delegationId)
-    if (!delegation) return false
+  async timeout(delegationId: string): Promise<Result<Delegation, DelegationError>> {
+    const getResult = await this.get(delegationId)
+    if (!getResult.ok) {
+      return getResult
+    }
+
+    const delegation = getResult.value
+
+    if (delegation.status !== "running" && delegation.status !== "pending") {
+      return {
+        ok: false,
+        error: {
+          type: "already_completed",
+          delegationId,
+          status: delegation.status,
+        },
+      }
+    }
+
+    delegation.status = "timeout"
+    delegation.error = `Timed out after ${this.timeoutMs / 1000}s`
+    delegation.completedAt = new Date().toISOString()
+
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      return saveResult
+    }
+
+    await this.persistResult(delegation)
+    await this.log.warn(`Delegation ${delegationId} timed out`)
+
+    return { ok: true, value: delegation }
+  }
+
+  /**
+   * Cancel a running or pending delegation.
+   *
+   * Attempts to delete the associated session and marks the delegation as cancelled.
+   *
+   * @param delegationId - The delegation to cancel
+   * @returns The updated delegation, or an error if not found or already complete
+   */
+  async cancel(delegationId: string): Promise<Result<Delegation, DelegationError>> {
+    const getResult = await this.get(delegationId)
+    if (!getResult.ok) {
+      return getResult
+    }
+
+    const delegation = getResult.value
 
     if (delegation.status === "completed" || delegation.status === "failed") {
-      return false
+      return {
+        ok: false,
+        error: {
+          type: "already_completed",
+          delegationId,
+          status: delegation.status,
+        },
+      }
     }
 
     delegation.status = "cancelled"
@@ -426,14 +687,24 @@ export class DelegationManager {
       this.sessionToDelegation.delete(delegation.sessionId)
     }
 
-    await this.save(delegation)
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      return saveResult
+    }
+
     await this.log.info(`Delegation ${delegationId} cancelled`)
 
-    return true
+    // Prune old completed delegations to prevent unbounded memory growth
+    this.pruneCompletedDelegations()
+
+    return { ok: true, value: delegation }
   }
 
   /**
-   * Check if all delegations for an issue are complete
+   * Check if all delegations for an issue have finished (completed, failed, cancelled, or timed out).
+   *
+   * @param issueId - The issue to check
+   * @returns true if no active delegations remain for the issue
    */
   async areAllComplete(issueId: string): Promise<boolean> {
     const delegations = await this.list({ issueId })
@@ -446,7 +717,10 @@ export class DelegationManager {
   }
 
   /**
-   * Get pending/running delegations for an issue
+   * Get active (pending or running) delegations for an issue.
+   *
+   * @param issueId - The issue to check
+   * @returns Delegations that are still in progress
    */
   async getActiveDelegations(issueId: string): Promise<Delegation[]> {
     const delegations = await this.list({ issueId })
@@ -455,11 +729,16 @@ export class DelegationManager {
   }
 
   /**
-   * Handle delegation timeout
+   * Handle delegation timeout.
+   *
+   * Called by setTimeout when a delegation exceeds its time limit.
+   * Attempts to retrieve partial results before marking as timed out.
    */
   private async handleTimeout(delegationId: string): Promise<void> {
-    const delegation = await this.get(delegationId)
-    if (!delegation || delegation.status !== "running") return
+    const getResult = await this.get(delegationId)
+    if (!getResult.ok || getResult.value.status !== "running") return
+
+    const delegation = getResult.value
 
     await this.log.warn(`Delegation ${delegationId} timed out after ${this.timeoutMs / 1000}s`)
 
@@ -485,20 +764,30 @@ export class DelegationManager {
     delegation.result = result
     delegation.completedAt = new Date().toISOString()
     this.delegations.set(delegation.id, delegation)
-    await this.save(delegation)
+    const saveResult = await this.save(delegation)
+    if (!saveResult.ok) {
+      await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
+    }
 
     // Persist partial result
     await this.persistResult(delegation)
 
-    // Notify TeamManager (handles parent notification)
-    await this.teamManager.handleDelegationComplete(delegation.id)
+    // Notify via callback (handles parent notification)
+    if (delegation.onComplete) await delegation.onComplete(delegation.id)
+
+    // Prune old completed delegations to prevent unbounded memory growth
+    this.pruneCompletedDelegations()
   }
 
   /**
-   * Get result text from a session's messages
-   * 
-   * Issue #4: Only extract text from the LAST assistant message, not all messages.
-   * This avoids including intermediate tool results and partial responses.
+   * Extract the final result text from a session's messages.
+   *
+   * Only extracts text from the LAST assistant message to avoid including
+   * intermediate tool results and partial responses. If the last message
+   * has an error, falls back to the second-to-last message.
+   *
+   * @param sessionId - The session to extract results from
+   * @returns The result text, or an error placeholder if unavailable
    */
   private async getSessionResult(sessionId: string): Promise<string> {
     if (!this.client) return "(no client)"
@@ -547,7 +836,10 @@ export class DelegationManager {
   }
 
   /**
-   * Extract text content from a message
+   * Extract text content from a message's parts.
+   *
+   * @param message - The message to extract text from
+   * @returns Concatenated text from all text parts, or a placeholder if empty
    */
   private extractTextFromMessage(message: MessageItem): string {
     const parts: Part[] = message.parts || []
@@ -557,7 +849,14 @@ export class DelegationManager {
   }
 
   /**
-   * Generate title and description for a delegation result using small model
+   * Generate title and description for a delegation result using small model.
+   *
+   * Uses a fast small model to summarize the delegation result into a
+   * concise title (max 30 chars) and description (max 200 chars).
+   * Falls back to simple text extraction if the small model is unavailable.
+   *
+   * @param result - The full result text to summarize
+   * @returns Generated title and description
    */
   private async generateMetadata(
     result: string
@@ -566,30 +865,19 @@ export class DelegationManager {
       return this.fallbackMetadata(result)
     }
 
-    const response = await promptSmallModel<{ title: string; description: string }>(
-      this.client,
-      this.log,
-      {
-        prompt: `Generate a title and description for this delegation result.
+    const prompt = metadataGenerationTemplate.render({ result })
 
-RULES:
-- Title: 2-5 words, max 30 characters, summarize the outcome
-- Description: 2-3 sentences, max 200 characters, describe what was accomplished
+    const response = await promptSmallModel(this.client, this.log, {
+      prompt,
+      sessionTitle: "Metadata Generation",
+      timeoutMs: this.smallModelTimeoutMs,
+      schema: MetadataResponseSchema,
+    })
 
-RESULT:
-${result.slice(0, 2000)}
-
-Respond with ONLY valid JSON:
-{"title": "Your Title", "description": "Your description."}`,
-        sessionTitle: "Metadata Generation",
-        timeoutMs: this.smallModelTimeoutMs,
-      }
-    )
-
-    if (response.success && response.data?.title && response.data?.description) {
+    if (response.ok) {
       return {
-        title: response.data.title.slice(0, 30),
-        description: response.data.description.slice(0, 200),
+        title: response.value.title.slice(0, 30),
+        description: response.value.description.slice(0, 200),
       }
     }
 
@@ -597,7 +885,9 @@ Respond with ONLY valid JSON:
   }
 
   /**
-   * Fallback metadata generation when small model is unavailable
+   * Fallback metadata generation when small model is unavailable.
+   *
+   * Uses simple text extraction: first line for title, first 200 chars for description.
    */
   private fallbackMetadata(result: string): { title: string; description: string } {
     const firstLine = result.split("\n")[0] || "Delegation Complete"
@@ -608,7 +898,9 @@ Respond with ONLY valid JSON:
   }
 
   /**
-   * Generate a unique delegation ID
+   * Generate a unique delegation ID.
+   *
+   * Format: del-{base36-timestamp}-{hex-random}
    */
   private generateId(): string {
     const timestamp = Date.now().toString(36)
@@ -617,22 +909,41 @@ Respond with ONLY valid JSON:
   }
 
   /**
-   * Save a delegation to disk
+   * Save a delegation to disk as JSON.
+   *
+   * Persists to {projectDir}/delegations/{delegationId}.json
    */
-  private async save(delegation: Delegation): Promise<void> {
-    await fs.mkdir(this.delegationsDir, { recursive: true })
-    const filePath = path.join(this.delegationsDir, `${delegation.id}.json`)
-    await fs.writeFile(filePath, JSON.stringify(delegation, null, 2), "utf8")
+  private async save(delegation: Delegation): Promise<Result<void, DelegationError>> {
+    try {
+      const delegationsDir = path.join(delegation.projectDir, "delegations")
+      await fs.mkdir(delegationsDir, { recursive: true })
+      const filePath = path.join(delegationsDir, `${delegation.id}.json`)
+      await fs.writeFile(filePath, JSON.stringify(delegation, null, 2), "utf8")
+      return { ok: true, value: undefined }
+    } catch (error) {
+      return {
+        ok: false,
+        error: {
+          type: "persistence_failed",
+          delegationId: delegation.id,
+          message: error instanceof Error ? error.message : String(error),
+        },
+      }
+    }
   }
 
   /**
-   * Persist delegation result to delegations directory
+   * Persist delegation result as a human-readable markdown file.
+   *
+   * Creates {projectDir}/delegations/{delegationId}.md with metadata,
+   * prompt, result, and any error information.
    */
   private async persistResult(delegation: Delegation): Promise<void> {
-    await fs.mkdir(this.delegationsDir, { recursive: true })
+    const delegationsDir = path.join(delegation.projectDir, "delegations")
+    await fs.mkdir(delegationsDir, { recursive: true })
 
     const filename = `${delegation.id}.md`
-    const filePath = path.join(this.delegationsDir, filename)
+    const filePath = path.join(delegationsDir, filename)
 
     const lines: string[] = []
 

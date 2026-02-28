@@ -1,32 +1,32 @@
 /**
- * issue_create tool - Create a beads issue within a project
+ * issue_create tool - Create an issue within a project
  */
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import { formatError } from "../core/errors.js"
-
-interface IssueCreateArgs {
-  title: string
-  projectId?: string
-  description?: string
-  priority?: number
-  parent?: string
-  blockedBy?: string[]
-  labels?: string[]
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import {
+  ProjectCreateIssueArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectCreateIssueArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the issue_create tool
  */
-export function createProjectCreateIssue(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectCreateIssue(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
-    description: `Create a beads issue within a project.
+    description: `Create an issue within a project.
 
-Issues are tracked in beads and support:
+Issues support:
 - Hierarchical IDs (epic → task → subtask)
 - Priority levels (P0-P3)
 - Dependency relationships
@@ -57,11 +57,16 @@ Issues are tracked in beads and support:
         .describe("Labels to apply"),
     },
 
-    async execute(args: IssueCreateArgs, _ctx: ProjectToolContext): Promise<string> {
-      try {
-        const { title, description, priority, parent, blockedBy, labels } = args
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectCreateIssueArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
 
-        const projectId = args.projectId || projectManager.getFocusedProjectId()
+      try {
+        const { title, description, priority, parent, blockedBy, labels } = validationResult.value
+
+        const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
 
         if (!projectId) {
           return "No project specified and no project is currently focused.\n\nUse `project_focus(projectId)` to set context, or provide projectId explicitly."
@@ -74,7 +79,7 @@ Issues are tracked in beads and support:
           return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
         }
 
-        const issueId = await projectManager.createIssue(projectId, title, {
+        const result = await projectManager.createIssue(projectId, title, {
           priority,
           parent,
           description,
@@ -82,10 +87,28 @@ Issues are tracked in beads and support:
           blockedBy,
         })
 
-        if (!issueId) {
-          return `Failed to create issue. Check that issue storage is properly configured.`
+        if (!result.ok) {
+          const error = result.error
+          const lines: string[] = []
+          
+          lines.push(`## Failed to Create Issue`)
+          lines.push("")
+          lines.push(`**Error:** ${error.message}`)
+          
+          if (error.suggestion) {
+            lines.push("")
+            lines.push(`**Suggestion:** ${error.suggestion}`)
+          }
+          
+          lines.push("")
+          lines.push(`**Error Type:** ${error.name}`)
+          lines.push(`**Error Code:** ${error.code}`)
+          lines.push(`**Recoverable:** ${error.recoverable ? "Yes" : "No"}`)
+          
+          return lines.join("\n")
         }
 
+        const issueId = result.value
         const lines: string[] = []
 
         lines.push(`## Issue Created: ${issueId}`)
@@ -119,9 +142,9 @@ Issues are tracked in beads and support:
         lines.push("---")
         lines.push("")
         lines.push("**Next Steps:**")
-        lines.push(`- \`issue_claim('${issueId}')\` - Start work on this issue`)
-        lines.push(`- \`issue_create(parent='${issueId}')\` - Add subtasks`)
-        lines.push(`- \`project_status\` - See all issues`)
+        lines.push(`- \`project-work-on-issue(issueId='${issueId}')\` - Start work on this issue`)
+        lines.push(`- \`project-create-issue(parent='${issueId}')\` - Add subtasks`)
+        lines.push(`- \`project-status\` - View all issues`)
 
         return lines.join("\n")
       } catch (error) {

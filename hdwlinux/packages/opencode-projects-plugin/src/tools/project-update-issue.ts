@@ -6,30 +6,26 @@ import { tool } from "@opencode-ai/plugin"
 
 import * as path from "node:path"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import { WorktreeManager } from "../execution/index.js"
-import { formatError } from "../core/errors.js"
-
-interface IssueUpdateArgs {
-  issueId: string
-  projectId?: string
-  status?: "open" | "in_progress" | "closed"
-  assignee?: string
-  priority?: number
-  description?: string
-  labels?: string[]
-  blockedBy?: string[]
-  mergeWorktree?: boolean
-  mergeStrategy?: "squash" | "merge" | "rebase"
-  comment?: string
-  artifacts?: string[]
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger, BunShell } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import { WorktreeManager } from "../vcs/index.js"
+import {
+  ProjectUpdateIssueArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectUpdateIssueArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project-update-issue tool
  */
-export function createProjectUpdateIssue(deps: ToolDeps) {
-  const { projectManager, log, $ } = deps
+export function createProjectUpdateIssue(
+  projectManager: ProjectManager,
+  log: Logger,
+  $: BunShell,
+): Tool {
 
   return tool({
     description: `Update an issue's fields including status, assignee, priority, and more.
@@ -90,7 +86,12 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
         .describe("Artifacts generated (referenced in completion comment)"),
     },
 
-    async execute(args: IssueUpdateArgs, _ctx: ProjectToolContext): Promise<string> {
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectUpdateIssueArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
+
       try {
         const {
           issueId,
@@ -104,9 +105,9 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
           mergeStrategy = "squash",
           comment,
           artifacts,
-        } = args
+        } = validationResult.value
 
-        const projectId = args.projectId || projectManager.getFocusedProjectId()
+        const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
 
         if (!projectId) {
           return "No project specified and no project is currently focused.\n\nUse `project-focus(projectId)` to set context, or provide projectId explicitly."
@@ -185,9 +186,10 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
             const repoRoot = path.dirname(path.dirname(projectDir))
             const worktreeManager = new WorktreeManager(repoRoot, $, log)
 
-            const worktree = await worktreeManager.getWorktree(projectId, issueId)
+            const worktreeResult = await worktreeManager.getWorktree(projectId, issueId)
 
-            if (worktree) {
+            if (worktreeResult.ok && worktreeResult.value) {
+              const worktree = worktreeResult.value
               lines.push("")
               lines.push("### Worktree Merge")
               lines.push("")
@@ -197,25 +199,29 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
                 cleanup: true,
               })
 
-              if (mergeResult.success) {
+              if (mergeResult.ok) {
                 lines.push(`✅ Merged worktree with strategy: ${mergeStrategy}`)
-                if (mergeResult.commitId) {
-                  mergeCommitId = mergeResult.commitId
-                  lines.push(`**Commit:** ${mergeResult.commitId.slice(0, 8)}`)
-                }
+                mergeCommitId = mergeResult.value.commitId
+                lines.push(`**Commit:** ${mergeResult.value.commitId.slice(0, 8)}`)
                 lines.push(`**Worktree cleaned up:** ${worktree.path}`)
               } else {
-                lines.push(`⚠️ Merge failed: ${mergeResult.error}`)
-                if (mergeResult.conflictFiles?.length) {
-                  lines.push("")
-                  lines.push("**Conflict files:**")
-                  for (const file of mergeResult.conflictFiles) {
-                    lines.push(`- ${file}`)
+                lines.push(`⚠️ Merge failed: ${mergeResult.error.message}`)
+                if (mergeResult.error.name === "MergeConflictError") {
+                  const conflictError = mergeResult.error as any
+                  if (conflictError.conflictFiles?.length) {
+                    lines.push("")
+                    lines.push("**Conflict files:**")
+                    for (const file of conflictError.conflictFiles) {
+                      lines.push(`- ${file}`)
+                    }
                   }
                 }
                 lines.push("")
                 lines.push("Resolve conflicts manually and try again.")
               }
+            } else if (!worktreeResult.ok) {
+              lines.push("")
+              lines.push(`*Error checking for worktree: ${worktreeResult.error.message}*`)
             } else {
               lines.push("")
               lines.push("*No worktree found for this issue.*")

@@ -10,18 +10,18 @@ import * as os from "node:os"
 import { createProjectCreate } from "./project-create.js"
 import { createProjectList } from "./project-list.js"
 import { createProjectStatus } from "./project-status.js"
-import { ConfigManager } from "../core/config-manager.js"
-import { InMemoryIssueStorage } from "../storage/inmemory-issue-storage.js"
-import { FocusManager } from "../core/focus-manager.js"
-import { ProjectManager } from "../core/project-manager.js"
+import { ConfigManager } from "../config/index.js"
+import { InMemoryIssueStorage } from "../issues/inmemory/index.js"
+import { FocusManager, ProjectManager } from "../projects/index.js"
 import {
   createMockLogger,
   createMockClient,
   createTestShell,
   createMockContext,
   createMockTeamManager,
-} from "../core/test-utils.js"
-import type { BunShell, ToolDeps, TeamManager } from "../core/types.js"
+} from "../utils/testing/index.js"
+import type { BunShell } from "../utils/opencode-sdk/index.js"
+import type { TeamManager } from "../execution/index.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()
@@ -31,7 +31,6 @@ describe("project_list and project_status tools", () => {
   let testDir: string
   let projectManager: ProjectManager
   let testShell: BunShell
-  let toolDeps: ToolDeps
   let projectId: string
   let teamManager: TeamManager
 
@@ -40,32 +39,24 @@ describe("project_list and project_status tools", () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-list-test-"))
 
 
-    const config = await ConfigManager.load()
+    const config = await ConfigManager.loadOrThrow()
     const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
     testShell = createTestShell()
     teamManager = createMockTeamManager()
 
-    projectManager = new ProjectManager({
+    projectManager = new ProjectManager(
       config,
       issueStorage,
       focus,
-      log: mockLogger,
-      repoRoot: testDir,
+      mockLogger,
+      testDir,
+      undefined,
+      undefined,
       teamManager,
-    })
+    )
 
-    toolDeps = {
-      client: mockClient,
-      projectManager,
-      issueStorage,
-      log: mockLogger,
-      $: testShell,
-      teamManager,
-    }
-
-
-    const createTool = createProjectCreate(toolDeps)
+    const createTool = createProjectCreate(projectManager, mockLogger)
 
     await createTool.execute(
       {
@@ -92,7 +83,7 @@ describe("project_list and project_status tools", () => {
 
   describe("project_list", () => {
     test("lists local projects", async () => {
-      const tool = createProjectList(toolDeps)
+      const tool = createProjectList(projectManager, mockLogger)
 
       const result = await tool.execute({ scope: "local" }, mockContext)
 
@@ -104,25 +95,20 @@ describe("project_list and project_status tools", () => {
     test("returns empty message when no projects", async () => {
 
       const emptyDir = await fs.mkdtemp(path.join(os.tmpdir(), "empty-test-"))
-      const config = await ConfigManager.load()
+      const config = await ConfigManager.loadOrThrow()
       const emptyTeamManager = createMockTeamManager()
-      const emptyManager = new ProjectManager({
+      const emptyManager = new ProjectManager(
         config,
-        issueStorage: new InMemoryIssueStorage(),
-        focus: new FocusManager(),
-        log: mockLogger,
-        repoRoot: emptyDir,
-        teamManager: emptyTeamManager,
-      })
+        new InMemoryIssueStorage(),
+        new FocusManager(),
+        mockLogger,
+        emptyDir,
+        undefined,
+        undefined,
+        emptyTeamManager,
+      )
 
-      const tool = createProjectList({
-        client: mockClient,
-        projectManager: emptyManager,
-        issueStorage: new InMemoryIssueStorage(),
-        log: mockLogger,
-        $: testShell,
-        teamManager: emptyTeamManager,
-      })
+      const tool = createProjectList(emptyManager, mockLogger)
 
       const result = await tool.execute({ scope: "local" }, mockContext)
 
@@ -133,21 +119,20 @@ describe("project_list and project_status tools", () => {
     })
 
     test("filters by status", async () => {
-      const tool = createProjectList(toolDeps)
+      const tool = createProjectList(projectManager, mockLogger)
 
-
-      const activeResult = await tool.execute({ status: "active" }, mockContext)
+      // Always use scope: "local" to avoid interference from global projects
+      const activeResult = await tool.execute({ status: "active", scope: "local" }, mockContext)
       expect(activeResult).toContain("List Test Project")
 
-
-      const completedResult = await tool.execute({ status: "completed" }, mockContext)
+      const completedResult = await tool.execute({ status: "completed", scope: "local" }, mockContext)
       expect(completedResult).toContain("No projects found")
     })
   })
 
   describe("project_status", () => {
     test("shows status for focused project", async () => {
-      const tool = createProjectStatus(toolDeps)
+      const tool = createProjectStatus(projectManager, mockLogger)
 
       const result = await tool.execute({}, mockContext)
 
@@ -157,7 +142,7 @@ describe("project_list and project_status tools", () => {
     })
 
     test("shows status for specific project", async () => {
-      const tool = createProjectStatus(toolDeps)
+      const tool = createProjectStatus(projectManager, mockLogger)
 
       const result = await tool.execute({ projectId }, mockContext)
 
@@ -167,7 +152,7 @@ describe("project_list and project_status tools", () => {
     test("returns error for non-existent project", async () => {
       projectManager.clearFocus()
 
-      const tool = createProjectStatus(toolDeps)
+      const tool = createProjectStatus(projectManager, mockLogger)
 
       const result = await tool.execute({ projectId: "non-existent-project" }, mockContext)
 
@@ -181,7 +166,7 @@ describe("project_list and project_status tools", () => {
 
       projectManager.clearFocus()
 
-      const tool = createProjectStatus(toolDeps)
+      const tool = createProjectStatus(projectManager, mockLogger)
 
       const result = await tool.execute({}, mockContext)
 

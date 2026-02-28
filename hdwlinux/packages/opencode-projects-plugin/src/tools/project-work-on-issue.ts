@@ -7,21 +7,26 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext, Team } from "../core/types.js"
-import { formatError } from "../core/errors.js"
-
-interface IssueWorkArgs {
-  issueId: string
-  isolate?: boolean
-  agents?: string[]
-  foreground?: boolean
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import type { Team, TeamManager } from "../execution/index.js"
+import { formatError } from "../utils/errors/index.js"
+import {
+  ProjectWorkOnIssueArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectWorkOnIssueArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project-work-on-issue tool
  */
-export function createProjectWorkOnIssue(deps: ToolDeps) {
-  const { projectManager, teamManager, log } = deps
+export function createProjectWorkOnIssue(
+  projectManager: ProjectManager,
+  teamManager: TeamManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `Start work on an issue with a background agent or team.
@@ -61,9 +66,14 @@ When isolate=true, the completion notification includes merge instructions.`,
         .describe("Wait for completion instead of fire-and-forget (default: false)"),
     },
 
-    async execute(args: IssueWorkArgs, ctx: ProjectToolContext): Promise<string> {
+    async execute(args: unknown, ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectWorkOnIssueArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
+
       try {
-        const { issueId, isolate = false, agents, foreground = false } = args
+        const { issueId, isolate = false, agents, foreground = false } = validationResult.value
 
         const projectId = projectManager.getFocusedProjectId()
 
@@ -97,15 +107,15 @@ When isolate=true, the completion notification includes merge instructions.`,
         const agentsList = agents && agents.length > 0 ? agents : undefined
 
         // Claim the issue
-        const issueManager = projectManager.getIssueManager()
-        const claimed = await issueManager.claimIssue(projectDir, issueId)
+        const claimed = await projectManager.claimIssueByDir(projectDir, issueId)
         if (!claimed) {
           return `Failed to claim issue '${issueId}'. Check issue storage configuration.`
         }
 
         // Create team (even single-agent work creates a team of 1)
-        const createdTeam = await teamManager.create({
+        const teamResult = await teamManager.create({
           projectId,
+          projectDir,
           issueId,
           issueContext,
           agents: agentsList,
@@ -115,8 +125,18 @@ When isolate=true, the completion notification includes merge instructions.`,
           foreground,
         })
 
+        if (!teamResult.ok) {
+          const error = teamResult.error
+          if (error.type === "no_agents_available") {
+            return `No agents available for this issue.\n\nIssue context: ${error.issueContext.slice(0, 200)}...`
+          }
+          return `Failed to create team: ${error.type}`
+        }
+
+        const createdTeam = teamResult.value
+
         // Store team metadata on the issue
-        await issueManager.setDelegationMetadata(projectDir, issueId, {
+        await projectManager.setDelegationMetadataByDir(projectDir, issueId, {
           delegationId: createdTeam.id,
           delegationStatus: foreground ? createdTeam.status : "running",
         })

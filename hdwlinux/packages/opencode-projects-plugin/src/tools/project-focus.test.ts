@@ -9,29 +9,22 @@ import * as os from "node:os"
 
 import { createProjectCreate } from "./project-create.js"
 import { createProjectFocus } from "./project-focus.js"
-import { createProjectCreateIssue } from "./project-create-issue.js"
-import { ConfigManager } from "../core/config-manager.js"
-import { InMemoryIssueStorage } from "../storage/inmemory-issue-storage.js"
-import { FocusManager } from "../core/focus-manager.js"
-import { ProjectManager } from "../core/project-manager.js"
+import { ConfigManager } from "../config/index.js"
+import { InMemoryIssueStorage } from "../issues/inmemory/index.js"
+import { FocusManager, ProjectManager } from "../projects/index.js"
 import {
   createMockLogger,
-  createMockClient,
-  createTestShell,
   createMockContext,
   createMockTeamManager,
-} from "../core/test-utils.js"
-import type { BunShell, ToolDeps, TeamManager } from "../core/types.js"
+} from "../utils/testing/index.js"
+import type { TeamManager } from "../execution/index.js"
 
 const mockLogger = createMockLogger()
-const mockClient = createMockClient()
 const mockContext = createMockContext()
 
 describe("project_focus tool", () => {
   let testDir: string
   let projectManager: ProjectManager
-  let testShell: BunShell
-  let toolDeps: ToolDeps
   let projectId: string
   let teamManager: TeamManager
 
@@ -40,32 +33,23 @@ describe("project_focus tool", () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-focus-test-"))
 
 
-    const config = await ConfigManager.load()
+    const config = await ConfigManager.loadOrThrow()
     const issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
-    testShell = createTestShell()
     teamManager = createMockTeamManager()
 
-    projectManager = new ProjectManager({
+    projectManager = new ProjectManager(
       config,
       issueStorage,
       focus,
-      log: mockLogger,
-      repoRoot: testDir,
+      mockLogger,
+      testDir,
+      undefined,
+      undefined,
       teamManager,
-    })
+    )
 
-    toolDeps = {
-      client: mockClient,
-      projectManager,
-      issueStorage,
-      log: mockLogger,
-      $: testShell,
-      teamManager,
-    }
-
-
-    const createTool = createProjectCreate(toolDeps)
+    const createTool = createProjectCreate(projectManager, mockLogger)
 
     await createTool.execute(
       {
@@ -93,7 +77,7 @@ describe("project_focus tool", () => {
   })
 
   test("shows no focus when nothing is focused", async () => {
-    const tool = createProjectFocus(toolDeps)
+    const tool = createProjectFocus(projectManager, mockLogger)
 
     const result = await tool.execute({}, mockContext)
 
@@ -102,7 +86,7 @@ describe("project_focus tool", () => {
   })
 
   test("sets focus to a project", async () => {
-    const tool = createProjectFocus(toolDeps)
+    const tool = createProjectFocus(projectManager, mockLogger)
 
     const result = await tool.execute({ projectId }, mockContext)
 
@@ -114,7 +98,7 @@ describe("project_focus tool", () => {
   })
 
   test("shows current focus", async () => {
-    const tool = createProjectFocus(toolDeps)
+    const tool = createProjectFocus(projectManager, mockLogger)
 
     const result = await tool.execute({}, mockContext)
 
@@ -122,37 +106,8 @@ describe("project_focus tool", () => {
     expect(result).toContain(projectId)
   })
 
-  test("sets focus to a specific issue", async () => {
-
-    const issueTool = createProjectCreateIssue(toolDeps)
-
-    const issueResult = await issueTool.execute(
-      {
-        title: "Test Issue for Focus",
-        projectId,
-      },
-      mockContext
-    )
-
-
-    const issueIdMatch = issueResult.match(/Issue Created:\s+([\w.-]+)/)
-    expect(issueIdMatch).not.toBeNull()
-    const issueId = issueIdMatch![1]
-
-
-    const focusTool = createProjectFocus(toolDeps)
-
-    const result = await focusTool.execute({ issueId }, mockContext)
-
-    expect(result).toContain("Issue Focus Set")
-    expect(result).toContain(issueId)
-
-
-    expect(projectManager.getFocusedIssueId()).toBe(issueId)
-  })
-
   test("clears focus", async () => {
-    const tool = createProjectFocus(toolDeps)
+    const tool = createProjectFocus(projectManager, mockLogger)
 
     const result = await tool.execute({ clear: true }, mockContext)
 
@@ -167,7 +122,7 @@ describe("FocusManager", () => {
   test("serializes and restores focus state", () => {
     const focus = new FocusManager()
 
-    focus.setFocus("test-project", "test-issue")
+    focus.setFocus("test-project")
 
     const serialized = focus.serialize()
     expect(serialized).not.toBeNull()
@@ -178,7 +133,6 @@ describe("FocusManager", () => {
 
     expect(restored).toBe(true)
     expect(focus2.getProjectId()).toBe("test-project")
-    expect(focus2.getIssueId()).toBe("test-issue")
   })
 
   test("isFocusedOn checks project correctly", () => {
@@ -188,17 +142,5 @@ describe("FocusManager", () => {
 
     expect(focus.isFocusedOn("my-project")).toBe(true)
     expect(focus.isFocusedOn("other-project")).toBe(false)
-  })
-
-  test("clearIssueFocus keeps project focus", () => {
-    const focus = new FocusManager()
-
-    focus.setFocus("my-project", "my-issue")
-    expect(focus.getIssueId()).toBe("my-issue")
-
-    focus.clearIssueFocus()
-
-    expect(focus.getProjectId()).toBe("my-project")
-    expect(focus.getIssueId()).toBeNull()
   })
 })

@@ -10,19 +10,24 @@ import { tool } from "@opencode-ai/plugin"
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import { formatError } from "../core/errors.js"
-
-interface DelegationReadArgs {
-  id: string
-  projectId?: string
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import {
+  ProjectDelegationReadArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectDelegationReadArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project-internal-delegation-read tool
  */
-export function createProjectInternalDelegationRead(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectInternalDelegationRead(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `Read the result of a delegation by ID.
@@ -40,11 +45,16 @@ Returns the full delegation result including metadata, prompt, and output.`,
         .describe("Project ID (default: focused project)"),
     },
 
-    async execute(args: DelegationReadArgs, _ctx: ProjectToolContext): Promise<string> {
-      try {
-        const { id } = args
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectDelegationReadArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
 
-        const projectId = args.projectId || projectManager.getFocusedProjectId()
+      try {
+        const { id } = validationResult.value
+
+        const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
 
         if (!projectId) {
           return "No project specified and no project is currently focused.\n\nUse `project-focus(projectId)` to set context, or provide projectId explicitly."

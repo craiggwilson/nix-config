@@ -4,20 +4,25 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import { renderIssueTree } from "../core/tree-renderer.js"
-import { formatError } from "../core/errors.js"
-
-interface ProjectStatusArgs {
-  projectId?: string
-  format?: "summary" | "detailed" | "tree"
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import { renderIssueTree } from "../issues/index.js"
+import {
+  ProjectStatusArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectStatusArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project-status tool
  */
-export function createProjectStatus(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectStatus(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `Show detailed project status including progress and blockers.
@@ -35,11 +40,16 @@ If no projectId is provided, uses the currently focused project.`,
         .describe("Output format: summary, detailed, or tree view"),
     },
 
-    async execute(args: ProjectStatusArgs, _ctx: ProjectToolContext): Promise<string> {
-      try {
-        const { format = "summary" } = args
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectStatusArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
 
-        const projectId = args.projectId || projectManager.getFocusedProjectId()
+      try {
+        const { format = "summary" } = validationResult.value
+
+        const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
 
         if (!projectId) {
           return "No project specified and no project is currently focused.\n\nUse `project-list` to see available projects, then `project-focus(projectId)` to set context."

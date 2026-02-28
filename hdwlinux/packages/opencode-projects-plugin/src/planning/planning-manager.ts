@@ -1,58 +1,202 @@
 /**
  * PlanningManager - Manages project planning state and workflow
  *
- * Handles:
- * - Planning state persistence
- * - Phase transitions
- * - Understanding accumulation
- * - Context generation for prompts
+ * Planning follows a structured four-phase workflow designed to ensure thorough
+ * understanding before implementation begins. This prevents premature coding and
+ * ensures alignment between stakeholders and technical decisions.
+ *
+ * The phases are:
+ * 1. **Discovery** - Gather requirements, understand the problem space, identify stakeholders
+ * 2. **Synthesis** - Consolidate findings, make architectural decisions, document risks
+ * 3. **Breakdown** - Create actionable issues with proper hierarchy and dependencies
+ * 4. **Complete** - Planning finished, ready for execution
+ *
+ * State is persisted to `planning.json` within the project directory, allowing
+ * planning sessions to be resumed across multiple conversations. The accumulated
+ * understanding is injected into system prompts to maintain context.
+ *
+ * @module planning
  */
 
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
-import type {
-  PlanningState,
-  PlanningPhase,
-  PlanningUnderstanding,
-  Logger,
-} from "../core/types.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
 
 /**
- * Phase order for transitions
+ * Represents the current phase of a planning session.
+ *
+ * Phases must be traversed in order (discovery → synthesis → breakdown → complete),
+ * though users can jump back to earlier phases if needed. This ordering ensures
+ * that understanding is built incrementally before work is broken down.
+ *
+ * - `discovery`: Initial exploration phase for gathering requirements
+ * - `synthesis`: Decision-making phase for consolidating findings
+ * - `breakdown`: Issue creation phase for defining actionable work
+ * - `complete`: Terminal state indicating planning is finished
+ */
+export type PlanningPhase = "discovery" | "synthesis" | "breakdown" | "complete"
+
+/**
+ * Captures a key decision made during planning along with its rationale.
+ *
+ * Decisions are tracked separately from general understanding because they
+ * represent explicit choices that may need to be revisited or explained later.
+ * The rationale field ensures decisions are documented with their reasoning,
+ * which is valuable for onboarding and future reference.
+ */
+export interface PlanningDecision {
+  /** The decision that was made (e.g., "Use PostgreSQL for persistence") */
+  decision: string
+  /** Why this decision was made (e.g., "Team expertise and ACID requirements") */
+  rationale: string
+}
+
+/**
+ * Accumulated knowledge gathered during the planning process.
+ *
+ * This structure captures the evolving understanding of the project across
+ * multiple dimensions. Fields are optional because understanding builds
+ * incrementally - not all information is known at the start.
+ *
+ * The structure is designed to prompt comprehensive planning by covering:
+ * - Problem definition (what and why)
+ * - Stakeholder analysis (who cares and what they need)
+ * - Constraints and timeline (boundaries and deadlines)
+ * - Technical context (existing systems, integration points)
+ * - Risk identification (what could go wrong)
+ * - Key decisions (choices made and their rationale)
+ */
+export interface PlanningUnderstanding {
+  /** Core problem statement - what are we solving and why does it matter? */
+  problem?: string
+  /** Desired outcomes - what does success look like? */
+  goals?: string[]
+  /** People or systems affected - who cares about this project? */
+  stakeholders?: string[]
+  /** Time constraints - when does this need to be done? */
+  timeline?: string
+  /** Limitations and boundaries - what can't we change? */
+  constraints?: string[]
+  /** Existing systems and integration points - what do we need to work with? */
+  technicalContext?: string
+  /** Potential issues and mitigations - what could go wrong? */
+  risks?: string[]
+  /** Key choices made during planning with their rationale */
+  decisions?: PlanningDecision[]
+}
+
+/**
+ * Complete planning session state persisted to disk.
+ *
+ * This state is saved to `planning.json` within the project directory and
+ * loaded on each interaction. The timestamps enable tracking of planning
+ * velocity and identifying stale sessions.
+ *
+ * The `completedPhases` array tracks which phases have been explicitly
+ * completed (vs just visited), enabling progress visualization and
+ * preventing accidental regression.
+ */
+export interface PlanningState {
+  /** Current active phase */
+  phase: PlanningPhase
+  /** ISO timestamp when planning began */
+  startedAt: string
+  /** ISO timestamp of last modification */
+  lastUpdatedAt: string
+  /** Accumulated project understanding */
+  understanding: PlanningUnderstanding
+  /** Unresolved questions requiring answers */
+  openQuestions: string[]
+  /** Phases that have been explicitly completed */
+  completedPhases: PlanningPhase[]
+}
+
+/**
+ * Defines the valid phase progression order.
+ *
+ * Phases must generally be traversed in this order to ensure proper
+ * understanding before breakdown. The `advancePhase` method uses this
+ * array to determine the next phase.
  */
 const PHASE_ORDER: PlanningPhase[] = ["discovery", "synthesis", "breakdown", "complete"]
 
 /**
- * Result of a planning action
+ * Result returned from planning action handlers.
+ *
+ * Used by tool implementations to communicate success/failure along with
+ * user-facing messages and optional state for further processing.
  */
 export interface PlanningActionResult {
+  /** Whether the action completed successfully */
   success: boolean
+  /** Human-readable message describing the outcome */
   message: string
+  /** Updated state if the action modified it */
   state?: PlanningState
 }
 
 /**
- * PlanningManager - encapsulates all planning operations
+ * Manages planning session state and workflow for a single project.
+ *
+ * PlanningManager encapsulates all planning operations including state persistence,
+ * phase transitions, and context generation. Each project has its own PlanningManager
+ * instance tied to its project directory.
+ *
+ * The manager is designed to support conversational planning where the AI guides
+ * users through structured discovery. State is persisted after each operation,
+ * allowing sessions to span multiple conversations.
+ *
+ * @example
+ * ```typescript
+ * const manager = new PlanningManager("/path/to/project", logger)
+ *
+ * // Start or resume planning
+ * const state = await manager.startOrContinue()
+ *
+ * // Update understanding as information is gathered
+ * await manager.updateUnderstanding({
+ *   problem: "Users can't find relevant documentation",
+ *   goals: ["Improve search accuracy", "Reduce time to find answers"]
+ * })
+ *
+ * // Advance when ready for next phase
+ * await manager.advancePhase()
+ * ```
  */
 export class PlanningManager {
+  /** Path to the project directory containing planning.json */
   private projectDir: string
+  /** Logger for tracking planning operations */
   private log: Logger
 
+  /**
+   * Creates a new PlanningManager for a specific project.
+   *
+   * @param projectDir - Absolute path to the project directory (e.g., `.projects/my-project-abc123`)
+   * @param log - Logger instance for operation tracking
+   */
   constructor(projectDir: string, log: Logger) {
     this.projectDir = projectDir
     this.log = log
   }
 
   /**
-   * Get the path to the planning state file
+   * Resolves the path to the planning state file.
+   *
+   * State is stored as `planning.json` in the project directory alongside
+   * other project metadata. This co-location simplifies backup and cleanup.
    */
   private getStatePath(): string {
     return path.join(this.projectDir, "planning.json")
   }
 
   /**
-   * Create initial planning state
+   * Creates the initial state for a new planning session.
+   *
+   * New sessions always start in the discovery phase with empty understanding.
+   * This ensures users go through the full planning workflow rather than
+   * jumping directly to implementation.
    */
   private createInitialState(): PlanningState {
     const now = new Date().toISOString()
@@ -67,7 +211,14 @@ export class PlanningManager {
   }
 
   /**
-   * Get the current planning state
+   * Retrieves the current planning state from disk.
+   *
+   * Returns null if no planning session exists (file not found), allowing
+   * callers to distinguish between "no session" and "session with empty state".
+   * Other file system errors are propagated.
+   *
+   * @returns The current planning state, or null if no session exists
+   * @throws If the file exists but cannot be read or parsed
    */
   async getState(): Promise<PlanningState | null> {
     const statePath = this.getStatePath()
@@ -84,7 +235,13 @@ export class PlanningManager {
   }
 
   /**
-   * Save the planning state
+   * Persists the planning state to disk.
+   *
+   * Automatically updates the `lastUpdatedAt` timestamp before saving.
+   * The state is written atomically (via Node's writeFile) to prevent
+   * corruption from interrupted writes.
+   *
+   * @param state - The state to persist
    */
   async saveState(state: PlanningState): Promise<void> {
     state.lastUpdatedAt = new Date().toISOString()
@@ -93,7 +250,13 @@ export class PlanningManager {
   }
 
   /**
-   * Start or continue a planning session
+   * Starts a new planning session or continues an existing one.
+   *
+   * This is the primary entry point for planning operations. It handles
+   * both first-time initialization and session resumption transparently,
+   * allowing the same code path regardless of whether planning has started.
+   *
+   * @returns The current (possibly newly created) planning state
    */
   async startOrContinue(): Promise<PlanningState> {
     let state = await this.getState()
@@ -110,7 +273,13 @@ export class PlanningManager {
   }
 
   /**
-   * Check if planning is active
+   * Checks whether planning is currently in progress.
+   *
+   * A session is considered active if it exists and hasn't reached the
+   * "complete" phase. This is used to determine whether to inject planning
+   * context into system prompts.
+   *
+   * @returns True if an active planning session exists
    */
   async isActive(): Promise<boolean> {
     const state = await this.getState()
@@ -118,7 +287,14 @@ export class PlanningManager {
   }
 
   /**
-   * Advance to the next planning phase
+   * Advances to the next planning phase in sequence.
+   *
+   * Phases progress in order: discovery → synthesis → breakdown → complete.
+   * The current phase is marked as completed before advancing, enabling
+   * progress tracking. Cannot advance from the "complete" phase.
+   *
+   * @returns The updated state with the new phase
+   * @throws If no planning session exists or already at the final phase
    */
   async advancePhase(): Promise<PlanningState> {
     const state = await this.getState()
@@ -146,7 +322,15 @@ export class PlanningManager {
   }
 
   /**
-   * Set a specific planning phase
+   * Jumps directly to a specific planning phase.
+   *
+   * Unlike `advancePhase`, this allows non-sequential transitions, enabling
+   * users to revisit earlier phases if new information requires rethinking.
+   * Does not modify the `completedPhases` array.
+   *
+   * @param phase - The phase to jump to
+   * @returns The updated state
+   * @throws If no planning session exists
    */
   async setPhase(phase: PlanningPhase): Promise<PlanningState> {
     const state = await this.getState()
@@ -162,7 +346,16 @@ export class PlanningManager {
   }
 
   /**
-   * Update the planning understanding
+   * Merges new information into the accumulated understanding.
+   *
+   * Updates are merged with existing understanding rather than replacing it,
+   * allowing incremental knowledge building. Array fields (goals, stakeholders,
+   * constraints, risks) are deduplicated to prevent redundancy. Decisions are
+   * appended while avoiding duplicates based on the decision text.
+   *
+   * @param updates - Partial understanding to merge
+   * @returns The updated state
+   * @throws If no planning session exists
    */
   async updateUnderstanding(updates: Partial<PlanningUnderstanding>): Promise<PlanningState> {
     const state = await this.getState()
@@ -201,7 +394,15 @@ export class PlanningManager {
   }
 
   /**
-   * Update open questions
+   * Replaces the list of open questions.
+   *
+   * Open questions track unresolved items that need answers before planning
+   * can progress. Unlike understanding updates, questions are replaced rather
+   * than merged, as the list represents the current state of unknowns.
+   *
+   * @param questions - The new list of open questions
+   * @returns The updated state
+   * @throws If no planning session exists
    */
   async updateOpenQuestions(questions: string[]): Promise<PlanningState> {
     const state = await this.getState()
@@ -219,7 +420,14 @@ export class PlanningManager {
   // ============================================================================
 
   /**
-   * Format understanding for display
+   * Formats the accumulated understanding as markdown for display.
+   *
+   * Produces a human-readable summary of all known information, with each
+   * field on its own line. Empty/undefined fields are omitted to keep
+   * output concise. Decisions are formatted as a nested list with rationale.
+   *
+   * @param understanding - The understanding to format
+   * @returns Markdown-formatted string
    */
   formatUnderstanding(understanding: PlanningUnderstanding): string {
     const lines: string[] = []
@@ -256,7 +464,14 @@ export class PlanningManager {
   }
 
   /**
-   * Format planning status for display
+   * Formats the complete planning status as markdown.
+   *
+   * Includes phase information, timestamps, completed phases, understanding
+   * summary, and open questions. Used by the status action handler to provide
+   * a comprehensive view of planning progress.
+   *
+   * @param state - The planning state to format
+   * @returns Markdown-formatted status string
    */
   formatStatus(state: PlanningState): string {
     const lines: string[] = []
@@ -289,7 +504,18 @@ export class PlanningManager {
   }
 
   /**
-   * Get phase-specific guidance
+   * Generates phase-specific guidance text for the AI.
+   *
+   * Each phase has distinct goals and recommended actions. This guidance
+   * is included in tool responses and system prompts to help the AI
+   * understand what to do in each phase. The guidance includes:
+   * - Phase objectives
+   * - Key questions or tasks
+   * - Available actions and tools
+   * - Criteria for advancing to the next phase
+   *
+   * @param phase - The phase to generate guidance for
+   * @returns Markdown-formatted guidance text
    */
   getPhaseGuidance(phase: PlanningPhase): string {
     const lines: string[] = []
@@ -328,7 +554,7 @@ export class PlanningManager {
         lines.push("- Define success criteria")
         lines.push("- Create any necessary artifacts (architecture docs, etc.)")
         lines.push("")
-        lines.push("**Artifacts:** Write directly to `.projects/<id>/plans/` as needed:")
+        lines.push("**Artifacts:** Write directly to `plans/` as needed:")
         lines.push("- `plans/architecture.md` - Technical architecture")
         lines.push("- `plans/risks.md` - Risk register")
         lines.push("- `plans/roadmap.md` - High-level roadmap")
@@ -339,7 +565,7 @@ export class PlanningManager {
       case "breakdown":
         lines.push("### Breakdown Phase")
         lines.push("")
-        lines.push("**Your goal:** Create actionable issues in beads.")
+        lines.push("**Your goal:** Create actionable issues.")
         lines.push("")
         lines.push("**Tasks:**")
         lines.push("- Break work into epics, tasks, and subtasks")
@@ -371,7 +597,13 @@ export class PlanningManager {
   // ============================================================================
 
   /**
-   * Handle status action
+   * Handles the 'status' action from the project-plan tool.
+   *
+   * Returns a formatted view of the current planning state, or a message
+   * indicating no session exists. This is the read-only inspection action.
+   *
+   * @param projectId - The project ID for display purposes
+   * @returns Formatted status message
    */
   async handleStatus(projectId: string): Promise<string> {
     const state = await this.getState()
@@ -384,7 +616,14 @@ export class PlanningManager {
   }
 
   /**
-   * Handle start or continue action
+   * Handles the 'start' and 'continue' actions from the project-plan tool.
+   *
+   * Creates a new session if none exists, or resumes the existing one.
+   * Returns a comprehensive view including current understanding, open
+   * questions, and phase-specific guidance to orient the AI.
+   *
+   * @param projectId - The project ID for display purposes
+   * @returns Formatted session overview with guidance
    */
   async handleStartOrContinue(projectId: string): Promise<string> {
     const state = await this.startOrContinue()
@@ -426,7 +665,16 @@ export class PlanningManager {
   }
 
   /**
-   * Handle save action
+   * Handles the 'save' action from the project-plan tool.
+   *
+   * Persists updates to understanding and/or open questions. The understanding
+   * parameter is expected as a JSON string (parsed here) to allow flexible
+   * updates from the AI. Open questions are comma-separated for simplicity.
+   *
+   * @param projectId - The project ID for display purposes
+   * @param understandingJson - Optional JSON string of understanding updates
+   * @param openQuestionsStr - Optional comma-separated list of questions
+   * @returns Confirmation message with updated status
    */
   async handleSave(
     projectId: string,
@@ -461,7 +709,13 @@ export class PlanningManager {
   }
 
   /**
-   * Handle advance action
+   * Handles the 'advance' action from the project-plan tool.
+   *
+   * Moves to the next phase in sequence. Returns guidance for the new phase,
+   * or a completion message if planning is finished. Errors are caught and
+   * returned as user-friendly messages.
+   *
+   * @returns Formatted message with new phase guidance or error
    */
   async handleAdvance(): Promise<string> {
     try {
@@ -475,7 +729,7 @@ export class PlanningManager {
         lines.push("🎉 Planning is complete!")
         lines.push("")
         lines.push("You can now:")
-        lines.push("- Review the issues created in beads")
+        lines.push("- Review the issues created")
         lines.push("- Start working on issues with `project-work-on-issue`")
         lines.push("- Close the project when done with `project-close`")
       } else {
@@ -489,7 +743,14 @@ export class PlanningManager {
   }
 
   /**
-   * Handle set phase action
+   * Handles the 'phase' action from the project-plan tool.
+   *
+   * Allows jumping directly to a specific phase, useful for revisiting
+   * earlier phases when new information emerges. Returns guidance for
+   * the selected phase.
+   *
+   * @param phase - The phase to jump to
+   * @returns Formatted message with phase guidance or error
    */
   async handleSetPhase(phase: PlanningPhase): Promise<string> {
     try {
@@ -511,7 +772,20 @@ export class PlanningManager {
   // ============================================================================
 
   /**
-   * Build context for system prompt injection
+   * Builds planning context for injection into system prompts.
+   *
+   * When planning is active, this context is injected into every AI interaction
+   * to maintain awareness of the planning state. The context includes:
+   * - Current phase and timestamps
+   * - Accumulated understanding
+   * - Open questions
+   * - Phase-specific role guidance
+   * - Available actions
+   *
+   * Returns null if no active planning session exists (either no session
+   * or session is complete), indicating no context should be injected.
+   *
+   * @returns XML-wrapped planning context, or null if not applicable
    */
   async buildContext(): Promise<string | null> {
     const state = await this.getState()
@@ -574,14 +848,14 @@ export class PlanningManager {
         lines.push("- Review all research findings")
         lines.push("- Make key technical and architectural decisions")
         lines.push("- Identify and document risks")
-        lines.push("- Write artifacts to `.projects/<id>/plans/` as needed")
+        lines.push("- Write artifacts to `plans/` as needed")
         break
 
       case "breakdown":
         lines.push("Create actionable issues:")
         lines.push("- Break work into epics, tasks, subtasks")
         lines.push("- Set priorities and dependencies")
-        lines.push("- Use `project-create-issue` to create issues in beads")
+        lines.push("- Use `project-create-issue` to create issues")
         break
     }
 

@@ -8,18 +8,18 @@ import * as path from "node:path"
 import * as os from "node:os"
 
 import { createProjectCreate } from "./project-create.js"
-import { ConfigManager } from "../core/config-manager.js"
-import { InMemoryIssueStorage } from "../storage/inmemory-issue-storage.js"
-import { FocusManager } from "../core/focus-manager.js"
-import { ProjectManager } from "../core/project-manager.js"
+import { ConfigManager } from "../config/index.js"
+import { InMemoryIssueStorage } from "../issues/inmemory/index.js"
+import { FocusManager, ProjectManager } from "../projects/index.js"
 import {
   createMockLogger,
   createMockClient,
   createTestShell,
   createMockContext,
   createMockTeamManager,
-} from "../core/test-utils.js"
-import type { BunShell, TeamManager } from "../core/types.js"
+} from "../utils/testing/index.js"
+import type { BunShell } from "../utils/opencode-sdk/index.js"
+import type { TeamManager } from "../execution/index.js"
 
 const mockLogger = createMockLogger()
 const mockClient = createMockClient()
@@ -37,21 +37,23 @@ describe("project_create tool", () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "project-create-test-"))
 
 
-    const config = await ConfigManager.load()
+    const config = await ConfigManager.loadOrThrow()
     issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
     testShell = createTestShell()
 
     teamManager = createMockTeamManager()
 
-    projectManager = new ProjectManager({
+    projectManager = new ProjectManager(
       config,
       issueStorage,
       focus,
-      log: mockLogger,
-      repoRoot: testDir,
+      mockLogger,
+      testDir,
+      undefined,
+      undefined,
       teamManager,
-    })
+    )
   })
 
   afterAll(async () => {
@@ -64,14 +66,7 @@ describe("project_create tool", () => {
   })
 
   test("creates project directory structure", async () => {
-    const tool = createProjectCreate({
-      client: mockClient,
-      projectManager,
-      issueStorage,
-      log: mockLogger,
-      $: testShell,
-      teamManager,
-    })
+    const tool = createProjectCreate(projectManager, mockLogger)
 
     const result = await tool.execute(
       {
@@ -94,15 +89,9 @@ describe("project_create tool", () => {
 
     const projectDir = path.join(projectsDir, entries[0])
 
-
-    const researchDir = path.join(projectDir, "research")
-    const interviewsDir = path.join(projectDir, "interviews")
-    const plansDir = path.join(projectDir, "plans")
-
-    expect((await fs.stat(researchDir)).isDirectory()).toBe(true)
-    expect((await fs.stat(interviewsDir)).isDirectory()).toBe(true)
-    expect((await fs.stat(plansDir)).isDirectory()).toBe(true)
-
+    // Subdirectories are created on-demand, not by default
+    // Just verify the project directory exists
+    expect((await fs.stat(projectDir)).isDirectory()).toBe(true)
 
     const metadataPath = path.join(projectDir, "project.json")
     const metadata = JSON.parse(await fs.readFile(metadataPath, "utf8"))
@@ -121,20 +110,14 @@ describe("project_create tool", () => {
   })
 
   test("generates unique project IDs", async () => {
-    const tool = createProjectCreate({
-      client: mockClient,
-      projectManager,
-      issueStorage,
-      log: mockLogger,
-      $: testShell,
-      teamManager,
-    })
+    const tool = createProjectCreate(projectManager, mockLogger)
 
 
     const result = await tool.execute(
       {
         name: "Test Project",
         type: "project",
+        storage: "local",
       },
       mockContext
     )
@@ -148,5 +131,30 @@ describe("project_create tool", () => {
 
 
     expect(entries[0]).not.toBe(entries[1])
+  })
+
+  test("migrates old projects without storage field", async () => {
+    const projectDir = path.join(testDir, ".projects", "old-project")
+    await fs.mkdir(projectDir, { recursive: true })
+
+    const oldMetadata = {
+      id: "old-project",
+      name: "Old Project",
+      type: "project",
+      createdAt: new Date().toISOString(),
+      status: "active",
+    }
+
+    await fs.writeFile(
+      path.join(projectDir, "project.json"),
+      JSON.stringify(oldMetadata, null, 2),
+      "utf8"
+    )
+
+    const projects = await projectManager.listProjects({ scope: "local" })
+    const oldProject = projects.find((p) => p.id === "old-project")
+
+    expect(oldProject).toBeTruthy()
+    expect(oldProject!.storage).toBe("local")
   })
 })

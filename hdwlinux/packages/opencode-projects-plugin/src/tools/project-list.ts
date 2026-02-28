@@ -4,20 +4,24 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import type { ProjectMetadata } from "../core/project-manager.js"
-import { formatError } from "../core/errors.js"
-
-interface ProjectListArgs {
-  scope?: "local" | "global" | "all"
-  status?: "active" | "completed" | "all"
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager, ProjectMetadata } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import {
+  ProjectListArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectListArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project_list tool
  */
-export function createProjectList(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectList(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `List all projects (local and/or global).
@@ -35,9 +39,14 @@ Shows project name, status, and issue counts.`,
         .describe("Filter by project status (default: all)"),
     },
 
-    async execute(args: ProjectListArgs, _ctx: ProjectToolContext): Promise<string> {
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectListArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
+
       try {
-        const { scope = "all", status = "all" } = args
+        const { scope = "all", status = "all" } = validationResult.value
 
         await log.info(`Listing projects: scope=${scope}, status=${status}`)
 

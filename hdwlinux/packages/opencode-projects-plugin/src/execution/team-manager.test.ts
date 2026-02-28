@@ -11,10 +11,11 @@ import * as path from "node:path"
 import * as os from "node:os"
 
 import { TeamManager } from "./team-manager.js"
+import { TeamNotifier } from "./team-notifier.js"
 import { DelegationManager } from "./delegation-manager.js"
-import { WorktreeManager } from "./worktree-manager.js"
-import { createMockLogger, createTestShell } from "../core/test-utils.js"
-import type { TeamConfig, Team } from "../core/types.js"
+import { WorktreeManager } from "../vcs/index.js"
+import { createMockLogger, createTestShell } from "../utils/testing/index.js"
+import type { TeamConfig, Team } from "./team-manager.js"
 
 const mockLogger = createMockLogger()
 
@@ -30,6 +31,7 @@ const defaultConfig: TeamConfig = {
 describe("TeamManager", () => {
   let testDir: string
   let teamManager: TeamManager
+  let teamNotifier: TeamNotifier
   let delegationManager: DelegationManager
   let worktreeManager: WorktreeManager
 
@@ -39,23 +41,22 @@ describe("TeamManager", () => {
     const testShell = createTestShell()
     worktreeManager = new WorktreeManager(testDir, testShell, mockLogger)
 
-    delegationManager = new DelegationManager(testDir, mockLogger, undefined, {
+    delegationManager = new DelegationManager(mockLogger, undefined, {
       timeoutMs: defaultConfig.delegationTimeoutMs,
       smallModelTimeoutMs: defaultConfig.smallModelTimeoutMs,
     })
 
-    // Create TeamManager without client (for unit testing)
+    // Create TeamManager with delegationManager (no circular dependency)
     teamManager = new TeamManager(
-      testDir,
       mockLogger,
       undefined as any, // No client for unit tests
+      delegationManager,
       worktreeManager,
       defaultConfig
     )
 
-    // Wire up circular dependency
-    delegationManager.setTeamManager(teamManager)
-    teamManager.setDelegationManager(delegationManager)
+    // Create TeamNotifier for notification tests
+    teamNotifier = new TeamNotifier(mockLogger, undefined as any)
   })
 
   afterAll(async () => {
@@ -78,6 +79,7 @@ describe("TeamManager", () => {
       const team: Team = {
         id: "team-test-123",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [
           { agent: "coder", role: "primary", status: "pending", retryCount: 0 },
@@ -92,37 +94,46 @@ describe("TeamManager", () => {
       }
 
       // Save using private method via reflection
-      const teamsDir = path.join(testDir, "teams")
+      const teamsDir = path.join(testDir, ".teams")
       await fs.mkdir(teamsDir, { recursive: true })
       await fs.writeFile(
         path.join(teamsDir, `${team.id}.json`),
         JSON.stringify(team, null, 2)
       )
 
-      // Retrieve
-      const retrieved = await teamManager.get(team.id)
+      // Add to cache so get() can find it
+      ;(teamManager as any).teams.set(team.id, team)
 
-      expect(retrieved).not.toBeNull()
-      expect(retrieved!.id).toBe(team.id)
-      expect(retrieved!.projectId).toBe("test-project")
-      expect(retrieved!.members.length).toBe(2)
-      expect(retrieved!.members[0].role).toBe("primary")
-      expect(retrieved!.members[1].role).toBe("secondary")
+      // Retrieve
+      const result = await teamManager.get(team.id)
+
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.value.id).toBe(team.id)
+        expect(result.value.projectId).toBe("test-project")
+        expect(result.value.members.length).toBe(2)
+        expect(result.value.members[0].role).toBe("primary")
+        expect(result.value.members[1].role).toBe("secondary")
+      }
     })
 
-    test("returns null for non-existent team", async () => {
-      const retrieved = await teamManager.get("non-existent")
-      expect(retrieved).toBeNull()
+    test("returns error for non-existent team", async () => {
+      const result = await teamManager.get("non-existent")
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("not_found")
+      }
     })
 
     test("lists teams by issue", async () => {
-      const teamsDir = path.join(testDir, "teams")
+      const teamsDir = path.join(testDir, ".teams")
       await fs.mkdir(teamsDir, { recursive: true })
 
       // Create multiple teams
       const team1: Team = {
         id: "team-1",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
@@ -136,6 +147,7 @@ describe("TeamManager", () => {
       const team2: Team = {
         id: "team-2",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "reviewer", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
@@ -149,6 +161,7 @@ describe("TeamManager", () => {
       const team3: Team = {
         id: "team-3",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-2", // Different issue
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
@@ -158,6 +171,11 @@ describe("TeamManager", () => {
         discussionHistory: [],
         startedAt: new Date().toISOString(),
       }
+
+      // Add to cache
+      ;(teamManager as any).teams.set(team1.id, team1)
+      ;(teamManager as any).teams.set(team2.id, team2)
+      ;(teamManager as any).teams.set(team3.id, team3)
 
       await fs.writeFile(path.join(teamsDir, "team-1.json"), JSON.stringify(team1))
       await fs.writeFile(path.join(teamsDir, "team-2.json"), JSON.stringify(team2))
@@ -171,12 +189,13 @@ describe("TeamManager", () => {
     })
 
     test("gets running teams", async () => {
-      const teamsDir = path.join(testDir, "teams")
+      const teamsDir = path.join(testDir, ".teams")
       await fs.mkdir(teamsDir, { recursive: true })
 
       const runningTeam: Team = {
         id: "team-running",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
@@ -190,6 +209,7 @@ describe("TeamManager", () => {
       const completedTeam: Team = {
         id: "team-completed",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-2",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
@@ -200,6 +220,10 @@ describe("TeamManager", () => {
         startedAt: new Date().toISOString(),
         completedAt: new Date().toISOString(),
       }
+
+      // Add to cache
+      ;(teamManager as any).teams.set(runningTeam.id, runningTeam)
+      ;(teamManager as any).teams.set(completedTeam.id, completedTeam)
 
       await fs.writeFile(path.join(teamsDir, "team-running.json"), JSON.stringify(runningTeam))
       await fs.writeFile(path.join(teamsDir, "team-completed.json"), JSON.stringify(completedTeam))
@@ -216,6 +240,7 @@ describe("TeamManager", () => {
       const team: Team = {
         id: "team-test",
         projectId: "test-project",
+        projectDir: "/tmp/test-project",
         issueId: "issue-1",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
@@ -233,9 +258,8 @@ describe("TeamManager", () => {
         completedAt: new Date().toISOString(),
       }
 
-      // Access private method via reflection for testing
-      const buildNotification = (teamManager as any).buildTeamNotification.bind(teamManager)
-      const notification = buildNotification(team)
+      // Use TeamNotifier directly for testing
+      const notification = teamNotifier.buildTeamNotification(team)
 
       expect(notification).toContain("<team-notification>")
       expect(notification).toContain("<team-id>team-test</team-id>")
@@ -251,6 +275,7 @@ describe("TeamManager", () => {
       const team: Team = {
         id: "team-test",
         projectId: "test-project",
+        projectDir: "/tmp/test-project",
         issueId: "issue-1",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
@@ -271,8 +296,7 @@ describe("TeamManager", () => {
         completedAt: new Date().toISOString(),
       }
 
-      const buildNotification = (teamManager as any).buildTeamNotification.bind(teamManager)
-      const notification = buildNotification(team)
+      const notification = teamNotifier.buildTeamNotification(team)
 
       expect(notification).toContain('<discussion rounds="2">')
       expect(notification).toContain('<round n="1">')
@@ -285,6 +309,7 @@ describe("TeamManager", () => {
       const team: Team = {
         id: "team-test",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
@@ -299,8 +324,7 @@ describe("TeamManager", () => {
         completedAt: new Date().toISOString(),
       }
 
-      const buildNotification = (teamManager as any).buildTeamNotification.bind(teamManager)
-      const notification = buildNotification(team)
+      const notification = teamNotifier.buildTeamNotification(team)
 
       expect(notification).toContain("<worktree>")
       expect(notification).toContain("<path>/tmp/worktree/issue-1</path>")
@@ -314,12 +338,13 @@ describe("TeamManager", () => {
 
   describe("Foreground mode", () => {
     test("team with foreground flag set", async () => {
-      const teamsDir = path.join(testDir, "teams")
+      const teamsDir = path.join(testDir, ".teams")
       await fs.mkdir(teamsDir, { recursive: true })
 
       const foregroundTeam: Team = {
         id: "team-foreground",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
@@ -331,22 +356,28 @@ describe("TeamManager", () => {
         startedAt: new Date().toISOString(),
       }
 
+      // Add to cache
+      ;(teamManager as any).teams.set(foregroundTeam.id, foregroundTeam)
+
       await fs.writeFile(path.join(teamsDir, "team-foreground.json"), JSON.stringify(foregroundTeam))
 
-      const retrieved = await teamManager.get("team-foreground")
+      const result = await teamManager.get("team-foreground")
 
-      expect(retrieved).not.toBeNull()
-      expect(retrieved!.foreground).toBe(true)
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.value.foreground).toBe(true)
+      }
     })
 
     test("waitForCompletion returns immediately when team already complete", async () => {
-      const teamsDir = path.join(testDir, "teams")
+      const teamsDir = path.join(testDir, ".teams")
       await fs.mkdir(teamsDir, { recursive: true })
 
       // Create a team that's already complete
       const completedTeam: Team = {
         id: "team-wait-test",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
@@ -361,23 +392,30 @@ describe("TeamManager", () => {
         completedAt: new Date().toISOString(),
       }
 
+      // Add to cache
+      ;(teamManager as any).teams.set(completedTeam.id, completedTeam)
+
       await fs.writeFile(path.join(teamsDir, "team-wait-test.json"), JSON.stringify(completedTeam))
 
       // waitForCompletion should return immediately since team is already complete
       const result = await teamManager.waitForCompletion(completedTeam)
 
-      expect(result.status).toBe("completed")
-      expect(result.results.coder.result).toBe("Done")
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.value.status).toBe("completed")
+        expect(result.value.results.coder.result).toBe("Done")
+      }
     })
 
     test("waitForCompletion returns immediately when team already failed", async () => {
-      const teamsDir = path.join(testDir, "teams")
+      const teamsDir = path.join(testDir, ".teams")
       await fs.mkdir(teamsDir, { recursive: true })
 
       // Create a team that's already failed
       const failedTeam: Team = {
         id: "team-wait-failed",
         projectId: "test-project",
+        projectDir: testDir,
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 1 }],
         status: "failed",
@@ -392,18 +430,25 @@ describe("TeamManager", () => {
         completedAt: new Date().toISOString(),
       }
 
+      // Add to cache
+      ;(teamManager as any).teams.set(failedTeam.id, failedTeam)
+
       await fs.writeFile(path.join(teamsDir, "team-wait-failed.json"), JSON.stringify(failedTeam))
 
       // waitForCompletion should return immediately with failed team (Option A)
       const result = await teamManager.waitForCompletion(failedTeam)
 
-      expect(result.status).toBe("failed")
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.value.status).toBe("failed")
+      }
     })
 
     test("foreground team skips parent notification", async () => {
       const team: Team = {
         id: "team-foreground-notify",
         projectId: "test-project",
+        projectDir: "/tmp/test-project",
         issueId: "issue-1",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",

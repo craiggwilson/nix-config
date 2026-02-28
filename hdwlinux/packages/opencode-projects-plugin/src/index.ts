@@ -24,19 +24,23 @@ import {
   createProjectInternalDelegationRead,
 } from "./tools/index.js"
 
+import { ConfigManager } from "./config/index.js"
+import { FocusManager, ProjectManager } from "./projects/index.js"
+import { createLogger } from "./utils/logging/index.js"
+import { validateClientOrThrow } from "./utils/validation/index.js"
+import type { OpencodeClient } from "./utils/opencode-sdk/index.js"
+
+import { BeadsIssueStorage } from "./issues/beads/index.js"
+
 import {
-  ConfigManager,
-  FocusManager,
-  ProjectManager,
-  createLogger,
-  type OpencodeClient,
-} from "./core/index.js"
-
-import { BeadsIssueStorage } from "./storage/index.js"
-
-import { PROJECT_RULES } from "./agents/index.js"
-import { WorktreeManager, DelegationManager, TeamManager, type Delegation } from "./execution/index.js"
-import type { Team } from "./core/types.js"
+  PROJECT_RULES,
+  buildFocusContext,
+  buildCompactionContext,
+  buildDelegationCompactionContext,
+  buildTeamCompactionContext,
+} from "./projects/index.js"
+import { DelegationManager, TeamManager, type Delegation, type Team } from "./execution/index.js"
+import { WorktreeManager } from "./vcs/index.js"
 
 // Re-exports removed to avoid plugin loader issues.
 // The plugin loader may try to call each export as a plugin function.
@@ -47,12 +51,14 @@ import type { Team } from "./core/types.js"
  */
 export const ProjectsPlugin: Plugin = async (ctx) => {
   const { client, directory, worktree, $ } = ctx
-  const typedClient = client as OpencodeClient
+  
+  // Validate client before use to catch SDK version mismatches early
+  const typedClient = validateClientOrThrow(client)
 
   const log = createLogger(typedClient)
   await log.info("opencode-projects plugin initializing")
 
-  const config = await ConfigManager.load()
+  const config = await ConfigManager.loadOrThrow()
   const issueStorage = new BeadsIssueStorage(log)
   const focus = new FocusManager()
   issueStorage.setShell($)
@@ -63,18 +69,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
   const worktreeManager = new WorktreeManager(repoRoot, $, log)
   await worktreeManager.detectVCS()
 
-  // Create delegation manager
-  const delegationManager = new DelegationManager(
-    repoRoot,
-    log,
-    typedClient,
-    {
-      timeoutMs: config.getDelegationTimeoutMs(),
-      smallModelTimeoutMs: config.getSmallModelTimeoutMs(),
-    }
-  )
-
-  // Create team manager with team config
+  // Create team config
   const teamConfig = {
     discussionRounds: config.getTeamDiscussionRounds(),
     discussionRoundTimeoutMs: config.getTeamDiscussionRoundTimeoutMs(),
@@ -84,51 +79,56 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     delegationTimeoutMs: config.getDelegationTimeoutMs(),
   }
 
-  const teamManager = new TeamManager(
-    repoRoot,
+  // Create delegation manager
+  const delegationManager = new DelegationManager(
     log,
     typedClient,
+    {
+      timeoutMs: config.getDelegationTimeoutMs(),
+      smallModelTimeoutMs: config.getSmallModelTimeoutMs(),
+    }
+  )
+
+  // Create team manager (depends on delegationManager - no circular dependency)
+  const teamManager = new TeamManager(
+    log,
+    typedClient,
+    delegationManager,
     worktreeManager,
     teamConfig
   )
 
-  // Wire up circular dependency
-  delegationManager.setTeamManager(teamManager)
-  teamManager.setDelegationManager(delegationManager)
-
   // Create project manager with all dependencies
-  const projectManager = new ProjectManager({
+  const projectManager = new ProjectManager(
     config,
     issueStorage,
     focus,
     log,
     repoRoot,
-    client: typedClient,
+    typedClient,
     $,
     teamManager,
-  })
+  )
 
   const beadsAvailable = await issueStorage.isAvailable()
-  if (!beadsAvailable) {
+  if (!beadsAvailable.ok || !beadsAvailable.value) {
     await log.warn("beads (bd) not found in PATH - some features will be unavailable")
   }
 
   await log.info(`opencode-projects initialized in ${repoRoot}`)
 
-  const toolDeps = { client: typedClient, projectManager, issueStorage, log, $, teamManager }
-
   return {
     tool: {
-      "project-create": createProjectCreate(toolDeps),
-      "project-list": createProjectList(toolDeps),
-      "project-status": createProjectStatus(toolDeps),
-      "project-focus": createProjectFocus(toolDeps),
-      "project-plan": createProjectPlan(toolDeps),
-      "project-close": createProjectClose(toolDeps),
-      "project-create-issue": createProjectCreateIssue(toolDeps),
-      "project-work-on-issue": createProjectWorkOnIssue(toolDeps),
-      "project-update-issue": createProjectUpdateIssue(toolDeps),
-      "project-internal-delegation-read": createProjectInternalDelegationRead(toolDeps),
+      "project-create": createProjectCreate(projectManager, log),
+      "project-list": createProjectList(projectManager, log),
+      "project-status": createProjectStatus(projectManager, log),
+      "project-focus": createProjectFocus(projectManager, log),
+      "project-plan": createProjectPlan(projectManager, log),
+      "project-close": createProjectClose(projectManager, log),
+      "project-create-issue": createProjectCreateIssue(projectManager, log),
+      "project-work-on-issue": createProjectWorkOnIssue(projectManager, teamManager, log),
+      "project-update-issue": createProjectUpdateIssue(projectManager, log, $),
+      "project-internal-delegation-read": createProjectInternalDelegationRead(projectManager, log),
     },
 
     "experimental.chat.system.transform": async (_input, output) => {
@@ -139,13 +139,11 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         output.system.push(vcsContext)
       }
 
+      const contextBlock = await buildFocusContext(projectManager)
+      output.system.push(contextBlock)
+
       const projectId = projectManager.getFocusedProjectId()
       if (projectId) {
-        const contextBlock = await buildFocusContext(projectManager)
-        if (contextBlock) {
-          output.system.push(contextBlock)
-        }
-
         // Add planning context if planning is active
         const planningContext = await buildPlanningContext(projectManager, projectId)
         if (planningContext) {
@@ -200,13 +198,9 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
     "shell.env": async (_input, output) => {
       const projectId = projectManager.getFocusedProjectId()
-      const issueId = projectManager.getFocusedIssueId()
 
       if (projectId) {
         output.env.OPENCODE_PROJECT_ID = projectId
-      }
-      if (issueId) {
-        output.env.OPENCODE_ISSUE_ID = issueId
       }
     },
 
@@ -225,186 +219,7 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
   }
 }
 
-/**
- * Build context block for focused project/issue
- */
-async function buildFocusContext(projectManager: ProjectManager): Promise<string | null> {
-  const projectId = projectManager.getFocusedProjectId()
-  if (!projectId) return null
 
-  const sections: string[] = ["<project-context>"]
-
-  sections.push(`## Focused Project: ${projectId}`)
-
-  try {
-    const status = await projectManager.getProjectStatus(projectId)
-    if (status?.issueStatus) {
-      sections.push("")
-      sections.push(
-        `**Progress:** ${status.issueStatus.completed}/${status.issueStatus.total} issues complete`
-      )
-      if (status.issueStatus.blockers.length > 0) {
-        sections.push(`**Blockers:** ${status.issueStatus.blockers.length}`)
-      }
-    }
-  } catch {
-    // Project may not exist
-  }
-
-  const issueId = projectManager.getFocusedIssueId()
-  if (issueId) {
-    sections.push("")
-    sections.push(`### Focused Issue: ${issueId}`)
-
-    try {
-      const issue = await projectManager.getIssue(projectId, issueId)
-      if (issue) {
-        sections.push(`**Title:** ${issue.title}`)
-        sections.push(`**Status:** ${issue.status}`)
-        if (issue.description) {
-          sections.push(`**Description:** ${issue.description}`)
-        }
-      }
-    } catch {
-      // Issue may not exist
-    }
-  }
-
-  sections.push("</project-context>")
-
-  return sections.length > 2 ? sections.join("\n") : null
-}
-
-/**
- * Build context for session compaction.
- * This context survives compaction and helps the agent resume work.
- */
-async function buildCompactionContext(projectManager: ProjectManager): Promise<string | null> {
-  const projectId = projectManager.getFocusedProjectId()
-  if (!projectId) return null
-
-  const sections: string[] = ["<project-compaction-context>"]
-
-  sections.push(`## Active Project: ${projectId}`)
-
-  const issueId = projectManager.getFocusedIssueId()
-  if (issueId) {
-    sections.push(`## Current Issue: ${issueId}`)
-
-    try {
-      const issue = await projectManager.getIssue(projectId, issueId)
-      if (issue) {
-        sections.push(`**Title:** ${issue.title}`)
-        sections.push(`**Status:** ${issue.status}`)
-        if (issue.description) {
-          sections.push(`**Description:** ${issue.description}`)
-        }
-        if (issue.blockedBy && issue.blockedBy.length > 0) {
-          sections.push(`**Blocked by:** ${issue.blockedBy.join(", ")}`)
-        }
-      }
-    } catch {
-      // Issue may not exist
-    }
-  }
-
-  try {
-    const status = await projectManager.getProjectStatus(projectId)
-    if (status?.issueStatus) {
-      sections.push("")
-      sections.push("## Project Progress")
-      sections.push(`- **Completed:** ${status.issueStatus.completed}/${status.issueStatus.total}`)
-      sections.push(`- **In Progress:** ${status.issueStatus.inProgress}`)
-      sections.push(`- **Blocked:** ${status.issueStatus.blocked}`)
-    }
-  } catch {
-    // Project may not exist
-  }
-
-  try {
-    const ready = await projectManager.getReadyIssues(projectId)
-    if (ready.length > 0) {
-      sections.push("")
-      sections.push("## Ready Issues (unblocked)")
-      for (const issue of ready.slice(0, 5)) {
-        const priority = issue.priority !== undefined ? `P${issue.priority}` : ""
-        sections.push(`- ${issue.id}: ${issue.title} ${priority}`.trim())
-      }
-      if (ready.length > 5) {
-        sections.push(`- ... and ${ready.length - 5} more`)
-      }
-    }
-  } catch {
-    // Project may not exist
-  }
-
-  sections.push("")
-  sections.push("## Quick Reference")
-  sections.push("- `project-status` - Full project state")
-  sections.push("- `project-focus` - Change focus")
-  sections.push("- `project-work-on-issue` - Start work on an issue")
-  sections.push("- `project-update-issue` - Update/close an issue")
-  sections.push("- `project-internal-delegation-read` - Read delegation results")
-  sections.push("</project-compaction-context>")
-
-  return sections.join("\n")
-}
-
-/**
- * Build context for delegations during compaction.
- * Issue #7: Include both running and recent completed delegations.
- */
-function buildDelegationCompactionContext(
-  running: Delegation[],
-  completed: Delegation[]
-): string {
-  const lines = ["<delegation-context>"]
-
-  if (running.length > 0) {
-    lines.push("## Running Delegations")
-    lines.push("")
-
-    for (const d of running) {
-      lines.push(`### ${d.id}`)
-      lines.push(`- **Issue:** ${d.issueId}`)
-      lines.push(`- **Agent:** ${d.agent || "(auto)"}`)
-      lines.push(`- **Started:** ${d.startedAt}`)
-      if (d.worktreePath) {
-        lines.push(`- **Worktree:** ${d.worktreePath}`)
-      }
-      lines.push("")
-    }
-
-    lines.push("> You will be notified via `<delegation-notification>` when delegations complete.")
-    lines.push("> Do NOT poll for status - continue productive work.")
-    lines.push("")
-  }
-
-  if (completed.length > 0) {
-    lines.push("## Recent Completed Delegations")
-    lines.push("")
-
-    for (const d of completed) {
-      const statusIcon =
-        d.status === "completed" ? "✅" : d.status === "failed" ? "❌" : "⏱️"
-      lines.push(`### ${statusIcon} ${d.id}`)
-      lines.push(`- **Title:** ${d.title || "(no title)"}`)
-      lines.push(`- **Issue:** ${d.issueId}`)
-      lines.push(`- **Status:** ${d.status}`)
-      if (d.completedAt) {
-        lines.push(`- **Completed:** ${d.completedAt}`)
-      }
-      lines.push("")
-    }
-
-    lines.push("> Use `project-internal-delegation-read(id)` to retrieve full results.")
-    lines.push("")
-  }
-
-  lines.push("</delegation-context>")
-
-  return lines.join("\n")
-}
 
 /**
  * Build context for active planning sessions.
@@ -418,41 +233,6 @@ async function buildPlanningContext(
   if (!planningManager) return null
 
   return planningManager.buildContext()
-}
-
-/**
- * Build context for running teams during compaction.
- */
-function buildTeamCompactionContext(teams: Team[]): string {
-  const lines = ["<team-context>"]
-
-  lines.push("## Running Teams")
-  lines.push("")
-
-  for (const team of teams) {
-    lines.push(`### Team ${team.id}`)
-    lines.push(`- **Issue:** ${team.issueId}`)
-    lines.push(`- **Status:** ${team.status}`)
-    lines.push(`- **Members:** ${team.members.map((m) => `${m.agent} (${m.role})`).join(", ")}`)
-    lines.push(`- **Started:** ${team.startedAt}`)
-
-    if (team.status === "discussing") {
-      lines.push(`- **Discussion Round:** ${team.currentRound}/${team.discussionRounds}`)
-    }
-
-    if (team.worktreePath) {
-      lines.push(`- **Worktree:** ${team.worktreePath}`)
-    }
-    lines.push("")
-  }
-
-  lines.push("> You will be notified via `<team-notification>` when teams complete.")
-  lines.push("> Do NOT poll for status - continue productive work.")
-  lines.push("")
-
-  lines.push("</team-context>")
-
-  return lines.join("\n")
 }
 
 export default ProjectsPlugin

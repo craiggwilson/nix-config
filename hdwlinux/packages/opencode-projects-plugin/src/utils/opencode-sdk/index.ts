@@ -1,0 +1,153 @@
+/**
+ * OpenCode SDK type definitions
+ *
+ * Types for interacting with the OpenCode SDK client API.
+ */
+
+import type { ToolContext, PluginInput } from "@opencode-ai/plugin"
+
+/**
+ * BunShell type extracted from PluginInput
+ */
+export type BunShell = PluginInput["$"]
+
+/**
+ * OpenCode SDK client type (simplified for our needs)
+ */
+export interface OpencodeClient {
+  app: {
+    log: (args: {
+      body: { service: string; level: string; message: string; extra?: Record<string, unknown> }
+    }) => Promise<unknown>
+    agents: (args: Record<string, never>) => Promise<{ data?: Agent[] }>
+  }
+  session: {
+    create: (args: { body: { title?: string; parentID?: string; agent?: string } }) => Promise<{ data?: Session }>
+    get: (args: { path: { id: string } }) => Promise<{ data?: Session }>
+    prompt: (args: {
+      path: { id: string }
+      body: {
+        agent?: string
+        parts: Part[]
+        noReply?: boolean
+        tools?: Record<string, boolean>
+      }
+    }) => Promise<{ data?: Message }>
+    messages: (args: { path: { id: string } }) => Promise<{ data?: MessageItem[] }>
+    delete: (args: { path: { id: string } }) => Promise<unknown>
+  }
+  config: {
+    get: () => Promise<{ data?: PluginConfig }>
+  }
+}
+
+/**
+ * Agent configuration from OpenCode
+ */
+export interface Agent {
+  /** Unique agent name/identifier */
+  name: string
+  /** Human-readable description of the agent's capabilities */
+  description?: string
+  /** Agent mode (e.g., "coder", "researcher") */
+  mode?: string
+}
+
+/**
+ * OpenCode session representing a conversation context
+ */
+export interface Session {
+  /** Unique session identifier */
+  id: string
+  /** Human-readable session title */
+  title?: string
+  /** Parent session ID for nested sessions */
+  parentID?: string
+}
+
+/**
+ * Message part representing content in a conversation
+ */
+export interface Part {
+  /** Content type */
+  type: "text" | "image" | "file"
+  /** Text content (for text type) */
+  text?: string
+}
+
+/**
+ * Message error information
+ */
+export interface MessageError {
+  /** Error name/type */
+  name: string
+  /** Error message */
+  message?: string
+}
+
+/**
+ * Message metadata in a conversation
+ */
+export interface MessageInfo {
+  /** Unique message identifier */
+  id: string
+  /** Message author role */
+  role: "user" | "assistant"
+  /** Session this message belongs to */
+  sessionID: string
+  /** Error information if the message was aborted or failed */
+  error?: MessageError
+}
+
+/**
+ * Message in a conversation (alias for backward compatibility)
+ */
+export type Message = MessageInfo
+
+/**
+ * Message item containing metadata and content parts
+ */
+export interface MessageItem {
+  /** Message metadata */
+  info: MessageInfo
+  /** Content parts of the message */
+  parts: Part[]
+}
+
+/**
+ * OpenCode plugin configuration
+ */
+export interface PluginConfig {
+  /** Small model to use for quick queries */
+  small_model?: string
+  /** Agent-specific configurations */
+  agent?: Record<string, AgentConfig>
+}
+
+/**
+ * Agent-specific configuration
+ */
+export interface AgentConfig {
+  /** Permission settings for tools */
+  permission?: Record<string, PermissionEntry>
+}
+
+/**
+ * Permission entry for tool access control
+ */
+export type PermissionEntry = "ask" | "allow" | "deny" | Record<string, "ask" | "allow" | "deny">
+
+/**
+ * Logger interface
+ */
+export interface Logger {
+  debug: (msg: string) => Promise<void>
+  info: (msg: string) => Promise<void>
+  warn: (msg: string) => Promise<void>
+  error: (msg: string) => Promise<void>
+}
+
+/**
+ * Tool context - re-export from plugin package
+ */
+export type ProjectToolContext = ToolContext

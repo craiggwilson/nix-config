@@ -8,7 +8,7 @@ import * as path from "node:path"
 import * as os from "node:os"
 
 import { PlanningManager } from "./planning-manager.js"
-import type { PlanningState } from "../core/types.js"
+import type { PlanningState } from "./planning-manager.js"
 
 // Mock logger
 const mockLog = {

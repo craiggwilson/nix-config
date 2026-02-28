@@ -2,6 +2,8 @@
  * Tools module - OpenCode tool implementations
  */
 
+export type { Tool, ProjectToolContext } from "./tools.js"
+
 export { createProjectCreate } from "./project-create.js"
 export { createProjectList } from "./project-list.js"
 export { createProjectStatus } from "./project-status.js"

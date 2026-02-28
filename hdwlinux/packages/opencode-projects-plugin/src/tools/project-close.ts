@@ -4,20 +4,24 @@
 
 import { tool } from "@opencode-ai/plugin"
 
-import type { ToolDeps, ProjectToolContext } from "../core/types.js"
-import { formatError } from "../core/errors.js"
-
-interface ProjectCloseArgs {
-  projectId: string
-  reason?: "completed" | "cancelled" | "archived"
-  summary?: string
-}
+import type { ProjectToolContext, Tool } from "./tools.js"
+import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { ProjectManager } from "../projects/index.js"
+import { formatError } from "../utils/errors/index.js"
+import {
+  ProjectCloseArgsSchema,
+  validateToolArgs,
+  formatValidationError,
+  type ProjectCloseArgs,
+} from "../utils/validation/index.js"
 
 /**
  * Create the project_close tool
  */
-export function createProjectClose(deps: ToolDeps) {
-  const { projectManager, log } = deps
+export function createProjectClose(
+  projectManager: ProjectManager,
+  log: Logger,
+): Tool {
 
   return tool({
     description: `Close a project (mark as completed, cancelled, or archived).
@@ -36,9 +40,14 @@ This updates the project status and optionally adds a final summary.`,
         .describe("Final summary or notes"),
     },
 
-    async execute(args: ProjectCloseArgs, _ctx: ProjectToolContext): Promise<string> {
+    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+      const validationResult = validateToolArgs(ProjectCloseArgsSchema, args)
+      if (!validationResult.ok) {
+        return formatValidationError(validationResult.error)
+      }
+
       try {
-        const { projectId, reason = "completed", summary } = args
+        const { projectId, reason = "completed", summary } = validationResult.value
 
         await log.info(`Closing project: ${projectId}, reason: ${reason}`)
 

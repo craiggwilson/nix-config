@@ -8,7 +8,7 @@ import * as path from "node:path"
 import * as os from "node:os"
 
 import { DelegationManager, type CreateDelegationOptions } from "./delegation-manager.js"
-import { createMockLogger } from "../core/test-utils.js"
+import { createMockLogger } from "../utils/testing/index.js"
 
 const mockLogger = createMockLogger()
 
@@ -30,7 +30,7 @@ describe("DelegationManager", () => {
   beforeEach(async () => {
 
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "delegation-test-"))
-    manager = new DelegationManager(testDir, mockLogger, undefined, {
+    manager = new DelegationManager(mockLogger, undefined, {
       timeoutMs: 15 * 60 * 1000,
       smallModelTimeoutMs: 30000,
     })
@@ -53,11 +53,15 @@ describe("DelegationManager", () => {
 
   describe("create", () => {
     test("creates a new delegation", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const result = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Implement the feature",
       }))
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const delegation = result.value
       expect(delegation.id).toMatch(/^del-/)
       expect(delegation.projectId).toBe("test-project")
       expect(delegation.issueId).toBe("issue-123")
@@ -69,11 +73,15 @@ describe("DelegationManager", () => {
     })
 
     test("persists delegation to disk", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const result = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const delegation = result.value
       const filePath = path.join(testDir, "delegations", `${delegation.id}.json`)
       const content = await fs.readFile(filePath, "utf8")
       const saved = JSON.parse(content)
@@ -85,68 +93,88 @@ describe("DelegationManager", () => {
     })
 
     test("includes optional fields", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const result = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
         worktreePath: "/path/to/worktree",
         agent: "coder",
       }))
 
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      const delegation = result.value
       expect(delegation.worktreePath).toBe("/path/to/worktree")
       expect(delegation.agent).toBe("coder")
     })
 
     test("supports different roles", async () => {
-      const primary = await manager.create("test-project", createOptions({
+      const primaryResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Primary work",
         role: "primary",
       }))
 
-      const secondary = await manager.create("test-project", createOptions({
+      const secondaryResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Secondary review",
         role: "secondary",
       }))
 
-      const devilsAdvocate = await manager.create("test-project", createOptions({
+      const devilsAdvocateResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Critical review",
         role: "devilsAdvocate",
       }))
 
-      expect(primary.role).toBe("primary")
-      expect(secondary.role).toBe("secondary")
-      expect(devilsAdvocate.role).toBe("devilsAdvocate")
+      expect(primaryResult.ok).toBe(true)
+      expect(secondaryResult.ok).toBe(true)
+      expect(devilsAdvocateResult.ok).toBe(true)
+
+      if (!primaryResult.ok || !secondaryResult.ok || !devilsAdvocateResult.ok) return
+
+      expect(primaryResult.value.role).toBe("primary")
+      expect(secondaryResult.value.role).toBe("secondary")
+      expect(devilsAdvocateResult.value.role).toBe("devilsAdvocate")
     })
   })
 
   describe("get", () => {
     test("retrieves a delegation by ID", async () => {
-      const created = await manager.create("test-project", createOptions({
+      const createResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
-      const retrieved = await manager.get(created.id)
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(retrieved).not.toBeNull()
-      expect(retrieved!.id).toBe(created.id)
-      expect(retrieved!.issueId).toBe("issue-123")
+      const created = createResult.value
+      const getResult = await manager.get(created.id)
+
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.id).toBe(created.id)
+      expect(getResult.value.issueId).toBe("issue-123")
     })
 
-    test("returns null for non-existent delegation", async () => {
-      const retrieved = await manager.get("non-existent")
+    test("returns error for non-existent delegation", async () => {
+      const result = await manager.get("non-existent")
 
-      expect(retrieved).toBeNull()
+      expect(result.ok).toBe(false)
+      if (result.ok) return
+
+      expect(result.error.type).toBe("not_found")
+      expect(result.error.delegationId).toBe("non-existent")
     })
   })
 
   describe("list", () => {
     test("lists all delegations", async () => {
-      await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
-      await manager.create("test-project", createOptions({ issueId: "issue-2", prompt: "Prompt 2" }))
-      await manager.create("test-project", createOptions({ issueId: "issue-3", prompt: "Prompt 3" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-2", prompt: "Prompt 2" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-3", prompt: "Prompt 3" }))
 
       const delegations = await manager.list()
 
@@ -154,10 +182,13 @@ describe("DelegationManager", () => {
     })
 
     test("filters by status", async () => {
-      const d1 = await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
-      await manager.create("test-project", createOptions({ issueId: "issue-2", prompt: "Prompt 2" }))
+      const d1Result = await manager.create("test-project", testDir, createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-2", prompt: "Prompt 2" }))
 
-      await manager.complete(d1.id, "Done")
+      expect(d1Result.ok).toBe(true)
+      if (!d1Result.ok) return
+
+      await manager.complete(d1Result.value.id, "Done")
 
       const completed = await manager.list({ status: "completed" })
       const pending = await manager.list({ status: "pending" })
@@ -167,9 +198,9 @@ describe("DelegationManager", () => {
     })
 
     test("filters by issueId", async () => {
-      await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
-      await manager.create("test-project", createOptions({ issueId: "issue-1", prompt: "Prompt 2" }))
-      await manager.create("test-project", createOptions({ issueId: "issue-2", prompt: "Prompt 3" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-1", prompt: "Prompt 1" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-1", prompt: "Prompt 2" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-2", prompt: "Prompt 3" }))
 
       const issue1Delegations = await manager.list({ issueId: "issue-1" })
       const issue2Delegations = await manager.list({ issueId: "issue-2" })
@@ -181,27 +212,39 @@ describe("DelegationManager", () => {
 
   describe("complete", () => {
     test("marks delegation as completed", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const createResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
-      const success = await manager.complete(delegation.id, "Task completed successfully")
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(success).toBe(true)
+      const delegation = createResult.value
+      const completeResult = await manager.complete(delegation.id, "Task completed successfully")
 
-      const updated = await manager.get(delegation.id)
-      expect(updated!.status).toBe("completed")
-      expect(updated!.result).toBe("Task completed successfully")
-      expect(updated!.completedAt).toBeDefined()
+      expect(completeResult.ok).toBe(true)
+      if (!completeResult.ok) return
+
+      const getResult = await manager.get(delegation.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.status).toBe("completed")
+      expect(getResult.value.result).toBe("Task completed successfully")
+      expect(getResult.value.completedAt).toBeDefined()
     })
 
     test("persists result to delegations directory", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const createResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
+
+      const delegation = createResult.value
       await manager.complete(delegation.id, "Task completed")
 
       const resultPath = path.join(testDir, "delegations", `${delegation.id}.md`)
@@ -217,46 +260,69 @@ describe("DelegationManager", () => {
 
   describe("fail", () => {
     test("marks delegation as failed", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const createResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
-      const success = await manager.fail(delegation.id, "Something went wrong")
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(success).toBe(true)
+      const delegation = createResult.value
+      const failResult = await manager.fail(delegation.id, "Something went wrong")
 
-      const updated = await manager.get(delegation.id)
-      expect(updated!.status).toBe("failed")
-      expect(updated!.error).toBe("Something went wrong")
+      expect(failResult.ok).toBe(true)
+      if (!failResult.ok) return
+
+      const getResult = await manager.get(delegation.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.status).toBe("failed")
+      expect(getResult.value.error).toBe("Something went wrong")
     })
   })
 
   describe("cancel", () => {
     test("cancels a pending delegation", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const createResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
-      const success = await manager.cancel(delegation.id)
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(success).toBe(true)
+      const delegation = createResult.value
+      const cancelResult = await manager.cancel(delegation.id)
 
-      const updated = await manager.get(delegation.id)
-      expect(updated!.status).toBe("cancelled")
+      expect(cancelResult.ok).toBe(true)
+      if (!cancelResult.ok) return
+
+      const getResult = await manager.get(delegation.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.status).toBe("cancelled")
     })
 
     test("cannot cancel completed delegation", async () => {
-      const delegation = await manager.create("test-project", createOptions({
+      const createResult = await manager.create("test-project", testDir, createOptions({
         issueId: "issue-123",
         prompt: "Test prompt",
       }))
 
-      await manager.complete(delegation.id, "Done")
-      const success = await manager.cancel(delegation.id)
+      expect(createResult.ok).toBe(true)
+      if (!createResult.ok) return
 
-      expect(success).toBe(false)
+      const delegation = createResult.value
+      await manager.complete(delegation.id, "Done")
+      const cancelResult = await manager.cancel(delegation.id)
+
+      expect(cancelResult.ok).toBe(false)
+      if (cancelResult.ok) return
+
+      expect(cancelResult.error.type).toBe("already_completed")
     })
   })
 
@@ -268,7 +334,7 @@ describe("DelegationManager", () => {
     })
 
     test("returns false when delegations are pending", async () => {
-      await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-123", prompt: "Prompt" }))
 
       const allComplete = await manager.areAllComplete("issue-123")
 
@@ -276,11 +342,14 @@ describe("DelegationManager", () => {
     })
 
     test("returns true when all delegations are complete", async () => {
-      const d1 = await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 1" }))
-      const d2 = await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 2" }))
+      const d1Result = await manager.create("test-project", testDir, createOptions({ issueId: "issue-123", prompt: "Prompt 1" }))
+      const d2Result = await manager.create("test-project", testDir, createOptions({ issueId: "issue-123", prompt: "Prompt 2" }))
 
-      await manager.complete(d1.id, "Done 1")
-      await manager.complete(d2.id, "Done 2")
+      expect(d1Result.ok && d2Result.ok).toBe(true)
+      if (!d1Result.ok || !d2Result.ok) return
+
+      await manager.complete(d1Result.value.id, "Done 1")
+      await manager.complete(d2Result.value.id, "Done 2")
 
       const allComplete = await manager.areAllComplete("issue-123")
 
@@ -290,10 +359,13 @@ describe("DelegationManager", () => {
 
   describe("getActiveDelegations", () => {
     test("returns only pending/running delegations", async () => {
-      const d1 = await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 1" }))
-      await manager.create("test-project", createOptions({ issueId: "issue-123", prompt: "Prompt 2" }))
+      const d1Result = await manager.create("test-project", testDir, createOptions({ issueId: "issue-123", prompt: "Prompt 1" }))
+      await manager.create("test-project", testDir, createOptions({ issueId: "issue-123", prompt: "Prompt 2" }))
 
-      await manager.complete(d1.id, "Done")
+      expect(d1Result.ok).toBe(true)
+      if (!d1Result.ok) return
+
+      await manager.complete(d1Result.value.id, "Done")
 
       const active = await manager.getActiveDelegations("issue-123")
 
