@@ -109,6 +109,13 @@
             extraMeta.augment.color = "teal";
           };
 
+          projects = {
+            description = "Project management specialist for planning, tracking, and executing work using the opencode-projects-plugin. Masters team delegation, issue tracking, and multi-agent coordination.";
+            mode = "primary";
+            model = "planning";
+            extraMeta.augment.color = "fuchsia";
+          };
+
           project-planner = {
             description = "Expert project planner who transforms roadmap initiatives into structured project plans. Masters scope definition, resource allocation, risk planning, and stakeholder alignment to set projects up for success before execution begins.";
             model = "planning";
