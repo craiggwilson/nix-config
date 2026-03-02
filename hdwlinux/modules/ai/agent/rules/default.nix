@@ -7,6 +7,11 @@
       let
         # Rule definitions without prompt paths (computed automatically)
         rules = {
+          coding-practices = {
+            description = "Personal coding practices and style guidelines";
+            extraMeta.augment.type = "always_apply";
+          };
+
           github = {
             description = "GitHub access configuration";
             extraMeta.augment.type = "agent_requested";

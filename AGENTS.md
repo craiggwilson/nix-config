@@ -6,17 +6,7 @@ This is a NixOS/Home Manager configuration repository for personal systems using
 
 ### Version Control
 
-**This repository uses Jujutsu (jj), not Git.** Use `jj` commands for all version control operations:
-
-```bash
-jj status          # Check current state
-jj diff            # View changes
-jj new             # Create a new change
-jj describe -m ""  # Add a description to the current change
-jj squash          # Squash changes into parent
-jj log             # View history
-jj git push        # Push to remote
-```
+**This repository uses Jujutsu (jj), not Git.**
 
 **NEVER USE GIT**
 
