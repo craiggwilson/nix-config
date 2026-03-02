@@ -77,13 +77,6 @@
             model = "balanced";
             extraMeta.augment.color = "orange";
           };
-
-          projects = {
-            description = "Project management specialist for planning, tracking, and executing work using the opencode-projects-plugin.";
-            mode = "primary";
-            model = "writer";
-            extraMeta.augment.color = "fuchsia";
-          };
         };
 
         # Add prompt path to each agent based on its name

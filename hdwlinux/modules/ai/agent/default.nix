@@ -178,6 +178,7 @@
             "bat *" = "allow";
             "cat *" = "allow";
             "cd *" = "allow";
+            "cp *" = "allow";
             "echo *" = "allow";
             "find *" = "allow";
             "grep *" = "allow";
@@ -185,9 +186,12 @@
             "jj *" = "allow";
             "jq *" = "allow";
             "ls *" = "allow";
+            "mkdir *" = "allow";
+            "mv *" = "allow";
             "nix *" = "allow";
             "pwd *" = "allow";
             "rg *" = "allow";
+            "rm *" = "allow";
             "sleep *" = "allow";
             "sort *" = "allow";
             "tail *" = "allow";

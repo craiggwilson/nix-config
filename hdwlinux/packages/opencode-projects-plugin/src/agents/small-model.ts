@@ -60,7 +60,7 @@ function isStringResponse(data: unknown): data is string {
 /**
  * Extract text from API response using type guards
  */
-function extractTextFromResponse(data: unknown): Result<string> {
+function extractTextFromResponse(data: unknown): Result<string, string> {
   if (isStringResponse(data)) {
     return { ok: true, value: data }
   }
@@ -86,7 +86,7 @@ function extractTextFromResponse(data: unknown): Result<string> {
 function extractAndValidateJson<T>(
   responseText: string,
   schema: z.ZodType<T>
-): Result<T> {
+): Result<T, string> {
   const jsonMatch = responseText.match(/\{[\s\S]*\}/)
   if (!jsonMatch) {
     return { ok: false, error: "No JSON found in response" }
@@ -130,7 +130,7 @@ export async function promptSmallModel<T>(
   client: OpencodeClient,
   log: Logger,
   options: SmallModelOptions<T>
-): Promise<Result<T>> {
+): Promise<Result<T, string>> {
   const { prompt, timeoutMs, sessionTitle = "Small Model Query", schema } = options
 
   let sessionId: string | undefined

@@ -7,9 +7,12 @@ export { buildIssueTree, renderTree, renderIssueTree } from "./tree-renderer.js"
 export type {
   IssueStorage,
   Issue,
+  IssueStatus,
   CreateIssueOptions,
+  ListIssuesOptions,
   UpdateIssueOptions,
   CompletionCommentOptions,
+  IssueDelegationMetadata,
   ProjectStatus,
   IssueStorageError,
 } from "./issue-storage.js"

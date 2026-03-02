@@ -22,6 +22,7 @@ import { formatDelegationError, type DelegationError } from "../utils/errors/ind
 import { promptSmallModel } from "../agents/index.js"
 import { metadataGenerationTemplate } from "../utils/prompts/index.js"
 import type { Result } from "../utils/result/index.js"
+import type { VCSType } from "../vcs/index.js"
 
 /**
  * Zod schema for metadata generation response
@@ -64,7 +65,7 @@ export interface Delegation {
   /** Branch name in the worktree */
   worktreeBranch?: string
   /** Version control system type */
-  vcs?: "git" | "jj"
+  vcs?: VCSType
   /** Current lifecycle status */
   status: DelegationStatus
   /** OpenCode session ID for this delegation */

@@ -69,7 +69,7 @@ describe("Error Mapping", () => {
 
     expect(storageError).toBeInstanceOf(StorageTimeoutError)
     expect(storageError.code).toBe("STORAGE_TIMEOUT")
-    expect(storageError.timeoutMs).toBe(5000)
+    expect((storageError as StorageTimeoutError).timeoutMs).toBe(5000)
   })
 
   test("storage errors have no beads references", () => {

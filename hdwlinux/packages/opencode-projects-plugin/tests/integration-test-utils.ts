@@ -14,7 +14,6 @@ import { $ } from "bun"
 import { ConfigManager } from "../src/config/index.js"
 import { ProjectManager, FocusManager } from "../src/projects/index.js"
 import { InMemoryIssueStorage } from "../src/issues/inmemory/index.js"
-import { IssueManager } from "../src/issues/issue-manager.js"
 import { DelegationManager } from "../src/execution/delegation-manager.js"
 import { TeamManager, type TeamConfig } from "../src/execution/team-manager.js"
 import { WorktreeManager } from "../src/vcs/index.js"
@@ -166,7 +165,8 @@ export function createMockClient(options?: {
       },
       prompt: async (opts) => {
         const sessionId = opts?.path?.id || "unknown"
-        const text = opts?.body?.parts?.[0]?.type === "text" ? opts.body.parts[0].text : ""
+        const firstPart = opts?.body?.parts?.[0]
+        const text = firstPart?.type === "text" && firstPart.text ? firstPart.text : ""
         calls.prompts.push({
           sessionId,
           agent: opts?.body?.agent,
@@ -210,7 +210,6 @@ export interface IntegrationTestFixture {
   config: ConfigManager
   focus: FocusManager
   issueStorage: InMemoryIssueStorage
-  issueManager: IssueManager
   projectManager: ProjectManager
   delegationManager: DelegationManager
   teamManager: TeamManager
@@ -254,7 +253,6 @@ export async function createIntegrationFixture(options?: {
   const config = await ConfigManager.loadOrThrow()
   const focus = new FocusManager()
   const issueStorage = new InMemoryIssueStorage({ prefix: "int" })
-  const issueManager = new IssueManager(issueStorage, focus, logger)
   const testShell = createTestShell()
   const worktreeManager = new WorktreeManager(repoDir, testShell, logger)
 
@@ -298,7 +296,6 @@ export async function createIntegrationFixture(options?: {
     config,
     focus,
     issueStorage,
-    issueManager,
     projectManager,
     delegationManager,
     teamManager,

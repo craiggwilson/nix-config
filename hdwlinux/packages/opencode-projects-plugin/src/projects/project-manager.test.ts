@@ -161,8 +161,10 @@ describe("ProjectManager", () => {
 
 
       await manager.createIssue(result.projectId, "Open Issue")
-      const claimedId = await manager.createIssue(result.projectId, "Claimed Issue")
-      await manager.claimIssue(result.projectId, claimedId!)
+      const claimedResult = await manager.createIssue(result.projectId, "Claimed Issue")
+      expect(claimedResult.ok).toBe(true)
+      if (!claimedResult.ok) return
+      await manager.claimIssue(result.projectId, claimedResult.value)
 
       const status = await manager.getProjectStatus(result.projectId)
 
@@ -205,14 +207,15 @@ describe("ProjectManager", () => {
     test("creates and retrieves issues", async () => {
       const result = await manager.createProject({ name: "Issue Ops Test", storage: "local" })
 
-      const issueId = await manager.createIssue(result.projectId, "Test Issue", {
+      const issueResult = await manager.createIssue(result.projectId, "Test Issue", {
         priority: 1,
         description: "Test description",
       })
 
-      expect(issueId).not.toBeNull()
+      expect(issueResult.ok).toBe(true)
+      if (!issueResult.ok) return
 
-      const issue = await manager.getIssue(result.projectId, issueId!)
+      const issue = await manager.getIssue(result.projectId, issueResult.value)
       expect(issue?.title).toBe("Test Issue")
       expect(issue?.priority).toBe(1)
     })
@@ -230,34 +233,40 @@ describe("ProjectManager", () => {
 
     test("claims issue", async () => {
       const result = await manager.createProject({ name: "Claim Test", storage: "local" })
-      const issueId = await manager.createIssue(result.projectId, "Claimable")
+      const issueResult = await manager.createIssue(result.projectId, "Claimable")
+      expect(issueResult.ok).toBe(true)
+      if (!issueResult.ok) return
 
-      const claimed = await manager.claimIssue(result.projectId, issueId!)
+      const claimed = await manager.claimIssue(result.projectId, issueResult.value)
 
       expect(claimed).toBe(true)
 
-      const issue = await manager.getIssue(result.projectId, issueId!)
+      const issue = await manager.getIssue(result.projectId, issueResult.value)
       expect(issue?.status).toBe("in_progress")
     })
 
     test("gets ready issues", async () => {
       const result = await manager.createProject({ name: "Ready Test", storage: "local" })
 
-      const blockerId = await manager.createIssue(result.projectId, "Blocker")
-      const blockedId = await manager.createIssue(result.projectId, "Blocked")
-      const readyId = await manager.createIssue(result.projectId, "Ready")
+      const blockerResult = await manager.createIssue(result.projectId, "Blocker")
+      const blockedResult = await manager.createIssue(result.projectId, "Blocked")
+      const readyResult = await manager.createIssue(result.projectId, "Ready")
 
+      expect(blockerResult.ok).toBe(true)
+      expect(blockedResult.ok).toBe(true)
+      expect(readyResult.ok).toBe(true)
+      if (!blockerResult.ok || !blockedResult.ok || !readyResult.ok) return
 
       const projectDir = await manager.getProjectDir(result.projectId)
-      const depResult = await issueStorage.addDependency(blockedId!, blockerId!, projectDir!)
+      const depResult = await issueStorage.addDependency(blockedResult.value, blockerResult.value, projectDir!)
       expect(depResult.ok).toBe(true)
 
       const ready = await manager.getReadyIssues(result.projectId)
 
 
-      expect(ready.map((i) => i.id)).toContain(readyId!)
-      expect(ready.map((i) => i.id)).toContain(blockerId!)
-      expect(ready.map((i) => i.id)).not.toContain(blockedId!)
+      expect(ready.map((i) => i.id)).toContain(readyResult.value)
+      expect(ready.map((i) => i.id)).toContain(blockerResult.value)
+      expect(ready.map((i) => i.id)).not.toContain(blockedResult.value)
     })
   })
 

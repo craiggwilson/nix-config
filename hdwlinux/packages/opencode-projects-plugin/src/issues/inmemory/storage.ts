@@ -13,9 +13,12 @@ import type {
   CreateIssueOptions,
   ListIssuesOptions,
   ProjectStatus,
+  IssueStorageError,
+  UpdateIssueOptions,
+  IssueDelegationMetadata,
 } from "../issue-storage.js"
+import { StorageOperationError } from "../issue-storage.js"
 import type { Result } from "../../utils/result/index.js"
-import { BeadsCommandFailedError, type BeadsError } from "../beads/index.js"
 
 /**
  * Generate a short random ID
@@ -72,17 +75,17 @@ export class InMemoryIssueStorage implements IssueStorage {
     return generateId(this.prefix)
   }
 
-  async isAvailable(): Promise<Result<boolean, BeadsError>> {
+  async isAvailable(): Promise<Result<boolean, IssueStorageError>> {
     return { ok: true, value: true }
   }
 
-  async init(projectDir: string, _options?: { stealth?: boolean }): Promise<Result<void, BeadsError>> {
+  async init(projectDir: string, _options?: { stealth?: boolean }): Promise<Result<void, IssueStorageError>> {
     this.initialized.add(projectDir)
     this.getProjectIssues(projectDir)
     return { ok: true, value: undefined }
   }
 
-  async isInitialized(projectDir: string): Promise<Result<boolean, BeadsError>> {
+  async isInitialized(projectDir: string): Promise<Result<boolean, IssueStorageError>> {
     return { ok: true, value: this.initialized.has(projectDir) }
   }
 
@@ -90,7 +93,7 @@ export class InMemoryIssueStorage implements IssueStorage {
     projectDir: string,
     title: string,
     options?: CreateIssueOptions
-  ): Promise<Result<string, BeadsError>> {
+  ): Promise<Result<string, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const id = this.generateIssueId(projectDir, options?.parent)
 
@@ -111,16 +114,16 @@ export class InMemoryIssueStorage implements IssueStorage {
     return { ok: true, value: id }
   }
 
-  async getIssue(issueId: string, projectDir: string): Promise<Result<Issue, BeadsError>> {
+  async getIssue(issueId: string, projectDir: string): Promise<Result<Issue, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const issue = issues.get(issueId)
     if (!issue) {
-      return { ok: false, error: new BeadsCommandFailedError(`Issue ${issueId} not found`, "", 1, "Check that the issue ID is correct") }
+      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
     }
     return { ok: true, value: issue }
   }
 
-  async listIssues(projectDir: string, options?: ListIssuesOptions): Promise<Result<Issue[], BeadsError>> {
+  async listIssues(projectDir: string, options?: ListIssuesOptions): Promise<Result<Issue[], IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     let result = Array.from(issues.values())
 
@@ -139,7 +142,7 @@ export class InMemoryIssueStorage implements IssueStorage {
     return { ok: true, value: result }
   }
 
-  async getReadyIssues(projectDir: string): Promise<Result<Issue[], BeadsError>> {
+  async getReadyIssues(projectDir: string): Promise<Result<Issue[], IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const allIssues = Array.from(issues.values())
 
@@ -158,12 +161,12 @@ export class InMemoryIssueStorage implements IssueStorage {
     return { ok: true, value: readyIssues }
   }
 
-  async claimIssue(issueId: string, projectDir: string, assignee?: string): Promise<Result<void, BeadsError>> {
+  async claimIssue(issueId: string, projectDir: string, assignee?: string): Promise<Result<void, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const issue = issues.get(issueId)
 
     if (!issue) {
-      return { ok: false, error: new BeadsCommandFailedError(`Issue ${issueId} not found`, "", 1, "Check that the issue ID is correct") }
+      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
     }
 
     issue.status = "in_progress"
@@ -175,12 +178,12 @@ export class InMemoryIssueStorage implements IssueStorage {
     return { ok: true, value: undefined }
   }
 
-  async updateStatus(issueId: string, status: IssueStatus, projectDir: string): Promise<Result<void, BeadsError>> {
+  async updateStatus(issueId: string, status: IssueStatus, projectDir: string): Promise<Result<void, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const issue = issues.get(issueId)
 
     if (!issue) {
-      return { ok: false, error: new BeadsCommandFailedError(`Issue ${issueId} not found`, "", 1, "Check that the issue ID is correct") }
+      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
     }
 
     issue.status = status
@@ -192,13 +195,13 @@ export class InMemoryIssueStorage implements IssueStorage {
   async updateIssue(
     issueId: string,
     projectDir: string,
-    options: import("../issue-storage.js").UpdateIssueOptions
-  ): Promise<Result<void, BeadsError>> {
+    options: UpdateIssueOptions
+  ): Promise<Result<void, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const issue = issues.get(issueId)
 
     if (!issue) {
-      return { ok: false, error: new BeadsCommandFailedError(`Issue ${issueId} not found`, "", 1, "Check that the issue ID is correct") }
+      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
     }
 
     if (options.status !== undefined) {
@@ -225,13 +228,13 @@ export class InMemoryIssueStorage implements IssueStorage {
     return { ok: true, value: undefined }
   }
 
-  async addDependency(childId: string, parentId: string, projectDir: string): Promise<Result<void, BeadsError>> {
+  async addDependency(childId: string, parentId: string, projectDir: string): Promise<Result<void, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const child = issues.get(childId)
     const parent = issues.get(parentId)
 
     if (!child || !parent) {
-      return { ok: false, error: new BeadsCommandFailedError("Issue not found", "", 1, "Check that both issue IDs are correct") }
+      return { ok: false, error: new StorageOperationError("Issue not found", "Check that both issue IDs are correct") }
     }
 
     if (!child.blockedBy) {
@@ -247,8 +250,7 @@ export class InMemoryIssueStorage implements IssueStorage {
   }
 
 
-  private delegationMetadata: Map<string, import("../issue-storage.js").IssueDelegationMetadata> =
-    new Map()
+  private delegationMetadata: Map<string, IssueDelegationMetadata> = new Map()
 
   private getDelegationKey(issueId: string, projectDir: string): string {
     return `${projectDir}:${issueId}`
@@ -257,8 +259,8 @@ export class InMemoryIssueStorage implements IssueStorage {
   async setDelegationMetadata(
     issueId: string,
     projectDir: string,
-    metadata: import("../issue-storage.js").IssueDelegationMetadata
-  ): Promise<Result<void, BeadsError>> {
+    metadata: IssueDelegationMetadata
+  ): Promise<Result<void, IssueStorageError>> {
     const key = this.getDelegationKey(issueId, projectDir)
     this.delegationMetadata.set(key, metadata)
     return { ok: true, value: undefined }
@@ -267,12 +269,12 @@ export class InMemoryIssueStorage implements IssueStorage {
   async getDelegationMetadata(
     issueId: string,
     projectDir: string
-  ): Promise<Result<import("../issue-storage.js").IssueDelegationMetadata | null, BeadsError>> {
+  ): Promise<Result<IssueDelegationMetadata | null, IssueStorageError>> {
     const key = this.getDelegationKey(issueId, projectDir)
     return { ok: true, value: this.delegationMetadata.get(key) || null }
   }
 
-  async clearDelegationMetadata(issueId: string, projectDir: string): Promise<Result<void, BeadsError>> {
+  async clearDelegationMetadata(issueId: string, projectDir: string): Promise<Result<void, IssueStorageError>> {
     const key = this.getDelegationKey(issueId, projectDir)
     this.delegationMetadata.delete(key)
     return { ok: true, value: undefined }
@@ -281,7 +283,7 @@ export class InMemoryIssueStorage implements IssueStorage {
 
   private comments: Map<string, string[]> = new Map()
 
-  async addComment(issueId: string, projectDir: string, comment: string): Promise<Result<void, BeadsError>> {
+  async addComment(issueId: string, projectDir: string, comment: string): Promise<Result<void, IssueStorageError>> {
     const key = this.getDelegationKey(issueId, projectDir)
     const existing = this.comments.get(key) || []
     existing.push(comment)
@@ -289,7 +291,7 @@ export class InMemoryIssueStorage implements IssueStorage {
     return { ok: true, value: undefined }
   }
 
-  async getProjectStatus(projectDir: string): Promise<Result<ProjectStatus, BeadsError>> {
+  async getProjectStatus(projectDir: string): Promise<Result<ProjectStatus, IssueStorageError>> {
     const issuesResult = await this.listIssues(projectDir)
     if (!issuesResult.ok) return issuesResult
     const issues = issuesResult.value
@@ -331,12 +333,12 @@ export class InMemoryIssueStorage implements IssueStorage {
     }}
   }
 
-  async getChildren(issueId: string, projectDir: string): Promise<Result<Issue[], BeadsError>> {
+  async getChildren(issueId: string, projectDir: string): Promise<Result<Issue[], IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     return { ok: true, value: Array.from(issues.values()).filter((i) => i.parent === issueId) }
   }
 
-  async getTree(projectDir: string, rootId?: string): Promise<Result<Issue[], BeadsError>> {
+  async getTree(projectDir: string, rootId?: string): Promise<Result<Issue[], IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
     const allIssues = Array.from(issues.values())
 

@@ -70,10 +70,11 @@ export function mapBeadsError(error: BeadsError): IssueStorageError {
     )
   }
 
-  // Fallback for unknown error types
+  // Fallback for unknown error types (exhaustive check)
+  const _exhaustive: never = error
   return new StorageOperationError(
-    error.message,
-    error.suggestion,
+    `Unknown error type: ${String(_exhaustive)}`,
+    undefined,
     error
   )
 }

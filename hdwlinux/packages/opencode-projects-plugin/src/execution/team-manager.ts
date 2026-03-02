@@ -56,7 +56,7 @@ export type TeamStatus = "running" | "discussing" | "completed" | "failed"
 /**
  * Lifecycle status of a team member.
  */
-export type TeamMemberStatus = "pending" | "running" | "completed" | "failed"
+export type TeamMemberStatus = "pending" | "running" | "completed" | "failed" | "timeout"
 
 /**
  * A member of a team working on an issue.

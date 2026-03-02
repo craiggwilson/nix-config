@@ -27,6 +27,10 @@ import type { VCSType } from "../vcs/index.js"
 import { PlanningManager } from "../planning/index.js"
 import type { PlanningState, PlanningPhase, PlanningUnderstanding } from "../planning/index.js"
 import type { TeamManager } from "../execution/index.js"
+import { ArtifactRegistry } from "../artifacts/index.js"
+import { SessionManager } from "../sessions/index.js"
+import { ResearchManager } from "../research/index.js"
+import { DecisionManager } from "../decisions/index.js"
 
 /**
  * Project metadata stored in project.json
@@ -44,6 +48,8 @@ export interface ProjectMetadata {
   closeReason?: string
   closeSummary?: string
   status: "active" | "completed" | "archived"
+  /** Override path for research artifacts */
+  researchPath?: string
 }
 
 /**
@@ -101,6 +107,15 @@ function generateProjectId(name: string): string {
  * ProjectManager - encapsulates all project operations
  */
 export class ProjectManager {
+  /** Cached ArtifactRegistry instances per project */
+  private artifactRegistries: Map<string, ArtifactRegistry> = new Map()
+  /** Cached SessionManager instances per project */
+  private sessionManagers: Map<string, SessionManager> = new Map()
+  /** Cached ResearchManager instances per project */
+  private researchManagers: Map<string, ResearchManager> = new Map()
+  /** Cached DecisionManager instances per project */
+  private decisionManagers: Map<string, DecisionManager> = new Map()
+
   constructor(
     private config: ConfigManager,
     private issueStorage: IssueStorage,
@@ -564,6 +579,98 @@ export class ProjectManager {
     if (!manager) return false
 
     return manager.isActive()
+  }
+
+  // ============================================================================
+  // Manager Accessors (lazily created and cached per project)
+  // ============================================================================
+
+  /**
+   * Get the ArtifactRegistry for a project.
+   * Creates and caches the registry if it doesn't exist.
+   */
+  async getArtifactRegistry(projectId: string): Promise<ArtifactRegistry | null> {
+    const projectDir = await this.getProjectDir(projectId)
+    if (!projectDir) return null
+
+    if (!this.artifactRegistries.has(projectId)) {
+      const registry = new ArtifactRegistry(projectDir, this.log)
+      await registry.load()
+      this.artifactRegistries.set(projectId, registry)
+    }
+
+    return this.artifactRegistries.get(projectId) || null
+  }
+
+  /**
+   * Get the SessionManager for a project.
+   * Creates and caches the manager if it doesn't exist.
+   */
+  async getSessionManager(projectId: string): Promise<SessionManager | null> {
+    const projectDir = await this.getProjectDir(projectId)
+    if (!projectDir) return null
+
+    if (!this.sessionManagers.has(projectId)) {
+      const manager = new SessionManager(projectDir, this.log)
+      await manager.load()
+      this.sessionManagers.set(projectId, manager)
+    }
+
+    return this.sessionManagers.get(projectId) || null
+  }
+
+  /**
+   * Get the ResearchManager for a project.
+   * Creates and caches the manager if it doesn't exist.
+   */
+  async getResearchManager(projectId: string): Promise<ResearchManager | null> {
+    const projectDir = await this.getProjectDir(projectId)
+    if (!projectDir) return null
+
+    const artifactRegistry = await this.getArtifactRegistry(projectId)
+    if (!artifactRegistry) return null
+
+    if (!this.researchManagers.has(projectId)) {
+      const metadata = await this.getProjectMetadata(projectId)
+      const researchPath = metadata?.researchPath
+
+      const manager = new ResearchManager(projectDir, artifactRegistry, this.log, researchPath)
+      await manager.load()
+      this.researchManagers.set(projectId, manager)
+    }
+
+    return this.researchManagers.get(projectId) || null
+  }
+
+  /**
+   * Get the DecisionManager for a project.
+   * Creates and caches the manager if it doesn't exist.
+   */
+  async getDecisionManager(projectId: string): Promise<DecisionManager | null> {
+    const projectDir = await this.getProjectDir(projectId)
+    if (!projectDir) return null
+
+    const artifactRegistry = await this.getArtifactRegistry(projectId)
+    if (!artifactRegistry) return null
+
+    if (!this.decisionManagers.has(projectId)) {
+      const manager = new DecisionManager(projectDir, artifactRegistry, this.log)
+      await manager.load()
+      this.decisionManagers.set(projectId, manager)
+    }
+
+    return this.decisionManagers.get(projectId) || null
+  }
+
+  /**
+   * Get project metadata by ID.
+   * Convenience method that loads metadata from the project directory.
+   */
+  async getProjectMetadata(projectId: string): Promise<ProjectMetadata | null> {
+    const projectDir = await this.findProjectDir(projectId)
+    if (!projectDir) return null
+
+    return this.loadProjectMetadata(projectDir)
   }
 
   /**

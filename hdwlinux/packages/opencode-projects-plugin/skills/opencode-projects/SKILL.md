@@ -1,6 +1,6 @@
 ---
 name: opencode-projects
-description: Comprehensive reference for the opencode-projects-plugin including tool parameters, workflow examples, team composition strategies, worktree management, and troubleshooting guides.
+description: Comprehensive reference for the opencode-projects-plugin including tool parameters, workflow examples, team composition strategies, artifact management, session continuity, worktree management, and troubleshooting guides.
 ---
 
 # OpenCode Projects Skill
@@ -344,6 +344,129 @@ Reads the result of a delegation by ID.
 
 ---
 
+### project-record-decision
+
+Records a decision with rationale and alternatives considered.
+
+**Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `title` | string | Yes | - | Decision title (e.g., "Use OAuth2 over SAML") |
+| `decision` | string | Yes | - | What was decided |
+| `rationale` | string | Yes | - | Why this decision was made |
+| `status` | `"proposed"` \| `"decided"` \| `"rejected"` \| `"deferred"` | No | `"decided"` | Decision status |
+| `alternatives` | array | No | - | Alternatives considered (see below) |
+| `sourceResearch` | string[] | No | - | Research artifact IDs that informed this |
+| `relatedIssues` | string[] | No | - | Related issue IDs |
+| `projectId` | string | No | focused | Project for the decision |
+
+**Alternative Object:**
+
+```json
+{
+  "name": "Alternative name",
+  "description": "What this alternative entails",
+  "whyRejected": "Why it was not chosen"
+}
+```
+
+**Decision Statuses:**
+
+- `proposed`: Under consideration, not yet final
+- `decided`: Final decision made
+- `rejected`: Explicitly rejected (useful for documenting what NOT to do)
+- `deferred`: Postponed for later consideration
+- `superseded`: Replaced by a newer decision (set via status update)
+
+**Example:**
+
+```json
+{
+  "title": "Use OAuth2 with PKCE over SAML",
+  "decision": "Implement OAuth2 with PKCE flow for user authentication instead of SAML",
+  "rationale": "OAuth2 has better mobile/SPA support, PKCE provides security without client secrets, simpler implementation",
+  "status": "decided",
+  "alternatives": [
+    {
+      "name": "SAML 2.0",
+      "description": "Enterprise standard with strong SSO support",
+      "whyRejected": "XML-based complexity, poor mobile support, requires more infrastructure"
+    },
+    {
+      "name": "OpenID Connect only",
+      "description": "Pure OIDC without OAuth2 token flows",
+      "whyRejected": "Need OAuth2 tokens for API authorization"
+    }
+  ],
+  "sourceResearch": ["research-auth-patterns-abc123"],
+  "relatedIssues": ["bd-a3f8", "bd-a3f8.1"]
+}
+```
+
+**Returns:** Decision record with ID and file location.
+
+**Notes:**
+- Decisions are immutable once recorded
+- Automatically linked to current session
+- Registered in artifact registry with type="decision"
+- Decision file created in `projectDir/decisions/`
+
+---
+
+### project-save-artifact
+
+Registers an artifact in the project registry for tracking and context.
+
+**Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `title` | string | Yes | - | Artifact title |
+| `type` | string | Yes | - | Artifact type (see below) |
+| `path` | string | Yes | - | Path to the artifact file |
+| `summary` | string | No | - | Brief description |
+| `sourceIssue` | string | No | - | Issue that produced this artifact |
+| `projectId` | string | No | focused | Project for the artifact |
+
+**Common Artifact Types:**
+
+| Type | Description |
+|------|-------------|
+| `research` | Analysis, findings, exploration results |
+| `decision` | Decision records (auto-registered by project-record-decision) |
+| `deliverable` | Code, documentation, configs in user's workspace |
+| `plan` | Architecture docs, roadmaps, risk registers |
+| `documentation` | User-facing documentation |
+
+**Path Handling:**
+
+- **Relative paths**: Resolved relative to current working directory
+- **Absolute paths**: Used as-is
+- **External artifacts**: Paths outside projectDir are marked as external
+
+**Example:**
+
+```json
+{
+  "title": "Authentication Patterns Research",
+  "type": "research",
+  "path": "research/auth-patterns.md",
+  "summary": "Analysis of OAuth2, SAML, and OIDC patterns for multi-tenant SaaS",
+  "sourceIssue": "bd-a3f8.1"
+}
+```
+
+**Returns:** Artifact record with ID and registration details.
+
+**Notes:**
+- Artifact file must already exist at the specified path
+- Automatically linked to current session
+- Artifacts are immutable (path and content don't change)
+- Index files are regenerated to include new artifacts
+
+---
+
 ## Workflow Examples
 
 ### Example 1: Research Task
@@ -473,6 +596,223 @@ User has multiple independent tasks to complete.
 
 5. All work completes in parallel, faster than sequential
 ```
+
+---
+
+## Artifact and Session Management
+
+### Project Directory Structure
+
+When artifacts and sessions are enabled, the project directory contains:
+
+```
+projectDir/
+├── project.json              # Project metadata
+├── planning.json             # Planning state
+├── artifacts.json            # Artifact registry
+├── sessions/
+│   ├── index.md              # Session history with open questions, what's next
+│   └── {seq}-{id}-{date}.md  # Individual session summaries
+├── research/
+│   ├── index.md              # Research index with summaries
+│   └── {slug}.md             # Research documents
+├── decisions/
+│   ├── index.md              # Decision log
+│   └── {date}-{slug}.md      # Decision records
+└── delegations/              # Delegation results
+```
+
+### Session Capture
+
+Sessions are automatically captured when the conversation compacts.
+
+**What's Captured:**
+
+| Field | Description |
+|-------|-------------|
+| `summary` | 2-3 sentence overview |
+| `keyPoints` | 3-5 bullet points |
+| `openQuestionsAdded` | Questions raised but not resolved |
+| `decisionsMade` | Links to decision records |
+| `whatsNext` | Concrete next steps |
+
+**Session Index Format:**
+
+```markdown
+# Session History
+
+## Open Questions
+- How should we handle token refresh for offline users?
+- What's the migration path for existing sessions?
+
+## Pending Decisions
+- Authentication provider selection (Auth0 vs Okta vs Keycloak)
+
+## What's Next
+- Complete research on token refresh patterns
+- Make decision on auth provider
+- Begin implementation of OAuth2 flow
+
+---
+
+## Sessions
+
+### 003-ses_xyz789-2026-03-03
+**Summary:** Continued authentication planning...
+**Key Points:**
+- OAuth2 with PKCE confirmed
+- Need to research offline token refresh
+**Link:** [Full session](./003-ses_xyz789-2026-03-03.md)
+
+### 002-ses_abc456-2026-03-02
+...
+```
+
+Sessions are listed most-recent-first so the agent can stop reading earlier if needed.
+
+### Research Management
+
+Research artifacts are managed in `projectDir/research/` (or a custom path).
+
+**Creating Research:**
+
+1. Complete research delegation
+2. Save the research document
+3. Register with `project-save-artifact`:
+
+```json
+{
+  "title": "Token Refresh Strategies",
+  "type": "research",
+  "path": "research/token-refresh.md",
+  "summary": "Analysis of offline token refresh patterns",
+  "sourceIssue": "bd-a3f8.3"
+}
+```
+
+**Research Index:**
+
+The research index (`research/index.md`) is automatically regenerated with:
+- Summary table of all research
+- Individual entries with key findings
+- Links to full documents
+
+**Custom Research Path:**
+
+Set `researchPath` when creating the project to store research elsewhere:
+
+```json
+{
+  "name": "auth-system",
+  "researchPath": "/path/to/project/docs/research"
+}
+```
+
+External research is linked in the index but stored at the specified location.
+
+### Decision Management
+
+Decisions are recorded in `projectDir/decisions/`.
+
+**Recording Decisions:**
+
+Use `project-record-decision` when:
+- An architectural choice is made
+- A technology is selected
+- A design pattern is chosen
+- A constraint is accepted
+
+**Decision Record Format:**
+
+```markdown
+# Decision: Use OAuth2 with PKCE
+
+**Date:** 2026-03-02
+**Status:** Decided
+**Updated:** 2026-03-02T14:30:00Z
+
+## Decision
+
+Use OAuth2 with PKCE flow instead of SAML for user authentication.
+
+## Rationale
+
+- OAuth2 has better mobile/SPA support
+- PKCE provides security without client secrets
+- Simpler implementation and debugging
+
+## Alternatives Considered
+
+### SAML 2.0
+Enterprise standard with strong SSO support.
+**Why rejected:** XML-based complexity, poor mobile support
+
+### OpenID Connect only
+Pure OIDC without OAuth2 token flows.
+**Why rejected:** Need OAuth2 tokens for API authorization
+
+## Sources
+
+- **Session:** [002-ses_abc456-2026-03-02](../sessions/002-ses_abc456-2026-03-02.md)
+- **Research:** [Auth Patterns](../research/auth-patterns.md)
+
+## Related Issues
+
+- bd-a3f8: Authentication System (epic)
+- bd-a3f8.1: Research authentication patterns
+```
+
+**Decision Index:**
+
+The decision index (`decisions/index.md`) contains:
+- Pending decisions needing resolution
+- Decided items (alphabetically sorted)
+- Superseded decisions
+
+### Artifact Registry
+
+All artifacts are tracked in `artifacts.json`:
+
+```json
+{
+  "artifacts": [
+    {
+      "id": "research-auth-patterns-abc123",
+      "type": "research",
+      "title": "Authentication Patterns Analysis",
+      "path": "research/auth-patterns.md",
+      "absolutePath": "/home/user/projects/auth/.projects/auth-system/research/auth-patterns.md",
+      "external": false,
+      "createdAt": "2026-03-02T14:30:00Z",
+      "sourceIssue": "bd-a3f8.1",
+      "sourceSession": "002-ses_abc456-2026-03-02",
+      "summary": "Analysis of OAuth2, SAML, and OIDC patterns"
+    }
+  ]
+}
+```
+
+**Artifact IDs:**
+
+Format: `{type}-{slug}-{random}`
+
+Examples:
+- `research-auth-patterns-abc123`
+- `decision-oauth2-over-saml-def456`
+- `deliverable-auth-middleware-ghi789`
+
+### Context Injection
+
+When a project is focused, the following context is injected:
+
+1. **Project Progress**: Issue counts, blockers
+2. **Recent Sessions**: Last 2-3 session summaries
+3. **Open Questions**: Accumulated from all sessions
+4. **Pending Decisions**: Decisions needing resolution
+5. **What's Next**: From the most recent session
+6. **Artifact Summary**: Compact list of available artifacts by type
+
+This context enables seamless resumption without re-reading project history.
 
 ---
 

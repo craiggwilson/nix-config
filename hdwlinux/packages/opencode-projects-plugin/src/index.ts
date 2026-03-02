@@ -10,6 +10,8 @@
 
 import type { Plugin } from "@opencode-ai/plugin"
 import type { Event } from "@opencode-ai/sdk"
+import { fileURLToPath } from "url"
+import path from "path"
 
 import {
   createProjectCreate,
@@ -22,6 +24,8 @@ import {
   createProjectWorkOnIssue,
   createProjectUpdateIssue,
   createProjectInternalDelegationRead,
+  createProjectRecordDecision,
+  createProjectSaveArtifact,
 } from "./tools/index.js"
 
 import { ConfigManager } from "./config/index.js"
@@ -39,8 +43,10 @@ import {
   buildDelegationCompactionContext,
   buildTeamCompactionContext,
 } from "./projects/index.js"
+import { summarizeSession } from "./sessions/index.js"
 import { DelegationManager, TeamManager, type Delegation, type Team } from "./execution/index.js"
 import { WorktreeManager } from "./vcs/index.js"
+import { OPENCODE_PROJECTS_AGENT_CONFIG } from "./agents/index.js"
 
 // Re-exports removed to avoid plugin loader issues.
 // The plugin loader may try to call each export as a plugin function.
@@ -129,6 +135,8 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       "project-work-on-issue": createProjectWorkOnIssue(projectManager, teamManager, log),
       "project-update-issue": createProjectUpdateIssue(projectManager, log, $),
       "project-internal-delegation-read": createProjectInternalDelegationRead(projectManager, log),
+      "project-record-decision": createProjectRecordDecision(projectManager, log),
+      "project-save-artifact": createProjectSaveArtifact(projectManager, log),
     },
 
     "experimental.chat.system.transform": async (_input, output) => {
@@ -194,6 +202,50 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         const teamContext = buildTeamCompactionContext(sessionTeams)
         output.context.push(teamContext)
       }
+
+      // Capture session summary if we have a session ID
+      if (sessionId) {
+        try {
+          const sessionManager = await projectManager.getSessionManager(projectId)
+          if (sessionManager) {
+            const conversationContent = extractConversationContent(input)
+
+            if (conversationContent) {
+              const metadata = await projectManager.getProjectMetadata(projectId)
+              const planningManager = await projectManager.getPlanningManager(projectId)
+              const planningState = await planningManager?.getState()
+              const planningPhase = planningState?.phase
+
+              const summaryResult = await summarizeSession(typedClient, log, {
+                conversationContent,
+                projectName: metadata?.name,
+                planningPhase,
+                timeoutMs: config.getSmallModelTimeoutMs(),
+              })
+
+              if (summaryResult.ok) {
+                await sessionManager.captureSession({
+                  sessionId,
+                  summary: summaryResult.value.summary,
+                  keyPoints: summaryResult.value.keyPoints,
+                  openQuestionsAdded: summaryResult.value.openQuestionsAdded,
+                  decisionsMade: summaryResult.value.decisionsMade,
+                })
+
+                if (summaryResult.value.whatsNext.length > 0) {
+                  await sessionManager.updateIndex({
+                    whatsNext: summaryResult.value.whatsNext,
+                  })
+                }
+
+                await log.debug(`Session ${sessionId} captured for project ${projectId}`)
+              }
+            }
+          }
+        } catch (error) {
+          await log.warn(`Failed to capture session: ${error}`)
+        }
+      }
     },
 
     "shell.env": async (_input, output) => {
@@ -216,6 +268,43 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
         }
       }
     },
+
+    config: async (opencodeConfig: Record<string, unknown>) => {
+      // Resolve path to bundled skills directory at package root
+      const pluginDir = path.dirname(fileURLToPath(import.meta.url))
+      const packageRoot = path.resolve(pluginDir, "..")
+      const skillsPath = path.resolve(packageRoot, "skills")
+
+      // Plugin-provided agents (plugin config takes precedence)
+      const pluginAgents = {
+        "opencode-projects": OPENCODE_PROJECTS_AGENT_CONFIG,
+      }
+
+      // Plugin-provided skill paths
+      const pluginSkillPaths = [skillsPath]
+
+      // Merge agents (plugin takes precedence by assigning last)
+      if (!opencodeConfig.agent) {
+        opencodeConfig.agent = {}
+      }
+      Object.assign(opencodeConfig.agent as Record<string, unknown>, pluginAgents)
+
+      // Merge skill paths
+      if (!opencodeConfig.skills) {
+        opencodeConfig.skills = { paths: [] }
+      }
+      const skillsConfig = opencodeConfig.skills as { paths?: string[] }
+      if (!skillsConfig.paths) {
+        skillsConfig.paths = []
+      }
+      for (const p of pluginSkillPaths) {
+        if (!skillsConfig.paths.includes(p)) {
+          skillsConfig.paths.push(p)
+        }
+      }
+
+      await log.info(`Registered ${Object.keys(pluginAgents).length} agent(s) and ${pluginSkillPaths.length} skill path(s)`)
+    },
   }
 }
 
@@ -233,6 +322,32 @@ async function buildPlanningContext(
   if (!planningManager) return null
 
   return planningManager.buildContext()
+}
+
+/**
+ * Extract conversation content from compaction input.
+ * The input structure may vary, so we handle multiple formats.
+ */
+function extractConversationContent(input: unknown): string | null {
+  const inputObj = input as Record<string, unknown>
+
+  if (typeof inputObj.content === "string") {
+    return inputObj.content
+  }
+
+  if (typeof inputObj.conversation === "string") {
+    return inputObj.conversation
+  }
+
+  if (Array.isArray(inputObj.messages)) {
+    return inputObj.messages
+      .map((msg: { role?: string; content?: string }) =>
+        `${msg.role || "unknown"}: ${msg.content || ""}`
+      )
+      .join("\n\n")
+  }
+
+  return null
 }
 
 export default ProjectsPlugin

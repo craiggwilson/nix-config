@@ -31,3 +31,8 @@ export {
   metadataGenerationTemplate,
   type MetadataGenerationData,
 } from "./metadata.js"
+
+export {
+  buildSessionSummaryPrompt,
+  type SessionSummaryInput,
+} from "./session-summary.js"

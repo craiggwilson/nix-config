@@ -9,13 +9,13 @@ import * as os from "node:os"
 import {
   type ProjectConfig,
   type ProjectOverrides,
-  type Result,
   DEFAULT_CONFIG,
   BEADS_PATH,
   PROJECTS_PATH,
   parseConfig,
   ConfigValidationError,
 } from "./config-schema.js"
+import type { Result } from "../utils/result/index.js"
 
 const CONFIG_FILENAME = "opencode-projects.json"
 

@@ -26,7 +26,7 @@ describe("BeadsIssueStorage shell initialization", () => {
 
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error.name).toBe("BeadsNotAvailableError")
+      expect(result.error.name).toBe("StorageNotAvailableError")
       expect(result.error.message).toContain("BeadsClient shell not initialized")
     }
   })
@@ -36,7 +36,7 @@ describe("BeadsIssueStorage shell initialization", () => {
 
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error.name).toBe("BeadsNotAvailableError")
+      expect(result.error.name).toBe("StorageNotAvailableError")
       expect(result.error.message).toContain("BeadsClient shell not initialized")
     }
   })
@@ -46,7 +46,7 @@ describe("BeadsIssueStorage shell initialization", () => {
 
     expect(result.ok).toBe(false)
     if (!result.ok) {
-      expect(result.error.name).toBe("BeadsNotAvailableError")
+      expect(result.error.name).toBe("StorageNotAvailableError")
     }
   })
 })

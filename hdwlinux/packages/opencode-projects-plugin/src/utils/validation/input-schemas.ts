@@ -336,6 +336,76 @@ export const ProjectPlanArgsSchema = z.object({
   openQuestions: z.string().max(5000, "Open questions cannot exceed 5000 characters").optional(),
 })
 
+/**
+ * Schema for alternative in decision recording
+ */
+export const AlternativeSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().min(1).max(2000),
+  whyRejected: z.string().max(1000).optional(),
+})
+
+/**
+ * Schema for project-record-decision arguments
+ */
+export const ProjectRecordDecisionArgsSchema = z.object({
+  title: z.string().min(1, "Title cannot be empty").max(200, "Title cannot exceed 200 characters"),
+  decision: z
+    .string()
+    .min(1, "Decision cannot be empty")
+    .max(5000, "Decision cannot exceed 5000 characters"),
+  rationale: z
+    .string()
+    .min(1, "Rationale cannot be empty")
+    .max(5000, "Rationale cannot exceed 5000 characters"),
+  status: z.enum(["proposed", "decided", "rejected", "deferred"]).optional(),
+  alternatives: z
+    .array(AlternativeSchema)
+    .max(10, "Cannot have more than 10 alternatives")
+    .optional(),
+  sourceResearch: z
+    .array(z.string().max(128))
+    .max(20, "Cannot have more than 20 research sources")
+    .optional(),
+  relatedIssues: z.array(IssueIdSchema).max(20, "Cannot have more than 20 related issues").optional(),
+  projectId: OptionalProjectIdSchema,
+})
+
+// ============================================================================
+// Artifact Schemas
+// ============================================================================
+
+/**
+ * Schema for artifact types (e.g., "research", "deliverable", "documentation")
+ */
+export const ArtifactTypeSchema = z
+  .string()
+  .min(1, "Artifact type cannot be empty")
+  .max(50, "Artifact type cannot exceed 50 characters")
+  .regex(/^[a-z][a-z0-9_-]*$/, "Artifact type must be lowercase alphanumeric with hyphens or underscores")
+
+/**
+ * Schema for artifact paths.
+ * Can be relative or absolute, but must not contain traversal sequences.
+ */
+export const ArtifactPathSchema = z
+  .string()
+  .min(1, "Path cannot be empty")
+  .max(4096, "Path cannot exceed 4096 characters")
+  .refine((val) => !val.includes(".."), "Path cannot contain path traversal sequences")
+
+/**
+ * Schema for project-save-artifact arguments
+ */
+export const ProjectSaveArtifactArgsSchema = z.object({
+  title: z.string().min(1, "Title cannot be empty").max(200, "Title cannot exceed 200 characters"),
+  type: ArtifactTypeSchema.describe("Artifact type (e.g., 'research', 'deliverable', 'documentation')"),
+  path: ArtifactPathSchema.describe("Path to the artifact file (relative or absolute)"),
+  summary: z.string().max(2000, "Summary cannot exceed 2000 characters").optional(),
+  sourceIssue: OptionalIssueIdSchema,
+  projectId: OptionalProjectIdSchema,
+})
+
 // ============================================================================
 // Validation Helper Functions
 // ============================================================================
@@ -449,3 +519,5 @@ export type ProjectUpdateIssueArgs = z.infer<typeof ProjectUpdateIssueArgsSchema
 export type ProjectWorkOnIssueArgs = z.infer<typeof ProjectWorkOnIssueArgsSchema>
 export type ProjectDelegationReadArgs = z.infer<typeof ProjectDelegationReadArgsSchema>
 export type ProjectPlanArgs = z.infer<typeof ProjectPlanArgsSchema>
+export type ProjectRecordDecisionArgs = z.infer<typeof ProjectRecordDecisionArgsSchema>
+export type ProjectSaveArtifactArgs = z.infer<typeof ProjectSaveArtifactArgsSchema>
