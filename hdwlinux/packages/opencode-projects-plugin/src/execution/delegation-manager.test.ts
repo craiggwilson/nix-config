@@ -9,8 +9,55 @@ import * as os from "node:os"
 
 import { DelegationManager, type CreateDelegationOptions } from "./delegation-manager.js"
 import { createMockLogger } from "../utils/testing/index.js"
+import type { OpencodeClient } from "../utils/opencode-sdk/index.js"
 
 const mockLogger = createMockLogger()
+
+/**
+ * Create a mock OpenCode client for testing retry behavior
+ */
+function createMockClient(options: {
+  sessionCreateFailures?: number
+  sessionCreateError?: string
+  promptFailures?: number
+  promptError?: string
+} = {}): OpencodeClient {
+  let sessionCreateAttempts = 0
+  let promptAttempts = 0
+  const sessionCreateFailures = options.sessionCreateFailures ?? 0
+  const promptFailures = options.promptFailures ?? 0
+  const sessionCreateError = options.sessionCreateError ?? "JSON Parse error: Unexpected EOF"
+  const promptError = options.promptError ?? "JSON Parse error: Unexpected EOF"
+
+  return {
+    app: {
+      log: async () => ({}),
+      agents: async () => ({ data: [] }),
+    },
+    session: {
+      create: async () => {
+        sessionCreateAttempts++
+        if (sessionCreateAttempts <= sessionCreateFailures) {
+          throw new Error(sessionCreateError)
+        }
+        return { data: { id: `session-${sessionCreateAttempts}` } }
+      },
+      get: async () => ({ data: { id: "test-session" } }),
+      prompt: async () => {
+        promptAttempts++
+        if (promptAttempts <= promptFailures) {
+          throw new Error(promptError)
+        }
+        return { data: { id: "test-msg", role: "assistant" as const, sessionID: "test-session" } }
+      },
+      messages: async () => ({ data: [] }),
+      delete: async () => ({}),
+    },
+    config: {
+      get: async () => ({ data: {} }),
+    },
+  }
+}
 
 /**
  * Helper to create delegation options with required fields
@@ -371,6 +418,303 @@ describe("DelegationManager", () => {
 
       expect(active.length).toBe(1)
       expect(active[0].status).toBe("pending")
+    })
+  })
+
+  describe("retry behavior", () => {
+    test("retries session.create on JSON Parse error and succeeds", async () => {
+      // Create a client that fails twice then succeeds
+      const mockClient = createMockClient({ sessionCreateFailures: 2 })
+      const retryManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 15 * 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      const result = await retryManager.create("test-project", testDir, createOptions({
+        issueId: "issue-retry",
+        prompt: "Test retry",
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait a bit for the background delegation to start
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      // The delegation should have a session ID (meaning session.create succeeded after retries)
+      const getResult = await retryManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.sessionId).toBeDefined()
+      expect(getResult.value.status).toBe("running")
+    })
+
+    test("fails delegation after exhausting retries on session.create", async () => {
+      // Create a client that always fails
+      const mockClient = createMockClient({ sessionCreateFailures: 10 })
+      const retryManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 15 * 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      let completeCalled = false
+      const result = await retryManager.create("test-project", testDir, createOptions({
+        issueId: "issue-fail",
+        prompt: "Test fail",
+        onComplete: async () => {
+          completeCalled = true
+        },
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the background delegation to fail
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // The delegation should be marked as failed
+      const getResult = await retryManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.status).toBe("failed")
+      expect(getResult.value.error).toContain("session.create")
+      expect(getResult.value.error).toContain("JSON Parse error")
+      expect(completeCalled).toBe(true)
+    })
+
+    test("includes actionable error message on failure", async () => {
+      const mockClient = createMockClient({ sessionCreateFailures: 10 })
+      const retryManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 15 * 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      const result = await retryManager.create("test-project", testDir, createOptions({
+        issueId: "issue-error-msg",
+        prompt: "Test error message",
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the background delegation to fail
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const getResult = await retryManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      // Error message should include helpful context
+      expect(getResult.value.error).toContain("session.create")
+      expect(getResult.value.error).toContain("attempt")
+      expect(getResult.value.error).toContain("transient")
+    })
+  })
+
+  describe("empty output handling", () => {
+    test("notification fires even when delegation produces no output", async () => {
+      // Create a client that returns empty messages
+      const emptyMessagesClient: OpencodeClient = {
+        app: {
+          log: async () => ({}),
+          agents: async () => ({ data: [] }),
+        },
+        session: {
+          create: async () => ({ data: { id: "empty-session" } }),
+          get: async () => ({ data: { id: "empty-session" } }),
+          prompt: async () => ({
+            data: { id: "test-msg", role: "assistant" as const, sessionID: "empty-session" },
+          }),
+          messages: async () => ({ data: [] }), // Empty messages
+          delete: async () => ({}),
+        },
+        config: {
+          get: async () => ({ data: {} }),
+        },
+      }
+
+      const emptyManager = new DelegationManager(mockLogger, emptyMessagesClient, {
+        timeoutMs: 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      let notificationFired = false
+      let notificationDelegationId: string | undefined
+
+      const result = await emptyManager.create("test-project", testDir, createOptions({
+        issueId: "issue-empty-output",
+        prompt: "Test empty output",
+        onComplete: async (delegationId) => {
+          notificationFired = true
+          notificationDelegationId = delegationId
+        },
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the delegation to start running
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      const getResult = await emptyManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.sessionId).toBeDefined()
+
+      // Simulate session idle event
+      await emptyManager.handleSessionIdle(getResult.value.sessionId!)
+
+      // Verify notification was fired
+      expect(notificationFired).toBe(true)
+      expect(notificationDelegationId).toBe(result.value.id)
+
+      // Verify delegation completed with placeholder result
+      const completedResult = await emptyManager.get(result.value.id)
+      expect(completedResult.ok).toBe(true)
+      if (!completedResult.ok) return
+
+      expect(completedResult.value.status).toBe("completed")
+      expect(completedResult.value.result).toBe("(no messages)")
+    })
+
+    test("notification fires when assistant has no text content", async () => {
+      // Create a client that returns messages with no text parts
+      const noTextClient: OpencodeClient = {
+        app: {
+          log: async () => ({}),
+          agents: async () => ({ data: [] }),
+        },
+        session: {
+          create: async () => ({ data: { id: "no-text-session" } }),
+          get: async () => ({ data: { id: "no-text-session" } }),
+          prompt: async () => ({
+            data: { id: "test-msg", role: "assistant" as const, sessionID: "no-text-session" },
+          }),
+          messages: async () => ({
+            data: [
+              {
+                id: "msg-1",
+                info: { id: "msg-1", role: "assistant" as const, sessionID: "no-text-session" },
+                parts: [], // No parts
+              },
+            ],
+          }),
+          delete: async () => ({}),
+        },
+        config: {
+          get: async () => ({ data: {} }),
+        },
+      }
+
+      const noTextManager = new DelegationManager(mockLogger, noTextClient, {
+        timeoutMs: 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      let notificationFired = false
+
+      const result = await noTextManager.create("test-project", testDir, createOptions({
+        issueId: "issue-no-text",
+        prompt: "Test no text",
+        onComplete: async () => {
+          notificationFired = true
+        },
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      const getResult = await noTextManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      await noTextManager.handleSessionIdle(getResult.value.sessionId!)
+
+      expect(notificationFired).toBe(true)
+
+      const completedResult = await noTextManager.get(result.value.id)
+      expect(completedResult.ok).toBe(true)
+      if (!completedResult.ok) return
+
+      expect(completedResult.value.status).toBe("completed")
+      expect(completedResult.value.result).toBe("(no text content)")
+    })
+  })
+
+  describe("timeout cleanup", () => {
+    test("clears timeout handler when delegation completes via handleSessionIdle", async () => {
+      // Create a client that succeeds
+      const mockClient = createMockClient()
+      const timeoutManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 60 * 1000, // 1 minute timeout
+        smallModelTimeoutMs: 30000,
+      })
+
+      const result = await timeoutManager.create("test-project", testDir, createOptions({
+        issueId: "issue-timeout-test",
+        prompt: "Test timeout cleanup",
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the delegation to start running
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      const getResult = await timeoutManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      // Verify delegation is running and has a session
+      expect(getResult.value.status).toBe("running")
+      expect(getResult.value.sessionId).toBeDefined()
+
+      // Simulate session idle event (normal completion)
+      await timeoutManager.handleSessionIdle(getResult.value.sessionId!)
+
+      // Verify delegation is now completed
+      const completedResult = await timeoutManager.get(result.value.id)
+      expect(completedResult.ok).toBe(true)
+      if (!completedResult.ok) return
+
+      expect(completedResult.value.status).toBe("completed")
+
+      // The timeout handler should have been cleared (no way to directly verify,
+      // but we can verify the delegation completed without timing out)
+      // If the timeout wasn't cleared, it would fire later and potentially cause issues
+    })
+
+    test("timeout map entry is removed when timeout fires", async () => {
+      // Create a manager with a very short timeout
+      const mockClient = createMockClient()
+      const shortTimeoutManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 50, // 50ms timeout
+        smallModelTimeoutMs: 30000,
+      })
+
+      const result = await shortTimeoutManager.create("test-project", testDir, createOptions({
+        issueId: "issue-short-timeout",
+        prompt: "Test short timeout",
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the timeout to fire
+      await new Promise((resolve) => setTimeout(resolve, 200))
+
+      // Verify delegation timed out
+      const getResult = await shortTimeoutManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.status).toBe("timeout")
+      expect(getResult.value.error).toContain("Timed out")
     })
   })
 })

@@ -10,7 +10,7 @@ import { z } from "zod"
 
 import { promptSmallModel } from "../agents/index.js"
 import type { Logger, OpencodeClient } from "../utils/opencode-sdk/index.js"
-import { buildSessionSummaryPrompt } from "../utils/prompts/templates/session-summary.js"
+import { buildSessionSummaryPrompt } from "../utils/prompts/index.js"
 import type { Result } from "../utils/result/index.js"
 
 /**

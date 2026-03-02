@@ -20,7 +20,7 @@ Creates a new project and initiates the planning process.
 | `name` | string | Yes | - | Project name (used for identification) |
 | `type` | `"roadmap"` \| `"project"` | No | `"project"` | Project type |
 | `workspace` | string | No | current | Workspace/directory for the project |
-| `storage` | `"local"` \| `"global"` | No | `"local"` | Where to store project data |
+| `storage` | `"local"` \| `"global"` | No | `"global"` | Where to store project data |
 | `description` | string | No | - | Brief project description |
 
 **Project Types:**
@@ -253,7 +253,7 @@ Starts work on an issue with a background agent or team.
 
 **Execution Modes:**
 
-- **`foreground=false`** (default): Fire-and-forget. You receive `<delegation-notification>` when complete.
+- **`foreground=false`** (default): Fire-and-forget. You receive `<team-notification>` when complete.
 - **`foreground=true`**: Waits for completion and returns full results inline.
 
 **Examples:**
@@ -487,7 +487,7 @@ User wants to understand how authentication works in the codebase.
 
 4. [Continue other work while delegation runs]
 
-5. [Receive <delegation-notification>]
+5. [Receive <team-notification>]
 
 6. Review findings and close
    project-update-issue(issueId="bd-xxx.1", status="closed",
@@ -946,10 +946,10 @@ When `isolate=true`, the delegation creates an isolated worktree. The completion
 ### Notification Format
 
 ```xml
-<delegation-notification>
-  <delegation-id>del-abc123</delegation-id>
+<team-notification>
+  <team-id>team-abc123</team-id>
   <issue>bd-a3f8.2</issue>
-  <status>complete</status>
+  <status>completed</status>
   <worktree>
     <path>/path/to/worktree</path>
     <branch>project-id/bd-a3f8.2</branch>
@@ -959,7 +959,7 @@ When `isolate=true`, the delegation creates an isolated worktree. The completion
     VCS-specific instructions...
   </merge-instructions>
   <result>Full delegation result...</result>
-</delegation-notification>
+</team-notification>
 ```
 
 ### Jujutsu (jj) Workflow

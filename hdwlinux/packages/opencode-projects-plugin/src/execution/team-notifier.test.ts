@@ -316,4 +316,289 @@ describe("TeamNotifier", () => {
       expect(instructions).toContain("issue-123")
     })
   })
+
+  describe("Non-isolated teams", () => {
+    test("notification excludes worktree info when not isolated", () => {
+      const notifier = new TeamNotifier(mockLogger, undefined as any)
+
+      const team: Team = {
+        id: "team-non-isolated",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-research",
+        members: [
+          { agent: "researcher", role: "primary", status: "completed", retryCount: 0 },
+        ],
+        status: "completed",
+        // No worktreePath, worktreeBranch, or vcs - this is non-isolated
+        discussionRounds: 0,
+        currentRound: 0,
+        results: {
+          researcher: {
+            agent: "researcher",
+            result: "Research findings complete",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        discussionHistory: [],
+        startedAt: "2024-01-01T00:00:00Z",
+        completedAt: "2024-01-01T01:00:00Z",
+      }
+
+      const notification = notifier.buildTeamNotification(team)
+
+      // Should NOT contain worktree-related elements
+      expect(notification).not.toContain("<worktree>")
+      expect(notification).not.toContain("<merge-instructions>")
+      expect(notification).not.toContain("<path>")
+      expect(notification).not.toContain("<branch>")
+      expect(notification).not.toContain("<vcs>")
+
+      // Should still contain basic notification structure
+      expect(notification).toContain("<team-notification>")
+      expect(notification).toContain("<team-id>team-non-isolated</team-id>")
+      expect(notification).toContain("<issue>issue-research</issue>")
+      expect(notification).toContain("<status>completed</status>")
+      expect(notification).toContain("Research findings complete")
+    })
+
+    test("getMergeInstructions returns null for non-isolated team", () => {
+      const notifier = new TeamNotifier(mockLogger, undefined as any)
+
+      const team: Team = {
+        id: "team-no-worktree",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [],
+        status: "completed",
+        // No worktreePath or vcs
+        discussionRounds: 0,
+        currentRound: 0,
+        results: {},
+        discussionHistory: [],
+        startedAt: "2024-01-01T00:00:00Z",
+      }
+
+      const instructions = notifier.getMergeInstructions(team)
+
+      expect(instructions).toBeNull()
+    })
+
+    test("foreground non-isolated team notification has results inline", () => {
+      const notifier = new TeamNotifier(mockLogger, undefined as any)
+
+      const team: Team = {
+        id: "team-fg-non-isolated",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-analysis",
+        members: [
+          { agent: "analyst", role: "primary", status: "completed", retryCount: 0 },
+        ],
+        status: "completed",
+        foreground: true,
+        discussionRounds: 0,
+        currentRound: 0,
+        results: {
+          analyst: {
+            agent: "analyst",
+            result: "Analysis complete: 5 recommendations",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        discussionHistory: [],
+        startedAt: "2024-01-01T00:00:00Z",
+        completedAt: "2024-01-01T01:00:00Z",
+      }
+
+      const notification = notifier.buildTeamNotification(team)
+
+      // Results should be included
+      expect(notification).toContain("Analysis complete: 5 recommendations")
+      // No worktree info
+      expect(notification).not.toContain("<worktree>")
+      expect(notification).not.toContain("<merge-instructions>")
+    })
+  })
+
+  describe("Multi-agent team notifications", () => {
+    test("2-agent team notification includes both members", () => {
+      const notifier = new TeamNotifier(mockLogger, undefined as any)
+
+      const team: Team = {
+        id: "team-2-agent",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [
+          { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+        ],
+        status: "completed",
+        discussionRounds: 1,
+        currentRound: 1,
+        results: {
+          implementer: {
+            agent: "implementer",
+            result: "Feature implemented",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+          reviewer: {
+            agent: "reviewer",
+            result: "Code review passed",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        discussionHistory: [
+          {
+            round: 1,
+            responses: {
+              implementer: "Addressed review comments",
+              reviewer: "Changes look good",
+            },
+          },
+        ],
+        startedAt: "2024-01-01T00:00:00Z",
+        completedAt: "2024-01-01T01:00:00Z",
+      }
+
+      const notification = notifier.buildTeamNotification(team)
+
+      // Both members should be present
+      expect(notification).toContain('<member agent="implementer" role="primary">')
+      expect(notification).toContain('<member agent="reviewer" role="secondary">')
+      // Both results should be present
+      expect(notification).toContain("Feature implemented")
+      expect(notification).toContain("Code review passed")
+      // Discussion should be present
+      expect(notification).toContain('<discussion rounds="1">')
+      expect(notification).toContain("Addressed review comments")
+      expect(notification).toContain("Changes look good")
+    })
+
+    test("3-agent team notification includes devil's advocate role", () => {
+      const notifier = new TeamNotifier(mockLogger, undefined as any)
+
+      const team: Team = {
+        id: "team-3-agent",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [
+          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+        ],
+        status: "completed",
+        discussionRounds: 2,
+        currentRound: 2,
+        results: {
+          "typescript-expert": {
+            agent: "typescript-expert",
+            result: "Auth flow implemented",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+          "code-reviewer": {
+            agent: "code-reviewer",
+            result: "Code structure approved",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+          "security-expert": {
+            agent: "security-expert",
+            result: "## Concerns\n- Input validation\n\n## Verdict\nApproved with changes",
+            completedAt: "2024-01-01T00:00:00Z",
+          },
+        },
+        discussionHistory: [
+          {
+            round: 1,
+            responses: {
+              "typescript-expert": "Initial implementation",
+              "code-reviewer": "Structure looks good",
+              "security-expert": "Security concerns raised",
+            },
+          },
+          {
+            round: 2,
+            responses: {
+              "typescript-expert": "Security fixes applied",
+              "code-reviewer": "Fixes look correct",
+              "security-expert": "Concerns addressed",
+            },
+          },
+        ],
+        startedAt: "2024-01-01T00:00:00Z",
+        completedAt: "2024-01-01T01:00:00Z",
+      }
+
+      const notification = notifier.buildTeamNotification(team)
+
+      // All three members should be present with correct roles
+      expect(notification).toContain('<member agent="typescript-expert" role="primary">')
+      expect(notification).toContain('<member agent="code-reviewer" role="secondary">')
+      expect(notification).toContain('<member agent="security-expert" role="devilsAdvocate">')
+      
+      // All results should be present
+      expect(notification).toContain("Auth flow implemented")
+      expect(notification).toContain("Code structure approved")
+      expect(notification).toContain("Concerns")
+      expect(notification).toContain("Verdict")
+      
+      // Both discussion rounds should be present
+      expect(notification).toContain('<discussion rounds="2">')
+      expect(notification).toContain('<round n="1">')
+      expect(notification).toContain('<round n="2">')
+      expect(notification).toContain("Security concerns raised")
+      expect(notification).toContain("Concerns addressed")
+    })
+
+    test("notification synthesizes all agent contributions", () => {
+      const notifier = new TeamNotifier(mockLogger, undefined as any)
+
+      const team: Team = {
+        id: "team-synthesis",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [
+          { agent: "primary", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "secondary", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+        ],
+        status: "completed",
+        discussionRounds: 1,
+        currentRound: 1,
+        results: {
+          primary: { agent: "primary", result: "Primary contribution", completedAt: "2024-01-01T00:00:00Z" },
+          secondary: { agent: "secondary", result: "Secondary contribution", completedAt: "2024-01-01T00:00:00Z" },
+          critic: { agent: "critic", result: "Critical contribution", completedAt: "2024-01-01T00:00:00Z" },
+        },
+        discussionHistory: [
+          {
+            round: 1,
+            responses: {
+              primary: "Primary discussion",
+              secondary: "Secondary discussion",
+              critic: "Critical discussion",
+            },
+          },
+        ],
+        startedAt: "2024-01-01T00:00:00Z",
+        completedAt: "2024-01-01T01:00:00Z",
+      }
+
+      const notification = notifier.buildTeamNotification(team)
+
+      // Count occurrences of each agent's contributions
+      const primaryCount = (notification.match(/primary/gi) || []).length
+      const secondaryCount = (notification.match(/secondary/gi) || []).length
+      const criticCount = (notification.match(/critic/gi) || []).length
+
+      // Each agent should appear multiple times (in member tag, result, and discussion)
+      expect(primaryCount).toBeGreaterThanOrEqual(3)
+      expect(secondaryCount).toBeGreaterThanOrEqual(3)
+      expect(criticCount).toBeGreaterThanOrEqual(3)
+    })
+  })
 })

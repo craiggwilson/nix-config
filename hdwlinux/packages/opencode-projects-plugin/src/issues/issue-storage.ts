@@ -129,6 +129,8 @@ export interface ListIssuesOptions {
   status?: IssueStatus
   parent?: string
   labels?: string[]
+  /** Include all issues regardless of status (open, in_progress, and closed) */
+  all?: boolean
 }
 
 /**

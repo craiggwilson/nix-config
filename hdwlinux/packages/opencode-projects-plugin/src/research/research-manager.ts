@@ -19,7 +19,7 @@
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
-import type { ArtifactRegistry } from "../artifacts/artifact-registry.js"
+import type { ArtifactRegistry } from "../artifacts/index.js"
 import type { Logger } from "../utils/opencode-sdk/index.js"
 import { ok, err, type Result } from "../utils/result/index.js"
 
@@ -439,6 +439,7 @@ export class ResearchManager {
       lines.push(`## ${entry.title}`)
       lines.push("")
 
+      lines.push(`**ID:** ${entry.id}`)
       if (entry.sourceIssue) {
         lines.push(`**Source Issue:** ${entry.sourceIssue}`)
       }
@@ -503,7 +504,9 @@ export class ResearchManager {
       if (!currentEntry) continue
 
       // Parse metadata fields
-      if (line.startsWith("**Source Issue:**")) {
+      if (line.startsWith("**ID:**")) {
+        currentEntry.id = line.replace("**ID:**", "").trim()
+      } else if (line.startsWith("**Source Issue:**")) {
         currentEntry.sourceIssue = line.replace("**Source Issue:**", "").trim()
       } else if (line.startsWith("**Created:**")) {
         const dateStr = line.replace("**Created:**", "").trim()
@@ -548,11 +551,7 @@ export class ResearchManager {
     }
 
     // Save last entry
-    if (currentEntry && currentEntry.title) {
-      // Generate ID from title if not found (for backwards compatibility)
-      if (!currentEntry.id) {
-        currentEntry.id = `research-${this.slugify(currentEntry.title)}-unknown`
-      }
+    if (currentEntry && currentEntry.title && currentEntry.id) {
       if (currentEntry.summary && currentEntry.path) {
         index.entries.push(currentEntry as ResearchEntry)
       }

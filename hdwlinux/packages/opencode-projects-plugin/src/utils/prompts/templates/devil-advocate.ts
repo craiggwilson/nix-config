@@ -106,11 +106,3 @@ Respond with JSON only:
   },
 }
 
-export const DEVILS_ADVOCATE_PROMPT = devilsAdvocateTemplate.render({})
-
-export function buildDevilsAdvocateSelectionPrompt(
-  teamMembers: string[],
-  issueContext: string
-): string {
-  return devilsAdvocateSelectionTemplate.render({ teamMembers, issueContext })
-}

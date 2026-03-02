@@ -38,3 +38,6 @@ export { DiscussionCoordinator } from "./discussion-coordinator.js"
 export type { DiscussionCoordinatorConfig } from "./discussion-coordinator.js"
 
 export { TeamNotifier } from "./team-notifier.js"
+
+export { PermissionManager } from "./permission-manager.js"
+export type { ToolPermissions } from "./permission-manager.js"

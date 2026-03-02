@@ -7,8 +7,8 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as os from "node:os"
 
+import { ArtifactRegistry } from "../../artifacts/index.js"
 import { DecisionManager } from "../decision-manager.js"
-import { ArtifactRegistry } from "../../artifacts/artifact-registry.js"
 import { createMockLogger } from "../../utils/testing/index.js"
 import {
   buildDecisionContext,

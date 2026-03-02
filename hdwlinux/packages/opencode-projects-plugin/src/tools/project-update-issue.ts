@@ -9,7 +9,7 @@ import * as path from "node:path"
 import type { ProjectToolContext, Tool } from "./tools.js"
 import type { Logger, BunShell } from "../utils/opencode-sdk/index.js"
 import type { ProjectManager } from "../projects/index.js"
-import { formatError } from "../utils/errors/index.js"
+import { formatError, MergeConflictError } from "../utils/errors/index.js"
 import { WorktreeManager } from "../vcs/index.js"
 import {
   ProjectUpdateIssueArgsSchema,
@@ -206,12 +206,11 @@ When closing an issue with mergeWorktree=true, the associated worktree will be m
                 lines.push(`**Worktree cleaned up:** ${worktree.path}`)
               } else {
                 lines.push(`⚠️ Merge failed: ${mergeResult.error.message}`)
-                if (mergeResult.error.name === "MergeConflictError") {
-                  const conflictError = mergeResult.error as any
-                  if (conflictError.conflictFiles?.length) {
+                if (mergeResult.error instanceof MergeConflictError) {
+                  if (mergeResult.error.conflictFiles.length > 0) {
                     lines.push("")
                     lines.push("**Conflict files:**")
-                    for (const file of conflictError.conflictFiles) {
+                    for (const file of mergeResult.error.conflictFiles) {
                       lines.push(`- ${file}`)
                     }
                   }

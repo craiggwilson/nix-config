@@ -17,12 +17,17 @@ import * as crypto from "node:crypto"
 import { z } from "zod"
 
 import type { Logger, OpencodeClient, MessageItem, Part } from "../utils/opencode-sdk/index.js"
-import type { TeamMemberRole } from "./team-manager.js"
 import { formatDelegationError, type DelegationError } from "../utils/errors/index.js"
+import type { Clock, TimeoutHandle } from "../utils/clock/index.js"
+import { systemClock } from "../utils/clock/index.js"
+
+import type { TeamMemberRole } from "./team-manager.js"
 import { promptSmallModel } from "../agents/index.js"
 import { metadataGenerationTemplate } from "../utils/prompts/index.js"
 import type { Result } from "../utils/result/index.js"
 import type { VCSType } from "../vcs/index.js"
+import { withRetry, isRetryableError, type RetryError } from "../utils/retry/index.js"
+import { PermissionManager } from "./permission-manager.js"
 
 /**
  * Zod schema for metadata generation response
@@ -140,25 +145,11 @@ export interface DelegationManagerOptions {
   timeoutMs: number
   /** Maximum time for small model metadata generation (milliseconds) */
   smallModelTimeoutMs: number
+  /** Clock for timing operations (optional, uses system clock) */
+  clock?: Clock
 }
 
-/**
- * Tools to disable in delegated sessions to prevent recursion and state modification
- */
-const DISABLED_TOOLS: Record<string, boolean> = {
-  // Prevent recursive delegation
-  task: false,
-  delegate: false,
 
-  // Prevent state modifications
-  todowrite: false,
-  plan_save: false,
-  "project-create": false,
-  "project-close": false,
-  "project-create-issue": false,
-  "project-update-issue": false,
-  "project-work-on-issue": false,
-}
 
 /**
  * Maximum number of completed delegations to keep in memory.
@@ -196,12 +187,16 @@ export class DelegationManager {
   private client?: OpencodeClient
   private timeoutMs: number
   private smallModelTimeoutMs: number
+  private clock: Clock
 
   /** Maps session IDs to delegation IDs for event routing */
   private sessionToDelegation: Map<string, string> = new Map()
 
   /** In-memory cache of delegations for fast lookup */
   private delegations: Map<string, Delegation> = new Map()
+
+  /** Tracks timeout handlers by delegation ID to allow cancellation on normal completion */
+  private delegationTimeouts: Map<string, TimeoutHandle> = new Map()
 
   /**
    * @param log - Logger for diagnostic output
@@ -217,13 +212,18 @@ export class DelegationManager {
     this.client = client
     this.timeoutMs = options.timeoutMs
     this.smallModelTimeoutMs = options.smallModelTimeoutMs
+    this.clock = options.clock ?? systemClock
   }
 
   /**
    * Start a delegation in the background (fire-and-forget).
    *
-   * Creates an OpenCode session, sets up timeout handling, and fires the prompt.
-   * Does not await the prompt response - completion is handled via session.idle event.
+   * Creates an OpenCode session with retry logic, sets up timeout handling,
+   * and fires the prompt. Does not await the prompt response - completion
+   * is handled via session.idle event.
+   *
+   * Retries on transient errors (JSON parse errors, connection issues, etc.)
+   * with exponential backoff.
    */
   private async startDelegation(delegation: Delegation): Promise<void> {
     if (!this.client) return
@@ -237,23 +237,39 @@ export class DelegationManager {
         return
       }
 
-      // Create a session for the delegation
-      const sessionResult = await this.client.session.create({
-        body: {
-          title: `Delegation: ${delegation.issueId} (${delegation.role})`,
-          parentID: delegation.parentSessionId,
+      // Create a session for the delegation with retry logic
+      const sessionResult = await withRetry(
+        "session.create",
+        async () => {
+          const result = await this.client!.session.create({
+            body: {
+              title: `Delegation: ${delegation.issueId} (${delegation.role})`,
+              parentID: delegation.parentSessionId,
+            },
+          })
+          if (!result.data?.id) {
+            throw new Error("Session creation returned no session ID")
+          }
+          return result.data.id
         },
-      })
+        this.log,
+        { maxAttempts: 3, initialDelayMs: 500, maxDelayMs: 5000 }
+      )
 
-      const sessionId = sessionResult.data?.id
-      if (!sessionId) {
-        const failResult = await this.fail(delegation.id, "Failed to create session")
+      if (!sessionResult.ok) {
+        const retryError = sessionResult.error
+        const errorMessage = this.formatApiError("session.create", retryError)
+        await this.log.error(`Delegation ${delegation.id} failed to create session: ${errorMessage}`)
+        const failResult = await this.fail(delegation.id, errorMessage)
         if (!failResult.ok) {
           await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
         }
+        // Notify via callback so team can handle the failure
+        if (delegation.onComplete) await delegation.onComplete(delegation.id)
         return
       }
 
+      const sessionId = sessionResult.value
       delegation.sessionId = sessionId
       this.sessionToDelegation.set(sessionId, delegation.id)
       this.delegations.set(delegation.id, delegation)
@@ -262,43 +278,99 @@ export class DelegationManager {
         await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult2.error)}`)
       }
 
-      // Set up timeout handler
-      setTimeout(() => {
+      // Set up timeout handler and track it for cancellation on normal completion
+      const timeoutId = this.clock.setTimeout(() => {
         this.handleTimeout(delegation.id)
       }, this.timeoutMs)
+      this.delegationTimeouts.set(delegation.id, timeoutId)
 
-      // Fire the prompt (fire-and-forget)
-      // Prompt is built by TeamManager, we just send it
-      this.client.session
-        .prompt({
-          path: { id: sessionId },
-          body: {
-            agent: delegation.agent,
-            parts: [{ type: "text", text: delegation.prompt }],
-            tools: DISABLED_TOOLS,
-          },
-        })
-        .catch(async (error: Error) => {
-          await this.log.error(`Delegation ${delegation.id} prompt failed: ${error.message}`)
-          const failResult = await this.fail(delegation.id, error.message)
-          if (!failResult.ok) {
-            await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
-          }
-          // Notify via callback
-          if (delegation.onComplete) await delegation.onComplete(delegation.id)
-        })
+      // Fire the prompt with retry logic (fire-and-forget)
+      this.firePromptWithRetry(delegation, sessionId)
 
       await this.log.info(`Delegation ${delegation.id} started in background (session: ${sessionId})`)
     } catch (error) {
-      await this.log.error(`Failed to start delegation: ${error}`)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      await this.log.error(`Failed to start delegation ${delegation.id}: ${errorMessage}`)
       delegation.status = "failed"
-      delegation.error = String(error)
+      delegation.error = errorMessage
       this.delegations.set(delegation.id, delegation)
       const saveResult = await this.save(delegation)
       if (!saveResult.ok) {
         await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
       }
+      // Notify via callback so team can handle the failure
+      if (delegation.onComplete) await delegation.onComplete(delegation.id)
     }
+  }
+
+  /**
+   * Fire the prompt with retry logic (fire-and-forget).
+   *
+   * Retries on transient errors with exponential backoff.
+   * On final failure, marks the delegation as failed and notifies.
+   */
+  private firePromptWithRetry(delegation: Delegation, sessionId: string): void {
+    if (!this.client) return
+
+    // Resolve role-based permissions for this delegation
+    const toolPermissions = PermissionManager.resolvePermissions(delegation.role)
+
+    withRetry(
+      "session.prompt",
+      async () => {
+        const result = await this.client!.session.prompt({
+          path: { id: sessionId },
+          body: {
+            agent: delegation.agent,
+            parts: [{ type: "text", text: delegation.prompt }],
+            tools: toolPermissions,
+          },
+        })
+        // Check for error in response
+        if (!result.data) {
+          throw new Error("Prompt returned no response data")
+        }
+        return result
+      },
+      this.log,
+      { maxAttempts: 3, initialDelayMs: 500, maxDelayMs: 5000 }
+    ).then(async (result) => {
+      if (!result.ok) {
+        const retryError = result.error
+        const errorMessage = this.formatApiError("session.prompt", retryError)
+        await this.log.error(`Delegation ${delegation.id} prompt failed: ${errorMessage}`)
+        const failResult = await this.fail(delegation.id, errorMessage)
+        if (!failResult.ok) {
+          await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
+        }
+        // Notify via callback
+        if (delegation.onComplete) await delegation.onComplete(delegation.id)
+      }
+    }).catch(async (error: Error) => {
+      // Catch any unexpected errors from the retry logic itself
+      await this.log.error(`Delegation ${delegation.id} prompt failed unexpectedly: ${error.message}`)
+      const failResult = await this.fail(delegation.id, error.message)
+      if (!failResult.ok) {
+        await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
+      }
+      if (delegation.onComplete) await delegation.onComplete(delegation.id)
+    })
+  }
+
+  /**
+   * Format a RetryError into a user-friendly error message.
+   */
+  private formatApiError(operation: string, error: RetryError): string {
+    const lines = [
+      `API call '${operation}' failed after ${error.attempts} attempt(s): ${error.lastError}`,
+    ]
+    if (error.wasRetryable) {
+      lines.push("This appears to be a transient error (network issue, server overload, etc.).")
+      lines.push("Hint: Try again in a few moments, or check network connectivity.")
+    } else {
+      lines.push("Hint: Check the OpenCode logs for more details.")
+    }
+    return lines.join(" ")
   }
 
   /**
@@ -327,6 +399,13 @@ export class DelegationManager {
     const delegation = getResult.value
     if (delegation.status !== "running") return
 
+    // Clear the timeout handler since delegation completed normally
+    const timeoutId = this.delegationTimeouts.get(delegationId)
+    if (timeoutId) {
+      this.clock.clearTimeout(timeoutId)
+      this.delegationTimeouts.delete(delegationId)
+    }
+
     await this.log.info(`Delegation ${delegation.id} session idle, marking complete`)
 
     // Get the result from session messages
@@ -340,7 +419,7 @@ export class DelegationManager {
     delegation.result = result
     delegation.title = metadata.title
     delegation.description = metadata.description
-    delegation.completedAt = new Date().toISOString()
+    delegation.completedAt = this.clock.toISOString()
 
     // Update in-memory cache and persist
     this.delegations.set(delegation.id, delegation)
@@ -463,7 +542,7 @@ export class DelegationManager {
 
     // Generate delegation ID
     const delegationId = this.generateId()
-    const now = new Date().toISOString()
+    const now = this.clock.toISOString()
 
     // Create delegation record
     const delegation: Delegation = {
@@ -546,7 +625,7 @@ export class DelegationManager {
 
     delegation.status = "completed"
     delegation.result = result
-    delegation.completedAt = new Date().toISOString()
+    delegation.completedAt = this.clock.toISOString()
 
     const saveResult = await this.save(delegation)
     if (!saveResult.ok) {
@@ -590,7 +669,7 @@ export class DelegationManager {
 
     delegation.status = "failed"
     delegation.error = error
-    delegation.completedAt = new Date().toISOString()
+    delegation.completedAt = this.clock.toISOString()
 
     const saveResult = await this.save(delegation)
     if (!saveResult.ok) {
@@ -635,7 +714,7 @@ export class DelegationManager {
 
     delegation.status = "timeout"
     delegation.error = `Timed out after ${this.timeoutMs / 1000}s`
-    delegation.completedAt = new Date().toISOString()
+    delegation.completedAt = this.clock.toISOString()
 
     const saveResult = await this.save(delegation)
     if (!saveResult.ok) {
@@ -676,14 +755,14 @@ export class DelegationManager {
     }
 
     delegation.status = "cancelled"
-    delegation.completedAt = new Date().toISOString()
+    delegation.completedAt = this.clock.toISOString()
 
     // Try to delete the session
     if (delegation.sessionId && this.client) {
       try {
         await this.client.session.delete({ path: { id: delegation.sessionId } })
       } catch {
-        // Ignore
+        // Session may already be deleted; cleanup is best-effort
       }
       this.sessionToDelegation.delete(delegation.sessionId)
     }
@@ -736,6 +815,9 @@ export class DelegationManager {
    * Attempts to retrieve partial results before marking as timed out.
    */
   private async handleTimeout(delegationId: string): Promise<void> {
+    // Clean up the timeout map entry since the timeout has fired
+    this.delegationTimeouts.delete(delegationId)
+
     const getResult = await this.get(delegationId)
     if (!getResult.ok || getResult.value.status !== "running") return
 
@@ -754,7 +836,7 @@ export class DelegationManager {
         try {
           await this.client.session.delete({ path: { id: delegation.sessionId } })
         } catch {
-          // Ignore
+          // Session may already be deleted; cleanup is best-effort
         }
       }
       this.sessionToDelegation.delete(delegation.sessionId)
@@ -763,7 +845,7 @@ export class DelegationManager {
     delegation.status = "timeout"
     delegation.error = `Timed out after ${this.timeoutMs / 1000}s`
     delegation.result = result
-    delegation.completedAt = new Date().toISOString()
+    delegation.completedAt = this.clock.toISOString()
     this.delegations.set(delegation.id, delegation)
     const saveResult = await this.save(delegation)
     if (!saveResult.ok) {
@@ -814,7 +896,8 @@ export class DelegationManager {
 
       await this.log.debug(`getSessionResult: found ${assistantMessages.length} assistant messages`)
 
-      // Issue #4: Take only the LAST assistant message
+      // Take only the last assistant message to avoid including intermediate tool results
+      // and partial responses from earlier in the conversation
       const lastMessage = assistantMessages[assistantMessages.length - 1]
 
       // If last message has an error, try the second-to-last
@@ -904,7 +987,7 @@ export class DelegationManager {
    * Format: del-{base36-timestamp}-{hex-random}
    */
   private generateId(): string {
-    const timestamp = Date.now().toString(36)
+    const timestamp = this.clock.now().toString(36)
     const random = crypto.randomBytes(4).toString("hex")
     return `del-${timestamp}-${random}`
   }
@@ -999,7 +1082,7 @@ export class DelegationManager {
 
     lines.push("---")
     lines.push("")
-    lines.push(`*Generated: ${new Date().toISOString()}*`)
+    lines.push(`*Generated: ${this.clock.toISOString()}*`)
 
     await fs.writeFile(filePath, lines.join("\n"), "utf8")
   }

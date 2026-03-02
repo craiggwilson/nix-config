@@ -264,4 +264,28 @@ describe("JujutsuAdapter", () => {
 
     expect(result.ok).toBe(true)
   })
+
+  test("createWorktree succeeds when stale directory exists", async () => {
+    if (!jjAvailable) return
+
+    // Simulate a stale directory from a previous failed attempt
+    const worktreeBase = adapter.getWorktreeBasePath()
+    const stalePath = path.join(worktreeBase, "stale-ws")
+    await fs.mkdir(stalePath, { recursive: true })
+    await fs.writeFile(path.join(stalePath, "stale-file.txt"), "leftover content")
+
+    // createWorktree should clean up the stale directory and succeed
+    const result = await adapter.createWorktree("stale-ws")
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value.name).toBe("stale-ws")
+      expect(result.value.isMain).toBe(false)
+
+      const stat = await fs.stat(result.value.path)
+      expect(stat.isDirectory()).toBe(true)
+    }
+
+    await adapter.removeWorktree("stale-ws")
+  })
 })

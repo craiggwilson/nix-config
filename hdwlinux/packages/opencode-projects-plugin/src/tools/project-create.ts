@@ -1,5 +1,5 @@
 /**
- * project_create tool - Create a new project and initiate planning
+ * project-create tool - Create a new project and initiate planning
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -16,7 +16,7 @@ import {
 } from "../utils/validation/index.js"
 
 /**
- * Creates the project_create tool for initializing new projects.
+ * Creates the project-create tool for initializing new projects.
  */
 export function createProjectCreate(
   projectManager: ProjectManager,

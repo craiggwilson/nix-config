@@ -221,6 +221,85 @@ describe("WorktreeManager", () => {
   })
 })
 
+describe("WorktreeManager error handling", () => {
+  let testDir: string
+  let repoDir: string
+  let manager: WorktreeManager
+  let gitAvailable: boolean
+
+  beforeAll(async () => {
+    gitAvailable = await isGitAvailable()
+    if (!gitAvailable) {
+      console.log("Skipping error handling tests - git not available")
+      return
+    }
+
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), "worktree-error-test-"))
+    repoDir = path.join(testDir, "repo")
+
+    await fs.mkdir(repoDir, { recursive: true })
+    await $`git -C ${repoDir} init`.quiet()
+    await $`git -C ${repoDir} config user.email "test@test.com"`.quiet()
+    await $`git -C ${repoDir} config user.name "Test"`.quiet()
+    await fs.writeFile(path.join(repoDir, "README.md"), "# Test Repo")
+    await $`git -C ${repoDir} add .`.quiet()
+    await $`git -C ${repoDir} commit -m "Initial commit"`.quiet()
+
+    manager = new WorktreeManager(repoDir, testShell, mockLogger)
+  })
+
+  afterAll(async () => {
+    if (testDir) {
+      await fs.rm(testDir, { recursive: true, force: true })
+    }
+  })
+
+  test("mergeAndCleanup returns error for non-existent worktree", async () => {
+    if (!gitAvailable) return
+
+    const result = await manager.mergeAndCleanup("non-existent-worktree")
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.error.name).toBe("WorktreeError")
+      expect(result.error.message).toContain("not found")
+    }
+  })
+
+  test("getWorktree returns null for non-existent worktree", async () => {
+    if (!gitAvailable) return
+
+    const result = await manager.getWorktree("non-existent-project", "non-existent-issue")
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value).toBeNull()
+    }
+  })
+
+  test("removeWorktree handles non-existent worktree gracefully", async () => {
+    if (!gitAvailable) return
+
+    // This should not throw, but may return an error
+    const result = await manager.removeWorktree("non-existent-worktree")
+
+    // The behavior depends on the VCS adapter implementation
+    // Git worktree remove will fail for non-existent worktrees
+    expect(result.ok).toBe(false)
+  })
+
+  test("listProjectWorktrees returns empty array for project with no worktrees", async () => {
+    if (!gitAvailable) return
+
+    const result = await manager.listProjectWorktrees("project-with-no-worktrees")
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value).toEqual([])
+    }
+  })
+})
+
 describe("WorktreeManager without VCS", () => {
   test("detectVCS returns error for non-repo directory", async () => {
     const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "no-vcs-test-"))

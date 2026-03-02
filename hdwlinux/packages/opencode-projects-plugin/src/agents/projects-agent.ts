@@ -175,7 +175,7 @@ You don't need to manually save sessions - focus on the work. The system handles
 
 ### Handling Completions
 
-When you receive a \`<delegation-notification>\`:
+When you receive a \`<team-notification>\`:
 
 1. Review the results
 2. For isolated work: merge the worktree

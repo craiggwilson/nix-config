@@ -1,5 +1,5 @@
 /**
- * project_close tool - Close a project
+ * project-close tool - Close a project
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -16,7 +16,7 @@ import {
 } from "../utils/validation/index.js"
 
 /**
- * Create the project_close tool
+ * Create the project-close tool
  */
 export function createProjectClose(
   projectManager: ProjectManager,
@@ -54,7 +54,7 @@ This updates the project status and optionally adds a final summary.`,
         const closed = await projectManager.closeProject(projectId, { reason, summary })
 
         if (!closed) {
-          return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+          return `Project '${projectId}' not found.\n\nUse \`project-list\` to see available projects.`
         }
 
         const lines: string[] = []
@@ -73,7 +73,7 @@ This updates the project status and optionally adds a final summary.`,
         lines.push("")
         lines.push("---")
         lines.push("")
-        lines.push("The project has been marked as closed. Use `project_list` to see other projects.")
+        lines.push("The project has been marked as closed. Use `project-list` to see other projects.")
 
         return lines.join("\n")
       } catch (error) {

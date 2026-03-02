@@ -16,9 +16,9 @@ export {
   NoProjectFocusedError,
   ConfigurationError,
   formatError,
-  formatBeadsError,
   formatDelegationError,
+  formatPlanningError,
   formatTeamError,
   sanitizeErrorOutput,
 } from "./errors.js"
-export type { DelegationError, TeamError, BeadsError } from "./errors.js"
+export type { DelegationError, PlanningError, TeamError } from "./errors.js"

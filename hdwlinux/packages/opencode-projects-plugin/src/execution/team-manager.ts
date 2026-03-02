@@ -18,9 +18,12 @@ import * as fs from "node:fs/promises"
 import * as path from "node:path"
 import * as crypto from "node:crypto"
 
+import type { Result } from "../utils/result/index.js"
 import type { VCSType } from "../vcs/index.js"
 import type { Logger, OpencodeClient } from "../utils/opencode-sdk/index.js"
 import type { TeamError } from "../utils/errors/index.js"
+import type { Clock, TimeoutHandle } from "../utils/clock/index.js"
+import { systemClock } from "../utils/clock/index.js"
 import {
   teamMemberTemplate,
   type TeamMemberData,
@@ -33,6 +36,7 @@ import type { WorktreeManager } from "../vcs/index.js"
 import { TeamComposer, type TeamComposerConfig } from "./team-composer.js"
 import { DiscussionCoordinator, type DiscussionCoordinatorConfig } from "./discussion-coordinator.js"
 import { TeamNotifier } from "./team-notifier.js"
+
 
 /**
  * Role of a team member in multi-agent execution.
@@ -189,8 +193,9 @@ export interface TeamConfig {
   smallModelTimeoutMs: number
   /** Maximum time for delegations (milliseconds) */
   delegationTimeoutMs: number
+  /** Clock for timing operations (optional, uses system clock) */
+  clock?: Clock
 }
-import type { Result } from "../utils/result/index.js"
 
 /**
  * Maximum number of completed teams to keep in memory.
@@ -232,6 +237,7 @@ export class TeamManager {
   private delegationManager: DelegationManager
   private worktreeManager: WorktreeManager
   private config: TeamConfig
+  private clock: Clock
 
   /** Handles agent selection and team composition */
   private composer: TeamComposer
@@ -268,6 +274,7 @@ export class TeamManager {
     this.delegationManager = delegationManager
     this.worktreeManager = worktreeManager
     this.config = config
+    this.clock = config.clock ?? systemClock
 
     // Initialize delegate components
     const composerConfig: TeamComposerConfig = {
@@ -375,6 +382,10 @@ export class TeamManager {
     this.teams.set(team.id, team)
     const saveResult = await this.save(team)
     if (!saveResult.ok) {
+      // Clean up worktree if we created one
+      if (worktreeBranch) {
+        await this.cleanupWorktreeOnFailure(team)
+      }
       return saveResult
     }
 
@@ -384,11 +395,19 @@ export class TeamManager {
       issueContext
     )
     if (!delegationResult.ok) {
+      // Clean up worktree if delegation creation failed
+      if (worktreeBranch) {
+        await this.cleanupWorktreeOnFailure(team)
+      }
       return delegationResult
     }
 
     const finalSaveResult = await this.save(team)
     if (!finalSaveResult.ok) {
+      // Clean up worktree if final save failed
+      if (worktreeBranch) {
+        await this.cleanupWorktreeOnFailure(team)
+      }
       return finalSaveResult
     }
 
@@ -439,7 +458,7 @@ export class TeamManager {
     } = options
 
     const teamId = this.generateId()
-    const now = new Date().toISOString()
+    const now = this.clock.toISOString()
 
     const members: TeamMember[] = agents.map((agent, index) => {
       let role: TeamMemberRole = "secondary"
@@ -535,15 +554,25 @@ export class TeamManager {
   }
 
   /**
+   * Default timeout for waitForCompletion (30 minutes).
+   * Prevents indefinitely hung promises when a team never completes.
+   */
+  private static readonly DEFAULT_WAIT_TIMEOUT_MS = 30 * 60 * 1000
+
+  /**
    * Wait for a team to complete (foreground mode).
    *
-   * Returns a promise that resolves when the team completes (success or failure).
-   * The promise is resolved by handleDelegationComplete when all members finish.
+   * Returns a promise that resolves when the team completes (success or failure),
+   * or rejects with a timeout error if the team doesn't complete within the timeout.
    *
    * @param team - The team to wait for
-   * @returns The completed team, or an error
+   * @param timeoutMs - Maximum time to wait (default: 30 minutes)
+   * @returns The completed team, or a timeout error
    */
-  async waitForCompletion(team: Team): Promise<Result<Team, TeamError>> {
+  async waitForCompletion(
+    team: Team,
+    timeoutMs: number = TeamManager.DEFAULT_WAIT_TIMEOUT_MS
+  ): Promise<Result<Team, TeamError>> {
     // If already complete, return immediately
     const currentTeamResult = await this.get(team.id)
     if (currentTeamResult.ok) {
@@ -559,12 +588,29 @@ export class TeamManager {
       }
     }
 
-    // Create a promise that will be resolved when the team completes
+    // Create a promise that will be resolved when the team completes or times out
     return new Promise<Result<Team, TeamError>>((resolve) => {
+      const timeoutId = this.clock.setTimeout(() => {
+        this.completionPromises.delete(team.id)
+        this.log.warn(
+          `Team ${team.id}: timed out after ${timeoutMs / 1000}s waiting for completion`
+        )
+        resolve({
+          ok: false,
+          error: {
+            type: "timeout",
+            teamId: team.id,
+            timeoutMs,
+            operation: "waitForCompletion",
+          },
+        })
+      }, timeoutMs)
+
       this.completionPromises.set(team.id, (completedTeam: Team) => {
+        this.clock.clearTimeout(timeoutId)
         resolve({ ok: true, value: completedTeam })
       })
-      this.log.info(`Team ${team.id}: waiting for completion promise`)
+      this.log.info(`Team ${team.id}: waiting for completion promise (timeout: ${timeoutMs / 1000}s)`)
     })
   }
 
@@ -672,7 +718,7 @@ export class TeamManager {
       team.results[member.agent] = {
         agent: member.agent,
         result: delegation.result || "(no result)",
-        completedAt: delegation.completedAt || new Date().toISOString(),
+        completedAt: delegation.completedAt || this.clock.toISOString(),
       }
       await this.log.info(`Team ${team.id}: ${member.agent} completed`)
     } else if (
@@ -695,7 +741,7 @@ export class TeamManager {
       team.results[member.agent] = {
         agent: member.agent,
         result: delegation.error || "(failed)",
-        completedAt: new Date().toISOString(),
+        completedAt: this.clock.toISOString(),
       }
       await this.log.warn(
         `Team ${team.id}: ${member.agent} failed after ${member.retryCount} retries`
@@ -708,6 +754,8 @@ export class TeamManager {
    *
    * Runs discussion rounds if enabled, sets final status, and notifies
    * parent session (background mode) or resolves completion promise (foreground mode).
+   *
+   * On failure, cleans up any orphaned worktrees to prevent resource leaks.
    */
   private async finalizeTeam(team: Team): Promise<void> {
     const allFailed = team.members.every((m) => m.status === "failed")
@@ -729,8 +777,13 @@ export class TeamManager {
 
     // Set final status based on member outcomes
     team.status = allFailed ? "failed" : "completed"
-    team.completedAt = new Date().toISOString()
+    team.completedAt = this.clock.toISOString()
     await this.save(team)
+
+    // Clean up worktree on failure to prevent orphaned workspaces
+    if (allFailed && team.worktreePath && team.worktreeBranch) {
+      await this.cleanupWorktreeOnFailure(team)
+    }
 
     if (team.foreground) {
       // Foreground mode: resolve the waiting promise
@@ -750,6 +803,35 @@ export class TeamManager {
       }
     }
     this.pruneCompletedTeams()
+  }
+
+  /**
+   * Clean up worktree when a team fails completely.
+   *
+   * Prevents orphaned worktrees from accumulating when delegations fail
+   * during startup (e.g., JSON parse errors, connection issues).
+   */
+  private async cleanupWorktreeOnFailure(team: Team): Promise<void> {
+    if (!team.worktreeBranch) return
+
+    // Extract worktree name from branch (format: projectId/issueId)
+    const worktreeName = team.worktreeBranch
+
+    await this.log.info(
+      `Team ${team.id}: cleaning up worktree '${worktreeName}' after failure`
+    )
+
+    const removeResult = await this.worktreeManager.removeWorktree(worktreeName)
+    if (!removeResult.ok) {
+      // Log but don't fail - worktree cleanup is best-effort
+      await this.log.warn(
+        `Team ${team.id}: failed to clean up worktree '${worktreeName}': ${removeResult.error.message}`
+      )
+    } else {
+      await this.log.info(
+        `Team ${team.id}: successfully cleaned up worktree '${worktreeName}'`
+      )
+    }
   }
 
   /**
@@ -793,18 +875,20 @@ export class TeamManager {
         ? {
             role: "primary",
             agent: member.agent,
-            issueId: team.issueId,
-            issueContext,
-            worktreePath: team.worktreePath,
             hasReviewers: team.members.length > 1,
+            issueContext,
+            issueId: team.issueId,
+            projectDir: team.projectDir,
+            worktreePath: team.worktreePath,
           }
         : {
             role: member.role === "devilsAdvocate" ? "devilsAdvocate" : "reviewer",
             agent: member.agent,
-            issueId: team.issueId,
             issueContext,
-            worktreePath: team.worktreePath,
+            issueId: team.issueId,
             primaryAgent: primary?.agent || "unknown",
+            projectDir: team.projectDir,
+            worktreePath: team.worktreePath,
           }
 
     return teamMemberTemplate.render(data)
@@ -939,7 +1023,7 @@ export class TeamManager {
    * Format: team-{base36-timestamp}-{hex-random}
    */
   private generateId(): string {
-    const timestamp = Date.now().toString(36)
+    const timestamp = this.clock.now().toString(36)
     const random = crypto.randomBytes(4).toString("hex")
     return `team-${timestamp}-${random}`
   }

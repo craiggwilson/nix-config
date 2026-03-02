@@ -131,30 +131,4 @@ describe("project_create tool", () => {
 
 
     expect(entries[0]).not.toBe(entries[1])
-  })
-
-  test("migrates old projects without storage field", async () => {
-    const projectDir = path.join(testDir, ".projects", "old-project")
-    await fs.mkdir(projectDir, { recursive: true })
-
-    const oldMetadata = {
-      id: "old-project",
-      name: "Old Project",
-      type: "project",
-      createdAt: new Date().toISOString(),
-      status: "active",
-    }
-
-    await fs.writeFile(
-      path.join(projectDir, "project.json"),
-      JSON.stringify(oldMetadata, null, 2),
-      "utf8"
-    )
-
-    const projects = await projectManager.listProjects({ scope: "local" })
-    const oldProject = projects.find((p) => p.id === "old-project")
-
-    expect(oldProject).toBeTruthy()
-    expect(oldProject!.storage).toBe("local")
-  })
-})
+  })})

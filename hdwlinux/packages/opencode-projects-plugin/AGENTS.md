@@ -23,7 +23,7 @@ src/
 │   ├── shell/            # Shell command execution
 │   ├── testing/          # Test utilities
 │   └── validation/       # Input validation with Zod
-└── vcs/                  # Version control abstraction (git, jj)
+└── vcs/                  # Version control abstraction (jj, git)
 ```
 
 ### Core Components
@@ -36,7 +36,7 @@ src/
 | `DelegationManager` | Manages background agent delegations |
 | `TeamManager` | Coordinates multi-agent team work |
 | `WorktreeManager` | VCS-agnostic worktree operations |
-| `VCSAdapter` | Interface for git/jj operations |
+| `VCSAdapter` | Interface for jj/git operations |
 | `PlanningManager` | Manages planning session state and phases |
 
 ### Data Flow
@@ -95,6 +95,22 @@ bun test --test-name-pattern 'should create'
 ---
 
 ## Code Style Guidelines
+
+### Module Imports
+
+Cross-module imports must use the module's `index.ts` barrel export, not internal files:
+
+```typescript
+// ✅ Correct - import from module's index.ts
+import { ArtifactRegistry } from "../artifacts/index.js"
+import { DelegationManager, TeamManager } from "../execution/index.js"
+
+// ❌ Wrong - import from internal file
+import { ArtifactRegistry } from "../artifacts/artifact-registry.js"
+import { DelegationManager } from "../execution/delegation-manager.js"
+```
+
+Within-module imports (same directory or subdirectory) may reference internal files directly.
 
 ### Result Type for Error Handling
 
@@ -197,6 +213,25 @@ export interface IssueStorage {
 
 // Implement for different backends
 export class MyIssueStorage implements IssueStorage { ... }
+```
+
+### Type Organization
+
+Do not create separate `types.ts` files. Types should be co-located with their implementation or exported from the module's `index.ts`.
+
+```typescript
+// ❌ Bad - separate types file
+// src/execution/types.ts
+export type TeamMemberRole = "primary" | "secondary" | "devilsAdvocate"
+
+// ✅ Good - types co-located with implementation
+// src/execution/delegation-manager.ts
+export type TeamMemberRole = "primary" | "secondary" | "devilsAdvocate"
+
+export interface Delegation {
+  role: TeamMemberRole
+  // ...
+}
 ```
 
 ### Comments and Documentation
@@ -333,8 +368,8 @@ opencode run "Use project-list to list all projects"
 
 3. **Test specific functionality:**
 
-**CRITICAL**: when testing project-work-on-issue, you need ensure it is run with foreground=true.
-**CRITICAL**: when creating a project, you need ensure it is run with storage=local.
+**CRITICAL**: when testing project-work-on-issue, ensure it is run with `foreground=true` so results are returned inline rather than as a background delegation notification.
+**CRITICAL**: when creating a project, ensure it is run with `storage=local` to avoid polluting global storage (`~/.local/share/opencode/projects/`) with test projects.
 
 ```bash
 # Test project creation
@@ -391,7 +426,7 @@ find ~/.local/share/opencode -name "*.log" -mmin -5 | xargs cat | grep -i "deleg
 |-------|-------|----------|
 | "No project focused" | Missing project context | Use `project-focus(projectId)` first |
 | "Validation error" | Invalid tool arguments | Check argument types and required fields |
-| "VCS not detected" | Not in a git/jj repo | Initialize a repository first |
+| "VCS not detected" | Not in a jj/git repo | Initialize a repository first |
 
 ### Debugging Result Errors
 
@@ -409,26 +444,20 @@ if (!result.ok) {
 
 ## Landing the Plane (Session Completion)
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until work has been committed and you are on a new, empty revision.
 
 **MANDATORY WORKFLOW:**
 
 1. **File issues for remaining work** - Create issues for anything that needs follow-up
 2. **Run quality gates** (if code changed) - Tests, linters, builds
 3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   jj git push
-   ```
-5. **Clean up** - Remove any temporary files or worktrees
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+
+4. **Clean up** - Remove any temporary files or worktrees
+5. **Verify** - All changes committed AND a new, empty revision is on the stack
+6. **Hand off** - Provide context for next session
 
 **CRITICAL RULES:**
-- Work is NOT complete until `jj git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+- Work is NOT complete until work has been committed and you are on a new, empty revision.
 
 ---
 

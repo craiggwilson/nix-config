@@ -16,6 +16,7 @@ export const DISABLED_TOOLS = [
   "project-create-issue",
   "project-update-issue",
   "project-work-on-issue",
+  "question",
   "task",
   "delegate",
 ] as const

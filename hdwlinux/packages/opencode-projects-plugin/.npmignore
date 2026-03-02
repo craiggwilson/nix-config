@@ -1,0 +1,38 @@
+# Source files (compiled to dist/)
+src/
+tests/
+*.test.ts
+*.test.js
+
+# Development files
+tsconfig.json
+bunfig.toml
+bun.lock
+node_modules/
+.beads/
+tmp/
+
+# Project state
+.projects/
+delegations/
+
+# VCS
+.git/
+.gitignore
+.gitattributes
+
+# Development tools
+AGENTS.md
+RELEASE_CHECKLIST.md
+default.nix
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

@@ -9,6 +9,9 @@
 
 import type { Logger, OpencodeClient, MessageItem, Part } from "../utils/opencode-sdk/index.js"
 import type { Team, TeamMember, TeamMemberResult, DiscussionRound } from "./team-manager.js"
+import type { Clock } from "../utils/clock/index.js"
+import { systemClock } from "../utils/clock/index.js"
+import { PermissionManager } from "./permission-manager.js"
 
 /**
  * Configuration options for DiscussionCoordinator.
@@ -16,22 +19,11 @@ import type { Team, TeamMember, TeamMemberResult, DiscussionRound } from "./team
 export interface DiscussionCoordinatorConfig {
   /** Maximum time to wait for each agent's response per round (milliseconds) */
   discussionRoundTimeoutMs: number
+  /** Clock for timing operations (optional, uses system clock) */
+  clock?: Clock
 }
 
-/**
- * Tools to disable in discussion sessions
- */
-const DISABLED_TOOLS: Record<string, boolean> = {
-  task: false,
-  delegate: false,
-  todowrite: false,
-  plan_save: false,
-  "project-create": false,
-  "project-close": false,
-  "project-create-issue": false,
-  "project-update-issue": false,
-  "project-work-on-issue": false,
-}
+
 
 /**
  * Orchestrates multi-round team discussions.
@@ -50,6 +42,7 @@ export class DiscussionCoordinator {
   private log: Logger
   private client: OpencodeClient
   private config: DiscussionCoordinatorConfig
+  private clock: Clock
 
   /**
    * @param log - Logger for diagnostic output
@@ -64,6 +57,7 @@ export class DiscussionCoordinator {
     this.log = log
     this.client = client
     this.config = config
+    this.clock = config.clock ?? systemClock
   }
 
   /**
@@ -222,13 +216,16 @@ As ${member.agent}, provide your updated analysis considering:
 
 Keep response focused and actionable.`
 
+    // Discussion participants use role-based permissions
+    const toolPermissions = PermissionManager.resolvePermissions(member.role)
+
     await this.client.session.prompt({
       path: { id: member.sessionId! },
       body: {
         agent: member.agent,
         parts: [{ type: "text", text: prompt }],
         noReply: false,
-        tools: DISABLED_TOOLS,
+        tools: toolPermissions,
       },
     })
 
@@ -253,11 +250,11 @@ Keep response focused and actionable.`
     sessionId: string,
     timeoutMs: number
   ): Promise<string> {
-    const startTime = Date.now()
+    const startTime = this.clock.now()
     const pollInterval = 2000
 
-    while (Date.now() - startTime < timeoutMs) {
-      await this.sleep(pollInterval)
+    while (this.clock.now() - startTime < timeoutMs) {
+      await this.clock.sleep(pollInterval)
 
       try {
         const messages = await this.client.session.messages({
@@ -291,12 +288,5 @@ Keep response focused and actionable.`
     }
 
     throw new Error(`Timeout waiting for response after ${timeoutMs / 1000}s`)
-  }
-
-  /**
-   * Sleep utility
-   */
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }

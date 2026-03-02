@@ -82,7 +82,7 @@ describe("project_focus tool", () => {
     const result = await tool.execute({}, mockContext)
 
     expect(result).toContain("No project is currently focused")
-    expect(result).toContain("project_focus")
+    expect(result).toContain("project-focus")
   })
 
   test("sets focus to a project", async () => {

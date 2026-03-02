@@ -50,6 +50,7 @@ describe("ResearchManager", () => {
 
 ## Authentication Patterns
 
+**ID:** artifact-auth-001
 **Source Issue:** proj-123.1
 **Created:** 2026-03-01
 

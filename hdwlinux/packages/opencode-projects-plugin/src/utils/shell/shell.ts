@@ -6,6 +6,8 @@
  */
 
 import type { BunShell } from "../opencode-sdk/index.js"
+import type { Clock } from "../clock/index.js"
+import { systemClock } from "../clock/index.js"
 
 /**
  * Result of a shell command execution
@@ -23,6 +25,16 @@ export interface ShellResult {
 export const DEFAULT_SHELL_TIMEOUT_MS = 30000
 
 /**
+ * Options for running a shell command
+ */
+export interface RunShellOptions {
+  /** Timeout in milliseconds (default: 30000) */
+  timeoutMs?: number
+  /** Clock for timing operations (optional, uses system clock) */
+  clock?: Clock
+}
+
+/**
  * Run a shell command and return the result.
  *
  * Uses Bun's shell with `nothrow()` to prevent exceptions on non-zero exit codes
@@ -30,21 +42,23 @@ export const DEFAULT_SHELL_TIMEOUT_MS = 30000
  *
  * @param shell - The Bun shell instance
  * @param cmd - The command string to execute
- * @param timeoutMs - Optional timeout in milliseconds (default: 30000)
+ * @param options - Optional configuration including timeout and clock
  * @returns ShellResult with exitCode, stdout, stderr, and timedOut flag
  */
 export async function runShell(
   shell: BunShell,
   cmd: string,
-  timeoutMs: number = DEFAULT_SHELL_TIMEOUT_MS
+  options: RunShellOptions = {}
 ): Promise<ShellResult> {
+  const { timeoutMs = DEFAULT_SHELL_TIMEOUT_MS, clock = systemClock } = options
+
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+    const timeoutId = clock.setTimeout(() => controller.abort(), timeoutMs)
 
     try {
       const result = await shell`${{ raw: cmd }}`.nothrow().quiet()
-      clearTimeout(timeoutId)
+      clock.clearTimeout(timeoutId)
       return {
         exitCode: result.exitCode,
         stdout: result.stdout.toString(),
@@ -52,7 +66,7 @@ export async function runShell(
         timedOut: false,
       }
     } catch (error) {
-      clearTimeout(timeoutId)
+      clock.clearTimeout(timeoutId)
       if (error instanceof Error && error.name === "AbortError") {
         return {
           exitCode: 124,
@@ -81,18 +95,18 @@ export async function runShell(
  * @param shell - The Bun shell instance
  * @param cmd - The command string to execute
  * @param directory - The directory to run the command in
- * @param timeoutMs - Optional timeout in milliseconds (default: 30000)
+ * @param options - Optional configuration including timeout and clock
  * @returns ShellResult with exitCode, stdout, stderr, and timedOut flag
  */
 export async function runShellInDir(
   shell: BunShell,
   cmd: string,
   directory: string,
-  timeoutMs: number = DEFAULT_SHELL_TIMEOUT_MS
+  options: RunShellOptions = {}
 ): Promise<ShellResult> {
   const escapedDir = shell.escape(directory)
   const fullCmd = `cd ${escapedDir} && ${cmd}`
-  return runShell(shell, fullCmd, timeoutMs)
+  return runShell(shell, fullCmd, options)
 }
 
 /**

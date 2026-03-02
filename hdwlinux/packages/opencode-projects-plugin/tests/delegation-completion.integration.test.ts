@@ -17,7 +17,7 @@ import {
   waitFor,
   type IntegrationTestFixture,
 } from "./integration-test-utils.js"
-import type { CreateDelegationOptions } from "../src/execution/delegation-manager.js"
+import type { CreateDelegationOptions } from "../src/execution/index.js"
 
 /**
  * Helper to create delegation options with required fields

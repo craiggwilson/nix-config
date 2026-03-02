@@ -37,7 +37,7 @@ export class JujutsuAdapter implements VCSAdapter {
     this.log = log
 
     const repoName = path.basename(repoRoot)
-    this.worktreeBase = path.join(path.dirname(repoRoot), `${repoName}-workspaces`)
+    this.worktreeBase = path.join(path.dirname(repoRoot), `${repoName}-worktrees`)
   }
 
   /**
@@ -67,13 +67,31 @@ export class JujutsuAdapter implements VCSAdapter {
       )
     }
 
+    // Clean up stale directory from previous failed attempts
+    try {
+      const stat = await fs.stat(workspacePath)
+      if (stat.isDirectory()) {
+        await this.log.warn(`Removing stale workspace directory: ${workspacePath}`)
+        await fs.rm(workspacePath, { recursive: true, force: true })
+      }
+    } catch (error) {
+      // ENOENT is expected - directory doesn't exist
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        return err(
+          new WorktreeError("create", `Failed to check/clean workspace path: ${error}`, error)
+        )
+      }
+    }
+
     const cmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "workspace", "add", "--name", name, workspacePath])
     const result = await this.runCommand(cmd)
 
     if (result.exitCode !== 0) {
       await this.log.error(`Failed to create workspace: ${result.stderr}`)
       
-      if (result.stderr.includes("already exists")) {
+      // jj reports "already exists" for workspace name conflicts and
+      // "Destination path exists" for directory conflicts
+      if (result.stderr.includes("already exists") || result.stderr.includes("Destination path exists")) {
         return err(new WorktreeExistsError(name, workspacePath))
       }
       

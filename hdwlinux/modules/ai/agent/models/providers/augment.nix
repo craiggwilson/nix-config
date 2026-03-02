@@ -84,11 +84,11 @@
           };
           balanced = {
             provider = "augment";
-            model = "claude-sonnet-4-5";
+            model = "claude-sonnet-4-6";
           };
           coder = {
             provider = "augment";
-            model = "claude-opus-4-5";
+            model = "claude-sonnet-4-6";
           };
           analyst = {
             provider = "augment";
@@ -96,7 +96,7 @@
           };
           writer = {
             provider = "augment";
-            model = "claude-sonnet-4-5";
+            model = "claude-sonnet-4-6";
           };
         };
       };

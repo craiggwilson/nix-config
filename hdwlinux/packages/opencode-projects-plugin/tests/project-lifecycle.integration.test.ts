@@ -397,4 +397,590 @@ describe("Project Lifecycle Integration", () => {
       }
     })
   })
+
+  describe("Project creation with storage options", () => {
+    test("create project with local storage", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Local Storage Project",
+        type: "project",
+        storage: "local",
+        description: "Testing local storage",
+      })
+
+      expect(project.metadata.storage).toBe("local")
+      expect(project.projectDir).toContain(".projects")
+      expect(project.projectDir).toContain(fixture.repoDir)
+
+      // Verify directory structure was created
+      const metadata = await fixture.projectManager.getProject(project.projectId)
+      expect(metadata).not.toBeNull()
+      expect(metadata?.storage).toBe("local")
+    })
+
+    test("create roadmap type project", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Roadmap Project",
+        type: "roadmap",
+        storage: "local",
+        description: "Testing roadmap type",
+      })
+
+      expect(project.metadata.type).toBe("roadmap")
+      expect(project.metadata.status).toBe("active")
+    })
+
+    test("create project type project", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Project Type",
+        type: "project",
+        storage: "local",
+      })
+
+      expect(project.metadata.type).toBe("project")
+    })
+
+    test("project ID is generated from name", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "My Test Project 123",
+        storage: "local",
+      })
+
+      // ID should be slugified name + hash
+      expect(project.projectId).toMatch(/^my-test-project-123-[a-f0-9]+$/)
+    })
+
+    test("project with special characters in name", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Test & Project! @#$%",
+        storage: "local",
+      })
+
+      // Special characters should be stripped/replaced
+      expect(project.projectId).toMatch(/^test-project-[a-f0-9]+$/)
+    })
+  })
+
+  describe("Focus management operations", () => {
+    test("set focus on project", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Focus Set Test",
+        storage: "local",
+      })
+
+      // Creating a project auto-sets focus
+      expect(fixture.focus.getProjectId()).toBe(project.projectId)
+
+      // Create another project
+      const project2 = await fixture.projectManager.createProject({
+        name: "Focus Set Test 2",
+        storage: "local",
+      })
+
+      // Focus should now be on project2
+      expect(fixture.focus.getProjectId()).toBe(project2.projectId)
+
+      // Manually set focus back to project1
+      fixture.projectManager.setFocus(project.projectId)
+      expect(fixture.focus.getProjectId()).toBe(project.projectId)
+    })
+
+    test("get focus when no project focused", async () => {
+      // Initially no focus
+      expect(fixture.focus.getProjectId()).toBeNull()
+    })
+
+    test("clear focus", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Focus Clear Test",
+        storage: "local",
+      })
+
+      expect(fixture.focus.getProjectId()).toBe(project.projectId)
+
+      fixture.projectManager.clearFocus()
+      expect(fixture.focus.getProjectId()).toBeNull()
+    })
+
+    test("isFocusedOn returns correct value", async () => {
+      const project1 = await fixture.projectManager.createProject({
+        name: "Focus Check 1",
+        storage: "local",
+      })
+
+      const project2 = await fixture.projectManager.createProject({
+        name: "Focus Check 2",
+        storage: "local",
+      })
+
+      // Focus is on project2 (last created)
+      expect(fixture.focus.isFocusedOn(project2.projectId)).toBe(true)
+      expect(fixture.focus.isFocusedOn(project1.projectId)).toBe(false)
+
+      // Switch focus
+      fixture.projectManager.setFocus(project1.projectId)
+      expect(fixture.focus.isFocusedOn(project1.projectId)).toBe(true)
+      expect(fixture.focus.isFocusedOn(project2.projectId)).toBe(false)
+    })
+
+    test("focus serialization and restoration", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Focus Serialize Test",
+        storage: "local",
+      })
+
+      // Serialize current focus
+      const serialized = fixture.focus.serialize()
+      expect(serialized).not.toBeNull()
+
+      // Clear and restore
+      fixture.focus.clear()
+      expect(fixture.focus.getProjectId()).toBeNull()
+
+      const restored = fixture.focus.restore(serialized!)
+      expect(restored).toBe(true)
+      expect(fixture.focus.getProjectId()).toBe(project.projectId)
+    })
+  })
+
+  describe("Project status formats", () => {
+    test("getProjectStatus returns metadata and issue status", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Status Format Test",
+        storage: "local",
+        description: "Testing status formats",
+      })
+
+      // Add some issues
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 1", {
+        parent: project.rootIssueId,
+      })
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 2", {
+        parent: project.rootIssueId,
+      })
+
+      const status = await fixture.projectManager.getProjectStatus(project.projectId)
+      expect(status).not.toBeNull()
+
+      if (status) {
+        // Check metadata
+        expect(status.metadata.id).toBe(project.projectId)
+        expect(status.metadata.name).toBe("Status Format Test")
+        expect(status.metadata.description).toBe("Testing status formats")
+        expect(status.metadata.status).toBe("active")
+
+        // Check issue status
+        expect(status.issueStatus).not.toBeNull()
+        if (status.issueStatus) {
+          expect(status.issueStatus.total).toBe(3) // Root + 2 tasks
+          expect(status.issueStatus.completed).toBe(0)
+          expect(status.issueStatus.inProgress).toBe(0)
+        }
+      }
+    })
+
+    test("getProjectStatus returns null for non-existent project", async () => {
+      const status = await fixture.projectManager.getProjectStatus("non-existent-project")
+      expect(status).toBeNull()
+    })
+
+    test("listIssues returns all issues for tree view", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Tree View Test",
+        storage: "local",
+      })
+
+      // Create hierarchical issues
+      const epic1Result = await fixture.issueStorage.createIssue(project.projectDir, "Epic 1", {
+        parent: project.rootIssueId,
+        labels: ["epic"],
+      })
+      const epic1Id = epic1Result.ok ? epic1Result.value : ""
+
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 1.1", {
+        parent: epic1Id,
+      })
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 1.2", {
+        parent: epic1Id,
+      })
+
+      const issues = await fixture.projectManager.listIssues(project.projectId)
+      expect(issues.length).toBe(4) // Root + Epic + 2 tasks
+    })
+
+    test("getReadyIssues returns unblocked issues", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Ready Issues Test",
+        storage: "local",
+      })
+
+      const task1Result = await fixture.issueStorage.createIssue(project.projectDir, "Task 1")
+      const task1Id = task1Result.ok ? task1Result.value : ""
+
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 2", {
+        blockedBy: [task1Id],
+      })
+
+      const readyIssues = await fixture.projectManager.getReadyIssues(project.projectId)
+      
+      // Root and Task 1 should be ready, Task 2 is blocked
+      const readyIds = readyIssues.map((i) => i.id)
+      expect(readyIds).toContain(task1Id)
+      if (project.rootIssueId) {
+        expect(readyIds).toContain(project.rootIssueId)
+      }
+    })
+  })
+
+  describe("Project list with filters", () => {
+    test("list all local projects", async () => {
+      await fixture.projectManager.createProject({
+        name: "List Test 1",
+        storage: "local",
+      })
+      await fixture.projectManager.createProject({
+        name: "List Test 2",
+        storage: "local",
+      })
+
+      // Use scope: "local" to avoid picking up global projects from other tests
+      const projects = await fixture.projectManager.listProjects({ scope: "local" })
+      expect(projects.length).toBe(2)
+    })
+
+    test("list projects with scope filter - local", async () => {
+      await fixture.projectManager.createProject({
+        name: "Local Project",
+        storage: "local",
+      })
+
+      const localProjects = await fixture.projectManager.listProjects({ scope: "local" })
+      expect(localProjects.length).toBe(1)
+      expect(localProjects[0].storage).toBe("local")
+    })
+
+    test("list projects with status filter - active", async () => {
+      const project1 = await fixture.projectManager.createProject({
+        name: "Active Project",
+        storage: "local",
+      })
+      const project2 = await fixture.projectManager.createProject({
+        name: "Completed Project",
+        storage: "local",
+      })
+
+      // Close project2
+      await fixture.projectManager.closeProject(project2.projectId, { reason: "completed" })
+
+      // Use scope: "local" to avoid picking up global projects
+      const activeProjects = await fixture.projectManager.listProjects({ scope: "local", status: "active" })
+      expect(activeProjects.length).toBe(1)
+      expect(activeProjects[0].id).toBe(project1.projectId)
+    })
+
+    test("list projects with status filter - completed", async () => {
+      const project1 = await fixture.projectManager.createProject({
+        name: "Active Project 2",
+        storage: "local",
+      })
+      const project2 = await fixture.projectManager.createProject({
+        name: "Completed Project 2",
+        storage: "local",
+      })
+
+      await fixture.projectManager.closeProject(project2.projectId, { reason: "completed" })
+
+      // Use scope: "local" to avoid picking up global projects
+      const completedProjects = await fixture.projectManager.listProjects({ scope: "local", status: "completed" })
+      expect(completedProjects.length).toBe(1)
+      expect(completedProjects[0].id).toBe(project2.projectId)
+    })
+
+    test("list projects with combined filters", async () => {
+      await fixture.projectManager.createProject({
+        name: "Combined Filter Test",
+        storage: "local",
+      })
+
+      const projects = await fixture.projectManager.listProjects({
+        scope: "local",
+        status: "active",
+      })
+      expect(projects.length).toBe(1)
+    })
+
+    test("list returns empty array when no local projects match", async () => {
+      // Use scope: "local" to only check local projects in this test directory
+      const projects = await fixture.projectManager.listProjects({ scope: "local", status: "completed" })
+      expect(projects.length).toBe(0)
+    })
+  })
+
+  describe("Project close with all reasons", () => {
+    test("close project with reason: completed", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Complete Test",
+        storage: "local",
+      })
+
+      const closed = await fixture.projectManager.closeProject(project.projectId, {
+        reason: "completed",
+        summary: "All work finished successfully",
+      })
+
+      expect(closed).toBe(true)
+
+      const closedProject = await fixture.projectManager.getProject(project.projectId)
+      expect(closedProject?.status).toBe("completed")
+      expect(closedProject?.closeReason).toBe("completed")
+      expect(closedProject?.closeSummary).toBe("All work finished successfully")
+      expect(closedProject?.closedAt).toBeDefined()
+    })
+
+    test("close project with reason: cancelled", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Cancel Test",
+        storage: "local",
+      })
+
+      const closed = await fixture.projectManager.closeProject(project.projectId, {
+        reason: "cancelled",
+        summary: "Project cancelled due to priority change",
+      })
+
+      expect(closed).toBe(true)
+
+      const closedProject = await fixture.projectManager.getProject(project.projectId)
+      // Cancelled projects are marked as archived
+      expect(closedProject?.status).toBe("archived")
+      expect(closedProject?.closeReason).toBe("cancelled")
+      expect(closedProject?.closeSummary).toBe("Project cancelled due to priority change")
+    })
+
+    test("close project with reason: archived", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Archive Test",
+        storage: "local",
+      })
+
+      const closed = await fixture.projectManager.closeProject(project.projectId, {
+        reason: "archived",
+        summary: "Archived for future reference",
+      })
+
+      expect(closed).toBe(true)
+
+      const closedProject = await fixture.projectManager.getProject(project.projectId)
+      expect(closedProject?.status).toBe("archived")
+      expect(closedProject?.closeReason).toBe("archived")
+    })
+
+    test("close project without summary", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "No Summary Test",
+        storage: "local",
+      })
+
+      const closed = await fixture.projectManager.closeProject(project.projectId, {
+        reason: "completed",
+      })
+
+      expect(closed).toBe(true)
+
+      const closedProject = await fixture.projectManager.getProject(project.projectId)
+      expect(closedProject?.closeSummary).toBeUndefined()
+    })
+
+    test("close project with default reason", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Default Reason Test",
+        storage: "local",
+      })
+
+      const closed = await fixture.projectManager.closeProject(project.projectId, {})
+
+      expect(closed).toBe(true)
+
+      const closedProject = await fixture.projectManager.getProject(project.projectId)
+      expect(closedProject?.closeReason).toBe("completed")
+    })
+
+    test("close non-existent project returns false", async () => {
+      const closed = await fixture.projectManager.closeProject("non-existent-project", {
+        reason: "completed",
+      })
+
+      expect(closed).toBe(false)
+    })
+
+    test("closing focused project clears focus", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Focus Clear on Close",
+        storage: "local",
+      })
+
+      expect(fixture.focus.getProjectId()).toBe(project.projectId)
+
+      await fixture.projectManager.closeProject(project.projectId, { reason: "completed" })
+
+      expect(fixture.focus.getProjectId()).toBeNull()
+    })
+
+    test("closing non-focused project does not affect focus", async () => {
+      const project1 = await fixture.projectManager.createProject({
+        name: "Project 1",
+        storage: "local",
+      })
+      const project2 = await fixture.projectManager.createProject({
+        name: "Project 2",
+        storage: "local",
+      })
+
+      // Focus is on project2
+      expect(fixture.focus.getProjectId()).toBe(project2.projectId)
+
+      // Close project1
+      await fixture.projectManager.closeProject(project1.projectId, { reason: "completed" })
+
+      // Focus should still be on project2
+      expect(fixture.focus.getProjectId()).toBe(project2.projectId)
+    })
+  })
+
+  describe("Directory structure verification", () => {
+    test("project directory contains project.json", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Dir Structure Test",
+        storage: "local",
+      })
+
+      const fs = await import("node:fs/promises")
+      const path = await import("node:path")
+
+      const metadataPath = path.join(project.projectDir, "project.json")
+      const content = await fs.readFile(metadataPath, "utf8")
+      const metadata = JSON.parse(content)
+
+      expect(metadata.id).toBe(project.projectId)
+      expect(metadata.name).toBe("Dir Structure Test")
+      expect(metadata.status).toBe("active")
+    })
+
+    test("project directory is created in correct location for local storage", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Local Dir Test",
+        storage: "local",
+      })
+
+      expect(project.projectDir).toContain(fixture.repoDir)
+      expect(project.projectDir).toContain(".projects")
+      expect(project.projectDir).toContain(project.projectId)
+    })
+
+    test("getProjectDir returns correct path", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Get Dir Test",
+        storage: "local",
+      })
+
+      const dir = await fixture.projectManager.getProjectDir(project.projectId)
+      expect(dir).toBe(project.projectDir)
+    })
+
+    test("getProjectDir returns null for non-existent project", async () => {
+      const dir = await fixture.projectManager.getProjectDir("non-existent")
+      expect(dir).toBeNull()
+    })
+  })
+
+  describe("Metadata accuracy", () => {
+    test("project metadata contains all required fields", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Metadata Test",
+        type: "roadmap",
+        storage: "local",
+        description: "Testing metadata accuracy",
+      })
+
+      const metadata = await fixture.projectManager.getProject(project.projectId)
+      expect(metadata).not.toBeNull()
+
+      if (metadata) {
+        expect(metadata.id).toBe(project.projectId)
+        expect(metadata.name).toBe("Metadata Test")
+        expect(metadata.type).toBe("roadmap")
+        expect(metadata.storage).toBe("local")
+        expect(metadata.description).toBe("Testing metadata accuracy")
+        expect(metadata.status).toBe("active")
+        expect(metadata.createdAt).toBeDefined()
+        expect(metadata.workspace).toBe(fixture.repoDir)
+        expect(metadata.rootIssue).toBeDefined()
+      }
+    })
+
+    test("closed project metadata contains close fields", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Close Metadata Test",
+        storage: "local",
+      })
+
+      await fixture.projectManager.closeProject(project.projectId, {
+        reason: "completed",
+        summary: "Test summary",
+      })
+
+      const metadata = await fixture.projectManager.getProject(project.projectId)
+      expect(metadata).not.toBeNull()
+
+      if (metadata) {
+        expect(metadata.closedAt).toBeDefined()
+        expect(metadata.closeReason).toBe("completed")
+        expect(metadata.closeSummary).toBe("Test summary")
+      }
+    })
+
+    test("getProject returns null for non-existent project", async () => {
+      const metadata = await fixture.projectManager.getProject("non-existent")
+      expect(metadata).toBeNull()
+    })
+  })
+
+  describe("Cleanup verification", () => {
+    test("closed projects are still accessible", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Cleanup Test",
+        storage: "local",
+      })
+
+      await fixture.projectManager.closeProject(project.projectId, { reason: "completed" })
+
+      // Project should still be accessible
+      const metadata = await fixture.projectManager.getProject(project.projectId)
+      expect(metadata).not.toBeNull()
+
+      // Issues should still be accessible
+      const issues = await fixture.projectManager.listIssues(project.projectId)
+      expect(issues.length).toBeGreaterThan(0)
+    })
+
+    test("project data persists after close", async () => {
+      const project = await fixture.projectManager.createProject({
+        name: "Persist Test",
+        storage: "local",
+      })
+
+      // Add issues before closing
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 1", {
+        parent: project.rootIssueId,
+      })
+      await fixture.issueStorage.createIssue(project.projectDir, "Task 2", {
+        parent: project.rootIssueId,
+      })
+
+      await fixture.projectManager.closeProject(project.projectId, { reason: "archived" })
+
+      // Verify data persists
+      const issues = await fixture.projectManager.listIssues(project.projectId)
+      expect(issues.length).toBe(3) // Root + 2 tasks
+    })
+  })
 })

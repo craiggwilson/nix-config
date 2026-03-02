@@ -69,14 +69,14 @@ Issues support:
         const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
 
         if (!projectId) {
-          return "No project specified and no project is currently focused.\n\nUse `project_focus(projectId)` to set context, or provide projectId explicitly."
+          return "No project specified and no project is currently focused.\n\nUse `project-focus(projectId)` to set context, or provide projectId explicitly."
         }
 
         await log.info(`Creating issue in project ${projectId}: ${title}`)
 
         const project = await projectManager.getProject(projectId)
         if (!project) {
-          return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+          return `Project '${projectId}' not found.\n\nUse \`project-list\` to see available projects.`
         }
 
         const result = await projectManager.createIssue(projectId, title, {

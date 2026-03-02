@@ -11,7 +11,8 @@ import type { Logger, OpencodeClient } from "../utils/opencode-sdk/index.js"
 import type { Team } from "./team-manager.js"
 
 /**
- * Escape special XML characters to prevent injection and malformed XML
+ * Escape special XML characters to prevent injection and malformed XML.
+ * Works for both text content and attribute values.
  */
 function escapeXml(str: string): string {
   return str
@@ -20,13 +21,6 @@ function escapeXml(str: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;")
-}
-
-/**
- * Escape XML attribute values (includes escaping for attribute context)
- */
-function escapeXmlAttr(str: string): string {
-  return escapeXml(str)
 }
 
 /**
@@ -117,7 +111,7 @@ export class TeamNotifier {
     lines.push("  <members>")
     for (const member of team.members) {
       const result = team.results[member.agent]
-      lines.push(`    <member agent="${escapeXmlAttr(member.agent)}" role="${escapeXmlAttr(member.role)}">`)
+      lines.push(`    <member agent="${escapeXml(member.agent)}" role="${escapeXml(member.role)}">`)
       lines.push(`      <status>${escapeXml(member.status)}</status>`)
       if (result) {
         lines.push("      <result>")
@@ -133,16 +127,17 @@ export class TeamNotifier {
       for (const round of team.discussionHistory) {
         lines.push(`    <round n="${round.round}">`)
         for (const [agent, response] of Object.entries(round.responses)) {
-          lines.push(`      <response agent="${escapeXmlAttr(agent)}">${escapeXml(response)}</response>`)
+          lines.push(`      <response agent="${escapeXml(agent)}">${escapeXml(response)}</response>`)
         }
         lines.push("    </round>")
       }
       lines.push("  </discussion>")
     }
 
-    if (team.worktreePath && team.vcs) {
+    const mergeInstructions = this.getMergeInstructions(team)
+    if (mergeInstructions) {
       lines.push("  <merge-instructions>")
-      lines.push(escapeXml(this.getMergeInstructions(team)))
+      lines.push(escapeXml(mergeInstructions))
       lines.push("  </merge-instructions>")
     }
 
@@ -155,12 +150,17 @@ export class TeamNotifier {
    * Get VCS-specific merge instructions.
    *
    * Generates step-by-step instructions for merging the worktree changes
-   * back to the main branch, specific to the VCS type (git or jj).
+   * back to the main branch, specific to the VCS type (jj or git).
    *
    * @param team - The team with worktree information
-   * @returns Human-readable merge instructions
+   * @returns Human-readable merge instructions, or null if no worktree
    */
-  getMergeInstructions(team: Team): string {
+  getMergeInstructions(team: Team): string | null {
+    // Non-isolated teams have no worktree to merge
+    if (!team.worktreePath || !team.vcs) {
+      return null
+    }
+
     const branch = team.worktreeBranch || team.issueId
 
     if (team.vcs === "jj") {

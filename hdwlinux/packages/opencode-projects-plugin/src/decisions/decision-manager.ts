@@ -20,7 +20,7 @@
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
-import type { ArtifactRegistry } from "../artifacts/artifact-registry.js"
+import type { ArtifactRegistry } from "../artifacts/index.js"
 import type { Logger } from "../utils/opencode-sdk/index.js"
 import { ok, err, type Result } from "../utils/result/index.js"
 

@@ -18,8 +18,7 @@ import {
   waitFor,
   type IntegrationTestFixture,
 } from "./integration-test-utils.js"
-import type { Team } from "../src/execution/team-manager.js"
-import type { CreateDelegationOptions } from "../src/execution/delegation-manager.js"
+import type { CreateDelegationOptions, Team } from "../src/execution/index.js"
 
 /**
  * Helper to create delegation options

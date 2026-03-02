@@ -81,7 +81,7 @@ project-work-on-issue(issueId="auth-system.3", isolate=true)
 
 This:
 - Claims the issue (sets status to in_progress)
-- Creates an isolated git worktree or jj workspace (if isolate=true)
+- Creates an isolated jj workspace or git worktree (if isolate=true)
 - Delegates work to a background agent
 - Returns immediately
 

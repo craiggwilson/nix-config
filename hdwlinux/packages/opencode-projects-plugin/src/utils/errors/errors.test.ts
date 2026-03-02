@@ -2,12 +2,10 @@ import { describe, it, expect } from "bun:test"
 import * as os from "node:os"
 import {
   sanitizeErrorOutput,
-  formatBeadsError,
   formatDelegationError,
   formatTeamError,
   formatError,
   ProjectsPluginError,
-  type BeadsError,
   type DelegationError,
   type TeamError,
 } from "./errors"
@@ -134,54 +132,6 @@ MIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PbnGy
       const result = sanitizeErrorOutput(input)
       expect(result).toBe("Error: File not found at ./relative/path.ts")
     })
-  })
-})
-
-describe("formatBeadsError", () => {
-  it("should format not_available error", () => {
-    const error: BeadsError = { type: "not_available" }
-    const result = formatBeadsError(error)
-    expect(result).toContain("beads (bd) CLI not found")
-  })
-
-  it("should format shell_not_initialized error", () => {
-    const error: BeadsError = { type: "shell_not_initialized" }
-    const result = formatBeadsError(error)
-    expect(result).toContain("shell not initialized")
-  })
-
-  it("should sanitize command_failed stderr", () => {
-    const error: BeadsError = {
-      type: "command_failed",
-      command: "/home/user/bin/bd list",
-      exitCode: 1,
-      stderr: "Error: password=secret123 at /home/user/config",
-    }
-    const result = formatBeadsError(error)
-    expect(result).not.toContain("/home/user")
-    expect(result).not.toContain("secret123")
-    expect(result).toContain("exit code 1")
-  })
-
-  it("should sanitize parse_error message", () => {
-    const error: BeadsError = {
-      type: "parse_error",
-      message: "Invalid JSON at /home/user/data.json with token=abc123",
-    }
-    const result = formatBeadsError(error)
-    expect(result).not.toContain("/home/user")
-    expect(result).toContain("[REDACTED]")
-  })
-
-  it("should sanitize timeout command", () => {
-    const error: BeadsError = {
-      type: "timeout",
-      command: "/usr/local/bin/bd --auth-token=secret123 list",
-      timeoutMs: 30000,
-    }
-    const result = formatBeadsError(error)
-    expect(result).toContain("30s")
-    expect(result).not.toContain("secret123")
   })
 })
 

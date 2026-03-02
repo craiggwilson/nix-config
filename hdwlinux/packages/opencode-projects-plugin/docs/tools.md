@@ -54,8 +54,8 @@ List all projects with optional filtering.
 **Parameters:**
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
+| `scope` | `"local"` \| `"global"` \| `"all"` | No | Filter by storage location (default: all) |
 | `status` | `"active"` \| `"completed"` \| `"all"` | No | Filter by status (default: all) |
-| `storage` | `"local"` \| `"global"` \| `"all"` | No | Filter by storage (default: all) |
 
 **Returns:** List of projects with status summaries.
 
@@ -147,7 +147,7 @@ Start work on an issue with a background agent.
 
 This tool:
 1. Claims the issue (sets status to in_progress)
-2. Optionally creates an isolated git worktree or jj workspace (if isolate=true)
+2. Optionally creates an isolated jj workspace or git worktree (if isolate=true)
 3. Delegates work to a background agent
 4. Returns immediately - you'll be notified when complete
 
@@ -160,7 +160,7 @@ This tool:
 
 **Behavior:**
 - `isolate=false` (default): Runs in repo root. Good for research, analysis, documentation.
-- `isolate=true`: Creates git worktree or jj workspace. Required for code changes that need merging.
+- `isolate=true`: Creates jj workspace or git worktree. Required for code changes that need merging.
 
 When `isolate=true`, the completion notification includes VCS-specific merge instructions.
 

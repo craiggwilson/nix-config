@@ -9,12 +9,17 @@ import type { Result } from "../utils/result/index.js"
 import type { VCSError } from "../utils/errors/index.js"
 
 /**
- * Supported VCS types
+ * Supported version control systems.
+ * - `"git"`: Standard Git repositories using git worktrees for isolation
+ * - `"jj"`: Jujutsu repositories (may be colocated with Git) using jj workspaces
  */
 export type VCSType = "git" | "jj"
 
 /**
- * Merge strategy options
+ * Strategy for merging worktree changes back to the target branch.
+ * - `"squash"`: Combine all commits into one (cleanest history, default)
+ * - `"merge"`: Create a merge commit preserving the full commit history
+ * - `"rebase"`: Replay commits on top of the target branch
  */
 export type MergeStrategy = "squash" | "merge" | "rebase"
 
@@ -24,7 +29,7 @@ export type MergeStrategy = "squash" | "merge" | "rebase"
 export interface WorktreeInfo {
   name: string
   path: string
-  branch?: string // git branch or jj change id
+  branch?: string // jj change id or git branch
   isMain: boolean
 }
 

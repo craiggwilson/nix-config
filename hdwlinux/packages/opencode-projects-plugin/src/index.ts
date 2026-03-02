@@ -35,6 +35,7 @@ import { validateClientOrThrow } from "./utils/validation/index.js"
 import type { OpencodeClient } from "./utils/opencode-sdk/index.js"
 
 import { BeadsIssueStorage } from "./issues/beads/index.js"
+import { extractConversationContent } from "./utils/conversation/index.js"
 
 import {
   PROJECT_RULES,
@@ -270,26 +271,21 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
     },
 
     config: async (opencodeConfig: Record<string, unknown>) => {
-      // Resolve path to bundled skills directory at package root
       const pluginDir = path.dirname(fileURLToPath(import.meta.url))
       const packageRoot = path.resolve(pluginDir, "..")
       const skillsPath = path.resolve(packageRoot, "skills")
 
-      // Plugin-provided agents (plugin config takes precedence)
       const pluginAgents = {
         "opencode-projects": OPENCODE_PROJECTS_AGENT_CONFIG,
       }
 
-      // Plugin-provided skill paths
       const pluginSkillPaths = [skillsPath]
 
-      // Merge agents (plugin takes precedence by assigning last)
       if (!opencodeConfig.agent) {
         opencodeConfig.agent = {}
       }
       Object.assign(opencodeConfig.agent as Record<string, unknown>, pluginAgents)
 
-      // Merge skill paths
       if (!opencodeConfig.skills) {
         opencodeConfig.skills = { paths: [] }
       }
@@ -300,6 +296,24 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       for (const p of pluginSkillPaths) {
         if (!skillsConfig.paths.includes(p)) {
           skillsConfig.paths.push(p)
+        }
+      }
+
+      const globalProjectsDir = config.getGlobalProjectsDir()
+      const globalProjectsPattern = `${globalProjectsDir}/*`
+      if (!opencodeConfig.permission || typeof opencodeConfig.permission === "object") {
+        if (!opencodeConfig.permission) {
+          opencodeConfig.permission = {}
+        }
+        const permissionConfig = opencodeConfig.permission as Record<string, unknown>
+        if (!permissionConfig.external_directory || typeof permissionConfig.external_directory === "object") {
+          if (!permissionConfig.external_directory) {
+            permissionConfig.external_directory = {}
+          }
+          const externalDir = permissionConfig.external_directory as Record<string, unknown>
+          if (!externalDir[globalProjectsPattern]) {
+            externalDir[globalProjectsPattern] = "allow"
+          }
         }
       }
 
@@ -322,32 +336,6 @@ async function buildPlanningContext(
   if (!planningManager) return null
 
   return planningManager.buildContext()
-}
-
-/**
- * Extract conversation content from compaction input.
- * The input structure may vary, so we handle multiple formats.
- */
-function extractConversationContent(input: unknown): string | null {
-  const inputObj = input as Record<string, unknown>
-
-  if (typeof inputObj.content === "string") {
-    return inputObj.content
-  }
-
-  if (typeof inputObj.conversation === "string") {
-    return inputObj.conversation
-  }
-
-  if (Array.isArray(inputObj.messages)) {
-    return inputObj.messages
-      .map((msg: { role?: string; content?: string }) =>
-        `${msg.role || "unknown"}: ${msg.content || ""}`
-      )
-      .join("\n\n")
-  }
-
-  return null
 }
 
 export default ProjectsPlugin

@@ -12,12 +12,11 @@ import * as os from "node:os"
 import { $ } from "bun"
 
 import { ConfigManager } from "../src/config/index.js"
-import { ProjectManager, FocusManager } from "../src/projects/index.js"
+import { DelegationManager, TeamManager, type TeamConfig } from "../src/execution/index.js"
 import { InMemoryIssueStorage } from "../src/issues/inmemory/index.js"
-import { DelegationManager } from "../src/execution/delegation-manager.js"
-import { TeamManager, type TeamConfig } from "../src/execution/team-manager.js"
-import { WorktreeManager } from "../src/vcs/index.js"
+import { ProjectManager, FocusManager } from "../src/projects/index.js"
 import type { Logger, OpencodeClient, BunShell } from "../src/utils/opencode-sdk/index.js"
+import { WorktreeManager } from "../src/vcs/index.js"
 
 /**
  * Default team configuration for tests

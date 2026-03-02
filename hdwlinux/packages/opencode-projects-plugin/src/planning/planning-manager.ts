@@ -15,13 +15,22 @@
  * planning sessions to be resumed across multiple conversations. The accumulated
  * understanding is injected into system prompts to maintain context.
  *
+ * ## Error Handling
+ *
+ * This module uses Result types for explicit error handling. Methods return
+ * `Result<T, PlanningError>` to communicate success or failure without exceptions.
+ *
  * @module planning
  */
 
 import * as fs from "node:fs/promises"
 import * as path from "node:path"
 
+import type { PlanningError } from "../utils/errors/index.js"
+import { formatPlanningError } from "../utils/errors/index.js"
 import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { Result } from "../utils/result/index.js"
+import { err, ok } from "../utils/result/index.js"
 
 /**
  * Represents the current phase of a planning session.
@@ -256,20 +265,24 @@ export class PlanningManager {
    * both first-time initialization and session resumption transparently,
    * allowing the same code path regardless of whether planning has started.
    *
-   * @returns The current (possibly newly created) planning state
+   * @returns Result containing the current (possibly newly created) planning state
    */
-  async startOrContinue(): Promise<PlanningState> {
-    let state = await this.getState()
+  async startOrContinue(): Promise<Result<PlanningState, PlanningError>> {
+    try {
+      let state = await this.getState()
 
-    if (!state) {
-      state = this.createInitialState()
-      await this.saveState(state)
-      await this.log.info(`Started new planning session`)
-    } else {
-      await this.log.info(`Continuing planning session (phase: ${state.phase})`)
+      if (!state) {
+        state = this.createInitialState()
+        await this.saveState(state)
+        await this.log.info(`Started new planning session`)
+      } else {
+        await this.log.info(`Continuing planning session (phase: ${state.phase})`)
+      }
+
+      return ok(state)
+    } catch (error) {
+      return err({ type: "persistence_failed", message: String(error) })
     }
-
-    return state
   }
 
   /**
@@ -293,32 +306,35 @@ export class PlanningManager {
    * The current phase is marked as completed before advancing, enabling
    * progress tracking. Cannot advance from the "complete" phase.
    *
-   * @returns The updated state with the new phase
-   * @throws If no planning session exists or already at the final phase
+   * @returns Result containing the updated state with the new phase, or an error
    */
-  async advancePhase(): Promise<PlanningState> {
-    const state = await this.getState()
-    if (!state) {
-      throw new Error("No planning session found")
+  async advancePhase(): Promise<Result<PlanningState, PlanningError>> {
+    try {
+      const state = await this.getState()
+      if (!state) {
+        return err({ type: "no_session" })
+      }
+
+      const currentIndex = PHASE_ORDER.indexOf(state.phase)
+
+      if (currentIndex === -1 || currentIndex >= PHASE_ORDER.length - 1) {
+        return err({ type: "cannot_advance", currentPhase: state.phase })
+      }
+
+      // Mark current phase as completed
+      if (!state.completedPhases.includes(state.phase)) {
+        state.completedPhases.push(state.phase)
+      }
+
+      // Move to next phase
+      state.phase = PHASE_ORDER[currentIndex + 1]
+      await this.saveState(state)
+
+      await this.log.info(`Advanced planning to phase: ${state.phase}`)
+      return ok(state)
+    } catch (error) {
+      return err({ type: "persistence_failed", message: String(error) })
     }
-
-    const currentIndex = PHASE_ORDER.indexOf(state.phase)
-
-    if (currentIndex === -1 || currentIndex >= PHASE_ORDER.length - 1) {
-      throw new Error(`Cannot advance from phase: ${state.phase}`)
-    }
-
-    // Mark current phase as completed
-    if (!state.completedPhases.includes(state.phase)) {
-      state.completedPhases.push(state.phase)
-    }
-
-    // Move to next phase
-    state.phase = PHASE_ORDER[currentIndex + 1]
-    await this.saveState(state)
-
-    await this.log.info(`Advanced planning to phase: ${state.phase}`)
-    return state
   }
 
   /**
@@ -329,20 +345,23 @@ export class PlanningManager {
    * Does not modify the `completedPhases` array.
    *
    * @param phase - The phase to jump to
-   * @returns The updated state
-   * @throws If no planning session exists
+   * @returns Result containing the updated state, or an error
    */
-  async setPhase(phase: PlanningPhase): Promise<PlanningState> {
-    const state = await this.getState()
-    if (!state) {
-      throw new Error("No planning session found")
+  async setPhase(phase: PlanningPhase): Promise<Result<PlanningState, PlanningError>> {
+    try {
+      const state = await this.getState()
+      if (!state) {
+        return err({ type: "no_session" })
+      }
+
+      state.phase = phase
+      await this.saveState(state)
+
+      await this.log.info(`Set planning phase to: ${phase}`)
+      return ok(state)
+    } catch (error) {
+      return err({ type: "persistence_failed", message: String(error) })
     }
-
-    state.phase = phase
-    await this.saveState(state)
-
-    await this.log.info(`Set planning phase to: ${phase}`)
-    return state
   }
 
   /**
@@ -354,43 +373,46 @@ export class PlanningManager {
    * appended while avoiding duplicates based on the decision text.
    *
    * @param updates - Partial understanding to merge
-   * @returns The updated state
-   * @throws If no planning session exists
+   * @returns Result containing the updated state, or an error
    */
-  async updateUnderstanding(updates: Partial<PlanningUnderstanding>): Promise<PlanningState> {
-    const state = await this.getState()
-    if (!state) {
-      throw new Error("No planning session found")
-    }
+  async updateUnderstanding(updates: Partial<PlanningUnderstanding>): Promise<Result<PlanningState, PlanningError>> {
+    try {
+      const state = await this.getState()
+      if (!state) {
+        return err({ type: "no_session" })
+      }
 
-    // Merge updates into existing understanding
-    state.understanding = {
-      ...state.understanding,
-      ...updates,
-    }
+      // Merge updates into existing understanding
+      state.understanding = {
+        ...state.understanding,
+        ...updates,
+      }
 
-    // Deduplicate arrays
-    if (updates.goals) {
-      state.understanding.goals = [...new Set(state.understanding.goals)]
-    }
-    if (updates.stakeholders) {
-      state.understanding.stakeholders = [...new Set(state.understanding.stakeholders)]
-    }
-    if (updates.constraints) {
-      state.understanding.constraints = [...new Set(state.understanding.constraints)]
-    }
-    if (updates.risks) {
-      state.understanding.risks = [...new Set(state.understanding.risks)]
-    }
-    if (updates.decisions && state.understanding.decisions) {
-      // Append new decisions, avoiding duplicates
-      const existingDecisions = state.understanding.decisions.map((d) => d.decision)
-      const newDecisions = updates.decisions.filter((d) => !existingDecisions.includes(d.decision))
-      state.understanding.decisions = [...state.understanding.decisions, ...newDecisions]
-    }
+      // Deduplicate arrays
+      if (updates.goals) {
+        state.understanding.goals = [...new Set(state.understanding.goals)]
+      }
+      if (updates.stakeholders) {
+        state.understanding.stakeholders = [...new Set(state.understanding.stakeholders)]
+      }
+      if (updates.constraints) {
+        state.understanding.constraints = [...new Set(state.understanding.constraints)]
+      }
+      if (updates.risks) {
+        state.understanding.risks = [...new Set(state.understanding.risks)]
+      }
+      if (updates.decisions && state.understanding.decisions) {
+        // Append new decisions, avoiding duplicates
+        const existingDecisions = state.understanding.decisions.map((d) => d.decision)
+        const newDecisions = updates.decisions.filter((d) => !existingDecisions.includes(d.decision))
+        state.understanding.decisions = [...state.understanding.decisions, ...newDecisions]
+      }
 
-    await this.saveState(state)
-    return state
+      await this.saveState(state)
+      return ok(state)
+    } catch (error) {
+      return err({ type: "persistence_failed", message: String(error) })
+    }
   }
 
   /**
@@ -401,18 +423,21 @@ export class PlanningManager {
    * than merged, as the list represents the current state of unknowns.
    *
    * @param questions - The new list of open questions
-   * @returns The updated state
-   * @throws If no planning session exists
+   * @returns Result containing the updated state, or an error
    */
-  async updateOpenQuestions(questions: string[]): Promise<PlanningState> {
-    const state = await this.getState()
-    if (!state) {
-      throw new Error("No planning session found")
-    }
+  async updateOpenQuestions(questions: string[]): Promise<Result<PlanningState, PlanningError>> {
+    try {
+      const state = await this.getState()
+      if (!state) {
+        return err({ type: "no_session" })
+      }
 
-    state.openQuestions = questions
-    await this.saveState(state)
-    return state
+      state.openQuestions = questions
+      await this.saveState(state)
+      return ok(state)
+    } catch (error) {
+      return err({ type: "persistence_failed", message: String(error) })
+    }
   }
 
   // ============================================================================
@@ -626,7 +651,11 @@ export class PlanningManager {
    * @returns Formatted session overview with guidance
    */
   async handleStartOrContinue(projectId: string): Promise<string> {
-    const state = await this.startOrContinue()
+    const result = await this.startOrContinue()
+    if (!result.ok) {
+      return formatPlanningError(result.error)
+    }
+    const state = result.value
 
     const lines: string[] = []
 
@@ -691,7 +720,10 @@ export class PlanningManager {
     if (understandingJson) {
       try {
         const updates = JSON.parse(understandingJson)
-        await this.updateUnderstanding(updates)
+        const result = await this.updateUnderstanding(updates)
+        if (!result.ok) {
+          return formatPlanningError(result.error)
+        }
       } catch (e) {
         return `Error parsing understanding JSON: ${e}`
       }
@@ -700,7 +732,10 @@ export class PlanningManager {
     // Update open questions if provided
     if (openQuestionsStr) {
       const questions = openQuestionsStr.split(",").map((q) => q.trim()).filter(Boolean)
-      await this.updateOpenQuestions(questions)
+      const result = await this.updateOpenQuestions(questions)
+      if (!result.ok) {
+        return formatPlanningError(result.error)
+      }
     }
 
     const updatedState = await this.getState()
@@ -712,34 +747,33 @@ export class PlanningManager {
    * Handles the 'advance' action from the project-plan tool.
    *
    * Moves to the next phase in sequence. Returns guidance for the new phase,
-   * or a completion message if planning is finished. Errors are caught and
-   * returned as user-friendly messages.
+   * or a completion message if planning is finished.
    *
    * @returns Formatted message with new phase guidance or error
    */
   async handleAdvance(): Promise<string> {
-    try {
-      const state = await this.advancePhase()
-
-      const lines: string[] = []
-      lines.push(`## Advanced to Phase: ${state.phase}`)
-      lines.push("")
-
-      if (state.phase === "complete") {
-        lines.push("🎉 Planning is complete!")
-        lines.push("")
-        lines.push("You can now:")
-        lines.push("- Review the issues created")
-        lines.push("- Start working on issues with `project-work-on-issue`")
-        lines.push("- Close the project when done with `project-close`")
-      } else {
-        lines.push(this.getPhaseGuidance(state.phase))
-      }
-
-      return lines.join("\n")
-    } catch (e) {
-      return `Error advancing phase: ${e}`
+    const result = await this.advancePhase()
+    if (!result.ok) {
+      return formatPlanningError(result.error)
     }
+    const state = result.value
+
+    const lines: string[] = []
+    lines.push(`## Advanced to Phase: ${state.phase}`)
+    lines.push("")
+
+    if (state.phase === "complete") {
+      lines.push("🎉 Planning is complete!")
+      lines.push("")
+      lines.push("You can now:")
+      lines.push("- Review the issues created")
+      lines.push("- Start working on issues with `project-work-on-issue`")
+      lines.push("- Close the project when done with `project-close`")
+    } else {
+      lines.push(this.getPhaseGuidance(state.phase))
+    }
+
+    return lines.join("\n")
   }
 
   /**
@@ -753,18 +787,18 @@ export class PlanningManager {
    * @returns Formatted message with phase guidance or error
    */
   async handleSetPhase(phase: PlanningPhase): Promise<string> {
-    try {
-      const state = await this.setPhase(phase)
-
-      const lines: string[] = []
-      lines.push(`## Phase Set: ${state.phase}`)
-      lines.push("")
-      lines.push(this.getPhaseGuidance(state.phase))
-
-      return lines.join("\n")
-    } catch (e) {
-      return `Error setting phase: ${e}`
+    const result = await this.setPhase(phase)
+    if (!result.ok) {
+      return formatPlanningError(result.error)
     }
+    const state = result.value
+
+    const lines: string[] = []
+    lines.push(`## Phase Set: ${state.phase}`)
+    lines.push("")
+    lines.push(this.getPhaseGuidance(state.phase))
+
+    return lines.join("\n")
   }
 
   // ============================================================================

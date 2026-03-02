@@ -26,11 +26,16 @@ import type { Logger, OpencodeClient, BunShell } from "../utils/opencode-sdk/ind
 import type { VCSType } from "../vcs/index.js"
 import { PlanningManager } from "../planning/index.js"
 import type { PlanningState, PlanningPhase, PlanningUnderstanding } from "../planning/index.js"
+import type { PlanningError } from "../utils/errors/index.js"
+import { err, ok } from "../utils/result/index.js"
 import type { TeamManager } from "../execution/index.js"
 import { ArtifactRegistry } from "../artifacts/index.js"
 import { SessionManager } from "../sessions/index.js"
 import { ResearchManager } from "../research/index.js"
 import { DecisionManager } from "../decisions/index.js"
+
+/** Filename for project metadata */
+const PROJECT_METADATA_FILE = "project.json"
 
 /**
  * Project metadata stored in project.json
@@ -153,10 +158,10 @@ export class ProjectManager {
       throw new Error(`Project directory already exists at ${projectDir}`)
     }
 
-    // Use stealth mode for global projects to avoid creating .beads/ in non-repo directories
-    const initResult = await this.issueStorage.init(projectDir, {
-      stealth: effectiveStorage === "global",
-    })
+    // Stealth mode configures global gitattributes/gitignore to hide beads files from git.
+    // Only use it for local projects (inside a git repo). Global project dirs are not git
+    // repos, so --stealth fails with "not a git repository".
+    const initResult = await this.issueStorage.init(projectDir)
 
     if (!initResult.ok) {
       await this.log.warn("Failed to initialize issue storage")
@@ -183,7 +188,7 @@ export class ProjectManager {
     }
 
     await fs.writeFile(
-      path.join(projectDir, "project.json"),
+      path.join(projectDir, PROJECT_METADATA_FILE),
       JSON.stringify(metadata, null, 2),
       "utf8"
     )
@@ -281,7 +286,7 @@ export class ProjectManager {
     }
 
     await fs.writeFile(
-      path.join(projectDir, "project.json"),
+      path.join(projectDir, PROJECT_METADATA_FILE),
       JSON.stringify(metadata, null, 2),
       "utf8"
     )
@@ -509,63 +514,68 @@ export class ProjectManager {
   }
 
   /**
-   * Start or continue a planning session
+   * Start or continue a planning session.
+   * Returns an error if the project is not found or if the operation fails.
    */
-  async startOrContinuePlanning(projectId: string): Promise<PlanningState> {
+  async startOrContinuePlanning(projectId: string): Promise<Result<PlanningState, PlanningError>> {
     const manager = await this.getPlanningManager(projectId)
     if (!manager) {
-      throw new Error(`Project not found: ${projectId}`)
+      return err({ type: "no_session" })
     }
 
     return manager.startOrContinue()
   }
 
   /**
-   * Advance to the next planning phase
+   * Advance to the next planning phase.
+   * Returns an error if the project is not found or if the operation fails.
    */
-  async advancePlanningPhase(projectId: string): Promise<PlanningState> {
+  async advancePlanningPhase(projectId: string): Promise<Result<PlanningState, PlanningError>> {
     const manager = await this.getPlanningManager(projectId)
     if (!manager) {
-      throw new Error(`Project not found: ${projectId}`)
+      return err({ type: "no_session" })
     }
 
     return manager.advancePhase()
   }
 
   /**
-   * Jump to a specific planning phase
+   * Jump to a specific planning phase.
+   * Returns an error if the project is not found or if the operation fails.
    */
-  async setPlanningPhase(projectId: string, phase: PlanningPhase): Promise<PlanningState> {
+  async setPlanningPhase(projectId: string, phase: PlanningPhase): Promise<Result<PlanningState, PlanningError>> {
     const manager = await this.getPlanningManager(projectId)
     if (!manager) {
-      throw new Error(`Project not found: ${projectId}`)
+      return err({ type: "no_session" })
     }
 
     return manager.setPhase(phase)
   }
 
   /**
-   * Update the planning understanding
+   * Update the planning understanding.
+   * Returns an error if the project is not found or if the operation fails.
    */
   async updatePlanningUnderstanding(
     projectId: string,
     updates: Partial<PlanningUnderstanding>
-  ): Promise<PlanningState> {
+  ): Promise<Result<PlanningState, PlanningError>> {
     const manager = await this.getPlanningManager(projectId)
     if (!manager) {
-      throw new Error(`Project not found: ${projectId}`)
+      return err({ type: "no_session" })
     }
 
     return manager.updateUnderstanding(updates)
   }
 
   /**
-   * Update open questions
+   * Update open questions.
+   * Returns an error if the project is not found or if the operation fails.
    */
-  async updateOpenQuestions(projectId: string, questions: string[]): Promise<PlanningState> {
+  async updateOpenQuestions(projectId: string, questions: string[]): Promise<Result<PlanningState, PlanningError>> {
     const manager = await this.getPlanningManager(projectId)
     if (!manager) {
-      throw new Error(`Project not found: ${projectId}`)
+      return err({ type: "no_session" })
     }
 
     return manager.updateOpenQuestions(questions)
@@ -733,16 +743,8 @@ export class ProjectManager {
    */
   private async loadProjectMetadata(projectDir: string): Promise<ProjectMetadata | null> {
     try {
-      const content = await fs.readFile(path.join(projectDir, "project.json"), "utf8")
+      const content = await fs.readFile(path.join(projectDir, PROJECT_METADATA_FILE), "utf8")
       const metadata = JSON.parse(content) as ProjectMetadata
-
-      // Migrate old projects without storage field
-      if (!metadata.storage) {
-        metadata.storage = projectDir.includes(this.config.getGlobalProjectsDir())
-          ? "global"
-          : "local"
-      }
-
       return metadata
     } catch {
       return null

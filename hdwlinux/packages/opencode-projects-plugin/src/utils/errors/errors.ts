@@ -2,9 +2,9 @@
  * Custom error types for the opencode-projects plugin
  */
 
-import type { BaseError } from "../result/result.js"
 import * as os from "node:os"
-import * as path from "node:path"
+
+import type { BaseError } from "../result/index.js"
 
 /**
  * Patterns that indicate sensitive data in error messages.
@@ -198,7 +198,7 @@ export class VCSNotDetectedError extends VCSError {
       `No version control system detected in '${directory}'`,
       "VCS_NOT_DETECTED",
       true,
-      "Initialize a git or jj repository first."
+      "Initialize a jj or git repository first."
     )
     this.name = "VCSNotDetectedError"
   }
@@ -302,16 +302,6 @@ export class ConfigurationError extends ProjectsPluginError {
 }
 
 /**
- * Beads error types - discriminated union for type-safe error handling
- */
-export type BeadsError =
-  | { type: "not_available" }
-  | { type: "shell_not_initialized" }
-  | { type: "command_failed"; command: string; exitCode: number; stderr: string }
-  | { type: "parse_error"; message: string; cause?: unknown }
-  | { type: "timeout"; command: string; timeoutMs: number }
-
-/**
  * Delegation error types - discriminated union for type-safe error handling
  */
 export type DelegationError =
@@ -321,6 +311,7 @@ export type DelegationError =
   | { type: "persistence_failed"; delegationId: string; message: string }
   | { type: "already_completed"; delegationId: string; status: string }
   | { type: "timeout"; delegationId: string; timeoutMs: number }
+  | { type: "api_error"; delegationId: string; operation: string; message: string; retryable: boolean; hint: string }
 
 /**
  * Team error types - discriminated union for type-safe error handling
@@ -335,57 +326,12 @@ export type TeamError =
   | { type: "member_not_found"; teamId: string; delegationId: string }
 
 /**
- * Format a BeadsError for display.
- * Sanitizes output to prevent information disclosure.
+ * Planning error types - discriminated union for type-safe error handling
  */
-export function formatBeadsError(error: BeadsError): string {
-  switch (error.type) {
-    case "not_available":
-      return "beads (bd) CLI not found in PATH. Install from https://github.com/hdwlinux/beads"
-    case "shell_not_initialized":
-      return "BeadsIssueStorage shell not initialized. Call setShell() first."
-    case "command_failed": {
-      // Sanitize command name (remove full paths, keep just the command)
-      const sanitizedCommand = sanitizeCommandForDisplay(error.command)
-      const userMessage = createUserFriendlyMessage(error.stderr)
-      return `beads command failed: ${sanitizedCommand} (exit code ${error.exitCode})\n${userMessage}`
-    }
-    case "parse_error":
-      return `Failed to parse beads output: ${sanitizeErrorOutput(error.message)}`
-    case "timeout": {
-      const sanitizedCommand = sanitizeCommandForDisplay(error.command)
-      return `beads command timed out after ${error.timeoutMs / 1000}s: ${sanitizedCommand}`
-    }
-  }
-}
-
-/**
- * Sanitize a command string for display.
- * Removes sensitive arguments and normalizes paths.
- */
-function sanitizeCommandForDisplay(command: string): string {
-  // Extract just the command name without full path
-  const parts = command.split(/\s+/)
-  if (parts.length === 0) return command
-
-  // Get base command name
-  const baseCommand = path.basename(parts[0] || "")
-
-  // Sanitize remaining arguments
-  const sanitizedArgs = parts.slice(1).map((arg) => {
-    // Redact values that look like secrets
-    if (arg.includes("=")) {
-      const [key, _value] = arg.split("=", 2)
-      if (key && /password|secret|token|key|auth/i.test(key)) {
-        return `${key}=[REDACTED]`
-      }
-    }
-    // Sanitize paths in arguments
-    return sanitizeErrorOutput(arg)
-  })
-
-  return [baseCommand, ...sanitizedArgs].join(" ")
-}
+export type PlanningError =
+  | { type: "no_session" }
+  | { type: "cannot_advance"; currentPhase: string }
+  | { type: "persistence_failed"; message: string }
 
 /**
  * Format a DelegationError for display.
@@ -405,6 +351,14 @@ export function formatDelegationError(error: DelegationError): string {
       return `Delegation '${error.delegationId}' already completed with status '${error.status}'`
     case "timeout":
       return `Delegation '${error.delegationId}' timed out after ${error.timeoutMs / 1000}s`
+    case "api_error": {
+      const lines = [
+        `Delegation '${error.delegationId}' API error during ${error.operation}: ${sanitizeErrorOutput(error.message)}`,
+        "",
+        `**Hint:** ${error.hint}`,
+      ]
+      return lines.join("\n")
+    }
   }
 }
 
@@ -431,6 +385,20 @@ export function formatTeamError(error: TeamError): string {
       return `Team '${error.teamId}' worktree operation failed: ${sanitizeErrorOutput(error.message)}`
     case "member_not_found":
       return `Team '${error.teamId}' member with delegation '${error.delegationId}' not found`
+  }
+}
+
+/**
+ * Format a PlanningError for display.
+ */
+export function formatPlanningError(error: PlanningError): string {
+  switch (error.type) {
+    case "no_session":
+      return "No planning session found. Use `project-plan(action='start')` to begin planning."
+    case "cannot_advance":
+      return `Cannot advance from phase: ${error.currentPhase}`
+    case "persistence_failed":
+      return `Failed to save planning state: ${sanitizeErrorOutput(error.message)}`
   }
 }
 

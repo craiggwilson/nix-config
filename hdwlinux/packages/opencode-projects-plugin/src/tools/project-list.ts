@@ -1,5 +1,5 @@
 /**
- * project_list tool - List all projects
+ * project-list tool - List all projects
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -16,7 +16,7 @@ import {
 } from "../utils/validation/index.js"
 
 /**
- * Create the project_list tool
+ * Create the project-list tool
  */
 export function createProjectList(
   projectManager: ProjectManager,
@@ -55,7 +55,7 @@ Shows project name, status, and issue counts.`,
         if (projects.length === 0) {
           const scopeText = scope === "all" ? "" : ` in ${scope} storage`
           const statusText = status === "all" ? "" : ` with status '${status}'`
-          return `No projects found${scopeText}${statusText}.\n\nUse \`project_create\` to create a new project.`
+          return `No projects found${scopeText}${statusText}.\n\nUse \`project-create\` to create a new project.`
         }
 
         const lines: string[] = ["## Projects", ""]
@@ -83,8 +83,8 @@ Shows project name, status, and issue counts.`,
 
         lines.push("---")
         lines.push("")
-        lines.push("Use `project_focus(projectId)` to set context for a project.")
-        lines.push("Use `project_status(projectId)` to see detailed progress.")
+        lines.push("Use `project-focus(projectId)` to set context for a project.")
+        lines.push("Use `project-status(projectId)` to see detailed progress.")
 
         return lines.join("\n")
       } catch (error) {

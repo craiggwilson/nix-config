@@ -465,5 +465,109 @@ describe("TeamManager", () => {
       // Since we don't have a client, this test just verifies the flag is respected
       expect(team.foreground).toBe(true)
     })
+
+    test("waitForCompletion times out and returns error", async () => {
+      const teamsDir = path.join(testDir, ".teams")
+      await fs.mkdir(teamsDir, { recursive: true })
+
+      // Create a running team that will never complete
+      const runningTeam: Team = {
+        id: "team-timeout-test",
+        projectId: "test-project",
+        projectDir: testDir,
+        issueId: "issue-1",
+        members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
+        status: "running",
+        foreground: true,
+        discussionRounds: 0,
+        currentRound: 0,
+        results: {},
+        discussionHistory: [],
+        startedAt: new Date().toISOString(),
+      }
+
+      // Add to cache
+      ;(teamManager as any).teams.set(runningTeam.id, runningTeam)
+
+      await fs.writeFile(path.join(teamsDir, "team-timeout-test.json"), JSON.stringify(runningTeam))
+
+      // Use a very short timeout for testing (50ms)
+      const result = await teamManager.waitForCompletion(runningTeam, 50)
+
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("timeout")
+        if (result.error.type === "timeout") {
+          expect(result.error.teamId).toBe("team-timeout-test")
+          expect(result.error.timeoutMs).toBe(50)
+          expect(result.error.operation).toBe("waitForCompletion")
+        }
+      }
+
+      // Verify the completion promise was cleaned up
+      const completionPromises = (teamManager as any).completionPromises as Map<string, unknown>
+      expect(completionPromises.has("team-timeout-test")).toBe(false)
+    })
+
+    test("waitForCompletion clears timeout when team completes", async () => {
+      const teamsDir = path.join(testDir, ".teams")
+      await fs.mkdir(teamsDir, { recursive: true })
+
+      // Create a running team
+      const runningTeam: Team = {
+        id: "team-clear-timeout-test",
+        projectId: "test-project",
+        projectDir: testDir,
+        issueId: "issue-1",
+        members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
+        status: "running",
+        foreground: true,
+        discussionRounds: 0,
+        currentRound: 0,
+        results: {},
+        discussionHistory: [],
+        startedAt: new Date().toISOString(),
+      }
+
+      // Add to cache
+      ;(teamManager as any).teams.set(runningTeam.id, runningTeam)
+
+      await fs.writeFile(path.join(teamsDir, "team-clear-timeout-test.json"), JSON.stringify(runningTeam))
+
+      // Start waiting with a long timeout
+      const waitPromise = teamManager.waitForCompletion(runningTeam, 10000)
+
+      // Wait a tick for the promise to be set up
+      await new Promise((resolve) => setTimeout(resolve, 10))
+
+      // Simulate team completion by resolving the promise manually
+      const completionPromises = (teamManager as any).completionPromises as Map<string, (team: Team) => void>
+      const resolveCallback = completionPromises.get("team-clear-timeout-test")
+      expect(resolveCallback).toBeDefined()
+
+      // Complete the team
+      const completedTeam: Team = {
+        ...runningTeam,
+        status: "completed",
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        results: {
+          coder: { agent: "coder", result: "Done", completedAt: new Date().toISOString() },
+        },
+        completedAt: new Date().toISOString(),
+      }
+
+      resolveCallback!(completedTeam)
+
+      const result = await waitPromise
+
+      expect(result.ok).toBe(true)
+      if (result.ok) {
+        expect(result.value.status).toBe("completed")
+      }
+
+      // Verify the completion promise was cleaned up (by the callback)
+      // Note: The callback itself doesn't delete from the map, but the timeout was cleared
+      // The map entry is deleted by resolveCompletionPromise in the actual flow
+    })
   })
 })

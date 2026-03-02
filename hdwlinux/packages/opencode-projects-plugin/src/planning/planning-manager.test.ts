@@ -18,6 +18,16 @@ const mockLog = {
   debug: async () => {},
 }
 
+/**
+ * Helper to unwrap a Result, failing the test if it's an error
+ */
+function unwrapResult<T, E>(result: { ok: true; value: T } | { ok: false; error: E }): T {
+  if (!result.ok) {
+    throw new Error(`Expected ok result, got error: ${JSON.stringify(result.error)}`)
+  }
+  return result.value
+}
+
 describe("PlanningManager", () => {
   let tempDir: string
   let manager: PlanningManager
@@ -60,7 +70,9 @@ describe("PlanningManager", () => {
 
   describe("startOrContinue", () => {
     it("creates new state when none exists", async () => {
-      const state = await manager.startOrContinue()
+      const result = await manager.startOrContinue()
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("discovery")
       expect(state.understanding).toEqual({})
@@ -87,7 +99,9 @@ describe("PlanningManager", () => {
         JSON.stringify(initialState)
       )
 
-      const state = await manager.startOrContinue()
+      const result = await manager.startOrContinue()
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("synthesis")
       expect(state.understanding.problem).toBe("Existing problem")
@@ -97,93 +111,122 @@ describe("PlanningManager", () => {
 
   describe("advancePhase", () => {
     it("advances from discovery to synthesis", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
 
-      const state = await manager.advancePhase()
+      const result = await manager.advancePhase()
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("synthesis")
       expect(state.completedPhases).toContain("discovery")
     })
 
     it("advances from synthesis to breakdown", async () => {
-      await manager.startOrContinue()
-      await manager.advancePhase() // discovery -> synthesis
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.advancePhase()) // discovery -> synthesis
 
-      const state = await manager.advancePhase()
+      const result = await manager.advancePhase()
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("breakdown")
       expect(state.completedPhases).toContain("synthesis")
     })
 
     it("advances from breakdown to complete", async () => {
-      await manager.startOrContinue()
-      await manager.advancePhase() // discovery -> synthesis
-      await manager.advancePhase() // synthesis -> breakdown
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.advancePhase()) // discovery -> synthesis
+      unwrapResult(await manager.advancePhase()) // synthesis -> breakdown
 
-      const state = await manager.advancePhase()
+      const result = await manager.advancePhase()
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("complete")
       expect(state.completedPhases).toContain("breakdown")
     })
 
-    it("throws when trying to advance from complete", async () => {
-      await manager.startOrContinue()
-      await manager.advancePhase()
-      await manager.advancePhase()
-      await manager.advancePhase() // Now at complete
+    it("returns error when trying to advance from complete", async () => {
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.advancePhase())
+      unwrapResult(await manager.advancePhase())
+      unwrapResult(await manager.advancePhase()) // Now at complete
 
-      await expect(manager.advancePhase()).rejects.toThrow("Cannot advance from phase: complete")
+      const result = await manager.advancePhase()
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("cannot_advance")
+        if (result.error.type === "cannot_advance") {
+          expect(result.error.currentPhase).toBe("complete")
+        }
+      }
     })
 
-    it("throws when no planning session exists", async () => {
-      await expect(manager.advancePhase()).rejects.toThrow("No planning session found")
+    it("returns error when no planning session exists", async () => {
+      const result = await manager.advancePhase()
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("no_session")
+      }
     })
   })
 
   describe("setPhase", () => {
     it("sets phase to specified value", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
 
-      const state = await manager.setPhase("breakdown")
+      const result = await manager.setPhase("breakdown")
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("breakdown")
     })
 
     it("allows jumping back to earlier phase", async () => {
-      await manager.startOrContinue()
-      await manager.advancePhase() // discovery -> synthesis
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.advancePhase()) // discovery -> synthesis
 
-      const state = await manager.setPhase("discovery")
+      const result = await manager.setPhase("discovery")
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.phase).toBe("discovery")
     })
 
-    it("throws when no planning session exists", async () => {
-      await expect(manager.setPhase("synthesis")).rejects.toThrow("No planning session found")
+    it("returns error when no planning session exists", async () => {
+      const result = await manager.setPhase("synthesis")
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("no_session")
+      }
     })
   })
 
   describe("updateUnderstanding", () => {
     it("updates understanding fields", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
 
-      const state = await manager.updateUnderstanding({
+      const result = await manager.updateUnderstanding({
         problem: "New problem",
         goals: ["Goal 1", "Goal 2"],
       })
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.understanding.problem).toBe("New problem")
       expect(state.understanding.goals).toEqual(["Goal 1", "Goal 2"])
     })
 
     it("merges with existing understanding", async () => {
-      await manager.startOrContinue()
-      await manager.updateUnderstanding({ problem: "Initial problem" })
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.updateUnderstanding({ problem: "Initial problem" }))
 
-      const state = await manager.updateUnderstanding({
+      const result = await manager.updateUnderstanding({
         goals: ["Goal 1"],
         timeline: "Q1 2026",
       })
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.understanding.problem).toBe("Initial problem")
       expect(state.understanding.goals).toEqual(["Goal 1"])
@@ -191,33 +234,55 @@ describe("PlanningManager", () => {
     })
 
     it("deduplicates array fields", async () => {
-      await manager.startOrContinue()
-      await manager.updateUnderstanding({ goals: ["Goal 1", "Goal 2"] })
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.updateUnderstanding({ goals: ["Goal 1", "Goal 2"] }))
 
-      const state = await manager.updateUnderstanding({
+      const result = await manager.updateUnderstanding({
         goals: ["Goal 1", "Goal 2", "Goal 3"],
       })
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.understanding.goals).toEqual(["Goal 1", "Goal 2", "Goal 3"])
+    })
+
+    it("returns error when no planning session exists", async () => {
+      const result = await manager.updateUnderstanding({ problem: "Test" })
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("no_session")
+      }
     })
   })
 
   describe("open questions", () => {
     it("updates open questions", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
 
-      const state = await manager.updateOpenQuestions(["Q1", "Q2", "Q3"])
+      const result = await manager.updateOpenQuestions(["Q1", "Q2", "Q3"])
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.openQuestions).toEqual(["Q1", "Q2", "Q3"])
     })
 
     it("replaces existing questions", async () => {
-      await manager.startOrContinue()
-      await manager.updateOpenQuestions(["Old Q1", "Old Q2"])
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.updateOpenQuestions(["Old Q1", "Old Q2"]))
 
-      const state = await manager.updateOpenQuestions(["New Q1"])
+      const result = await manager.updateOpenQuestions(["New Q1"])
+      expect(result.ok).toBe(true)
+      const state = unwrapResult(result)
 
       expect(state.openQuestions).toEqual(["New Q1"])
+    })
+
+    it("returns error when no planning session exists", async () => {
+      const result = await manager.updateOpenQuestions(["Q1"])
+      expect(result.ok).toBe(false)
+      if (!result.ok) {
+        expect(result.error.type).toBe("no_session")
+      }
     })
   })
 
@@ -228,15 +293,15 @@ describe("PlanningManager", () => {
     })
 
     it("returns true when planning is in progress", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
 
       const active = await manager.isActive()
       expect(active).toBe(true)
     })
 
     it("returns false when planning is complete", async () => {
-      await manager.startOrContinue()
-      await manager.setPhase("complete")
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.setPhase("complete"))
 
       const active = await manager.isActive()
       expect(active).toBe(false)
@@ -257,8 +322,8 @@ describe("PlanningManager", () => {
     })
 
     it("formats status", async () => {
-      await manager.startOrContinue()
-      await manager.updateUnderstanding({ problem: "Test problem" })
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.updateUnderstanding({ problem: "Test problem" }))
 
       const state = await manager.getState()
       const formatted = manager.formatStatus(state!)
@@ -293,7 +358,7 @@ describe("PlanningManager", () => {
     })
 
     it("handleStatus returns formatted status", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
       const result = await manager.handleStatus("test-project")
       expect(result).toContain("Planning Status: test-project")
       expect(result).toContain("**Phase:** discovery")
@@ -306,7 +371,7 @@ describe("PlanningManager", () => {
     })
 
     it("handleSave updates understanding", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
       const result = await manager.handleSave(
         "test-project",
         JSON.stringify({ problem: "Saved problem" }),
@@ -321,19 +386,36 @@ describe("PlanningManager", () => {
     })
 
     it("handleAdvance moves to next phase", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
       const result = await manager.handleAdvance()
 
       expect(result).toContain("Advanced to Phase: synthesis")
       expect(result).toContain("Synthesis Phase")
     })
 
+    it("handleAdvance returns error message when no session", async () => {
+      const result = await manager.handleAdvance()
+      expect(result).toContain("No planning session found")
+    })
+
+    it("handleAdvance returns error message when cannot advance", async () => {
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.setPhase("complete"))
+      const result = await manager.handleAdvance()
+      expect(result).toContain("Cannot advance from phase: complete")
+    })
+
     it("handleSetPhase sets specific phase", async () => {
-      await manager.startOrContinue()
+      unwrapResult(await manager.startOrContinue())
       const result = await manager.handleSetPhase("breakdown")
 
       expect(result).toContain("Phase Set: breakdown")
       expect(result).toContain("Breakdown Phase")
+    })
+
+    it("handleSetPhase returns error message when no session", async () => {
+      const result = await manager.handleSetPhase("breakdown")
+      expect(result).toContain("No planning session found")
     })
   })
 
@@ -344,16 +426,16 @@ describe("PlanningManager", () => {
     })
 
     it("returns null when planning is complete", async () => {
-      await manager.startOrContinue()
-      await manager.setPhase("complete")
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.setPhase("complete"))
 
       const context = await manager.buildContext()
       expect(context).toBeNull()
     })
 
     it("returns context for active planning", async () => {
-      await manager.startOrContinue()
-      await manager.updateUnderstanding({ problem: "Test problem" })
+      unwrapResult(await manager.startOrContinue())
+      unwrapResult(await manager.updateUnderstanding({ problem: "Test problem" }))
 
       const context = await manager.buildContext()
 

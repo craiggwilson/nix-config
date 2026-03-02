@@ -17,14 +17,16 @@ export interface PrimaryMemberData {
   role: "primary"
   /** Agent type/name */
   agent: string
-  /** Issue ID being worked on */
-  issueId: string
-  /** Full issue context (title, description, etc.) */
-  issueContext: string
-  /** Path to isolated worktree, if any */
-  worktreePath?: string
   /** Whether there are other team members reviewing */
   hasReviewers: boolean
+  /** Full issue context (title, description, etc.) */
+  issueContext: string
+  /** Issue ID being worked on */
+  issueId: string
+  /** Filesystem path to the project directory */
+  projectDir: string
+  /** Path to isolated worktree, if any */
+  worktreePath?: string
 }
 
 /**
@@ -34,14 +36,16 @@ export interface ReviewerMemberData {
   role: "reviewer" | "devilsAdvocate"
   /** Agent type/name */
   agent: string
-  /** Issue ID being worked on */
-  issueId: string
   /** Full issue context (title, description, etc.) */
   issueContext: string
-  /** Path to isolated worktree, if any */
-  worktreePath?: string
+  /** Issue ID being worked on */
+  issueId: string
   /** Name of the primary agent doing implementation */
   primaryAgent: string
+  /** Filesystem path to the project directory */
+  projectDir: string
+  /** Path to isolated worktree, if any */
+  worktreePath?: string
 }
 
 /**
@@ -83,6 +87,16 @@ function renderPrimary(data: PrimaryMemberData): string {
     "1. Complete the main work for this issue",
     "2. Write code, make changes, implement the solution",
     "3. Commit your changes with clear messages",
+    "",
+    "## Project Context",
+    "",
+    `**Project directory:** ${data.projectDir}`,
+    "",
+    "Store artifacts in the project directory:",
+    `- Research documents: \`${data.projectDir}/research/\``,
+    `- Decisions: \`${data.projectDir}/decisions/\``,
+    "",
+    "After creating an artifact file, register it with `project-save-artifact`.",
   ]
 
   if (data.worktreePath) {
@@ -125,6 +139,14 @@ function renderReviewer(data: ReviewerMemberData): string {
     "1. Review their approach and implementation",
     "2. Identify issues, risks, or improvements",
     "3. Provide constructive feedback",
+    "",
+    "## Project Context",
+    "",
+    `**Project directory:** ${data.projectDir}`,
+    "",
+    "You can read artifacts from the project directory:",
+    `- Research documents: \`${data.projectDir}/research/\``,
+    `- Decisions: \`${data.projectDir}/decisions/\``,
   ]
 
   if (data.worktreePath) {

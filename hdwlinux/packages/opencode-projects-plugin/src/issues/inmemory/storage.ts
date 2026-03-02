@@ -95,6 +95,21 @@ export class InMemoryIssueStorage implements IssueStorage {
     options?: CreateIssueOptions
   ): Promise<Result<string, IssueStorageError>> {
     const issues = this.getProjectIssues(projectDir)
+
+    // Validate parent exists if specified
+    if (options?.parent) {
+      const parentIssue = issues.get(options.parent)
+      if (!parentIssue) {
+        return {
+          ok: false,
+          error: new StorageOperationError(
+            `Parent issue '${options.parent}' not found`,
+            "Check that the parent issue ID is correct"
+          ),
+        }
+      }
+    }
+
     const id = this.generateIssueId(projectDir, options?.parent)
 
     const issue: Issue = {

@@ -32,7 +32,7 @@ export interface OpencodeClient {
         noReply?: boolean
         tools?: Record<string, boolean>
       }
-    }) => Promise<{ data?: Message }>
+    }) => Promise<{ data?: MessageInfo }>
     messages: (args: { path: { id: string } }) => Promise<{ data?: MessageItem[] }>
     delete: (args: { path: { id: string } }) => Promise<unknown>
   }
@@ -98,11 +98,6 @@ export interface MessageInfo {
   /** Error information if the message was aborted or failed */
   error?: MessageError
 }
-
-/**
- * Message in a conversation (alias for backward compatibility)
- */
-export type Message = MessageInfo
 
 /**
  * Message item containing metadata and content parts

@@ -33,7 +33,7 @@ export function createProjectWorkOnIssue(
 
 This tool:
 1. Claims the issue (sets status to in_progress)
-2. Optionally creates an isolated git worktree or jj workspace (if isolate=true)
+2. Optionally creates an isolated jj workspace or git worktree (if isolate=true)
 3. Delegates work to a background agent or team of agents
 4. Returns immediately (or waits if foreground=true)
 

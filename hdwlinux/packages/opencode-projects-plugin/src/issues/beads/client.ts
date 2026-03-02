@@ -74,8 +74,8 @@ export class BeadsClient {
       const bdCmd = buildCommand($, "bd", ["--no-daemon", ...args].filter(Boolean) as string[])
 
       const result = repoPath
-        ? await runShellInDir($, bdCmd, repoPath, timeoutMs)
-        : await runShell($, bdCmd, timeoutMs)
+        ? await runShellInDir($, bdCmd, repoPath, { timeoutMs })
+        : await runShell($, bdCmd, { timeoutMs })
 
       if (result.timedOut) {
         return err(

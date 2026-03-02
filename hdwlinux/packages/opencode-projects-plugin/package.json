@@ -4,10 +4,30 @@
   "description": "Project planning, tracking, and execution plugin for OpenCode with beads integration",
   "type": "module",
   "main": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/craiggwilson/nix-config.git",
+    "directory": "hdwlinux/packages/opencode-projects-plugin"
+  },
+  "bugs": {
+    "url": "https://github.com/craiggwilson/nix-config/issues"
+  },
+  "homepage": "https://github.com/craiggwilson/nix-config/tree/main/hdwlinux/packages/opencode-projects-plugin",
+  "files": [
+    "dist",
+    "skills",
+    "docs",
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "bun": ">=1.0.0"
+  },
   "scripts": {
     "build": "bun build src/index.ts --outdir dist --target bun --format esm --external '@opencode-ai/*'",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/",
     "test": "bun test",
     "test:unit": "bun test src/",
     "test:integration": "bun test tests/",

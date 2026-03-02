@@ -91,7 +91,7 @@ export class WorktreeManager {
   }
 
   /**
-   * Get the VCS type (git or jj)
+   * Get the VCS type (jj or git)
    */
   getVCSType(): VCSType | null {
     return this.vcsType

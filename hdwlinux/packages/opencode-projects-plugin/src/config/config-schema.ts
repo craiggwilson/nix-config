@@ -79,7 +79,7 @@ export const TeamSettingsSchema = z.object({
  * Schema for default settings
  */
 export const DefaultsSchema = z.object({
-  storage: z.enum(["local", "global"]).default("global"),
+  storage: z.enum(["local", "global"]).default("local"),
   vcs: z.enum(["auto", "git", "jj"]).default("auto"),
 })
 
@@ -87,20 +87,12 @@ export const DefaultsSchema = z.object({
  * Main configuration schema
  */
 export const ProjectConfigSchema = z.object({
-  version: z.string(),
-  defaults: DefaultsSchema.optional().default({ storage: "global", vcs: "auto" }),
-  projects: z.record(z.string(), ProjectOverridesSchema).optional().default({}),
-  worktrees: WorktreeSettingsSchema.optional().default({ autoCleanup: true }),
-  delegation: DelegationSettingsSchema.optional().default({
-    timeoutMs: DEFAULT_DELEGATION_TIMEOUT_MS,
-    smallModelTimeoutMs: DEFAULT_SMALL_MODEL_TIMEOUT_MS,
-  }),
-  teams: TeamSettingsSchema.optional().default({
-    discussionRounds: DEFAULT_TEAM_DISCUSSION_ROUNDS,
-    discussionRoundTimeoutMs: DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS,
-    maxTeamSize: DEFAULT_TEAM_MAX_SIZE,
-    retryFailedMembers: DEFAULT_TEAM_RETRY_FAILED_MEMBERS,
-  }),
+  version: z.string().default("0.9.0"),
+  defaults: DefaultsSchema.default(DefaultsSchema.parse({})),
+  projects: z.record(z.string(), ProjectOverridesSchema).default({}),
+  worktrees: WorktreeSettingsSchema.default(WorktreeSettingsSchema.parse({})),
+  delegation: DelegationSettingsSchema.default(DelegationSettingsSchema.parse({})),
+  teams: TeamSettingsSchema.default(TeamSettingsSchema.parse({})),
 })
 
 /**
@@ -147,26 +139,9 @@ export function parseConfig(data: unknown): Result<ProjectConfig, ConfigValidati
 }
 
 /**
- * Default configuration
+ * Generate the default configuration by parsing an empty object through the schema.
+ * All defaults are defined in the schema itself.
  */
-export const DEFAULT_CONFIG: ProjectConfig = {
-  version: "0.9.0",
-  defaults: {
-    storage: "global",
-    vcs: "auto",
-  },
-  projects: {},
-  worktrees: {
-    autoCleanup: true,
-  },
-  delegation: {
-    timeoutMs: DEFAULT_DELEGATION_TIMEOUT_MS,
-    smallModelTimeoutMs: DEFAULT_SMALL_MODEL_TIMEOUT_MS,
-  },
-  teams: {
-    discussionRounds: DEFAULT_TEAM_DISCUSSION_ROUNDS,
-    discussionRoundTimeoutMs: DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS,
-    maxTeamSize: DEFAULT_TEAM_MAX_SIZE,
-    retryFailedMembers: DEFAULT_TEAM_RETRY_FAILED_MEMBERS,
-  },
+export function defaultConfig(): ProjectConfig {
+  return ProjectConfigSchema.parse({})
 }

@@ -15,6 +15,8 @@ import {
   formatValidationError,
   type ProjectStatusArgs,
 } from "../utils/validation/index.js"
+import { buildArtifactContext } from "../artifacts/index.js"
+import { buildDecisionContext } from "../decisions/index.js"
 
 /**
  * Create the project-status tool
@@ -102,6 +104,42 @@ If no projectId is provided, uses the currently focused project.`,
           lines.push(`| Completed | ${issueStatus.completed} |`)
           lines.push(`| In Progress | ${issueStatus.inProgress} |`)
           lines.push(`| Blocked | ${issueStatus.blocked} |`)
+          lines.push("")
+        }
+
+        // Artifact and decision counts
+        const artifactRegistry = await projectManager.getArtifactRegistry(projectId)
+        const decisionManager = await projectManager.getDecisionManager(projectId)
+
+        let artifactCount = 0
+        let decisionCount = 0
+        let pendingDecisionCount = 0
+
+        if (artifactRegistry) {
+          const artifactContext = buildArtifactContext(artifactRegistry)
+          artifactCount = artifactContext.count
+        }
+
+        if (decisionManager) {
+          const decisionContext = await buildDecisionContext(decisionManager)
+          decisionCount = decisionContext.totalDecided
+          pendingDecisionCount = decisionContext.pending.length
+        }
+
+        if (artifactCount > 0 || decisionCount > 0 || pendingDecisionCount > 0) {
+          lines.push("### Knowledge Base")
+          lines.push("")
+          lines.push(`| Type | Count |`)
+          lines.push(`|------|-------|`)
+          if (artifactCount > 0) {
+            lines.push(`| Artifacts | ${artifactCount} |`)
+          }
+          if (decisionCount > 0) {
+            lines.push(`| Decisions | ${decisionCount} |`)
+          }
+          if (pendingDecisionCount > 0) {
+            lines.push(`| Pending Decisions | ${pendingDecisionCount} |`)
+          }
           lines.push("")
         }
 

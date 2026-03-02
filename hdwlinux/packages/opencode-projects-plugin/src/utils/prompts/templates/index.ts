@@ -8,8 +8,6 @@ export {
   devilsAdvocateTemplate,
   devilsAdvocateSelectionTemplate,
   type DevilsAdvocateSelectionData,
-  DEVILS_ADVOCATE_PROMPT,
-  buildDevilsAdvocateSelectionPrompt,
 } from "./devil-advocate.js"
 
 export {

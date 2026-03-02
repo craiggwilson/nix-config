@@ -174,32 +174,7 @@
 
         config.hdwlinux.ai.agent.tools = {
           bash = {
-            "*" = "ask";
-            "bat *" = "allow";
-            "cat *" = "allow";
-            "cd *" = "allow";
-            "cp *" = "allow";
-            "echo *" = "allow";
-            "find *" = "allow";
-            "grep *" = "allow";
-            "head *" = "allow";
-            "jj *" = "allow";
-            "jq *" = "allow";
-            "ls *" = "allow";
-            "mkdir *" = "allow";
-            "mv *" = "allow";
-            "nix *" = "allow";
-            "pwd *" = "allow";
-            "rg *" = "allow";
-            "rm *" = "allow";
-            "sleep *" = "allow";
-            "sort *" = "allow";
-            "tail *" = "allow";
-            "timeout *" = "allow";
-            "xargs *" = "allow";
-            "wc *" = "allow";
-            "*/skills/*/bin/*" = "allow";
-
+            "*" = "allow";
             "git *" = "deny";
             "reboot *" = "deny";
             "shutdown *" = "deny";
@@ -209,6 +184,7 @@
           external_directory = {
             "*" = "ask";
             "~/Projects/*" = "allow";
+            "/nix/store/*" = "allow";
             "/tmp/*" = "allow";
           };
           glob = "allow";

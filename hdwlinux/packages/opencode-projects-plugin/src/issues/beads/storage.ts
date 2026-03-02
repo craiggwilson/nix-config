@@ -158,7 +158,9 @@ export class BeadsIssueStorage implements IssueStorage {
   async listIssues(projectDir: string, options?: ListIssuesOptions): Promise<Result<Issue[], IssueStorageError>> {
     const args = ["list", "--json"]
 
-    if (options?.status) {
+    if (options?.all) {
+      args.push("--all")
+    } else if (options?.status) {
       args.push("--status", options.status)
     }
 
@@ -350,7 +352,8 @@ export class BeadsIssueStorage implements IssueStorage {
   }
 
   async getProjectStatus(projectDir: string): Promise<Result<ProjectStatus, IssueStorageError>> {
-    const issuesResult = await this.listIssues(projectDir)
+    // Must fetch all issues including closed ones to calculate accurate progress
+    const issuesResult = await this.listIssues(projectDir, { all: true })
     if (!issuesResult.ok) {
       await this.log.debug(`Get project status failed: ${issuesResult.error.message}`)
       return issuesResult

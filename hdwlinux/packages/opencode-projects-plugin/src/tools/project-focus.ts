@@ -1,5 +1,5 @@
 /**
- * project_focus tool - Set or get current project context
+ * project-focus tool - Set or get current project context
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -14,7 +14,7 @@ import {
 } from "../utils/validation/index.js"
 
 /**
- * Create the project_focus tool
+ * Create the project-focus tool
  */
 export function createProjectFocus(
   projectManager: ProjectManager,
@@ -66,7 +66,7 @@ Call without arguments to see current focus.`,
           const currentProjectId = projectManager.getFocusedProjectId()
 
           if (!currentProjectId) {
-            return "No project is currently focused.\n\nUse `project_focus(projectId)` to set focus, or `project_list` to see available projects."
+            return "No project is currently focused.\n\nUse `project-focus(projectId)` to set focus, or `project-list` to see available projects."
           }
 
           const lines: string[] = ["## Current Focus", ""]
@@ -76,16 +76,16 @@ Call without arguments to see current focus.`,
           lines.push("---")
           lines.push("")
           lines.push("**Actions:**")
-          lines.push("- `project_focus(clear=true)` - Clear focus")
-          lines.push("- `project_status` - See project progress")
-          lines.push("- `project_work-on-issue(issueId)` - Start work on an issue")
+          lines.push("- `project-focus(clear=true)` - Clear focus")
+          lines.push("- `project-status` - See project progress")
+          lines.push("- `project-work-on-issue(issueId)` - Start work on an issue")
 
           return lines.join("\n")
         }
 
         const project = await projectManager.getProject(projectId)
         if (!project) {
-          return `Project '${projectId}' not found.\n\nUse \`project_list\` to see available projects.`
+          return `Project '${projectId}' not found.\n\nUse \`project-list\` to see available projects.`
         }
 
         projectManager.setFocus(projectId)

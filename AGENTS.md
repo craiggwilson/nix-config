@@ -157,4 +157,3 @@ You can consult the **nix-expert** on best nix practices and other types of ques
 - `hdwlinux/flake.nix` - Main entry point, imports all modules and defines substrate settings
 - `substrate/extensions/tags/default.nix` - Tag system implementation
 - `substrate/builders/flake-parts/*.nix` - NixOS and Home Manager configuration builders
-

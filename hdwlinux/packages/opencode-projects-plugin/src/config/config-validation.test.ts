@@ -3,20 +3,46 @@
  */
 
 import { describe, test, expect } from "bun:test"
-import { parseConfig, DEFAULT_CONFIG, BEADS_PATH, PROJECTS_PATH } from "./config-schema.js"
+import {
+  parseConfig,
+  defaultConfig,
+  BEADS_PATH,
+  PROJECTS_PATH,
+  DEFAULT_DELEGATION_TIMEOUT_MS,
+  DEFAULT_SMALL_MODEL_TIMEOUT_MS,
+  DEFAULT_TEAM_DISCUSSION_ROUNDS,
+  DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS,
+  DEFAULT_TEAM_MAX_SIZE,
+  DEFAULT_TEAM_RETRY_FAILED_MEMBERS,
+} from "./config-schema.js"
 
 describe("Configuration Validation", () => {
-  test("validates valid minimal configuration", () => {
-    const config = {
-      version: "0.9.0",
-    }
-
-    const result = parseConfig(config)
+  test("validates empty configuration and applies all defaults", () => {
+    const result = parseConfig({})
 
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value.version).toBe("0.9.0")
-      expect(result.value.defaults.storage).toBe("global")
+      expect(result.value.defaults.storage).toBe("local")
+      expect(result.value.defaults.vcs).toBe("auto")
+      expect(result.value.projects).toEqual({})
+      expect(result.value.worktrees.autoCleanup).toBe(true)
+      expect(result.value.delegation.timeoutMs).toBe(DEFAULT_DELEGATION_TIMEOUT_MS)
+      expect(result.value.delegation.smallModelTimeoutMs).toBe(DEFAULT_SMALL_MODEL_TIMEOUT_MS)
+      expect(result.value.teams.discussionRounds).toBe(DEFAULT_TEAM_DISCUSSION_ROUNDS)
+      expect(result.value.teams.discussionRoundTimeoutMs).toBe(DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS)
+      expect(result.value.teams.maxTeamSize).toBe(DEFAULT_TEAM_MAX_SIZE)
+      expect(result.value.teams.retryFailedMembers).toBe(DEFAULT_TEAM_RETRY_FAILED_MEMBERS)
+    }
+  })
+
+  test("validates minimal configuration with version only", () => {
+    const result = parseConfig({ version: "0.9.0" })
+
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.value.version).toBe("0.9.0")
+      expect(result.value.defaults.storage).toBe("local")
       expect(result.value.defaults.vcs).toBe("auto")
     }
   })
@@ -126,13 +152,20 @@ describe("Configuration Validation", () => {
     }
   })
 
-  test("default configuration is valid", () => {
-    const result = parseConfig(DEFAULT_CONFIG)
+  test("defaultConfig() produces a valid configuration with all defaults", () => {
+    const config = defaultConfig()
 
-    expect(result.ok).toBe(true)
-    if (result.ok) {
-      expect(result.value.version).toBe("0.9.0")
-    }
+    expect(config.version).toBe("0.9.0")
+    expect(config.defaults.storage).toBe("local")
+    expect(config.defaults.vcs).toBe("auto")
+    expect(config.projects).toEqual({})
+    expect(config.worktrees.autoCleanup).toBe(true)
+    expect(config.delegation.timeoutMs).toBe(DEFAULT_DELEGATION_TIMEOUT_MS)
+    expect(config.delegation.smallModelTimeoutMs).toBe(DEFAULT_SMALL_MODEL_TIMEOUT_MS)
+    expect(config.teams.discussionRounds).toBe(DEFAULT_TEAM_DISCUSSION_ROUNDS)
+    expect(config.teams.discussionRoundTimeoutMs).toBe(DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS)
+    expect(config.teams.maxTeamSize).toBe(DEFAULT_TEAM_MAX_SIZE)
+    expect(config.teams.retryFailedMembers).toBe(DEFAULT_TEAM_RETRY_FAILED_MEMBERS)
   })
 
   test("hardcoded paths are constants", () => {

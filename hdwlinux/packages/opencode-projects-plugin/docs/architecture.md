@@ -4,13 +4,16 @@
 
 ```
 src/
-├── index.ts              # Plugin entry point
-├── core/                 # Core managers and types
-├── storage/              # Issue storage abstraction
-├── planning/             # Planning features
-├── execution/            # Worktree and delegation
+├── index.ts              # Plugin entry point and hook registration
+├── agents/               # Agent selection and small model integration
+├── config/               # Configuration loading and validation
+├── execution/            # Delegation and team management
+├── issues/               # Issue storage abstraction
+├── planning/             # Planning session management
+├── projects/             # Project and focus management
 ├── tools/                # OpenCode tool implementations
-└── agents/               # Agent rules and prompts
+├── utils/                # Shared utilities
+└── vcs/                  # Version control abstraction (jj, git)
 ```
 
 ## Core Module
@@ -29,9 +32,9 @@ Central orchestrator for all project operations.
 - `IssueStorage` - Issue persistence
 - `FocusManager` - Context tracking
 - `ConfigManager` - Configuration
-- `InterviewManager` - Planning interviews
-- `ArtifactManager` - Planning artifacts
-- `PlanningDelegator` - Agent delegation
+- `TeamManager` - Multi-agent team execution
+- `WorktreeManager` - VCS worktree operations
+- `PlanningManager` - Planning session state
 
 ### FocusManager
 
@@ -68,33 +71,14 @@ Abstraction for issue persistence.
 
 ## Planning Module
 
-### InterviewManager
+### PlanningManager
 
-Manages conversational planning sessions.
-
-**Features:**
-- Session persistence
-- Context injection for continuity
-- Export to markdown
-
-### ArtifactManager
-
-Generates planning artifacts.
-
-**Artifact Types:**
-- Roadmap
-- Architecture
-- Risks
-- Success Criteria
-
-### PlanningDelegator
-
-Delegates to specialized agents.
+Manages conversational planning sessions and phase transitions.
 
 **Features:**
-- Dynamic agent discovery
-- Keyword-based agent matching
-- Context-aware prompts
+- Phase-based planning (discovery → synthesis → breakdown → complete)
+- State persistence across sessions
+- Context injection for planning conversations
 
 ## Execution Module
 
@@ -103,8 +87,8 @@ Delegates to specialized agents.
 Abstraction for version control operations.
 
 **Implementations:**
-- `GitAdapter` - Git worktrees
 - `JujutsuAdapter` - jj workspaces
+- `GitAdapter` - Git worktrees
 
 **Operations:**
 - Create/remove worktrees
@@ -159,7 +143,7 @@ User Request
 The plugin injects context into system prompts:
 
 1. **PROJECT_RULES** - Agent instructions for project management
-2. **VCS Context** - Git or jj command guidance
+2. **VCS Context** - jj or git command guidance
 3. **Focus Context** - Current project/issue state
 
 ## Session Compaction
@@ -224,7 +208,7 @@ startDelegation() → status: "running"
     ↓
 complete() → status: "completed"
     ↓
-notifyParent() → send <delegation-notification>
+notifyParent() → send <team-notification>
 ```
 
 ### Batched Notifications

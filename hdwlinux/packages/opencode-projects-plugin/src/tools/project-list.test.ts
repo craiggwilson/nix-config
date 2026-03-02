@@ -176,5 +176,37 @@ describe("project_list and project_status tools", () => {
 
       projectManager.setFocus(projectId)
     })
+
+    test("shows artifact and decision counts when present", async () => {
+      // Register an artifact
+      const artifactRegistry = await projectManager.getArtifactRegistry(projectId)
+      if (artifactRegistry) {
+        await artifactRegistry.register({
+          title: "Test Research",
+          type: "research",
+          path: "research/test.md",
+          absolutePath: path.join(testDir, "research/test.md"),
+          external: false,
+          summary: "Test research artifact",
+        })
+      }
+
+      // Record a decision
+      const decisionManager = await projectManager.getDecisionManager(projectId)
+      if (decisionManager) {
+        await decisionManager.recordDecision({
+          title: "Test Decision",
+          decision: "Use approach A",
+          rationale: "It is simpler",
+        })
+      }
+
+      const tool = createProjectStatus(projectManager, mockLogger)
+      const result = await tool.execute({ projectId }, mockContext)
+
+      expect(result).toContain("Knowledge Base")
+      expect(result).toContain("Artifacts")
+      expect(result).toContain("Decisions")
+    })
   })
 })

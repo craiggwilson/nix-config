@@ -173,5 +173,134 @@ describe("DiscussionCoordinator", () => {
       // Primary should not appear under Team Findings
       expect(context).not.toContain("### primary-agent")
     })
+
+    test("includes devil's advocate in team findings", () => {
+      const coordinator = new DiscussionCoordinator(
+        mockLogger,
+        undefined as any,
+        defaultConfig
+      )
+
+      const team: Team = {
+        id: "team-123",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [
+          { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+        ],
+        status: "discussing",
+        discussionRounds: 1,
+        currentRound: 1,
+        results: {
+          implementer: { agent: "implementer", result: "Implementation done", completedAt: "2024-01-01T00:00:00Z" },
+          reviewer: { agent: "reviewer", result: "Code looks good", completedAt: "2024-01-01T00:00:00Z" },
+          critic: { agent: "critic", result: "Found potential issues", completedAt: "2024-01-01T00:00:00Z" },
+        },
+        discussionHistory: [],
+        startedAt: "2024-01-01T00:00:00Z",
+      }
+
+      const context = coordinator.buildDiscussionContext(team, 1, [])
+
+      // Devil's advocate should be in Team Findings
+      expect(context).toContain("### critic")
+      expect(context).toContain("Found potential issues")
+      // Both secondary and devil's advocate should be in Team Findings
+      expect(context).toContain("### reviewer")
+      expect(context).toContain("Code looks good")
+    })
+
+    test("builds context for 3-agent team with all roles", () => {
+      const coordinator = new DiscussionCoordinator(
+        mockLogger,
+        undefined as any,
+        defaultConfig
+      )
+
+      const team: Team = {
+        id: "team-3-agent",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [
+          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+        ],
+        status: "discussing",
+        discussionRounds: 2,
+        currentRound: 1,
+        results: {
+          "typescript-expert": { agent: "typescript-expert", result: "Implemented auth flow", completedAt: "2024-01-01T00:00:00Z" },
+          "code-reviewer": { agent: "code-reviewer", result: "Code structure is clean", completedAt: "2024-01-01T00:00:00Z" },
+          "security-expert": { agent: "security-expert", result: "Security concerns identified", completedAt: "2024-01-01T00:00:00Z" },
+        },
+        discussionHistory: [],
+        startedAt: "2024-01-01T00:00:00Z",
+      }
+
+      const context = coordinator.buildDiscussionContext(team, 1, [])
+
+      // Verify primary agent section
+      expect(context).toContain("## Primary Agent's Implementation")
+      expect(context).toContain("Implemented auth flow")
+      
+      // Verify team findings section has both reviewers
+      expect(context).toContain("## Team Findings")
+      expect(context).toContain("### code-reviewer")
+      expect(context).toContain("Code structure is clean")
+      expect(context).toContain("### security-expert")
+      expect(context).toContain("Security concerns identified")
+    })
+
+    test("multiple discussion rounds accumulate history", () => {
+      const coordinator = new DiscussionCoordinator(
+        mockLogger,
+        undefined as any,
+        defaultConfig
+      )
+
+      const team: Team = {
+        id: "team-multi-round",
+        projectId: "proj-1",
+        projectDir: "/tmp/test",
+        issueId: "issue-1",
+        members: [
+          { agent: "agent-a", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0 },
+        ],
+        status: "discussing",
+        discussionRounds: 3,
+        currentRound: 3,
+        results: {
+          "agent-a": { agent: "agent-a", result: "Initial work", completedAt: "2024-01-01T00:00:00Z" },
+          "agent-b": { agent: "agent-b", result: "Initial review", completedAt: "2024-01-01T00:00:00Z" },
+        },
+        discussionHistory: [
+          { round: 1, responses: { "agent-a": "Round 1 A", "agent-b": "Round 1 B" } },
+          { round: 2, responses: { "agent-a": "Round 2 A", "agent-b": "Round 2 B" } },
+        ],
+        startedAt: "2024-01-01T00:00:00Z",
+      }
+
+      const discussionHistory: DiscussionRound[] = [
+        { round: 1, responses: { "agent-a": "Round 1 A", "agent-b": "Round 1 B" } },
+        { round: 2, responses: { "agent-a": "Round 2 A", "agent-b": "Round 2 B" } },
+      ]
+
+      const context = coordinator.buildDiscussionContext(team, 3, discussionHistory)
+
+      // Verify all previous rounds are included
+      expect(context).toContain("## Previous Discussion")
+      expect(context).toContain("### Round 1")
+      expect(context).toContain("Round 1 A")
+      expect(context).toContain("Round 1 B")
+      expect(context).toContain("### Round 2")
+      expect(context).toContain("Round 2 A")
+      expect(context).toContain("Round 2 B")
+    })
   })
 })

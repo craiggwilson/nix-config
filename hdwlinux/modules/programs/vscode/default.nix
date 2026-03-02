@@ -130,7 +130,8 @@
                 "update.mode" = "none";
                 "window.menuBarVisibility" = "toggle";
                 "window.titleBarStyle" = "custom";
-                "workbench.colorTheme" = "hdwlinux";
+                #"workbench.colorTheme" = "hdwlinux";
+                "workbench.colorTheme" = "Catppuccin Mocha";
                 "workbench.editor.pinnedTabsOnSeparateRow" = true;
                 "workbench.startupEditor" = "none";
                 "[nix]" = {

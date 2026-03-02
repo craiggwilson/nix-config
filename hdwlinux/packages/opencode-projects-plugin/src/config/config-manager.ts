@@ -9,11 +9,10 @@ import * as os from "node:os"
 import {
   type ProjectConfig,
   type ProjectOverrides,
-  DEFAULT_CONFIG,
   BEADS_PATH,
   PROJECTS_PATH,
   parseConfig,
-  ConfigValidationError,
+  defaultConfig,
 } from "./config-schema.js"
 import type { Result } from "../utils/result/index.js"
 
@@ -39,6 +38,10 @@ export function getDataDir(): string {
  * Configuration loading error
  */
 export class ConfigLoadError extends Error {
+  readonly code = "CONFIG_LOAD_FAILED"
+  readonly recoverable = true
+  readonly suggestion = "Check your opencode-projects.json configuration file for syntax errors."
+
   constructor(
     message: string,
     public readonly cause?: unknown
@@ -73,14 +76,13 @@ export class ConfigManager {
       if (!validationResult.ok) {
         console.warn(validationResult.error.message)
         console.warn("Using default configuration")
-        return { ok: true, value: new ConfigManager({ ...DEFAULT_CONFIG }) }
+        return { ok: true, value: new ConfigManager(defaultConfig()) }
       }
 
-      const config = mergeWithDefaults(validationResult.value)
-      return { ok: true, value: new ConfigManager(config) }
+      return { ok: true, value: new ConfigManager(validationResult.value) }
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        return { ok: true, value: new ConfigManager({ ...DEFAULT_CONFIG }) }
+        return { ok: true, value: new ConfigManager(defaultConfig()) }
       }
 
       return {
@@ -234,30 +236,4 @@ export class ConfigManager {
   }
 }
 
-/**
- * Merge loaded configuration with defaults using explicit field-by-field merging
- */
-function mergeWithDefaults(loaded: ProjectConfig): ProjectConfig {
-  return {
-    version: loaded.version,
-    defaults: {
-      storage: loaded.defaults.storage,
-      vcs: loaded.defaults.vcs,
-    },
-    projects: loaded.projects,
-    worktrees: {
-      autoCleanup: loaded.worktrees.autoCleanup,
-      basePath: loaded.worktrees.basePath,
-    },
-    delegation: {
-      timeoutMs: loaded.delegation.timeoutMs,
-      smallModelTimeoutMs: loaded.delegation.smallModelTimeoutMs,
-    },
-    teams: {
-      discussionRounds: loaded.teams.discussionRounds,
-      discussionRoundTimeoutMs: loaded.teams.discussionRoundTimeoutMs,
-      maxTeamSize: loaded.teams.maxTeamSize,
-      retryFailedMembers: loaded.teams.retryFailedMembers,
-    },
-  }
-}
+
