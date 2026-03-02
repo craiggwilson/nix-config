@@ -143,7 +143,7 @@
           command = commandConfig;
           instructions = ruleInstructions;
           permission = config.hdwlinux.ai.agent.tools;
-          small_model = resolveAlias "small";
+          small_model = resolveAlias "fast";
           plugin = [
             "file://${config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/packages/opencode-projects-plugin"}"
           ];

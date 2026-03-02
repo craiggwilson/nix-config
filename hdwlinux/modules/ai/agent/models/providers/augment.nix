@@ -78,29 +78,25 @@
         };
 
         hdwlinux.ai.agent.models.aliases = lib.mkDefault {
-          small = {
+          fast = {
             provider = "augment";
             model = "claude-haiku-4-5";
           };
-          default = {
+          balanced = {
             provider = "augment";
             model = "claude-sonnet-4-5";
           };
-          coding = {
+          coder = {
             provider = "augment";
             model = "claude-opus-4-5";
           };
-          reasoning = {
+          analyst = {
             provider = "augment";
             model = "claude-opus-4-5";
           };
-          planning = {
+          writer = {
             provider = "augment";
-            model = "claude-opus-4-5";
-          };
-          explore = {
-            provider = "augment";
-            model = "claude-haiku-4-5";
+            model = "claude-sonnet-4-5";
           };
         };
       };
