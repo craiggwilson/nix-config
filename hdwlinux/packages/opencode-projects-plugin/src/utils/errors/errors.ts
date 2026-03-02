@@ -321,6 +321,7 @@ export type DelegationError =
   | { type: "persistence_failed"; delegationId: string; message: string }
   | { type: "already_completed"; delegationId: string; status: string }
   | { type: "timeout"; delegationId: string; timeoutMs: number }
+  | { type: "api_error"; delegationId: string; operation: string; message: string; retryable: boolean; hint: string }
 
 /**
  * Team error types - discriminated union for type-safe error handling
@@ -405,6 +406,14 @@ export function formatDelegationError(error: DelegationError): string {
       return `Delegation '${error.delegationId}' already completed with status '${error.status}'`
     case "timeout":
       return `Delegation '${error.delegationId}' timed out after ${error.timeoutMs / 1000}s`
+    case "api_error": {
+      const lines = [
+        `Delegation '${error.delegationId}' API error during ${error.operation}: ${sanitizeErrorOutput(error.message)}`,
+        "",
+        `**Hint:** ${error.hint}`,
+      ]
+      return lines.join("\n")
+    }
   }
 }
 

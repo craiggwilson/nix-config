@@ -23,6 +23,7 @@ import { promptSmallModel } from "../agents/index.js"
 import { metadataGenerationTemplate } from "../utils/prompts/index.js"
 import type { Result } from "../utils/result/index.js"
 import type { VCSType } from "../vcs/index.js"
+import { withRetry, isRetryableError, type RetryError } from "../utils/retry/index.js"
 
 /**
  * Zod schema for metadata generation response
@@ -222,8 +223,12 @@ export class DelegationManager {
   /**
    * Start a delegation in the background (fire-and-forget).
    *
-   * Creates an OpenCode session, sets up timeout handling, and fires the prompt.
-   * Does not await the prompt response - completion is handled via session.idle event.
+   * Creates an OpenCode session with retry logic, sets up timeout handling,
+   * and fires the prompt. Does not await the prompt response - completion
+   * is handled via session.idle event.
+   *
+   * Retries on transient errors (JSON parse errors, connection issues, etc.)
+   * with exponential backoff.
    */
   private async startDelegation(delegation: Delegation): Promise<void> {
     if (!this.client) return
@@ -237,23 +242,39 @@ export class DelegationManager {
         return
       }
 
-      // Create a session for the delegation
-      const sessionResult = await this.client.session.create({
-        body: {
-          title: `Delegation: ${delegation.issueId} (${delegation.role})`,
-          parentID: delegation.parentSessionId,
+      // Create a session for the delegation with retry logic
+      const sessionResult = await withRetry(
+        "session.create",
+        async () => {
+          const result = await this.client!.session.create({
+            body: {
+              title: `Delegation: ${delegation.issueId} (${delegation.role})`,
+              parentID: delegation.parentSessionId,
+            },
+          })
+          if (!result.data?.id) {
+            throw new Error("Session creation returned no session ID")
+          }
+          return result.data.id
         },
-      })
+        this.log,
+        { maxAttempts: 3, initialDelayMs: 500, maxDelayMs: 5000 }
+      )
 
-      const sessionId = sessionResult.data?.id
-      if (!sessionId) {
-        const failResult = await this.fail(delegation.id, "Failed to create session")
+      if (!sessionResult.ok) {
+        const retryError = sessionResult.error
+        const errorMessage = this.formatApiError("session.create", retryError)
+        await this.log.error(`Delegation ${delegation.id} failed to create session: ${errorMessage}`)
+        const failResult = await this.fail(delegation.id, errorMessage)
         if (!failResult.ok) {
           await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
         }
+        // Notify via callback so team can handle the failure
+        if (delegation.onComplete) await delegation.onComplete(delegation.id)
         return
       }
 
+      const sessionId = sessionResult.value
       delegation.sessionId = sessionId
       this.sessionToDelegation.set(sessionId, delegation.id)
       this.delegations.set(delegation.id, delegation)
@@ -267,10 +288,38 @@ export class DelegationManager {
         this.handleTimeout(delegation.id)
       }, this.timeoutMs)
 
-      // Fire the prompt (fire-and-forget)
-      // Prompt is built by TeamManager, we just send it
-      this.client.session
-        .prompt({
+      // Fire the prompt with retry logic (fire-and-forget)
+      this.firePromptWithRetry(delegation, sessionId)
+
+      await this.log.info(`Delegation ${delegation.id} started in background (session: ${sessionId})`)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      await this.log.error(`Failed to start delegation ${delegation.id}: ${errorMessage}`)
+      delegation.status = "failed"
+      delegation.error = errorMessage
+      this.delegations.set(delegation.id, delegation)
+      const saveResult = await this.save(delegation)
+      if (!saveResult.ok) {
+        await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
+      }
+      // Notify via callback so team can handle the failure
+      if (delegation.onComplete) await delegation.onComplete(delegation.id)
+    }
+  }
+
+  /**
+   * Fire the prompt with retry logic (fire-and-forget).
+   *
+   * Retries on transient errors with exponential backoff.
+   * On final failure, marks the delegation as failed and notifies.
+   */
+  private firePromptWithRetry(delegation: Delegation, sessionId: string): void {
+    if (!this.client) return
+
+    withRetry(
+      "session.prompt",
+      async () => {
+        const result = await this.client!.session.prompt({
           path: { id: sessionId },
           body: {
             agent: delegation.agent,
@@ -278,27 +327,51 @@ export class DelegationManager {
             tools: DISABLED_TOOLS,
           },
         })
-        .catch(async (error: Error) => {
-          await this.log.error(`Delegation ${delegation.id} prompt failed: ${error.message}`)
-          const failResult = await this.fail(delegation.id, error.message)
-          if (!failResult.ok) {
-            await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
-          }
-          // Notify via callback
-          if (delegation.onComplete) await delegation.onComplete(delegation.id)
-        })
-
-      await this.log.info(`Delegation ${delegation.id} started in background (session: ${sessionId})`)
-    } catch (error) {
-      await this.log.error(`Failed to start delegation: ${error}`)
-      delegation.status = "failed"
-      delegation.error = String(error)
-      this.delegations.set(delegation.id, delegation)
-      const saveResult = await this.save(delegation)
-      if (!saveResult.ok) {
-        await this.log.error(`Failed to save delegation ${delegation.id}: ${formatDelegationError(saveResult.error)}`)
+        // Check for error in response
+        if (!result.data) {
+          throw new Error("Prompt returned no response data")
+        }
+        return result
+      },
+      this.log,
+      { maxAttempts: 3, initialDelayMs: 500, maxDelayMs: 5000 }
+    ).then(async (result) => {
+      if (!result.ok) {
+        const retryError = result.error
+        const errorMessage = this.formatApiError("session.prompt", retryError)
+        await this.log.error(`Delegation ${delegation.id} prompt failed: ${errorMessage}`)
+        const failResult = await this.fail(delegation.id, errorMessage)
+        if (!failResult.ok) {
+          await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
+        }
+        // Notify via callback
+        if (delegation.onComplete) await delegation.onComplete(delegation.id)
       }
+    }).catch(async (error: Error) => {
+      // Catch any unexpected errors from the retry logic itself
+      await this.log.error(`Delegation ${delegation.id} prompt failed unexpectedly: ${error.message}`)
+      const failResult = await this.fail(delegation.id, error.message)
+      if (!failResult.ok) {
+        await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
+      }
+      if (delegation.onComplete) await delegation.onComplete(delegation.id)
+    })
+  }
+
+  /**
+   * Format a RetryError into a user-friendly error message.
+   */
+  private formatApiError(operation: string, error: RetryError): string {
+    const lines = [
+      `API call '${operation}' failed after ${error.attempts} attempt(s): ${error.lastError}`,
+    ]
+    if (error.wasRetryable) {
+      lines.push("This appears to be a transient error (network issue, server overload, etc.).")
+      lines.push("Hint: Try again in a few moments, or check network connectivity.")
+    } else {
+      lines.push("Hint: Check the OpenCode logs for more details.")
     }
+    return lines.join(" ")
   }
 
   /**

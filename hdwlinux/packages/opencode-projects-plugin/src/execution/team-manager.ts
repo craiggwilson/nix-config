@@ -375,6 +375,10 @@ export class TeamManager {
     this.teams.set(team.id, team)
     const saveResult = await this.save(team)
     if (!saveResult.ok) {
+      // Clean up worktree if we created one
+      if (worktreeBranch) {
+        await this.cleanupWorktreeOnFailure(team)
+      }
       return saveResult
     }
 
@@ -384,11 +388,19 @@ export class TeamManager {
       issueContext
     )
     if (!delegationResult.ok) {
+      // Clean up worktree if delegation creation failed
+      if (worktreeBranch) {
+        await this.cleanupWorktreeOnFailure(team)
+      }
       return delegationResult
     }
 
     const finalSaveResult = await this.save(team)
     if (!finalSaveResult.ok) {
+      // Clean up worktree if final save failed
+      if (worktreeBranch) {
+        await this.cleanupWorktreeOnFailure(team)
+      }
       return finalSaveResult
     }
 
@@ -708,6 +720,8 @@ export class TeamManager {
    *
    * Runs discussion rounds if enabled, sets final status, and notifies
    * parent session (background mode) or resolves completion promise (foreground mode).
+   *
+   * On failure, cleans up any orphaned worktrees to prevent resource leaks.
    */
   private async finalizeTeam(team: Team): Promise<void> {
     const allFailed = team.members.every((m) => m.status === "failed")
@@ -732,6 +746,11 @@ export class TeamManager {
     team.completedAt = new Date().toISOString()
     await this.save(team)
 
+    // Clean up worktree on failure to prevent orphaned workspaces
+    if (allFailed && team.worktreePath && team.worktreeBranch) {
+      await this.cleanupWorktreeOnFailure(team)
+    }
+
     if (team.foreground) {
       // Foreground mode: resolve the waiting promise
       await this.log.info(
@@ -750,6 +769,35 @@ export class TeamManager {
       }
     }
     this.pruneCompletedTeams()
+  }
+
+  /**
+   * Clean up worktree when a team fails completely.
+   *
+   * Prevents orphaned worktrees from accumulating when delegations fail
+   * during startup (e.g., JSON parse errors, connection issues).
+   */
+  private async cleanupWorktreeOnFailure(team: Team): Promise<void> {
+    if (!team.worktreeBranch) return
+
+    // Extract worktree name from branch (format: projectId/issueId)
+    const worktreeName = team.worktreeBranch
+
+    await this.log.info(
+      `Team ${team.id}: cleaning up worktree '${worktreeName}' after failure`
+    )
+
+    const removeResult = await this.worktreeManager.removeWorktree(worktreeName)
+    if (!removeResult.ok) {
+      // Log but don't fail - worktree cleanup is best-effort
+      await this.log.warn(
+        `Team ${team.id}: failed to clean up worktree '${worktreeName}': ${removeResult.error.message}`
+      )
+    } else {
+      await this.log.info(
+        `Team ${team.id}: successfully cleaned up worktree '${worktreeName}'`
+      )
+    }
   }
 
   /**

@@ -9,8 +9,55 @@ import * as os from "node:os"
 
 import { DelegationManager, type CreateDelegationOptions } from "./delegation-manager.js"
 import { createMockLogger } from "../utils/testing/index.js"
+import type { OpencodeClient } from "../utils/opencode-sdk/index.js"
 
 const mockLogger = createMockLogger()
+
+/**
+ * Create a mock OpenCode client for testing retry behavior
+ */
+function createMockClient(options: {
+  sessionCreateFailures?: number
+  sessionCreateError?: string
+  promptFailures?: number
+  promptError?: string
+} = {}): OpencodeClient {
+  let sessionCreateAttempts = 0
+  let promptAttempts = 0
+  const sessionCreateFailures = options.sessionCreateFailures ?? 0
+  const promptFailures = options.promptFailures ?? 0
+  const sessionCreateError = options.sessionCreateError ?? "JSON Parse error: Unexpected EOF"
+  const promptError = options.promptError ?? "JSON Parse error: Unexpected EOF"
+
+  return {
+    app: {
+      log: async () => ({}),
+      agents: async () => ({ data: [] }),
+    },
+    session: {
+      create: async () => {
+        sessionCreateAttempts++
+        if (sessionCreateAttempts <= sessionCreateFailures) {
+          throw new Error(sessionCreateError)
+        }
+        return { data: { id: `session-${sessionCreateAttempts}` } }
+      },
+      get: async () => ({ data: { id: "test-session" } }),
+      prompt: async () => {
+        promptAttempts++
+        if (promptAttempts <= promptFailures) {
+          throw new Error(promptError)
+        }
+        return { data: { id: "test-msg", role: "assistant" as const, sessionID: "test-session" } }
+      },
+      messages: async () => ({ data: [] }),
+      delete: async () => ({}),
+    },
+    config: {
+      get: async () => ({ data: {} }),
+    },
+  }
+}
 
 /**
  * Helper to create delegation options with required fields
@@ -371,6 +418,98 @@ describe("DelegationManager", () => {
 
       expect(active.length).toBe(1)
       expect(active[0].status).toBe("pending")
+    })
+  })
+
+  describe("retry behavior", () => {
+    test("retries session.create on JSON Parse error and succeeds", async () => {
+      // Create a client that fails twice then succeeds
+      const mockClient = createMockClient({ sessionCreateFailures: 2 })
+      const retryManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 15 * 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      const result = await retryManager.create("test-project", testDir, createOptions({
+        issueId: "issue-retry",
+        prompt: "Test retry",
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait a bit for the background delegation to start
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      // The delegation should have a session ID (meaning session.create succeeded after retries)
+      const getResult = await retryManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.sessionId).toBeDefined()
+      expect(getResult.value.status).toBe("running")
+    })
+
+    test("fails delegation after exhausting retries on session.create", async () => {
+      // Create a client that always fails
+      const mockClient = createMockClient({ sessionCreateFailures: 10 })
+      const retryManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 15 * 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      let completeCalled = false
+      const result = await retryManager.create("test-project", testDir, createOptions({
+        issueId: "issue-fail",
+        prompt: "Test fail",
+        onComplete: async () => {
+          completeCalled = true
+        },
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the background delegation to fail
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // The delegation should be marked as failed
+      const getResult = await retryManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      expect(getResult.value.status).toBe("failed")
+      expect(getResult.value.error).toContain("session.create")
+      expect(getResult.value.error).toContain("JSON Parse error")
+      expect(completeCalled).toBe(true)
+    })
+
+    test("includes actionable error message on failure", async () => {
+      const mockClient = createMockClient({ sessionCreateFailures: 10 })
+      const retryManager = new DelegationManager(mockLogger, mockClient, {
+        timeoutMs: 15 * 60 * 1000,
+        smallModelTimeoutMs: 30000,
+      })
+
+      const result = await retryManager.create("test-project", testDir, createOptions({
+        issueId: "issue-error-msg",
+        prompt: "Test error message",
+      }))
+
+      expect(result.ok).toBe(true)
+      if (!result.ok) return
+
+      // Wait for the background delegation to fail
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const getResult = await retryManager.get(result.value.id)
+      expect(getResult.ok).toBe(true)
+      if (!getResult.ok) return
+
+      // Error message should include helpful context
+      expect(getResult.value.error).toContain("session.create")
+      expect(getResult.value.error).toContain("attempt")
+      expect(getResult.value.error).toContain("transient")
     })
   })
 })
