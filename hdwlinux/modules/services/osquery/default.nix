@@ -3,7 +3,12 @@
     tags = [ "users:craig:work" ];
 
     nixos =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         cfg = config.hdwlinux.services.osquery;
         dirname =
@@ -16,8 +21,7 @@
 
         flagfile = pkgs.writeText "osquery.flags" (
           lib.concatStringsSep "\n" (
-            lib.mapAttrsToList (name: value: "--${name}=${value}")
-              ({ config_path = conf; } // cfg.flags)
+            lib.mapAttrsToList (name: value: "--${name}=${value}") ({ config_path = conf; } // cfg.flags)
           )
         );
 
@@ -75,7 +79,10 @@
         };
 
         config = {
-          environment.systemPackages = [ osqueryi ];
+          environment.systemPackages = [
+            osqueryi
+            pkgs.osquery
+          ];
 
           systemd.services.osqueryd = {
             after = [
@@ -102,4 +109,3 @@
       };
   };
 }
-
