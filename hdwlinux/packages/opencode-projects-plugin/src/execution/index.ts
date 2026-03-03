@@ -31,6 +31,9 @@ export { TeamNotifier } from "./team-notifier.js"
 export { PermissionManager } from "./permission-manager.js"
 export type { ToolPermissions } from "./permission-manager.js"
 
+export { FixedRoundDiscussionStrategy } from "./fixed-round/index.js"
+export type { FixedRoundStrategyConfig } from "./fixed-round/index.js"
+
 export { DynamicRoundDiscussionStrategy, ConvergenceAssessor } from "./dynamic-round/index.js"
 export type {
   DynamicRoundStrategyConfig,
@@ -39,3 +42,12 @@ export type {
   AgentConvergenceSignal,
   TeamConvergenceState,
 } from "./dynamic-round/index.js"
+
+export { RealtimeDiscussionStrategy, InboxManager } from "./realtime/index.js"
+export type {
+  RealtimeStrategyConfig,
+  InboxManagerConfig,
+  InboxMessage,
+  MessageType,
+  ReadResult,
+} from "./realtime/index.js"

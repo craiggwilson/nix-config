@@ -75,7 +75,12 @@ export const ConvergenceDiscussionSettingsSchema = z.object({
  * Schema for realtime discussion strategy settings
  */
 export const RealtimeDiscussionSettingsSchema = z.object({
-  roundTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
+  /** Polling interval for checking inbox (milliseconds) */
+  pollIntervalMs: z.number().int().positive().default(1000),
+  /** Maximum time to wait for all agents to signal done (milliseconds) */
+  maxWaitTimeMs: z.number().int().positive().default(30 * 60 * 1000),
+  /** Maximum time to wait for each agent's response per prompt (milliseconds) */
+  promptTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
 })
 
 /**

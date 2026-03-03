@@ -14,6 +14,7 @@ import type { Team, TeamManager } from "../execution/index.js"
 import type { DiscussionStrategyType, TeamDiscussionStrategy } from "../execution/index.js"
 import { FixedRoundDiscussionStrategy } from "../execution/fixed-round/index.js"
 import { DynamicRoundDiscussionStrategy } from "../execution/dynamic-round/index.js"
+import { RealtimeDiscussionStrategy } from "../execution/realtime/index.js"
 import type { TeamDiscussionSettings } from "../config/index.js"
 import { formatError } from "../utils/errors/index.js"
 import {
@@ -28,6 +29,7 @@ function createStrategy(
   log: Logger,
   client: OpencodeClient,
   smallModelTimeoutMs: number,
+  projectDir: string,
 ): TeamDiscussionStrategy {
   switch (settings.type) {
     case "fixedRound":
@@ -39,7 +41,12 @@ function createStrategy(
         smallModelTimeoutMs,
       })
     case "realtime":
-      throw new Error("realtime discussion strategy is not yet implemented")
+      return new RealtimeDiscussionStrategy(log, client, {
+        baseDir: projectDir,
+        pollIntervalMs: settings.pollIntervalMs,
+        maxWaitTimeMs: settings.maxWaitTimeMs,
+        promptTimeoutMs: settings.promptTimeoutMs,
+      })
     default: {
       const _exhaustive: never = settings
       throw new Error(`Unknown discussion strategy type: ${(settings as TeamDiscussionSettings).type}`)
@@ -150,7 +157,7 @@ When isolate=true, the completion notification includes merge instructions.`,
 
         // Create team (even single-agent work creates a team of 1)
         const strategyType = discussionStrategyArg ?? defaultDiscussionStrategy
-        const discussionStrategy = createStrategy(getDiscussionSettings(strategyType), log, client, smallModelTimeoutMs)
+        const discussionStrategy = createStrategy(getDiscussionSettings(strategyType), log, client, smallModelTimeoutMs, projectDir)
         const teamResult = await teamManager.create({
           projectId,
           projectDir,

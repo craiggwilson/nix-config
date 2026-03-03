@@ -56,7 +56,10 @@ describe("ConfigManager", () => {
         expect(result.value.getSmallModelTimeoutMs()).toBe(DEFAULT_SMALL_MODEL_TIMEOUT_MS)
         expect(result.value.getDefaultDiscussionStrategy()).toBe("fixedRound")
         const fixedRoundSettings = result.value.getTeamDiscussionSettings("fixedRound")
-        expect(fixedRoundSettings.roundTimeoutMs).toBeGreaterThan(0)
+        expect(fixedRoundSettings.type).toBe("fixedRound")
+        if (fixedRoundSettings.type === "fixedRound") {
+          expect(fixedRoundSettings.roundTimeoutMs).toBeGreaterThan(0)
+        }
         expect(result.value.getTeamMaxSize()).toBe(DEFAULT_TEAM_MAX_SIZE)
         expect(result.value.getTeamRetryFailedMembers()).toBe(DEFAULT_TEAM_RETRY_FAILED_MEMBERS)
         expect(result.value.getWorktreeSettings().autoCleanup).toBe(true)
@@ -226,15 +229,23 @@ describe("ConfigManager", () => {
 
       const fixedRound = config.getTeamDiscussionSettings("fixedRound")
       expect(fixedRound.type).toBe("fixedRound")
-      expect(fixedRound.roundTimeoutMs).toBeGreaterThan(0)
+      if (fixedRound.type === "fixedRound") {
+        expect(fixedRound.roundTimeoutMs).toBeGreaterThan(0)
+      }
 
       const convergence = config.getTeamDiscussionSettings("dynamicRound")
       expect(convergence.type).toBe("dynamicRound")
-      expect(convergence.roundTimeoutMs).toBeGreaterThan(0)
+      if (convergence.type === "dynamicRound") {
+        expect(convergence.roundTimeoutMs).toBeGreaterThan(0)
+      }
 
       const realtime = config.getTeamDiscussionSettings("realtime")
       expect(realtime.type).toBe("realtime")
-      expect(realtime.roundTimeoutMs).toBeGreaterThan(0)
+      if (realtime.type === "realtime") {
+        expect(realtime.promptTimeoutMs).toBeGreaterThan(0)
+        expect(realtime.pollIntervalMs).toBeGreaterThan(0)
+        expect(realtime.maxWaitTimeMs).toBeGreaterThan(0)
+      }
     })
 
     it("getTeamMaxSize returns max size", async () => {
