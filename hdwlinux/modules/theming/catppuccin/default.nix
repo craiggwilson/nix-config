@@ -30,8 +30,8 @@ let
     base16 = "74c7ec"; # sapphire - bright blue
     base17 = "f5c2e7"; # pink - bright purple
   };
-  # Pre-compute withHashtag version
-  withHashtag = builtins.mapAttrs (_: value: "#" + value) colors;
+  colorLib = import ../../../lib/colors.nix colors;
+  inherit (colorLib) withHashtag;
 
   # Generate adwaita GTK CSS
   adwaitaGtkCss = with withHashtag; ''
@@ -76,9 +76,8 @@ let
     @define-color scrollbar_outline_color ${base02};
   '';
 
-  # Pre-compute the full theme with all derived attributes
-  themeColors = colors // {
-    inherit withHashtag adwaitaGtkCss;
+  themeColors = colorLib // {
+    inherit adwaitaGtkCss;
   };
 in
 {

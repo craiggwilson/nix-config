@@ -11,7 +11,7 @@
     "contributes": {
         "themes": [{
             "label": "hdwlinux",
-            "uiTheme": "vs",
+            "uiTheme": "vs-dark",
             "path": "./themes/hdwlinux.json"
         }]
     }
