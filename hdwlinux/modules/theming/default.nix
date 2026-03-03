@@ -1,16 +1,46 @@
 {
   config.substrate.modules.theming.options = {
+    nixos =
+      { lib, config, ... }:
+      {
+        options.hdwlinux.theme.colors = lib.mkOption {
+          description = "The current theme colors, including ansi sub-attrset.";
+          type = lib.types.attrs;
+          default = { };
+        };
+
+        config = lib.mkIf (config.hdwlinux.theme.colors != { }) {
+          console.colors =
+            let
+              c = config.hdwlinux.theme.colors.ansi;
+            in
+            [
+              c.black
+              c.red
+              c.green
+              c.yellow
+              c.blue
+              c.magenta
+              c.cyan
+              c.white
+              c.brightBlack
+              c.brightRed
+              c.brightGreen
+              c.brightYellow
+              c.brightBlue
+              c.brightMagenta
+              c.brightCyan
+              c.brightWhite
+            ];
+        };
+      };
+
     homeManager =
       { config, lib, ... }:
       {
         options.hdwlinux.theme = {
-          name = lib.mkOption {
-            description = "The name of the theme.";
-            type = lib.types.str;
-            default = "";
-          };
           colors = lib.mkOption {
-            description = "The current colors.";
+            description = "The current theme colors, including ansi and withHashtag sub-attrsets.";
             type = lib.types.attrs;
             default = { };
           };
@@ -41,6 +71,11 @@
             description = "Whether the theme is dark.";
             type = lib.types.bool;
             default = true;
+          };
+          name = lib.mkOption {
+            description = "The name of the theme.";
+            type = lib.types.str;
+            default = "";
           };
           wallpaper = lib.mkOption {
             description = "The wallpaper for the system.";

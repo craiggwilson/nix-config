@@ -40,19 +40,11 @@
 
         toolPermissionWithSubs = lib.types.either toolPermission (lib.types.attrsOf toolPermission);
 
-        # Nested extraMeta type: keyed by program name (e.g., augment, opencode), then key-value pairs
-        extraMetaType = lib.types.attrsOf (lib.types.attrsOf lib.types.str);
-
-        # Base options shared by items (commands, rules) and agents
+        # Base options shared by all item types (agents, commands, rules)
         itemOptions = {
           description = lib.mkOption {
             description = "A description of what this item does.";
             type = lib.types.str;
-          };
-          extraMeta = lib.mkOption {
-            description = "Program-specific metadata. Top-level key is program name (e.g., augment, opencode).";
-            type = extraMetaType;
-            default = { };
           };
           prompt = lib.mkOption {
             description = "Path to the markdown file containing the prompt.";
@@ -60,10 +52,12 @@
           };
         };
 
-        itemType = lib.types.submodule { options = itemOptions; };
-
         agentType = lib.types.submodule {
           options = itemOptions // {
+            color = lib.mkOption {
+              description = "Hex color for the agent (with #, e.g. \"#89b4fa\"). Sourced from the active theme.";
+              type = lib.types.str;
+            };
             mode = lib.mkOption {
               description = "The mode of the agent, primary or subagent";
               type = lib.types.str;
@@ -74,10 +68,35 @@
               type = lib.types.str;
               default = "";
             };
+            temperature = lib.mkOption {
+              description = "Model temperature controlling response creativity/determinism.";
+              type = lib.types.float;
+            };
             tools = lib.mkOption {
               description = "Tools with their permission levels. Key is tool name, value is permission.";
               type = lib.types.attrsOf toolPermission;
               default = { };
+            };
+          };
+        };
+
+        commandType = lib.types.submodule {
+          options = itemOptions // {
+            argumentHint = lib.mkOption {
+              description = "Hint shown to the user describing expected arguments for this command.";
+              type = lib.types.str;
+            };
+          };
+        };
+
+        ruleType = lib.types.submodule {
+          options = itemOptions // {
+            loadMode = lib.mkOption {
+              description = "Controls when the rule is loaded: always (every prompt) or auto (agent-requested when relevant).";
+              type = lib.types.enum [
+                "always"
+                "auto"
+              ];
             };
           };
         };
@@ -138,7 +157,7 @@
 
           commands = lib.mkOption {
             description = "Command definitions for AI assistants.";
-            type = lib.types.attrsOf itemType;
+            type = lib.types.attrsOf commandType;
             default = { };
           };
 
@@ -150,7 +169,7 @@
 
           rules = lib.mkOption {
             description = "Rule definitions for AI assistants.";
-            type = lib.types.attrsOf itemType;
+            type = lib.types.attrsOf ruleType;
             default = { };
           };
 

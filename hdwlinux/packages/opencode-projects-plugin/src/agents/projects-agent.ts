@@ -200,5 +200,6 @@ skill({ name: "opencode-projects" })
 export const OPENCODE_PROJECTS_AGENT_CONFIG = {
   description: "Project management specialist for planning, tracking, and executing work using the opencode-projects-plugin.",
   mode: "primary" as const,
+  temperature: 0.3,
   prompt: OPENCODE_PROJECTS_AGENT_PROMPT,
 }

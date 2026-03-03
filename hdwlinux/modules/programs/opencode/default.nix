@@ -50,13 +50,14 @@
         agentConfig = lib.mapAttrs (
           _: agent:
           {
+            color = agent.color;
             description = agent.description;
             mode = agent.mode;
             model = resolveAlias agent.model;
             prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.prompt)}}";
+            temperature = agent.temperature;
           }
           // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
-          // lib.optionalAttrs (agent.extraMeta ? color) { color = agent.extraMeta.color; }
         ) config.hdwlinux.ai.agent.agents;
 
         # Transform commands to OpenCode JSON config format

@@ -8,28 +8,28 @@
         # Command definitions without prompt paths (computed automatically)
         commands = {
           planning-codebase-map = {
+            argumentHint = "[repository-name-or-focus]";
             description = "Map and document a codebase as part of planning discovery";
-            extraMeta.augment.argument-hint = "[repository-name-or-focus]";
           };
 
           planning-continue = {
+            argumentHint = "[optional-focus-area]";
             description = "Continue an in-progress planning cycle";
-            extraMeta.augment.argument-hint = "[optional-focus-area]";
           };
 
           planning-finalize = {
+            argumentHint = "[optional-focus-area]";
             description = "Finalize and wrap up a planning cycle";
-            extraMeta.augment.argument-hint = "[optional-focus-area]";
           };
 
           planning-init = {
+            argumentHint = "[roadmap|project|task] [optional-focus-area]";
             description = "Initialize a planning cycle for roadmap, project, or task planning";
-            extraMeta.augment.argument-hint = "[roadmap|project|task] [optional-focus-area]";
           };
 
           planning-research = {
+            argumentHint = "[research-topic]";
             description = "Conduct focused research as part of planning discovery";
-            extraMeta.augment.argument-hint = "[research-topic]";
           };
         };
 

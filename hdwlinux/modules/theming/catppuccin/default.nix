@@ -30,7 +30,52 @@ let
     base16 = "74c7ec"; # sapphire - bright blue
     base17 = "f5c2e7"; # pink - bright purple
   };
-  colorLib = import ../../../lib/colors.nix colors;
+  ansiColors = {
+    black = colors.base00; # base
+    red = colors.base08; # red
+    green = colors.base0B; # green
+    yellow = colors.base0A; # yellow
+    blue = colors.base0D; # blue
+    magenta = colors.base06; # rosewater
+    cyan = colors.base0C; # teal
+    white = colors.base05; # text
+    brightBlack = colors.base04; # surface2
+    brightRed = colors.base12; # maroon
+    brightGreen = colors.base14; # green (bright)
+    brightYellow = colors.base13; # rosewater (bright yellow)
+    brightBlue = colors.base16; # sapphire
+    brightMagenta = colors.base17; # pink
+    brightCyan = colors.base15; # sky
+    brightWhite = colors.base07; # lavender
+  };
+
+  # Maps every unique base24 palette hex to its nearest ANSI slot name.
+  # base10 = base01, base13 = base06, base14 = base0B — omitted as duplicates.
+  paletteToAnsi = {
+    ${colors.base00} = "black";
+    ${colors.base01} = "black";
+    ${colors.base02} = "black";
+    ${colors.base03} = "brightBlack";
+    ${colors.base04} = "brightBlack";
+    ${colors.base05} = "white";
+    ${colors.base06} = "magenta";
+    ${colors.base07} = "brightWhite";
+    ${colors.base08} = "red";
+    ${colors.base09} = "yellow";
+    ${colors.base0A} = "yellow";
+    ${colors.base0B} = "green";
+    ${colors.base0C} = "cyan";
+    ${colors.base0D} = "blue";
+    ${colors.base0E} = "brightMagenta";
+    ${colors.base0F} = "brightRed";
+    ${colors.base11} = "black";
+    ${colors.base12} = "brightRed";
+    ${colors.base15} = "brightCyan";
+    ${colors.base16} = "brightBlue";
+    ${colors.base17} = "brightMagenta";
+  };
+
+  colorLib = import ../../../lib/colors.nix colors ansiColors paletteToAnsi;
   inherit (colorLib) withHashtag;
 
   # Generate adwaita GTK CSS
@@ -84,28 +129,11 @@ in
   config.substrate.modules.theming.catppuccin = {
     tags = [ "theming:catppuccin" ];
 
-    nixos = {
-      # TODO: this is going to be a problem with two users and different themes.
-      console.colors = [
-        colors.base00
-        colors.base08
-        colors.base0B
-        colors.base0A
-        colors.base0D
-        colors.base06
-        colors.base0C
-        colors.base05
-
-        colors.base04
-        colors.base08
-        colors.base0B
-        colors.base0A
-        colors.base15
-        colors.base17
-        colors.base0C
-        colors.base07
-      ];
-    };
+    nixos =
+      { ... }:
+      {
+        hdwlinux.theme.colors = colorLib;
+      };
 
     homeManager =
       {

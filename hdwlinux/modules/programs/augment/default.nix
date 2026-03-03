@@ -23,56 +23,41 @@
               "gpt"
               "gemini"
             ];
-            partsWithoutProvider =
-              if builtins.length parts > 0 && builtins.elem (builtins.head parts) knownProviders then
-                builtins.tail parts
-              else
-                parts;
-            firstNumIdx =
-              lib.lists.findFirstIndex isNumeric (builtins.length partsWithoutProvider)
-                partsWithoutProvider;
+            hasKnownProvider = builtins.any (p: (builtins.head parts) == p) knownProviders;
+            versionParts = lib.filter isNumeric parts;
+            nonVersionParts = lib.filter (s: !isNumeric s) parts;
+            majorVersion = if versionParts != [ ] then builtins.head versionParts else null;
+            baseName = lib.concatStringsSep "" nonVersionParts;
           in
-          if firstNumIdx == 0 || firstNumIdx >= builtins.length partsWithoutProvider then
-            throw "Invalid model slug format: ${slug} (expected format: [provider-]family-version)"
-          else
-            let
-              family = builtins.elemAt partsWithoutProvider (firstNumIdx - 1);
-              versionParts = lib.drop firstNumIdx partsWithoutProvider;
-              version = lib.concatStringsSep "." versionParts;
-            in
-            "${family}${version}";
+          if hasKnownProvider then baseName + (if majorVersion != null then majorVersion else "") else slug;
+        # Look up a hex color (with #) in the theme's derived ANSI name map.
+        # Returns the Augment ANSI color name, or null if no match.
+        ansiColorNameFromHex = hex: config.hdwlinux.theme.colors.withHashtag.hexToAnsiName hex;
 
-        resolveAlias =
+        # Resolve an alias name to an Augment-compatible model slug.
+        resolveModelSlug =
           aliasName:
           let
             alias = config.hdwlinux.ai.agent.models.aliases.${aliasName};
           in
           toAuggieSlug alias.model;
 
-        extraMetaToFrontmatter =
-          extraMeta:
-          let
-            augmentMeta = extraMeta.augment or { };
-          in
-          lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key}: ${value}") augmentMeta);
-
         formatTools = tools: lib.concatStringsSep ", " (lib.attrNames tools);
 
         generateAgentMd =
           name: agent:
           let
+            augmentColor = ansiColorNameFromHex agent.color;
             formalFields = [
               "name: ${name}"
               "description: ${agent.description}"
-              "model: ${resolveAlias agent.model}"
+              "model: ${resolveModelSlug agent.model}"
               "tools: ${formatTools agent.tools}"
-            ];
-            augmentMeta = agent.extraMeta.augment or { };
-            extraFields = lib.mapAttrsToList (key: value: "${key}: ${value}") augmentMeta;
-            allFields = formalFields ++ extraFields;
+            ]
+            ++ lib.optional (augmentColor != null) "color: ${augmentColor}";
             frontmatter = ''
               ---
-              ${lib.concatStringsSep "\n" allFields}
+              ${lib.concatStringsSep "\n" formalFields}
               ---
 
             '';
@@ -80,19 +65,32 @@
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
-        generateMd =
-          name: item:
+        generateRuleMd =
+          name: rule:
           let
-            descriptionField = "description: ${item.description}";
-            extraFields = extraMetaToFrontmatter item.extraMeta;
-            allFields = if extraFields == "" then descriptionField else "${descriptionField}\n${extraFields}";
+            augmentType = if rule.loadMode == "always" then "always_apply" else "agent_requested";
             frontmatter = ''
               ---
-              ${allFields}
+              description: ${rule.description}
+              type: ${augmentType}
               ---
 
             '';
-            content = builtins.readFile item.prompt;
+            content = builtins.readFile rule.prompt;
+          in
+          pkgs.writeText "${name}.md" (frontmatter + content);
+
+        generateCommandMd =
+          name: command:
+          let
+            frontmatter = ''
+              ---
+              description: ${command.description}
+              argument-hint: ${command.argumentHint}
+              ---
+
+            '';
+            content = builtins.readFile command.prompt;
           in
           pkgs.writeText "${name}.md" (frontmatter + content);
 
@@ -106,14 +104,14 @@
         commandsDir = pkgs.linkFarm "augment-commands" (
           lib.mapAttrsToList (name: command: {
             name = "${name}.md";
-            path = generateMd name command;
+            path = generateCommandMd name command;
           }) config.hdwlinux.ai.agent.commands
         );
 
         rulesDir = pkgs.linkFarm "augment-rules" (
           lib.mapAttrsToList (name: rule: {
             name = "${name}.md";
-            path = generateMd name rule;
+            path = generateRuleMd name rule;
           }) config.hdwlinux.ai.agent.rules
         );
 

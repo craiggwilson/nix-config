@@ -1,21 +1,33 @@
 # Shared color utility library.
 #
-# Takes a raw colors attrset (bare hex strings without #) and returns it
-# enriched with mix/lighten/darken functions. Both the top-level attrset and
-# withHashtag carry these functions, operating on bare and #-prefixed strings
-# respectively.
+# Takes a raw colors attrset (bare hex strings without #), an ansiColors
+# attrset (16 named ANSI slots to bare hex strings), and a paletteToAnsi
+# attrset (bare hex -> ANSI slot name covering the full palette), and returns
+# the colors enriched with mix/lighten/darken functions, an `ansi` sub-attrset,
+# and a `hexToAnsiName` function for mapping any palette hex to an Augment
+# ANSI color name.
+#
+# Both the top-level attrset and withHashtag carry these functions and the
+# `ansi` sub-attrset, operating on bare and #-prefixed strings respectively.
 #
 # Fractions are passed as (num, den) pairs to avoid Nix integer division
 # truncation — Nix has no float literals in pure evaluation contexts.
 #
 # Usage:
-#   colorLib = import ./colors.nix { base00 = "1e1e2e"; base05 = "cdd6f4"; ... };
-#   colorLib.mix "585b70" "cdd6f4" 1 2          # => "9398b2"
+#   colorLib = import ./colors.nix colors ansiColors paletteToAnsi;
+#   colorLib.mix "585b70" "cdd6f4" 1 2                # => "9398b2"
 #   colorLib.withHashtag.mix "#585b70" "#cdd6f4" 1 2  # => "#9398b2"
-#   colorLib.lighten "585b70" 1 4               # => "9da0b3"
-#   colorLib.darken "cdd6f4" 1 4                # => "9aa0b7"
-colors:
+#   colorLib.ansi.black                               # => "1e1e2e"
+#   colorLib.withHashtag.ansi.black                   # => "#1e1e2e"
+#   colorLib.hexToAnsiName "89b4fa"                   # => "blue" or null
+#   colorLib.withHashtag.hexToAnsiName "#89b4fa"      # => "blue" or null
+#   colorLib.lighten "585b70" 1 4                     # => "9da0b3"
+#   colorLib.darken "cdd6f4" 1 4                      # => "9aa0b7"
+colors: ansiColors_: paletteToAnsi_:
 let
+  ansiColors = if ansiColors_ == null then { } else ansiColors_;
+  paletteToAnsi = if paletteToAnsi_ == null then { } else paletteToAnsi_;
+
   hexDigits = {
     "0" = 0;
     "1" = 1;
@@ -130,7 +142,45 @@ let
     c: amount: den:
     "#" + darken (stripHash c) amount den;
 
+  # Map ANSI slot names to the 8 Augment color names.
+  # Bright variants collapse to their base name.
+  slotToAugmentName = {
+    black = "black";
+    brightBlack = "black";
+    red = "red";
+    brightRed = "red";
+    green = "green";
+    brightGreen = "green";
+    yellow = "yellow";
+    brightYellow = "yellow";
+    blue = "blue";
+    brightBlue = "blue";
+    magenta = "magenta";
+    brightMagenta = "magenta";
+    cyan = "cyan";
+    brightCyan = "cyan";
+    white = "white";
+    brightWhite = "white";
+  };
+
+  # Look up a bare hex string in paletteToAnsi, then map the slot name to an
+  # Augment color name. Returns null if the hex is not in the palette.
+  hexToAnsiName =
+    hex:
+    let
+      slot = paletteToAnsi.${hex} or null;
+    in
+    if slot == null then null else slotToAugmentName.${slot};
+
+  # Look up a #-prefixed hex string; strips the # before lookup.
+  hexToAnsiNameH = hex: hexToAnsiName (stripHash hex);
+
+  ansi = ansiColors;
+  ansiWithHashtag = builtins.mapAttrs (_: v: "#" + v) ansiColors;
+
   withHashtag = builtins.mapAttrs (_: v: "#" + v) colors // {
+    ansi = ansiWithHashtag;
+    hexToAnsiName = hexToAnsiNameH;
     mix = mixH;
     lighten = lightenH;
     darken = darkenH;
@@ -140,6 +190,8 @@ in
 colors
 // {
   inherit
+    ansi
+    hexToAnsiName
     withHashtag
     mix
     lighten

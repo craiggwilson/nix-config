@@ -9,32 +9,32 @@
         rules = {
           coding-practices = {
             description = "Personal coding practices and style guidelines";
-            extraMeta.augment.type = "always_apply";
+            loadMode = "always";
           };
 
           github = {
             description = "GitHub access configuration";
-            extraMeta.augment.type = "agent_requested";
+            loadMode = "auto";
           };
 
           google-workspace = {
             description = "Google Workspace access configuration";
-            extraMeta.augment.type = "agent-requested";
+            loadMode = "auto";
           };
 
           jujutsu = {
             description = "Version control using Jujutsu (jj)";
-            extraMeta.augment.type = "always_apply";
+            loadMode = "always";
           };
 
           markdown-formatting = {
             description = "Markdown formatting standards for all generated documents";
-            extraMeta.augment.type = "always_apply";
+            loadMode = "always";
           };
 
           mongodb-fiscal-calendar = {
             description = "MongoDB fiscal year and quarter conventions used during planning.";
-            extraMeta.augment.type = "agent-requested";
+            loadMode = "auto";
           };
         };
 
