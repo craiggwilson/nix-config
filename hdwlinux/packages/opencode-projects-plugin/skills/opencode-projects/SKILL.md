@@ -1170,9 +1170,10 @@ The blocked issue won't appear in `bd ready` until all blockers are closed.
    - Specify technologies involved
    - Mention security/performance concerns
 
-3. **Check available agents:**
-   - Review agent descriptions
-   - Match expertise to task requirements
+3. **Confirm available agents with the user:**
+   - Ask the user which agents are configured on their system
+   - Only use agents that have been confirmed to work in the current session
+   - Do not assume any specific agent names are available
 
 ### Worktree Cleanup
 
@@ -1300,40 +1301,3 @@ The plugin reads configuration from OpenCode's config system.
 |---------|---------|-------------|
 | `worktreeBase` | `.worktrees` | Directory for isolated worktrees |
 | `cleanupOnMerge` | true | Remove worktree after merge |
-
----
-
-## Available Agents
-
-For team composition, these agents are available:
-
-### Domain Experts
-- `go-expert`: Go, concurrency, cloud-native
-- `typescript-expert`: TypeScript, Node.js, React
-- `python-expert`: Python, FastAPI, Django
-- `java-expert`: Java, Spring, JVM
-- `rust-expert`: Rust, systems programming
-- `ruby-expert`: Ruby, Rails
-
-### Architecture & Design
-- `distributed-systems-architect`: Scalability, resilience
-- `security-architect`: Security, compliance, threat modeling
-- `database-architect`: Schema design, optimization
-- `api-designer`: REST, GraphQL, gRPC
-
-### Infrastructure & Operations
-- `devops-engineer`: CI/CD, deployment
-- `terraform-expert`: Infrastructure as code
-- `kubernetes-expert`: Container orchestration
-- `aws-expert`: AWS services
-
-### Specialized
-- `codebase-analyst`: Code archaeology, research
-- `testing-expert`: Test strategy, automation
-- `observability-expert`: Metrics, logging, tracing
-- `documentation-writer`: Technical writing
-
-### Data & Streaming
-- `kafka-expert`: Event streaming
-- `flink-expert`: Stream processing
-- `mongodb-expert`: MongoDB, Atlas

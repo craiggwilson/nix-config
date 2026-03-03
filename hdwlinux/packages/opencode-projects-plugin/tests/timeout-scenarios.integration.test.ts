@@ -161,13 +161,12 @@ describe("Timeout Scenarios Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "timeout", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "completed", // Team can still complete if some members timeout
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           reviewer: {
             agent: "reviewer",
@@ -208,13 +207,12 @@ describe("Timeout Scenarios Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "timeout", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "timeout", retryCount: 0 },
         ],
         status: "failed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -297,12 +295,11 @@ describe("Timeout Scenarios Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "flaky-agent", role: "primary", status: "running", retryCount: 3 },
         ],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),

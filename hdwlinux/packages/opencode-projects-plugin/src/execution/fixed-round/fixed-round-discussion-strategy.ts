@@ -1,5 +1,5 @@
 /**
- * DiscussionCoordinator - Manages multi-round team discussions
+ * FixedRoundDiscussionStrategy - Manages multi-round team discussions
  *
  * Responsible for:
  * - Running discussion rounds between team members
@@ -7,26 +7,27 @@
  * - Sending prompts and collecting responses
  */
 
-import type { Logger, OpencodeClient, MessageItem, Part } from "../utils/opencode-sdk/index.js"
-import type { Team, TeamMember, TeamMemberResult, DiscussionRound } from "./team-manager.js"
-import type { Clock } from "../utils/clock/index.js"
-import { systemClock } from "../utils/clock/index.js"
-import { PermissionManager } from "./permission-manager.js"
+import type { Logger, OpencodeClient, MessageItem, Part } from "../../utils/opencode-sdk/index.js"
+import type { Team, TeamMember, DiscussionRound } from "../team-manager.js"
+import type { Clock } from "../../utils/clock/index.js"
+import type { TeamDiscussionStrategy } from "../discussion-strategy.js"
+import { systemClock } from "../../utils/clock/index.js"
+import { PermissionManager } from "../permission-manager.js"
 
 /**
- * Configuration options for DiscussionCoordinator.
+ * Configuration for FixedRoundDiscussionStrategy.
  */
-export interface DiscussionCoordinatorConfig {
+export interface FixedRoundStrategyConfig {
+  /** Number of discussion rounds to run */
+  rounds: number
   /** Maximum time to wait for each agent's response per round (milliseconds) */
-  discussionRoundTimeoutMs: number
+  roundTimeoutMs: number
   /** Clock for timing operations (optional, uses system clock) */
   clock?: Clock
 }
 
-
-
 /**
- * Orchestrates multi-round team discussions.
+ * Orchestrates multi-round team discussions with a fixed round count.
  *
  * After all team members complete their initial work, the discussion phase
  * allows agents to review each other's findings and refine their analysis.
@@ -38,10 +39,12 @@ export interface DiscussionCoordinatorConfig {
  * This enables agents to reach consensus, identify overlooked issues,
  * and provide more comprehensive analysis.
  */
-export class DiscussionCoordinator {
+export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
+  readonly type = "fixedRound" as const
+
   private log: Logger
   private client: OpencodeClient
-  private config: DiscussionCoordinatorConfig
+  private config: FixedRoundStrategyConfig
   private clock: Clock
 
   /**
@@ -52,7 +55,7 @@ export class DiscussionCoordinator {
   constructor(
     log: Logger,
     client: OpencodeClient,
-    config: DiscussionCoordinatorConfig
+    config: FixedRoundStrategyConfig
   ) {
     this.log = log
     this.client = client
@@ -61,29 +64,33 @@ export class DiscussionCoordinator {
   }
 
   /**
-   * Run all discussion rounds for a team.
+   * Run all discussion rounds once all members have completed their initial work.
    *
    * Iterates through configured number of rounds, collecting responses
-   * from each team member. Calls onRoundComplete callback after each round
-   * to allow state persistence.
+   * from each team member. Calls onProgress after each round to allow
+   * state persistence.
    *
    * @param team - The team to run discussion for
-   * @param onRoundComplete - Optional callback after each round completes
+   * @param onProgress - Optional callback after each round completes
    * @returns Complete discussion history including all rounds
    */
-  async runDiscussion(
+  async onAllMembersCompleted(
     team: Team,
-    onRoundComplete?: (round: number, responses: Record<string, string>) => Promise<void>
+    onProgress?: (history: DiscussionRound[]) => Promise<void>
   ): Promise<DiscussionRound[]> {
+    if (this.config.rounds === 0) {
+      return []
+    }
+
     await this.log.info(
-      `Team ${team.id}: starting ${team.discussionRounds} discussion round(s)`
+      `Team ${team.id}: starting ${this.config.rounds} discussion round(s)`
     )
 
     const discussionHistory: DiscussionRound[] = [...team.discussionHistory]
 
-    for (let round = 1; round <= team.discussionRounds; round++) {
+    for (let round = 1; round <= this.config.rounds; round++) {
       await this.log.info(
-        `Team ${team.id}: discussion round ${round}/${team.discussionRounds}`
+        `Team ${team.id}: discussion round ${round}/${this.config.rounds}`
       )
 
       const roundResponses: Record<string, string> = {}
@@ -120,8 +127,8 @@ export class DiscussionCoordinator {
 
       discussionHistory.push({ round, responses: roundResponses })
 
-      if (onRoundComplete) {
-        await onRoundComplete(round, roundResponses)
+      if (onProgress) {
+        await onProgress(discussionHistory)
       }
     }
 
@@ -200,7 +207,7 @@ export class DiscussionCoordinator {
     round: number,
     context: string
   ): Promise<string> {
-    const prompt = `# Discussion Round ${round}/${team.discussionRounds}
+    const prompt = `# Discussion Round ${round}/${this.config.rounds}
 
 ## Issue: ${team.issueId}
 
@@ -231,7 +238,7 @@ Keep response focused and actionable.`
 
     return await this.waitForResponse(
       member.sessionId!,
-      this.config.discussionRoundTimeoutMs
+      this.config.roundTimeoutMs
     )
   }
 

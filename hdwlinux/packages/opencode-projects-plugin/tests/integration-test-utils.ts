@@ -22,8 +22,6 @@ import { WorktreeManager } from "../src/vcs/index.js"
  * Default team configuration for tests
  */
 export const DEFAULT_TEAM_CONFIG: TeamConfig = {
-  discussionRounds: 2,
-  discussionRoundTimeoutMs: 5 * 60 * 1000,
   maxTeamSize: 5,
   retryFailedMembers: true,
   smallModelTimeoutMs: 30000,
@@ -37,7 +35,6 @@ export const FAST_TIMEOUT_CONFIG: TeamConfig = {
   ...DEFAULT_TEAM_CONFIG,
   delegationTimeoutMs: 100, // 100ms for fast timeout tests
   smallModelTimeoutMs: 50,
-  discussionRoundTimeoutMs: 100,
 }
 
 /**

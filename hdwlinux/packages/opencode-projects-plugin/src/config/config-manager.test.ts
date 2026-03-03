@@ -13,8 +13,6 @@ import {
   BEADS_PATH,
   DEFAULT_DELEGATION_TIMEOUT_MS,
   DEFAULT_SMALL_MODEL_TIMEOUT_MS,
-  DEFAULT_TEAM_DISCUSSION_ROUNDS,
-  DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS,
   DEFAULT_TEAM_MAX_SIZE,
   DEFAULT_TEAM_RETRY_FAILED_MEMBERS,
 } from "./config-schema.js"
@@ -56,8 +54,9 @@ describe("ConfigManager", () => {
         expect(result.value.getDefaultVCS()).toBe("auto")
         expect(result.value.getDelegationTimeoutMs()).toBe(DEFAULT_DELEGATION_TIMEOUT_MS)
         expect(result.value.getSmallModelTimeoutMs()).toBe(DEFAULT_SMALL_MODEL_TIMEOUT_MS)
-        expect(result.value.getTeamDiscussionRounds()).toBe(DEFAULT_TEAM_DISCUSSION_ROUNDS)
-        expect(result.value.getTeamDiscussionRoundTimeoutMs()).toBe(DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS)
+        expect(result.value.getDefaultDiscussionStrategy()).toBe("fixedRound")
+        const fixedRoundSettings = result.value.getTeamDiscussionSettings("fixedRound")
+        expect(fixedRoundSettings.roundTimeoutMs).toBeGreaterThan(0)
         expect(result.value.getTeamMaxSize()).toBe(DEFAULT_TEAM_MAX_SIZE)
         expect(result.value.getTeamRetryFailedMembers()).toBe(DEFAULT_TEAM_RETRY_FAILED_MEMBERS)
         expect(result.value.getWorktreeSettings().autoCleanup).toBe(true)
@@ -215,20 +214,27 @@ describe("ConfigManager", () => {
       expect(timeout).toBeGreaterThan(0)
     })
 
-    it("getTeamDiscussionRounds returns rounds", async () => {
+    it("getDefaultDiscussionStrategy returns strategy type", async () => {
       const config = await ConfigManager.loadOrThrow()
-      const rounds = config.getTeamDiscussionRounds()
+      const strategy = config.getDefaultDiscussionStrategy()
 
-      expect(typeof rounds).toBe("number")
-      expect(rounds).toBeGreaterThanOrEqual(0)
+      expect(["fixedRound", "dynamicRound", "realtime"]).toContain(strategy)
     })
 
-    it("getTeamDiscussionRoundTimeoutMs returns timeout", async () => {
+    it("getTeamDiscussionSettings returns settings for each strategy type", async () => {
       const config = await ConfigManager.loadOrThrow()
-      const timeout = config.getTeamDiscussionRoundTimeoutMs()
 
-      expect(typeof timeout).toBe("number")
-      expect(timeout).toBeGreaterThan(0)
+      const fixedRound = config.getTeamDiscussionSettings("fixedRound")
+      expect(fixedRound.type).toBe("fixedRound")
+      expect(fixedRound.roundTimeoutMs).toBeGreaterThan(0)
+
+      const convergence = config.getTeamDiscussionSettings("dynamicRound")
+      expect(convergence.type).toBe("dynamicRound")
+      expect(convergence.roundTimeoutMs).toBeGreaterThan(0)
+
+      const realtime = config.getTeamDiscussionSettings("realtime")
+      expect(realtime.type).toBe("realtime")
+      expect(realtime.roundTimeoutMs).toBeGreaterThan(0)
     })
 
     it("getTeamMaxSize returns max size", async () => {

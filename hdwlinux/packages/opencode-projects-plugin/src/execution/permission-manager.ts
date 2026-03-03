@@ -11,7 +11,7 @@
  * This implementation uses the boolean format for compatibility.
  */
 
-import type { TeamMemberRole } from "./delegation-manager.js"
+import type { TeamMemberRole } from "./team-manager.js"
 
 /**
  * Tool permission configuration for delegated agents.

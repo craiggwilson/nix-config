@@ -9,12 +9,24 @@ import * as os from "node:os"
 import {
   type ProjectConfig,
   type ProjectOverrides,
+  type FixedRoundDiscussionSettings,
+  type ConvergenceDiscussionSettings,
+  type RealtimeDiscussionSettings,
   BEADS_PATH,
   PROJECTS_PATH,
   parseConfig,
   defaultConfig,
 } from "./config-schema.js"
 import type { Result } from "../utils/result/index.js"
+import type { DiscussionStrategyType } from "../execution/index.js"
+
+/**
+ * Per-strategy discussion settings, discriminated by type.
+ */
+export type TeamDiscussionSettings =
+  | { type: "fixedRound" } & FixedRoundDiscussionSettings
+  | { type: "dynamicRound" } & ConvergenceDiscussionSettings
+  | { type: "realtime" } & RealtimeDiscussionSettings
 
 const CONFIG_FILENAME = "opencode-projects.json"
 
@@ -173,17 +185,28 @@ export class ConfigManager {
   }
 
   /**
-   * Get team discussion rounds (0 = disabled)
+   * Get the default discussion strategy type for teams
    */
-  getTeamDiscussionRounds(): number {
-    return this.config.teams.discussionRounds
+  getDefaultDiscussionStrategy(): DiscussionStrategyType {
+    return this.config.teamDiscussions.default
   }
 
   /**
-   * Get team discussion round timeout in milliseconds
+   * Get the discussion settings for a specific strategy type.
    */
-  getTeamDiscussionRoundTimeoutMs(): number {
-    return this.config.teams.discussionRoundTimeoutMs
+  getTeamDiscussionSettings(type: DiscussionStrategyType): TeamDiscussionSettings {
+    switch (type) {
+      case "fixedRound":
+        return { type, ...this.config.teamDiscussions.fixedRound }
+      case "dynamicRound":
+        return { type, ...this.config.teamDiscussions.dynamicRound }
+      case "realtime":
+        return { type, ...this.config.teamDiscussions.realtime }
+      default: {
+        const _exhaustive: never = type
+        throw new Error(`Unknown discussion strategy type: ${type}`)
+      }
+    }
   }
 
   /**

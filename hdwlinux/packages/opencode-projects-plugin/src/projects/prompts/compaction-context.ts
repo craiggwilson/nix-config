@@ -138,7 +138,7 @@ export function buildTeamCompactionContext(teams: Team[]): string {
     sections.push(`- **Started:** ${team.startedAt}`)
 
     if (team.status === "discussing") {
-      sections.push(`- **Discussion Round:** ${team.currentRound}/${team.discussionRounds}`)
+      sections.push(`- **Discussion Rounds Completed:** ${team.discussionHistory.length}`)
     }
 
     if (team.worktreePath) {

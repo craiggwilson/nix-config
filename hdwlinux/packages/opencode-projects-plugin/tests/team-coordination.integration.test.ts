@@ -56,12 +56,11 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId,
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "pending", retryCount: 0 },
         ],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -105,14 +104,13 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId,
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "pending", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "pending", retryCount: 0 },
           { agent: "security-expert", role: "devilsAdvocate", status: "pending", retryCount: 0 },
         ],
         status: "running",
-        discussionRounds: 2,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -157,10 +155,9 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: issue1Id,
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -171,10 +168,9 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: issue1Id,
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "reviewer", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -185,10 +181,9 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: issue2Id,
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -223,10 +218,9 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -237,10 +231,9 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-2",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -252,10 +245,9 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-3",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 1 }],
         status: "failed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -285,13 +277,12 @@ describe("Team Coordination Integration", () => {
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: {
             agent: "coder",
@@ -329,13 +320,12 @@ describe("Team Coordination Integration", () => {
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 2,
-        currentRound: 2,
         results: {
           coder: { agent: "coder", result: "Final implementation", completedAt: new Date().toISOString() },
           reviewer: { agent: "reviewer", result: "Final review", completedAt: new Date().toISOString() },
@@ -379,13 +369,12 @@ describe("Team Coordination Integration", () => {
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: {
             agent: "coder",
@@ -426,14 +415,13 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "running", retryCount: 0 },
           { agent: "tester", role: "secondary", status: "pending", retryCount: 0 },
         ],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: {
             agent: "coder",
@@ -476,12 +464,11 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "flaky-agent", role: "primary", status: "running", retryCount: 2 },
         ],
         status: "running",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -518,11 +505,10 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
         foreground: true,
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: { agent: "coder", result: "Done", completedAt: new Date().toISOString() },
         },
@@ -560,11 +546,10 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 3 }],
         status: "failed",
         foreground: true,
-        discussionRounds: 0,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: new Date().toISOString(),
@@ -608,12 +593,11 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId,
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
         foreground: true,
         // No worktreePath - this is the key difference for non-isolated mode
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: { agent: "coder", result: "Research completed", completedAt: new Date().toISOString() },
         },
@@ -656,11 +640,10 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-analysis",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "analyst", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
         foreground: true,
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           analyst: { agent: "analyst", result: expectedResult, completedAt: new Date().toISOString() },
         },
@@ -699,6 +682,7 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-research",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "researcher", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
@@ -706,8 +690,6 @@ describe("Team Coordination Integration", () => {
         status: "completed",
         foreground: true,
         // No worktree fields
-        discussionRounds: 1,
-        currentRound: 1,
         results: {
           researcher: { agent: "researcher", result: "Research findings", completedAt: new Date().toISOString() },
           reviewer: { agent: "reviewer", result: "Review approved", completedAt: new Date().toISOString() },
@@ -807,11 +789,10 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-clean",
+        discussionStrategyType: "fixedRound",
         members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
         status: "completed",
         foreground: true,
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: { agent: "coder", result: "Done", completedAt: new Date().toISOString() },
         },
@@ -858,13 +839,12 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId,
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
           { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 2,
-        currentRound: 2,
         results: {
           "typescript-expert": {
             agent: "typescript-expert",
@@ -909,7 +889,6 @@ describe("Team Coordination Integration", () => {
         expect(result.value.members.length).toBe(2)
         expect(result.value.members[0].role).toBe("primary")
         expect(result.value.members[1].role).toBe("secondary")
-        expect(result.value.discussionRounds).toBe(2)
         expect(result.value.discussionHistory.length).toBe(2)
       }
     })
@@ -935,14 +914,13 @@ describe("Team Coordination Integration", () => {
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId,
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
           { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
           { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 2,
-        currentRound: 2,
         results: {
           "typescript-expert": {
             agent: "typescript-expert",
@@ -1012,13 +990,12 @@ describe("Team Coordination Integration", () => {
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           coder: {
             agent: "coder",
@@ -1080,13 +1057,12 @@ Request changes - security issues must be addressed`,
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "agent-a", role: "primary", status: "completed", retryCount: 0 },
           { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 3,
-        currentRound: 3,
         results: {
           "agent-a": { agent: "agent-a", result: "Work done", completedAt: new Date().toISOString() },
           "agent-b": { agent: "agent-b", result: "Review done", completedAt: new Date().toISOString() },
@@ -1130,14 +1106,13 @@ Request changes - security issues must be addressed`,
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer-agent", role: "secondary", status: "completed", retryCount: 0 },
           { agent: "devils-advocate", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 2,
-        currentRound: 2,
         results: {
           "primary-agent": { agent: "primary-agent", result: "Implementation", completedAt: new Date().toISOString() },
           "reviewer-agent": { agent: "reviewer-agent", result: "Review", completedAt: new Date().toISOString() },
@@ -1194,12 +1169,11 @@ Request changes - security issues must be addressed`,
         projectId: project.projectId,
         projectDir: project.projectDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "solo-agent", role: "primary", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 0, // Single agent = no discussion
-        currentRound: 0,
         results: {
           "solo-agent": { agent: "solo-agent", result: "Work done", completedAt: new Date().toISOString() },
         },
@@ -1217,7 +1191,6 @@ Request changes - security issues must be addressed`,
       const result = await fixture.teamManager.get(team.id)
       expect(result.ok).toBe(true)
       if (result.ok) {
-        expect(result.value.discussionRounds).toBe(0)
         expect(result.value.discussionHistory.length).toBe(0)
       }
     })
@@ -1232,14 +1205,13 @@ Request changes - security issues must be addressed`,
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
           { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "completed",
-        discussionRounds: 1,
-        currentRound: 1,
         results: {
           implementer: {
             agent: "implementer",
@@ -1296,13 +1268,12 @@ Request changes - security issues must be addressed`,
         projectId: "test-project",
         projectDir: fixture.testDir,
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         members: [
           { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0 },
           { agent: "failed-reviewer", role: "secondary", status: "failed", retryCount: 1 },
         ],
         status: "completed", // Team can still complete if primary succeeds
-        discussionRounds: 0,
-        currentRound: 0,
         results: {
           "primary-agent": {
             agent: "primary-agent",

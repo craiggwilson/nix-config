@@ -315,6 +315,7 @@ export const ProjectWorkOnIssueArgsSchema = z.object({
   isolate: z.boolean().optional(),
   agents: AgentsSchema,
   foreground: z.boolean().optional(),
+  discussionStrategy: z.enum(["fixedRound", "dynamicRound", "realtime"]).optional(),
 })
 
 /**

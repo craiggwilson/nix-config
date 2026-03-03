@@ -25,6 +25,7 @@ import { InMemoryIssueStorage } from "../issues/inmemory/index.js"
 import { FocusManager, ProjectManager } from "../projects/index.js"
 import {
   createMockLogger,
+  createMockClient,
   createMockContext,
   createMockTeamManager,
   createTestShell,
@@ -33,6 +34,7 @@ import type { BunShell } from "../utils/opencode-sdk/index.js"
 import type { TeamManager } from "../execution/index.js"
 
 const mockLogger = createMockLogger()
+const mockClient = createMockClient()
 const mockContext = createMockContext()
 
 describe("Error paths", () => {
@@ -139,7 +141,7 @@ describe("Error paths", () => {
 
   describe("project-work-on-issue with non-existent issue", () => {
     test("returns graceful error for non-existent issue ID", async () => {
-      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger)
+      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, "fixedRound", (type) => ({ type, rounds: 2, roundTimeoutMs: 300000 } as any), 30000)
 
       // Focus on the project first
       projectManager.setFocus(projectId)
@@ -156,7 +158,7 @@ describe("Error paths", () => {
     })
 
     test("returns graceful error when no project is focused", async () => {
-      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger)
+      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, "fixedRound", (type) => ({ type, rounds: 2, roundTimeoutMs: 300000 } as any), 30000)
 
       // Clear focus
       projectManager.clearFocus()
@@ -438,7 +440,7 @@ describe("Error paths", () => {
     })
 
     test("project-work-on-issue rejects empty issueId", async () => {
-      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger)
+      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, "fixedRound", (type) => ({ type, rounds: 2, roundTimeoutMs: 300000 } as any), 30000)
 
       projectManager.setFocus(projectId)
 

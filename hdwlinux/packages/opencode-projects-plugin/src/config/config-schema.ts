@@ -22,16 +22,6 @@ export const DEFAULT_DELEGATION_TIMEOUT_MS = 15 * 60 * 1000
 export const DEFAULT_SMALL_MODEL_TIMEOUT_MS = 30000
 
 /**
- * Default number of discussion rounds for teams
- */
-export const DEFAULT_TEAM_DISCUSSION_ROUNDS = 2
-
-/**
- * Default timeout per discussion round (5 minutes)
- */
-export const DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS = 5 * 60 * 1000
-
-/**
  * Default maximum team size
  */
 export const DEFAULT_TEAM_MAX_SIZE = 5
@@ -66,11 +56,42 @@ export const DelegationSettingsSchema = z.object({
 })
 
 /**
+ * Schema for fixed-round discussion strategy settings
+ */
+export const FixedRoundDiscussionSettingsSchema = z.object({
+  rounds: z.number().int().positive().default(2),
+  roundTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
+})
+
+/**
+ * Schema for convergence discussion strategy settings
+ */
+export const ConvergenceDiscussionSettingsSchema = z.object({
+  maxRounds: z.number().int().positive().default(10),
+  roundTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
+})
+
+/**
+ * Schema for realtime discussion strategy settings
+ */
+export const RealtimeDiscussionSettingsSchema = z.object({
+  roundTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
+})
+
+/**
+ * Schema for team discussion settings, keyed by strategy type
+ */
+export const TeamDiscussionsSchema = z.object({
+  default: z.enum(["fixedRound", "dynamicRound", "realtime"]).default("fixedRound"),
+  fixedRound: FixedRoundDiscussionSettingsSchema.default(FixedRoundDiscussionSettingsSchema.parse({})),
+  dynamicRound: ConvergenceDiscussionSettingsSchema.default(ConvergenceDiscussionSettingsSchema.parse({})),
+  realtime: RealtimeDiscussionSettingsSchema.default(RealtimeDiscussionSettingsSchema.parse({})),
+})
+
+/**
  * Schema for team settings
  */
 export const TeamSettingsSchema = z.object({
-  discussionRounds: z.number().int().min(0).default(DEFAULT_TEAM_DISCUSSION_ROUNDS),
-  discussionRoundTimeoutMs: z.number().int().positive().default(DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS),
   maxTeamSize: z.number().int().positive().default(DEFAULT_TEAM_MAX_SIZE),
   retryFailedMembers: z.boolean().default(DEFAULT_TEAM_RETRY_FAILED_MEMBERS),
 })
@@ -92,6 +113,7 @@ export const ProjectConfigSchema = z.object({
   projects: z.record(z.string(), ProjectOverridesSchema).default({}),
   worktrees: WorktreeSettingsSchema.default(WorktreeSettingsSchema.parse({})),
   delegation: DelegationSettingsSchema.default(DelegationSettingsSchema.parse({})),
+  teamDiscussions: TeamDiscussionsSchema.default(TeamDiscussionsSchema.parse({})),
   teams: TeamSettingsSchema.default(TeamSettingsSchema.parse({})),
 })
 
@@ -102,6 +124,10 @@ export type ProjectConfig = z.infer<typeof ProjectConfigSchema>
 export type ProjectOverrides = z.infer<typeof ProjectOverridesSchema>
 export type WorktreeSettings = z.infer<typeof WorktreeSettingsSchema>
 export type DelegationSettings = z.infer<typeof DelegationSettingsSchema>
+export type FixedRoundDiscussionSettings = z.infer<typeof FixedRoundDiscussionSettingsSchema>
+export type ConvergenceDiscussionSettings = z.infer<typeof ConvergenceDiscussionSettingsSchema>
+export type RealtimeDiscussionSettings = z.infer<typeof RealtimeDiscussionSettingsSchema>
+export type TeamDiscussions = z.infer<typeof TeamDiscussionsSchema>
 export type TeamSettings = z.infer<typeof TeamSettingsSchema>
 export type Defaults = z.infer<typeof DefaultsSchema>
 

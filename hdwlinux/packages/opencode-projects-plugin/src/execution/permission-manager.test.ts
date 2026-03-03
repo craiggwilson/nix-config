@@ -5,7 +5,7 @@
 import { describe, test, expect } from "bun:test"
 
 import { PermissionManager } from "./permission-manager.js"
-import type { TeamMemberRole } from "./delegation-manager.js"
+import type { TeamMemberRole } from "./team-manager.js"
 
 describe("PermissionManager", () => {
   describe("resolvePermissions", () => {

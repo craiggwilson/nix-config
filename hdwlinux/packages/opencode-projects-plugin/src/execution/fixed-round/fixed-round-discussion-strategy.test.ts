@@ -1,25 +1,26 @@
 /**
- * Tests for DiscussionCoordinator
+ * Tests for FixedRoundDiscussionStrategy
  */
 
 import { describe, test, expect } from "bun:test"
 import {
-  DiscussionCoordinator,
-  type DiscussionCoordinatorConfig,
-} from "./discussion-coordinator.js"
-import { createMockLogger } from "../utils/testing/index.js"
-import type { Team, DiscussionRound } from "./team-manager.js"
+  FixedRoundDiscussionStrategy,
+  type FixedRoundStrategyConfig,
+} from "./fixed-round-discussion-strategy.js"
+import { createMockLogger } from "../../utils/testing/index.js"
+import type { Team, DiscussionRound } from "../team-manager.js"
 
 const mockLogger = createMockLogger()
 
-const defaultConfig: DiscussionCoordinatorConfig = {
-  discussionRoundTimeoutMs: 5 * 60 * 1000,
+const defaultConfig: FixedRoundStrategyConfig = {
+  rounds: 2,
+  roundTimeoutMs: 5 * 60 * 1000,
 }
 
-describe("DiscussionCoordinator", () => {
+describe("FixedRoundDiscussionStrategy", () => {
   describe("buildDiscussionContext", () => {
     test("includes primary agent implementation", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -30,13 +31,12 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 2,
-        currentRound: 1,
         results: {
           coder: {
             agent: "coder",
@@ -63,7 +63,7 @@ describe("DiscussionCoordinator", () => {
     })
 
     test("includes previous discussion rounds", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -74,13 +74,12 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 2,
-        currentRound: 2,
         results: {
           coder: { agent: "coder", result: "Initial work", completedAt: "2024-01-01T00:00:00Z" },
           reviewer: { agent: "reviewer", result: "Initial review", completedAt: "2024-01-01T00:00:00Z" },
@@ -106,7 +105,7 @@ describe("DiscussionCoordinator", () => {
     })
 
     test("excludes previous discussion for round 1", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -117,12 +116,11 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 2,
-        currentRound: 1,
         results: {
           coder: { agent: "coder", result: "Work done", completedAt: "2024-01-01T00:00:00Z" },
         },
@@ -136,7 +134,7 @@ describe("DiscussionCoordinator", () => {
     })
 
     test("excludes primary from team findings section", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -147,13 +145,12 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0 },
           { agent: "secondary-agent", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 1,
-        currentRound: 1,
         results: {
           "primary-agent": { agent: "primary-agent", result: "Primary work", completedAt: "2024-01-01T00:00:00Z" },
           "secondary-agent": { agent: "secondary-agent", result: "Secondary work", completedAt: "2024-01-01T00:00:00Z" },
@@ -175,7 +172,7 @@ describe("DiscussionCoordinator", () => {
     })
 
     test("includes devil's advocate in team findings", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -186,14 +183,13 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
           { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 1,
-        currentRound: 1,
         results: {
           implementer: { agent: "implementer", result: "Implementation done", completedAt: "2024-01-01T00:00:00Z" },
           reviewer: { agent: "reviewer", result: "Code looks good", completedAt: "2024-01-01T00:00:00Z" },
@@ -214,7 +210,7 @@ describe("DiscussionCoordinator", () => {
     })
 
     test("builds context for 3-agent team with all roles", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -225,14 +221,13 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
           { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
           { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 2,
-        currentRound: 1,
         results: {
           "typescript-expert": { agent: "typescript-expert", result: "Implemented auth flow", completedAt: "2024-01-01T00:00:00Z" },
           "code-reviewer": { agent: "code-reviewer", result: "Code structure is clean", completedAt: "2024-01-01T00:00:00Z" },
@@ -257,7 +252,7 @@ describe("DiscussionCoordinator", () => {
     })
 
     test("multiple discussion rounds accumulate history", () => {
-      const coordinator = new DiscussionCoordinator(
+      const coordinator = new FixedRoundDiscussionStrategy(
         mockLogger,
         undefined as any,
         defaultConfig
@@ -268,13 +263,12 @@ describe("DiscussionCoordinator", () => {
         projectId: "proj-1",
         projectDir: "/tmp/test",
         issueId: "issue-1",
+          discussionStrategyType: "fixedRound",
         members: [
           { agent: "agent-a", role: "primary", status: "completed", retryCount: 0 },
           { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0 },
         ],
         status: "discussing",
-        discussionRounds: 3,
-        currentRound: 3,
         results: {
           "agent-a": { agent: "agent-a", result: "Initial work", completedAt: "2024-01-01T00:00:00Z" },
           "agent-b": { agent: "agent-b", result: "Initial review", completedAt: "2024-01-01T00:00:00Z" },

@@ -10,7 +10,7 @@
  *
  * Delegates to:
  * - TeamComposer: Agent selection and team composition
- * - DiscussionCoordinator: Multi-round discussion logic
+ * - TeamDiscussionStrategy: Discussion coordination between agents
  * - TeamNotifier: Parent notification and XML generation
  */
 
@@ -34,7 +34,7 @@ import type {
 } from "./delegation-manager.js"
 import type { WorktreeManager } from "../vcs/index.js"
 import { TeamComposer, type TeamComposerConfig } from "./team-composer.js"
-import { DiscussionCoordinator, type DiscussionCoordinatorConfig } from "./discussion-coordinator.js"
+import type { TeamDiscussionStrategy, DiscussionStrategyType } from "./discussion-strategy.js"
 import { TeamNotifier } from "./team-notifier.js"
 
 
@@ -133,10 +133,10 @@ export interface Team {
   worktreeBranch?: string
   /** Version control system type */
   vcs?: VCSType
-  /** Number of discussion rounds (0 = disabled) */
-  discussionRounds: number
-  /** Current discussion round (0 = initial work phase) */
-  currentRound: number
+  /** The discussion strategy type used for this team — persisted for observability */
+  discussionStrategyType: DiscussionStrategyType
+  /** The live discussion strategy instance — not persisted, absent when loaded from disk */
+  strategy?: TeamDiscussionStrategy
   /** Results from each member's initial work, keyed by agent name */
   results: Record<string, TeamMemberResult>
   /** History of all discussion rounds */
@@ -175,16 +175,14 @@ export interface CreateTeamOptions {
   parentAgent?: string
   /** Wait for completion instead of fire-and-forget */
   foreground?: boolean
+  /** Discussion strategy to use for this team */
+  discussionStrategy: TeamDiscussionStrategy
 }
 
 /**
  * Configuration options for TeamManager.
  */
 export interface TeamConfig {
-  /** Number of discussion rounds after initial work (0 = disabled) */
-  discussionRounds: number
-  /** Maximum time per discussion round (milliseconds) */
-  discussionRoundTimeoutMs: number
   /** Maximum number of agents in a team */
   maxTeamSize: number
   /** Whether to retry failed members once */
@@ -215,7 +213,7 @@ const MAX_COMPLETED_TEAMS = 50
  *
  * Delegates specialized responsibilities to:
  * - TeamComposer: Agent selection and team composition
- * - DiscussionCoordinator: Multi-round discussion logic
+ * - TeamDiscussionStrategy: Discussion coordination between agents
  * - TeamNotifier: Parent notification and XML generation
  *
  * @example
@@ -241,8 +239,6 @@ export class TeamManager {
 
   /** Handles agent selection and team composition */
   private composer: TeamComposer
-  /** Manages multi-round discussion logic */
-  private discussionCoordinator: DiscussionCoordinator
   /** Handles parent session notifications */
   private notifier: TeamNotifier
 
@@ -282,16 +278,6 @@ export class TeamManager {
       smallModelTimeoutMs: config.smallModelTimeoutMs,
     }
     this.composer = new TeamComposer(log, client, composerConfig)
-
-    const discussionConfig: DiscussionCoordinatorConfig = {
-      discussionRoundTimeoutMs: config.discussionRoundTimeoutMs,
-    }
-    this.discussionCoordinator = new DiscussionCoordinator(
-      log,
-      client,
-      discussionConfig
-    )
-
     this.notifier = new TeamNotifier(log, client)
   }
 
@@ -310,6 +296,7 @@ export class TeamManager {
       isolate,
       parentSessionId,
       parentAgent,
+      discussionStrategy,
     } = options
 
     // 1. Resolve team composition via TeamComposer
@@ -376,6 +363,7 @@ export class TeamManager {
       parentSessionId,
       parentAgent,
       foreground: options.foreground,
+      discussionStrategy,
     })
 
     // Store in cache
@@ -415,6 +403,11 @@ export class TeamManager {
       `Team ${team.id} started with ${team.members.length} member(s)`
     )
 
+    // Notify strategy that all delegations have been started
+    if (team.strategy?.onTeamStarted) {
+      await team.strategy.onTeamStarted(team)
+    }
+
     // If foreground mode, wait for completion
     if (options.foreground) {
       await this.log.info(`Team ${team.id}: foreground mode, waiting for completion`)
@@ -442,6 +435,7 @@ export class TeamManager {
     parentSessionId?: string
     parentAgent?: string
     foreground?: boolean
+    discussionStrategy: TeamDiscussionStrategy
   }): Team {
     const {
       agents,
@@ -455,6 +449,7 @@ export class TeamManager {
       parentSessionId,
       parentAgent,
       foreground,
+      discussionStrategy,
     } = options
 
     const teamId = this.generateId()
@@ -486,8 +481,8 @@ export class TeamManager {
       worktreePath,
       worktreeBranch,
       vcs,
-      discussionRounds: agents.length > 1 ? this.config.discussionRounds : 0,
-      currentRound: 0,
+      discussionStrategyType: discussionStrategy.type,
+      strategy: discussionStrategy,
       results: {},
       discussionHistory: [],
       parentSessionId,
@@ -671,6 +666,15 @@ export class TeamManager {
     await this.updateMemberStatus(team, member, delegation)
     await this.save(team)
 
+    // Notify strategy that this member has completed; accumulate any returned rounds
+    if (team.strategy?.onMemberCompleted) {
+      const rounds = await team.strategy.onMemberCompleted(team, member)
+      if (rounds.length > 0) {
+        team.discussionHistory.push(...rounds)
+        await this.save(team)
+      }
+    }
+
     // Check if all members complete
     const allComplete = team.members.every(
       (m) => m.status === "completed" || m.status === "failed"
@@ -760,19 +764,17 @@ export class TeamManager {
   private async finalizeTeam(team: Team): Promise<void> {
     const allFailed = team.members.every((m) => m.status === "failed")
 
-    // Run discussion if enabled, multiple members, and not all failed
-    if (team.discussionRounds > 0 && team.members.length > 1 && !allFailed) {
+    if (!allFailed && team.members.length > 1 && team.strategy?.onAllMembersCompleted) {
       team.status = "discussing"
       await this.save(team)
 
-      // Run discussion via DiscussionCoordinator
-      team.discussionHistory = await this.discussionCoordinator.runDiscussion(
+      const rounds = await team.strategy.onAllMembersCompleted(
         team,
-        async (round, _responses) => {
-          team.currentRound = round
+        async (_history) => {
           await this.save(team)
         }
       )
+      team.discussionHistory = rounds
     }
 
     // Set final status based on member outcomes
@@ -979,7 +981,8 @@ export class TeamManager {
       const teamsDir = path.join(team.projectDir, "teams")
       await fs.mkdir(teamsDir, { recursive: true })
       const filePath = path.join(teamsDir, `${team.id}.json`)
-      await fs.writeFile(filePath, JSON.stringify(team, null, 2), "utf8")
+      const { strategy: _strategy, ...persistable } = team
+      await fs.writeFile(filePath, JSON.stringify(persistable, null, 2), "utf8")
       return { ok: true, value: undefined }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
@@ -1034,10 +1037,7 @@ export class TeamManager {
     return this.composer
   }
 
-  /** @internal */
-  get _discussionCoordinator(): DiscussionCoordinator {
-    return this.discussionCoordinator
-  }
+
 
   /** @internal */
   get _notifier(): TeamNotifier {

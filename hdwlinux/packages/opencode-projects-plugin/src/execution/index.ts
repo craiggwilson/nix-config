@@ -1,16 +1,3 @@
-/**
- * Execution module - Delegation and team management
- *
- * Core components:
- * - DelegationManager: Manages individual agent delegations
- * - TeamManager: Orchestrates multi-agent team execution
- *
- * Supporting components (extracted for SRP):
- * - TeamComposer: Agent selection and team composition
- * - DiscussionCoordinator: Multi-round discussion logic
- * - TeamNotifier: Parent notification and XML generation
- */
-
 export { DelegationManager } from "./delegation-manager.js"
 export type {
   Delegation,
@@ -34,10 +21,21 @@ export type {
 export { TeamComposer } from "./team-composer.js"
 export type { TeamComposerConfig } from "./team-composer.js"
 
-export { DiscussionCoordinator } from "./discussion-coordinator.js"
-export type { DiscussionCoordinatorConfig } from "./discussion-coordinator.js"
+export type {
+  TeamDiscussionStrategy,
+  DiscussionStrategyType,
+} from "./discussion-strategy.js"
 
 export { TeamNotifier } from "./team-notifier.js"
 
 export { PermissionManager } from "./permission-manager.js"
 export type { ToolPermissions } from "./permission-manager.js"
+
+export { DynamicRoundDiscussionStrategy, ConvergenceAssessor } from "./dynamic-round/index.js"
+export type {
+  DynamicRoundStrategyConfig,
+  ConvergenceAssessorConfig,
+  ConvergenceAssessment,
+  AgentConvergenceSignal,
+  TeamConvergenceState,
+} from "./dynamic-round/index.js"

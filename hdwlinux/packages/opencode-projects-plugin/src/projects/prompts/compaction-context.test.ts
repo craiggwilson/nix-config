@@ -193,13 +193,12 @@ describe("buildTeamCompactionContext", () => {
         projectId: "proj-1",
         projectDir: "/tmp/project",
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         status: "running",
         members: [
           { agent: "coder", role: "primary", status: "running", retryCount: 0 },
           { agent: "reviewer", role: "secondary", status: "pending", retryCount: 0 },
         ],
-        discussionRounds: 2,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: "2026-01-01T00:00:00Z",
@@ -226,20 +225,22 @@ describe("buildTeamCompactionContext", () => {
         projectId: "proj-1",
         projectDir: "/tmp/project",
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         status: "discussing",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
-        discussionRounds: 3,
-        currentRound: 2,
         results: {},
-        discussionHistory: [],
+        discussionHistory: [
+          { round: 1, responses: { coder: "response 1" } },
+          { round: 2, responses: { coder: "response 2" } },
+        ],
         startedAt: "2026-01-01T00:00:00Z",
       },
     ]
 
     const result = buildTeamCompactionContext(teams)
 
-    expect(result).toContain("Discussion Round:")
-    expect(result).toContain("2/3")
+    expect(result).toContain("Discussion Rounds Completed:")
+    expect(result).toContain("2")
   })
 
   it("includes worktree path when present", () => {
@@ -249,10 +250,9 @@ describe("buildTeamCompactionContext", () => {
         projectId: "proj-1",
         projectDir: "/tmp/project",
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         status: "running",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
-        discussionRounds: 2,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: "2026-01-01T00:00:00Z",
@@ -273,10 +273,9 @@ describe("buildTeamCompactionContext", () => {
         projectId: "proj-1",
         projectDir: "/tmp/project",
         issueId: "issue-1",
+        discussionStrategyType: "fixedRound",
         status: "running",
         members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
-        discussionRounds: 2,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         startedAt: "2026-01-01T00:00:00Z",
@@ -286,10 +285,9 @@ describe("buildTeamCompactionContext", () => {
         projectId: "proj-1",
         projectDir: "/tmp/project",
         issueId: "issue-2",
+        discussionStrategyType: "fixedRound",
         status: "discussing",
         members: [{ agent: "reviewer", role: "primary", status: "running", retryCount: 0 }],
-        discussionRounds: 2,
-        currentRound: 1,
         results: {},
         discussionHistory: [],
         startedAt: "2026-01-01T00:00:00Z",

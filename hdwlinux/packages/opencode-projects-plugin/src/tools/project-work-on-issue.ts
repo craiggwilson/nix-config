@@ -8,9 +8,13 @@
 import { tool } from "@opencode-ai/plugin"
 
 import type { ProjectToolContext, Tool } from "./tools.js"
-import type { Logger } from "../utils/opencode-sdk/index.js"
+import type { Logger, OpencodeClient } from "../utils/opencode-sdk/index.js"
 import type { ProjectManager } from "../projects/index.js"
 import type { Team, TeamManager } from "../execution/index.js"
+import type { DiscussionStrategyType, TeamDiscussionStrategy } from "../execution/index.js"
+import { FixedRoundDiscussionStrategy } from "../execution/fixed-round/index.js"
+import { DynamicRoundDiscussionStrategy } from "../execution/dynamic-round/index.js"
+import type { TeamDiscussionSettings } from "../config/index.js"
 import { formatError } from "../utils/errors/index.js"
 import {
   ProjectWorkOnIssueArgsSchema,
@@ -19,6 +23,30 @@ import {
   type ProjectWorkOnIssueArgs,
 } from "../utils/validation/index.js"
 
+function createStrategy(
+  settings: TeamDiscussionSettings,
+  log: Logger,
+  client: OpencodeClient,
+  smallModelTimeoutMs: number,
+): TeamDiscussionStrategy {
+  switch (settings.type) {
+    case "fixedRound":
+      return new FixedRoundDiscussionStrategy(log, client, { rounds: settings.rounds, roundTimeoutMs: settings.roundTimeoutMs })
+    case "dynamicRound":
+      return new DynamicRoundDiscussionStrategy(log, client, {
+        maxRounds: settings.maxRounds,
+        roundTimeoutMs: settings.roundTimeoutMs,
+        smallModelTimeoutMs,
+      })
+    case "realtime":
+      throw new Error("realtime discussion strategy is not yet implemented")
+    default: {
+      const _exhaustive: never = settings
+      throw new Error(`Unknown discussion strategy type: ${(settings as TeamDiscussionSettings).type}`)
+    }
+  }
+}
+
 /**
  * Create the project-work-on-issue tool
  */
@@ -26,6 +54,10 @@ export function createProjectWorkOnIssue(
   projectManager: ProjectManager,
   teamManager: TeamManager,
   log: Logger,
+  client: OpencodeClient,
+  defaultDiscussionStrategy: DiscussionStrategyType,
+  getDiscussionSettings: (type: DiscussionStrategyType) => TeamDiscussionSettings,
+  smallModelTimeoutMs: number,
 ): Tool {
 
   return tool({
@@ -64,6 +96,10 @@ When isolate=true, the completion notification includes merge instructions.`,
         .boolean()
         .optional()
         .describe("Wait for completion instead of fire-and-forget (default: false)"),
+      discussionStrategy: tool.schema
+        .enum(["fixedRound", "dynamicRound", "realtime"])
+        .optional()
+        .describe("Discussion strategy to use (default: plugin config default)"),
     },
 
     async execute(args: unknown, ctx: ProjectToolContext): Promise<string> {
@@ -73,7 +109,7 @@ When isolate=true, the completion notification includes merge instructions.`,
       }
 
       try {
-        const { issueId, isolate = false, agents, foreground = false } = validationResult.value
+        const { issueId, isolate = false, agents, foreground = false, discussionStrategy: discussionStrategyArg } = validationResult.value
 
         const projectId = projectManager.getFocusedProjectId()
 
@@ -113,6 +149,8 @@ When isolate=true, the completion notification includes merge instructions.`,
         }
 
         // Create team (even single-agent work creates a team of 1)
+        const strategyType = discussionStrategyArg ?? defaultDiscussionStrategy
+        const discussionStrategy = createStrategy(getDiscussionSettings(strategyType), log, client, smallModelTimeoutMs)
         const teamResult = await teamManager.create({
           projectId,
           projectDir,
@@ -123,6 +161,7 @@ When isolate=true, the completion notification includes merge instructions.`,
           parentSessionId: ctx.sessionID,
           parentAgent: ctx.agent,
           foreground,
+          discussionStrategy,
         })
 
         if (!teamResult.ok) {
@@ -299,10 +338,8 @@ function formatStartWorkResponse(
   }
   lines.push("")
 
-  if (team.discussionRounds > 0) {
-    lines.push(`**Discussion Rounds:** ${team.discussionRounds}`)
-    lines.push("")
-  }
+  lines.push(`**Discussion Strategy:** ${team.discussionStrategyType}`)
+  lines.push("")
 
   lines.push("---")
   lines.push("")

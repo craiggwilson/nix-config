@@ -78,8 +78,6 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
 
   // Create team config
   const teamConfig = {
-    discussionRounds: config.getTeamDiscussionRounds(),
-    discussionRoundTimeoutMs: config.getTeamDiscussionRoundTimeoutMs(),
     maxTeamSize: config.getTeamMaxSize(),
     retryFailedMembers: config.getTeamRetryFailedMembers(),
     smallModelTimeoutMs: config.getSmallModelTimeoutMs(),
@@ -133,7 +131,15 @@ export const ProjectsPlugin: Plugin = async (ctx) => {
       "project-plan": createProjectPlan(projectManager, log),
       "project-close": createProjectClose(projectManager, log),
       "project-create-issue": createProjectCreateIssue(projectManager, log),
-      "project-work-on-issue": createProjectWorkOnIssue(projectManager, teamManager, log),
+      "project-work-on-issue": createProjectWorkOnIssue(
+        projectManager,
+        teamManager,
+        log,
+        typedClient,
+        config.getDefaultDiscussionStrategy(),
+        (type) => config.getTeamDiscussionSettings(type),
+        config.getSmallModelTimeoutMs(),
+      ),
       "project-update-issue": createProjectUpdateIssue(projectManager, log, $),
       "project-internal-delegation-read": createProjectInternalDelegationRead(projectManager, log),
       "project-record-decision": createProjectRecordDecision(projectManager, log),

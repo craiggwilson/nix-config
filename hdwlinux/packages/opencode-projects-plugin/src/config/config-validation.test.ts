@@ -10,8 +10,6 @@ import {
   PROJECTS_PATH,
   DEFAULT_DELEGATION_TIMEOUT_MS,
   DEFAULT_SMALL_MODEL_TIMEOUT_MS,
-  DEFAULT_TEAM_DISCUSSION_ROUNDS,
-  DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS,
   DEFAULT_TEAM_MAX_SIZE,
   DEFAULT_TEAM_RETRY_FAILED_MEMBERS,
 } from "./config-schema.js"
@@ -29,8 +27,9 @@ describe("Configuration Validation", () => {
       expect(result.value.worktrees.autoCleanup).toBe(true)
       expect(result.value.delegation.timeoutMs).toBe(DEFAULT_DELEGATION_TIMEOUT_MS)
       expect(result.value.delegation.smallModelTimeoutMs).toBe(DEFAULT_SMALL_MODEL_TIMEOUT_MS)
-      expect(result.value.teams.discussionRounds).toBe(DEFAULT_TEAM_DISCUSSION_ROUNDS)
-      expect(result.value.teams.discussionRoundTimeoutMs).toBe(DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS)
+      expect(result.value.teamDiscussions.default).toBe("fixedRound")
+      expect(result.value.teamDiscussions["fixedRound"].rounds).toBe(2)
+      expect(result.value.teamDiscussions["fixedRound"].roundTimeoutMs).toBeGreaterThan(0)
       expect(result.value.teams.maxTeamSize).toBe(DEFAULT_TEAM_MAX_SIZE)
       expect(result.value.teams.retryFailedMembers).toBe(DEFAULT_TEAM_RETRY_FAILED_MEMBERS)
     }
@@ -67,9 +66,13 @@ describe("Configuration Validation", () => {
         timeoutMs: 60000,
         smallModelTimeoutMs: 10000,
       },
+      teamDiscussions: {
+        default: "dynamicRound",
+        "fixedRound": { rounds: 3, roundTimeoutMs: 120000 },
+        dynamicRound: { maxRounds: 5, roundTimeoutMs: 120000 },
+        realtime: { roundTimeoutMs: 120000 },
+      },
       teams: {
-        discussionRounds: 3,
-        discussionRoundTimeoutMs: 120000,
         maxTeamSize: 10,
         retryFailedMembers: false,
       },
@@ -84,7 +87,8 @@ describe("Configuration Validation", () => {
       expect(result.value.projects["test-project"]?.storage).toBe("global")
       expect(result.value.worktrees.autoCleanup).toBe(false)
       expect(result.value.delegation.timeoutMs).toBe(60000)
-      expect(result.value.teams.discussionRounds).toBe(3)
+      expect(result.value.teamDiscussions.default).toBe("dynamicRound")
+      expect(result.value.teamDiscussions["fixedRound"].rounds).toBe(3)
     }
   })
 
@@ -162,8 +166,9 @@ describe("Configuration Validation", () => {
     expect(config.worktrees.autoCleanup).toBe(true)
     expect(config.delegation.timeoutMs).toBe(DEFAULT_DELEGATION_TIMEOUT_MS)
     expect(config.delegation.smallModelTimeoutMs).toBe(DEFAULT_SMALL_MODEL_TIMEOUT_MS)
-    expect(config.teams.discussionRounds).toBe(DEFAULT_TEAM_DISCUSSION_ROUNDS)
-    expect(config.teams.discussionRoundTimeoutMs).toBe(DEFAULT_TEAM_DISCUSSION_ROUND_TIMEOUT_MS)
+    expect(config.teamDiscussions.default).toBe("fixedRound")
+    expect(config.teamDiscussions["fixedRound"].rounds).toBe(2)
+    expect(config.teamDiscussions["fixedRound"].roundTimeoutMs).toBeGreaterThan(0)
     expect(config.teams.maxTeamSize).toBe(DEFAULT_TEAM_MAX_SIZE)
     expect(config.teams.retryFailedMembers).toBe(DEFAULT_TEAM_RETRY_FAILED_MEMBERS)
   })

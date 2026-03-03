@@ -122,6 +122,7 @@ export function createMockTeamManager(): TeamManager {
         projectId: options.projectId,
         projectDir: options.projectDir,
         issueId: options.issueId,
+        discussionStrategyType: "fixedRound",
         members: [
           {
             agent: agentName,
@@ -131,8 +132,6 @@ export function createMockTeamManager(): TeamManager {
           },
         ],
         status: "running",
-        discussionRounds: 2,
-        currentRound: 0,
         results: {},
         discussionHistory: [],
         parentSessionId: options.parentSessionId,

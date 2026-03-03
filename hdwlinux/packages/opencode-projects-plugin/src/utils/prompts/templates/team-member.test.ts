@@ -223,6 +223,7 @@ describe("teamMemberTemplate", () => {
         issueId: "proj-123.1",
         issueContext: "Implement user authentication",
         primaryAgent: "coder",
+        projectDir: "/tmp/test-project",
       }
 
       const reviewerPrompt = teamMemberTemplate.render(reviewerData)
