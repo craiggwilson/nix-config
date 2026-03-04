@@ -191,15 +191,16 @@ For complete tool parameters, workflow examples, team composition strategies, wo
 \`\`\`
 skill({ name: "opencode-projects" })
 \`\`\`
-`
+`;
 
 /**
  * Agent configuration for the opencode-projects agent.
  * Registered via the plugin's config hook.
  */
 export const OPENCODE_PROJECTS_AGENT_CONFIG = {
-  description: "Project management specialist for planning, tracking, and executing work using the opencode-projects-plugin.",
-  mode: "primary" as const,
-  temperature: 0.3,
-  prompt: OPENCODE_PROJECTS_AGENT_PROMPT,
-}
+	description:
+		"Project management specialist for planning, tracking, and executing work using the opencode-projects-plugin.",
+	mode: "primary" as const,
+	temperature: 0.3,
+	prompt: OPENCODE_PROJECTS_AGENT_PROMPT,
+};

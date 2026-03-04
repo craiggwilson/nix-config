@@ -7,10 +7,12 @@ src/
 ├── index.ts              # Plugin entry point and hook registration
 ├── agents/               # Agent selection and small model integration
 ├── config/               # Configuration loading and validation
-├── execution/            # Delegation and team management
+├── delegation/           # Background agent delegation management
+├── discussions/          # Discussion strategies (fixed-round, dynamic-round, realtime)
 ├── issues/               # Issue storage abstraction
 ├── planning/             # Planning session management
 ├── projects/             # Project and focus management
+├── teams/                # Multi-agent team management
 ├── tools/                # OpenCode tool implementations
 ├── utils/                # Shared utilities
 └── vcs/                  # Version control abstraction (jj, git)

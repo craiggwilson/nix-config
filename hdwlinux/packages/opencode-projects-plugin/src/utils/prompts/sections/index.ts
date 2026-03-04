@@ -5,8 +5,8 @@
  */
 
 export {
-  delegationConstraints,
-  readOnlyConstraints,
-  disabledToolsList,
-  DISABLED_TOOLS,
-} from "./constraints.js"
+	delegationConstraints,
+	readOnlyConstraints,
+	disabledToolsList,
+	DISABLED_TOOLS,
+} from "./constraints.js";

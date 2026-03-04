@@ -9,12 +9,12 @@
  * Input data for session summary generation.
  */
 export interface SessionSummaryInput {
-  /** The conversation content to summarize */
-  conversationContent: string
-  /** Project name for context */
-  projectName?: string
-  /** Current planning phase if applicable */
-  planningPhase?: string
+	/** The conversation content to summarize */
+	conversationContent: string;
+	/** Project name for context */
+	projectName?: string;
+	/** Current planning phase if applicable */
+	planningPhase?: string;
 }
 
 /**
@@ -24,19 +24,19 @@ export interface SessionSummaryInput {
  * including key points, open questions, and decisions.
  */
 export function buildSessionSummaryPrompt(input: SessionSummaryInput): string {
-  const contextLines: string[] = []
+	const contextLines: string[] = [];
 
-  if (input.projectName) {
-    contextLines.push(`Project: ${input.projectName}`)
-  }
-  if (input.planningPhase) {
-    contextLines.push(`Planning Phase: ${input.planningPhase}`)
-  }
+	if (input.projectName) {
+		contextLines.push(`Project: ${input.projectName}`);
+	}
+	if (input.planningPhase) {
+		contextLines.push(`Planning Phase: ${input.planningPhase}`);
+	}
 
-  const contextSection =
-    contextLines.length > 0 ? `## Context\n${contextLines.join("\n")}\n\n` : ""
+	const contextSection =
+		contextLines.length > 0 ? `## Context\n${contextLines.join("\n")}\n\n` : "";
 
-  return `You are summarizing a development session conversation.
+	return `You are summarizing a development session conversation.
 
 ${contextSection}## Conversation Content
 ${input.conversationContent}
@@ -65,5 +65,5 @@ Rules:
 - decisionsMade: Only explicit decisions made (can be empty array)
 - whatsNext: 1-3 concrete next steps (can be empty array)
 
-Respond with ONLY the JSON object, no other text.`
+Respond with ONLY the JSON object, no other text.`;
 }

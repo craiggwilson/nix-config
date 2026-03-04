@@ -23,32 +23,38 @@
  * ```
  */
 
-export type { PromptData, PromptSection, PromptTemplate } from "./prompt.js"
-
-export { xmlWrap, lines, section, bulletList, numberedList } from "./xml-wrapper.js"
-export type { XmlWrapOptions } from "./xml-wrapper.js"
+export type { PromptData, PromptSection, PromptTemplate } from "./prompt.js";
 
 export {
-  delegationConstraints,
-  readOnlyConstraints,
-  disabledToolsList,
-} from "./sections/index.js"
+	xmlWrap,
+	lines,
+	section,
+	bulletList,
+	numberedList,
+} from "./xml-wrapper.js";
+export type { XmlWrapOptions } from "./xml-wrapper.js";
 
 export {
-  buildSessionSummaryPrompt,
-  devilsAdvocateTemplate,
-  devilsAdvocateSelectionTemplate,
-  type DevilsAdvocateSelectionData,
-  metadataGenerationTemplate,
-  type MetadataGenerationData,
-  singleAgentSelectionTemplate,
-  type SingleAgentSelectionData,
-  type AgentInfo,
-  type SessionSummaryInput,
-  teamCompositionTemplate,
-  type TeamCompositionData,
-  teamMemberTemplate,
-  type TeamMemberData,
-  type PrimaryMemberData,
-  type ReviewerMemberData,
-} from "./templates/index.js"
+	delegationConstraints,
+	readOnlyConstraints,
+	disabledToolsList,
+} from "./sections/index.js";
+
+export {
+	buildSessionSummaryPrompt,
+	devilsAdvocateTemplate,
+	devilsAdvocateSelectionTemplate,
+	type DevilsAdvocateSelectionData,
+	metadataGenerationTemplate,
+	type MetadataGenerationData,
+	singleAgentSelectionTemplate,
+	type SingleAgentSelectionData,
+	type AgentInfo,
+	type SessionSummaryInput,
+	teamCompositionTemplate,
+	type TeamCompositionData,
+	teamMemberTemplate,
+	type TeamMemberData,
+	type PrimaryMemberData,
+	type ReviewerMemberData,
+} from "./templates/index.js";

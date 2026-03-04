@@ -2,4 +2,4 @@
  * Logging module
  */
 
-export { createLogger } from "./logger.js"
+export { createLogger } from "./logger.js";

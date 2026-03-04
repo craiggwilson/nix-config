@@ -7,7 +7,7 @@
  * 3. Provide consistent naming across the codebase
  */
 
-import type { ToolContext, ToolDefinition } from "@opencode-ai/plugin"
+import type { ToolContext, ToolDefinition } from "@opencode-ai/plugin";
 
 /**
  * Tool definition type from the plugin package.
@@ -15,7 +15,7 @@ import type { ToolContext, ToolDefinition } from "@opencode-ai/plugin"
  * This is the return type of the `tool()` function from @opencode-ai/plugin.
  * Each tool factory function (createProject*, etc.) returns this type.
  */
-export type Tool = ToolDefinition
+export type Tool = ToolDefinition;
 
 /**
  * Tool execution context provided by the plugin runtime.
@@ -23,4 +23,4 @@ export type Tool = ToolDefinition
  * Contains session information, abort signals, and utility functions
  * for tool implementations.
  */
-export type ProjectToolContext = ToolContext
+export type ProjectToolContext = ToolContext;

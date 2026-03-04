@@ -5,26 +5,26 @@
  * and compose teams for collaborative work.
  */
 
-import type { PromptTemplate } from "../prompt.js"
+import type { PromptTemplate } from "../prompt.js";
 
 /**
  * Basic agent information for selection
  */
 export interface AgentInfo {
-  /** Agent name/identifier */
-  name: string
-  /** Human-readable description of the agent's capabilities */
-  description?: string
+	/** Agent name/identifier */
+	name: string;
+	/** Human-readable description of the agent's capabilities */
+	description?: string;
 }
 
 /**
  * Data for team composition selection
  */
 export interface TeamCompositionData {
-  /** Context about the issue to work on */
-  issueContext: string
-  /** Available agents to choose from */
-  agents: AgentInfo[]
+	/** Context about the issue to work on */
+	issueContext: string;
+	/** Available agents to choose from */
+	agents: AgentInfo[];
 }
 
 /**
@@ -34,15 +34,15 @@ export interface TeamCompositionData {
  * as a team, with the first agent being the primary implementer.
  */
 export const teamCompositionTemplate: PromptTemplate<TeamCompositionData> = {
-  name: "team-composition",
-  description: "Small model prompt to select team composition",
+	name: "team-composition",
+	description: "Small model prompt to select team composition",
 
-  render: (data) => {
-    const agentList = data.agents
-      .map((a) => `- ${a.name}: ${a.description || "(no description)"}`)
-      .join("\n")
+	render: (data) => {
+		const agentList = data.agents
+			.map((a) => `- ${a.name}: ${a.description || "(no description)"}`)
+			.join("\n");
 
-    return `Select 3-4 agents to work on this issue as a team.
+		return `Select 3-4 agents to work on this issue as a team.
 
 ISSUE:
 ${data.issueContext.slice(0, 5000)}
@@ -58,18 +58,18 @@ RULES:
 5. Default to 3 agents; use 4 for large or high-stakes work; use fewer only with a specific reason
 
 Respond with JSON only:
-{"agents": ["primary-agent", "reviewer-1", "reviewer-2"]}`
-  },
-}
+{"agents": ["primary-agent", "reviewer-1", "reviewer-2"]}`;
+	},
+};
 
 /**
  * Data for single agent selection
  */
 export interface SingleAgentSelectionData {
-  /** Description of the task to perform */
-  taskDescription: string
-  /** Available agents to choose from */
-  agents: AgentInfo[]
+	/** Description of the task to perform */
+	taskDescription: string;
+	/** Available agents to choose from */
+	agents: AgentInfo[];
 }
 
 /**
@@ -77,16 +77,17 @@ export interface SingleAgentSelectionData {
  *
  * Used by the small model to select the best agent for a task.
  */
-export const singleAgentSelectionTemplate: PromptTemplate<SingleAgentSelectionData> = {
-  name: "single-agent-selection",
-  description: "Small model prompt to select a single agent",
+export const singleAgentSelectionTemplate: PromptTemplate<SingleAgentSelectionData> =
+	{
+		name: "single-agent-selection",
+		description: "Small model prompt to select a single agent",
 
-  render: (data) => {
-    const agentList = data.agents
-      .map((a) => `- ${a.name}: ${a.description || "(no description)"}`)
-      .join("\n")
+		render: (data) => {
+			const agentList = data.agents
+				.map((a) => `- ${a.name}: ${a.description || "(no description)"}`)
+				.join("\n");
 
-    return `Select the best agent for this task.
+			return `Select the best agent for this task.
 
 AVAILABLE AGENTS:
 ${agentList}
@@ -95,6 +96,6 @@ TASK DESCRIPTION:
 ${data.taskDescription.slice(0, 1000)}
 
 Respond with ONLY valid JSON in this exact format:
-{"agent": "agent-name", "reason": "brief reason for selection"}`
-  },
-}
+{"agent": "agent-name", "reason": "brief reason for selection"}`;
+		},
+	};

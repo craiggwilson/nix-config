@@ -6,13 +6,13 @@
  * and reference existing project outputs.
  */
 
-import type { ArtifactRegistry, Artifact } from "../artifact-registry.js"
+import type { ArtifactRegistry, Artifact } from "../artifact-registry.js";
 
 /**
  * Artifacts grouped by their type for structured access.
  */
 export interface ArtifactsByType {
-  [type: string]: Artifact[]
+	[type: string]: Artifact[];
 }
 
 /**
@@ -22,14 +22,14 @@ export interface ArtifactsByType {
  * by agents, with grouping by type and summary statistics.
  */
 export interface ArtifactContext {
-  /** All registered artifacts */
-  artifacts: Artifact[]
-  /** Artifacts grouped by type */
-  byType: ArtifactsByType
-  /** Sorted list of artifact types present */
-  types: string[]
-  /** Total number of artifacts */
-  count: number
+	/** All registered artifacts */
+	artifacts: Artifact[];
+	/** Artifacts grouped by type */
+	byType: ArtifactsByType;
+	/** Sorted list of artifact types present */
+	types: string[];
+	/** Total number of artifacts */
+	count: number;
 }
 
 /**
@@ -41,29 +41,31 @@ export interface ArtifactContext {
  * @param artifactRegistry - The artifact registry to build context from
  * @returns Aggregated artifact context
  */
-export function buildArtifactContext(artifactRegistry: ArtifactRegistry): ArtifactContext {
-  const artifacts = artifactRegistry.list()
-  const byType: ArtifactsByType = {}
+export function buildArtifactContext(
+	artifactRegistry: ArtifactRegistry,
+): ArtifactContext {
+	const artifacts = artifactRegistry.list();
+	const byType: ArtifactsByType = {};
 
-  for (const artifact of artifacts) {
-    if (!byType[artifact.type]) {
-      byType[artifact.type] = []
-    }
-    byType[artifact.type].push(artifact)
-  }
+	for (const artifact of artifacts) {
+		if (!byType[artifact.type]) {
+			byType[artifact.type] = [];
+		}
+		byType[artifact.type].push(artifact);
+	}
 
-  for (const type of Object.keys(byType)) {
-    byType[type].sort((a, b) => a.title.localeCompare(b.title))
-  }
+	for (const type of Object.keys(byType)) {
+		byType[type].sort((a, b) => a.title.localeCompare(b.title));
+	}
 
-  const types = Object.keys(byType).sort()
+	const types = Object.keys(byType).sort();
 
-  return {
-    artifacts,
-    byType,
-    count: artifacts.length,
-    types,
-  }
+	return {
+		artifacts,
+		byType,
+		count: artifacts.length,
+		types,
+	};
 }
 
 /**
@@ -76,31 +78,33 @@ export function buildArtifactContext(artifactRegistry: ArtifactRegistry): Artifa
  * @returns Markdown-formatted context string, empty if no artifacts
  */
 export function formatArtifactContext(context: ArtifactContext): string {
-  if (context.count === 0) {
-    return ""
-  }
+	if (context.count === 0) {
+		return "";
+	}
 
-  const lines: string[] = []
-  lines.push("## Available Artifacts")
-  lines.push("")
+	const lines: string[] = [];
+	lines.push("## Available Artifacts");
+	lines.push("");
 
-  for (const type of context.types) {
-    const artifacts = context.byType[type]
-    const typeLabel = type.charAt(0).toUpperCase() + type.slice(1)
+	for (const type of context.types) {
+		const artifacts = context.byType[type];
+		const typeLabel = type.charAt(0).toUpperCase() + type.slice(1);
 
-    lines.push(`### ${typeLabel}`)
-    lines.push("")
+		lines.push(`### ${typeLabel}`);
+		lines.push("");
 
-    for (const artifact of artifacts) {
-      const location = artifact.external ? " (external)" : ""
-      const summary = artifact.summary ? ` - ${artifact.summary}` : ""
-      lines.push(`- **${artifact.title}**${location}: \`${artifact.path}\`${summary}`)
-    }
+		for (const artifact of artifacts) {
+			const location = artifact.external ? " (external)" : "";
+			const summary = artifact.summary ? ` - ${artifact.summary}` : "";
+			lines.push(
+				`- **${artifact.title}**${location}: \`${artifact.path}\`${summary}`,
+			);
+		}
 
-    lines.push("")
-  }
+		lines.push("");
+	}
 
-  return lines.join("\n").trim()
+	return lines.join("\n").trim();
 }
 
 /**
@@ -113,19 +117,19 @@ export function formatArtifactContext(context: ArtifactContext): string {
  * @returns Compact summary string
  */
 export function formatArtifactSummary(context: ArtifactContext): string {
-  if (context.count === 0) {
-    return "No artifacts registered."
-  }
+	if (context.count === 0) {
+		return "No artifacts registered.";
+	}
 
-  const typeSummaries: string[] = []
+	const typeSummaries: string[] = [];
 
-  for (const type of context.types) {
-    const artifacts = context.byType[type]
-    const titles = artifacts.map((a) => a.title).join(", ")
-    typeSummaries.push(`**${type}:** ${titles}`)
-  }
+	for (const type of context.types) {
+		const artifacts = context.byType[type];
+		const titles = artifacts.map((a) => a.title).join(", ");
+		typeSummaries.push(`**${type}:** ${titles}`);
+	}
 
-  return typeSummaries.join("\n")
+	return typeSummaries.join("\n");
 }
 
 /**
@@ -138,5 +142,5 @@ export function formatArtifactSummary(context: ArtifactContext): string {
  * @returns True if context contains any artifacts
  */
 export function hasArtifactContext(context: ArtifactContext): boolean {
-  return context.count > 0
+	return context.count > 0;
 }

@@ -8,22 +8,22 @@
  */
 
 export type {
-  Alternative,
-  DecisionError,
-  DecisionIndex,
-  DecisionRecord,
-  DecisionStatus,
-  PendingDecision,
-  RecordDecisionOptions,
-} from "./decision-manager.js"
+	Alternative,
+	DecisionError,
+	DecisionIndex,
+	DecisionRecord,
+	DecisionStatus,
+	PendingDecision,
+	RecordDecisionOptions,
+} from "./decision-manager.js";
 
-export { DecisionManager } from "./decision-manager.js"
+export { DecisionManager } from "./decision-manager.js";
 
 export {
-  buildDecisionContext,
-  formatDecisionContext,
-  formatDecisionSummary,
-  hasDecisionContext,
-  type BuildDecisionContextOptions,
-  type DecisionContext,
-} from "./prompts/decision-context.js"
+	buildDecisionContext,
+	formatDecisionContext,
+	formatDecisionSummary,
+	hasDecisionContext,
+	type BuildDecisionContextOptions,
+	type DecisionContext,
+} from "./prompts/decision-context.js";

@@ -17,7 +17,7 @@ import {
   isGitAvailable,
   type IntegrationTestFixture,
 } from "./integration-test-utils.js"
-import { TeamNotifier, type Team } from "../src/execution/index.js"
+import { TeamNotifier, type Team } from "../src/teams/index.js"
 
 describe("Worktree Isolation Integration", () => {
   let fixture: IntegrationTestFixture

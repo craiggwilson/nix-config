@@ -2,292 +2,417 @@
  * Git Adapter - VCS adapter implementation for Git
  */
 
-import * as fs from "node:fs/promises"
-import * as path from "node:path"
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 
-import type { VCSAdapter, VCSType, WorktreeInfo, MergeSuccess, MergeStrategy } from "../adapter.js"
-import type { BunShell, Logger } from "../../utils/opencode-sdk/index.js"
-import type { Result } from "../../utils/result/index.js"
-import { ok, err } from "../../utils/result/index.js"
-import type { ShellResult } from "../../utils/shell/index.js"
-import { runShell, buildCommand } from "../../utils/shell/index.js"
-import type { VCSError } from "../../utils/errors/index.js"
+import type {
+	VCSAdapter,
+	VCSType,
+	WorktreeInfo,
+	MergeSuccess,
+	MergeStrategy,
+} from "../adapter.js";
+import type { BunShell, Logger } from "../../utils/opencode-sdk/index.js";
+import type { Result } from "../../utils/result/index.js";
+import { ok, err } from "../../utils/result/index.js";
+import type { ShellResult } from "../../utils/shell/index.js";
+import { runShell, buildCommand } from "../../utils/shell/index.js";
+import type { VCSError } from "../../utils/errors/index.js";
 import {
-  VCSCommandError,
-  WorktreeError,
-  WorktreeExistsError,
-  MergeConflictError,
-} from "../../utils/errors/index.js"
-import { validatePathBoundary } from "../../utils/validation/index.js"
+	VCSCommandError,
+	WorktreeError,
+	WorktreeExistsError,
+	MergeConflictError,
+} from "../../utils/errors/index.js";
+import { validatePathBoundary } from "../../utils/validation/index.js";
 
 /**
  * Git implementation of VCSAdapter
  */
 export class GitAdapter implements VCSAdapter {
-  readonly type: VCSType = "git"
-  readonly repoRoot: string
+	readonly type: VCSType = "git";
+	readonly repoRoot: string;
 
-  private $: BunShell
-  private log: Logger
-  private worktreeBase: string
+	private $: BunShell;
+	private log: Logger;
+	private worktreeBase: string;
 
-  constructor(repoRoot: string, shell: BunShell, log: Logger) {
-    this.repoRoot = repoRoot
-    this.$ = shell
-    this.log = log
+	constructor(repoRoot: string, shell: BunShell, log: Logger) {
+		this.repoRoot = repoRoot;
+		this.$ = shell;
+		this.log = log;
 
-    const repoName = path.basename(repoRoot)
-    this.worktreeBase = path.join(path.dirname(repoRoot), `${repoName}-worktrees`)
-  }
+		const repoName = path.basename(repoRoot);
+		this.worktreeBase = path.join(
+			path.dirname(repoRoot),
+			`${repoName}-worktrees`,
+		);
+	}
 
-  /**
-   * Run a shell command
-   */
-  private async runCommand(cmd: string): Promise<ShellResult> {
-    return runShell(this.$, cmd)
-  }
+	/**
+	 * Run a shell command
+	 */
+	private async runCommand(cmd: string): Promise<ShellResult> {
+		return runShell(this.$, cmd);
+	}
 
-  async createWorktree(name: string, baseBranch?: string): Promise<Result<WorktreeInfo, VCSError>> {
-    const worktreePath = path.join(this.worktreeBase, name)
-    const branchName = name.replace(/\//g, "-")
+	async createWorktree(
+		name: string,
+		baseBranch?: string,
+	): Promise<Result<WorktreeInfo, VCSError>> {
+		const worktreePath = path.join(this.worktreeBase, name);
+		const branchName = name.replace(/\//g, "-");
 
-    const boundaryCheck = validatePathBoundary(this.worktreeBase, worktreePath)
-    if (!boundaryCheck.ok) {
-      return err(
-        new WorktreeError("create", `Path traversal detected: ${boundaryCheck.error.message}`)
-      )
-    }
+		const boundaryCheck = validatePathBoundary(this.worktreeBase, worktreePath);
+		if (!boundaryCheck.ok) {
+			return err(
+				new WorktreeError(
+					"create",
+					`Path traversal detected: ${boundaryCheck.error.message}`,
+				),
+			);
+		}
 
-    await this.log.info(`Creating git worktree: ${name} at ${worktreePath}`)
+		await this.log.info(`Creating git worktree: ${name} at ${worktreePath}`);
 
-    try {
-      await fs.mkdir(path.dirname(worktreePath), { recursive: true })
-    } catch (error) {
-      return err(
-        new WorktreeError("create", `Failed to create directory: ${error}`, error)
-      )
-    }
+		try {
+			await fs.mkdir(path.dirname(worktreePath), { recursive: true });
+		} catch (error) {
+			return err(
+				new WorktreeError(
+					"create",
+					`Failed to create directory: ${error}`,
+					error,
+				),
+			);
+		}
 
-    const baseResult = baseBranch ? ok(baseBranch) : await this.getDefaultBranch()
-    if (!baseResult.ok) {
-      return baseResult
-    }
-    const base = baseResult.value
+		const baseResult = baseBranch
+			? ok(baseBranch)
+			: await this.getDefaultBranch();
+		if (!baseResult.ok) {
+			return baseResult;
+		}
+		const base = baseResult.value;
 
-    const cmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "worktree", "add", "-b", branchName, worktreePath, base])
-    const result = await this.runCommand(cmd)
+		const cmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"worktree",
+			"add",
+			"-b",
+			branchName,
+			worktreePath,
+			base,
+		]);
+		const result = await this.runCommand(cmd);
 
-    if (result.exitCode !== 0) {
-      await this.log.error(`Failed to create worktree: ${result.stderr}`)
-      
-      if (result.stderr.includes("already exists")) {
-        return err(new WorktreeExistsError(name, worktreePath))
-      }
-      
-      return err(
-        new VCSCommandError("git worktree add", result.exitCode, result.stderr)
-      )
-    }
+		if (result.exitCode !== 0) {
+			await this.log.error(`Failed to create worktree: ${result.stderr}`);
 
-    return ok({
-      name,
-      path: worktreePath,
-      branch: branchName,
-      isMain: false,
-    })
-  }
+			if (result.stderr.includes("already exists")) {
+				return err(new WorktreeExistsError(name, worktreePath));
+			}
 
-  async listWorktrees(): Promise<Result<WorktreeInfo[], VCSError>> {
-    const cmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "worktree", "list", "--porcelain"])
-    const result = await this.runCommand(cmd)
+			return err(
+				new VCSCommandError("git worktree add", result.exitCode, result.stderr),
+			);
+		}
 
-    if (result.exitCode !== 0) {
-      return err(
-        new VCSCommandError("git worktree list", result.exitCode, result.stderr)
-      )
-    }
+		return ok({
+			name,
+			path: worktreePath,
+			branch: branchName,
+			isMain: false,
+		});
+	}
 
-    const worktrees: WorktreeInfo[] = []
-    let current: Partial<WorktreeInfo> = {}
+	async listWorktrees(): Promise<Result<WorktreeInfo[], VCSError>> {
+		const cmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"worktree",
+			"list",
+			"--porcelain",
+		]);
+		const result = await this.runCommand(cmd);
 
-    for (const line of result.stdout.split("\n")) {
-      if (line.startsWith("worktree ")) {
-        if (current.path) {
-          worktrees.push(current as WorktreeInfo)
-        }
-        current = {
-          path: line.slice(9),
-          isMain: false,
-        }
-      } else if (line.startsWith("branch ")) {
-        current.branch = line.slice(7).replace("refs/heads/", "")
-      } else if (line === "bare") {
-        current.isMain = true
-      }
-    }
+		if (result.exitCode !== 0) {
+			return err(
+				new VCSCommandError(
+					"git worktree list",
+					result.exitCode,
+					result.stderr,
+				),
+			);
+		}
 
-    if (current.path) {
-      worktrees.push(current as WorktreeInfo)
-    }
+		const worktrees: WorktreeInfo[] = [];
+		let current: Partial<WorktreeInfo> = {};
 
-    const namedWorktrees = worktrees.map((wt) => {
-      let name: string
-      if (wt.path.startsWith(this.worktreeBase)) {
-        name = path.relative(this.worktreeBase, wt.path)
-      } else {
-        name = path.basename(wt.path)
-      }
-      return {
-        ...wt,
-        name,
-        isMain: wt.path === this.repoRoot,
-      }
-    })
+		for (const line of result.stdout.split("\n")) {
+			if (line.startsWith("worktree ")) {
+				if (current.path) {
+					worktrees.push(current as WorktreeInfo);
+				}
+				current = {
+					path: line.slice(9),
+					isMain: false,
+				};
+			} else if (line.startsWith("branch ")) {
+				current.branch = line.slice(7).replace("refs/heads/", "");
+			} else if (line === "bare") {
+				current.isMain = true;
+			}
+		}
 
-    return ok(namedWorktrees)
-  }
+		if (current.path) {
+			worktrees.push(current as WorktreeInfo);
+		}
 
-  async removeWorktree(name: string): Promise<Result<void, VCSError>> {
-    const worktreePath = path.join(this.worktreeBase, name)
+		const namedWorktrees = worktrees.map((wt) => {
+			let name: string;
+			if (wt.path.startsWith(this.worktreeBase)) {
+				name = path.relative(this.worktreeBase, wt.path);
+			} else {
+				name = path.basename(wt.path);
+			}
+			return {
+				...wt,
+				name,
+				isMain: wt.path === this.repoRoot,
+			};
+		});
 
-    await this.log.info(`Removing git worktree: ${name}`)
+		return ok(namedWorktrees);
+	}
 
-    const removeCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "worktree", "remove", worktreePath, "--force"])
-    const removeResult = await this.runCommand(removeCmd)
+	async removeWorktree(name: string): Promise<Result<void, VCSError>> {
+		const worktreePath = path.join(this.worktreeBase, name);
 
-    if (removeResult.exitCode !== 0) {
-      await this.log.warn(`Failed to remove worktree: ${removeResult.stderr}`)
-      return err(
-        new VCSCommandError("git worktree remove", removeResult.exitCode, removeResult.stderr)
-      )
-    }
+		await this.log.info(`Removing git worktree: ${name}`);
 
-    const branchName = name.replace(/\//g, "-")
-    const branchCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "branch", "-D", branchName])
-    await this.runCommand(branchCmd)
+		const removeCmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"worktree",
+			"remove",
+			worktreePath,
+			"--force",
+		]);
+		const removeResult = await this.runCommand(removeCmd);
 
-    return ok(undefined)
-  }
+		if (removeResult.exitCode !== 0) {
+			await this.log.warn(`Failed to remove worktree: ${removeResult.stderr}`);
+			return err(
+				new VCSCommandError(
+					"git worktree remove",
+					removeResult.exitCode,
+					removeResult.stderr,
+				),
+			);
+		}
 
-  async merge(
-    source: string,
-    target?: string,
-    strategy: MergeStrategy = "squash"
-  ): Promise<Result<MergeSuccess, VCSError>> {
-    const targetResult = target ? ok(target) : await this.getDefaultBranch()
-    if (!targetResult.ok) {
-      return targetResult
-    }
-    const targetBranch = targetResult.value
+		const branchName = name.replace(/\//g, "-");
+		const branchCmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"branch",
+			"-D",
+			branchName,
+		]);
+		await this.runCommand(branchCmd);
 
-    await this.log.info(`Merging ${source} into ${targetBranch} with strategy: ${strategy}`)
+		return ok(undefined);
+	}
 
-    const checkoutCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "checkout", targetBranch])
-    const checkoutResult = await this.runCommand(checkoutCmd)
+	async merge(
+		source: string,
+		target?: string,
+		strategy: MergeStrategy = "squash",
+	): Promise<Result<MergeSuccess, VCSError>> {
+		const targetResult = target ? ok(target) : await this.getDefaultBranch();
+		if (!targetResult.ok) {
+			return targetResult;
+		}
+		const targetBranch = targetResult.value;
 
-    if (checkoutResult.exitCode !== 0) {
-      return err(
-        new VCSCommandError("git checkout", checkoutResult.exitCode, checkoutResult.stderr)
-      )
-    }
+		await this.log.info(
+			`Merging ${source} into ${targetBranch} with strategy: ${strategy}`,
+		);
 
-    let mergeCmd: string
-    switch (strategy) {
-      case "squash":
-        mergeCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "merge", "--squash", source])
-        break
-      case "rebase":
-        mergeCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "rebase", source])
-        break
-      case "merge":
-      default:
-        mergeCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "merge", source])
-        break
-    }
+		const checkoutCmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"checkout",
+			targetBranch,
+		]);
+		const checkoutResult = await this.runCommand(checkoutCmd);
 
-    const mergeResult = await this.runCommand(mergeCmd)
+		if (checkoutResult.exitCode !== 0) {
+			return err(
+				new VCSCommandError(
+					"git checkout",
+					checkoutResult.exitCode,
+					checkoutResult.stderr,
+				),
+			);
+		}
 
-    if (mergeResult.exitCode !== 0) {
-      if (mergeResult.stderr.includes("CONFLICT") || mergeResult.stderr.includes("conflict")) {
-        const conflictCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "diff", "--name-only", "--diff-filter=U"])
-        const conflictResult = await this.runCommand(conflictCmd)
-        const conflictFiles = conflictResult.stdout.trim().split("\n").filter(Boolean)
+		let mergeCmd: string;
+		switch (strategy) {
+			case "squash":
+				mergeCmd = buildCommand(this.$, "git", [
+					"-C",
+					this.repoRoot,
+					"merge",
+					"--squash",
+					source,
+				]);
+				break;
+			case "rebase":
+				mergeCmd = buildCommand(this.$, "git", [
+					"-C",
+					this.repoRoot,
+					"rebase",
+					source,
+				]);
+				break;
+			default:
+				mergeCmd = buildCommand(this.$, "git", [
+					"-C",
+					this.repoRoot,
+					"merge",
+					source,
+				]);
+				break;
+		}
 
-        return err(new MergeConflictError(conflictFiles))
-      }
+		const mergeResult = await this.runCommand(mergeCmd);
 
-      return err(
-        new VCSCommandError("git merge", mergeResult.exitCode, mergeResult.stderr)
-      )
-    }
+		if (mergeResult.exitCode !== 0) {
+			if (
+				mergeResult.stderr.includes("CONFLICT") ||
+				mergeResult.stderr.includes("conflict")
+			) {
+				const conflictCmd = buildCommand(this.$, "git", [
+					"-C",
+					this.repoRoot,
+					"diff",
+					"--name-only",
+					"--diff-filter=U",
+				]);
+				const conflictResult = await this.runCommand(conflictCmd);
+				const conflictFiles = conflictResult.stdout
+					.trim()
+					.split("\n")
+					.filter(Boolean);
 
-    if (strategy === "squash") {
-      const commitCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "commit", "-m", `Merge ${source} (squashed)`])
-      const commitResult = await this.runCommand(commitCmd)
+				return err(new MergeConflictError(conflictFiles));
+			}
 
-      if (commitResult.exitCode !== 0) {
-        if (!commitResult.stdout.includes("nothing to commit")) {
-          return err(
-            new VCSCommandError("git commit", commitResult.exitCode, commitResult.stderr)
-          )
-        }
-      }
-    }
+			return err(
+				new VCSCommandError(
+					"git merge",
+					mergeResult.exitCode,
+					mergeResult.stderr,
+				),
+			);
+		}
 
-    const headCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "rev-parse", "HEAD"])
-    const headResult = await this.runCommand(headCmd)
-    const commitId = headResult.stdout.trim()
+		if (strategy === "squash") {
+			const commitCmd = buildCommand(this.$, "git", [
+				"-C",
+				this.repoRoot,
+				"commit",
+				"-m",
+				`Merge ${source} (squashed)`,
+			]);
+			const commitResult = await this.runCommand(commitCmd);
 
-    return ok({ commitId })
-  }
+			if (commitResult.exitCode !== 0) {
+				if (!commitResult.stdout.includes("nothing to commit")) {
+					return err(
+						new VCSCommandError(
+							"git commit",
+							commitResult.exitCode,
+							commitResult.stderr,
+						),
+					);
+				}
+			}
+		}
 
-  async getCurrentBranch(): Promise<Result<string, VCSError>> {
-    const cmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "rev-parse", "--abbrev-ref", "HEAD"])
-    const result = await this.runCommand(cmd)
+		const headCmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"rev-parse",
+			"HEAD",
+		]);
+		const headResult = await this.runCommand(headCmd);
+		const commitId = headResult.stdout.trim();
 
-    if (result.exitCode !== 0) {
-      return err(
-        new VCSCommandError("git rev-parse", result.exitCode, result.stderr)
-      )
-    }
+		return ok({ commitId });
+	}
 
-    return ok(result.stdout.trim())
-  }
+	async getCurrentBranch(): Promise<Result<string, VCSError>> {
+		const cmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"rev-parse",
+			"--abbrev-ref",
+			"HEAD",
+		]);
+		const result = await this.runCommand(cmd);
 
-  async getDefaultBranch(): Promise<Result<string, VCSError>> {
-    const remoteCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "symbolic-ref", "refs/remotes/origin/HEAD"]) + " 2>/dev/null"
-    const remoteResult = await this.runCommand(remoteCmd)
+		if (result.exitCode !== 0) {
+			return err(
+				new VCSCommandError("git rev-parse", result.exitCode, result.stderr),
+			);
+		}
 
-    if (remoteResult.exitCode === 0) {
-      const ref = remoteResult.stdout.trim()
-      return ok(ref.replace("refs/remotes/origin/", ""))
-    }
+		return ok(result.stdout.trim());
+	}
 
-    for (const branch of ["main", "master", "trunk"]) {
-      const checkCmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "rev-parse", "--verify", branch]) + " 2>/dev/null"
-      const checkResult = await this.runCommand(checkCmd)
-      if (checkResult.exitCode === 0) {
-        return ok(branch)
-      }
-    }
+	async getDefaultBranch(): Promise<Result<string, VCSError>> {
+		const remoteCmd = `${buildCommand(this.$, "git", ["-C", this.repoRoot, "symbolic-ref", "refs/remotes/origin/HEAD"])} 2>/dev/null`;
+		const remoteResult = await this.runCommand(remoteCmd);
 
-    return ok("main")
-  }
+		if (remoteResult.exitCode === 0) {
+			const ref = remoteResult.stdout.trim();
+			return ok(ref.replace("refs/remotes/origin/", ""));
+		}
 
-  async hasUncommittedChanges(): Promise<Result<boolean, VCSError>> {
-    const cmd = buildCommand(this.$, "git", ["-C", this.repoRoot, "status", "--porcelain"])
-    const result = await this.runCommand(cmd)
+		for (const branch of ["main", "master", "trunk"]) {
+			const checkCmd = `${buildCommand(this.$, "git", ["-C", this.repoRoot, "rev-parse", "--verify", branch])} 2>/dev/null`;
+			const checkResult = await this.runCommand(checkCmd);
+			if (checkResult.exitCode === 0) {
+				return ok(branch);
+			}
+		}
 
-    if (result.exitCode !== 0) {
-      return err(
-        new VCSCommandError("git status", result.exitCode, result.stderr)
-      )
-    }
+		return ok("main");
+	}
 
-    return ok(result.stdout.trim().length > 0)
-  }
+	async hasUncommittedChanges(): Promise<Result<boolean, VCSError>> {
+		const cmd = buildCommand(this.$, "git", [
+			"-C",
+			this.repoRoot,
+			"status",
+			"--porcelain",
+		]);
+		const result = await this.runCommand(cmd);
 
-  getWorktreeBasePath(): string {
-    return this.worktreeBase
-  }
+		if (result.exitCode !== 0) {
+			return err(
+				new VCSCommandError("git status", result.exitCode, result.stderr),
+			);
+		}
+
+		return ok(result.stdout.trim().length > 0);
+	}
+
+	getWorktreeBasePath(): string {
+		return this.worktreeBase;
+	}
 }

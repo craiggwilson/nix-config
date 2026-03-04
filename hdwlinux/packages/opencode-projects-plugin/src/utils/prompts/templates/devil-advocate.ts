@@ -5,7 +5,7 @@
  * to ensure critical analysis and pushback on the primary agent's work.
  */
 
-import type { PromptTemplate } from "../prompt.js"
+import type { PromptTemplate } from "../prompt.js";
 
 /**
  * Devil's advocate role prompt.
@@ -15,10 +15,10 @@ import type { PromptTemplate } from "../prompt.js"
  * find gaps, and propose alternatives.
  */
 export const devilsAdvocateTemplate: PromptTemplate<Record<string, never>> = {
-  name: "devils-advocate",
-  description: "Critical thinking role for team reviewers",
+	name: "devils-advocate",
+	description: "Critical thinking role for team reviewers",
 
-  render: () => `## Devil's Advocate Role
+	render: () => `## Devil's Advocate Role
 
 You are acting as the Devil's Advocate for this team. Your role is to provide critical analysis and find problems others missed.
 
@@ -73,16 +73,16 @@ Structure your response with these sections:
 ✅ Cite specific lines, files, or logic when raising concerns
 ✅ Maintain your position if you believe you're right
 ✅ Change your position only when presented with new evidence or reasoning`,
-}
+};
 
 /**
  * Data for devil's advocate selection prompt
  */
 export interface DevilsAdvocateSelectionData {
-  /** All team members (first is primary) */
-  teamMembers: string[]
-  /** Context about the issue being worked on */
-  issueContext: string
+	/** All team members (first is primary) */
+	teamMembers: string[];
+	/** Context about the issue being worked on */
+	issueContext: string;
 }
 
 /**
@@ -90,18 +90,19 @@ export interface DevilsAdvocateSelectionData {
  *
  * Used by the small model to pick the best reviewer for critical analysis.
  */
-export const devilsAdvocateSelectionTemplate: PromptTemplate<DevilsAdvocateSelectionData> = {
-  name: "devils-advocate-selection",
-  description: "Small model prompt to select devil's advocate",
+export const devilsAdvocateSelectionTemplate: PromptTemplate<DevilsAdvocateSelectionData> =
+	{
+		name: "devils-advocate-selection",
+		description: "Small model prompt to select devil's advocate",
 
-  render: (data) => {
-    const nonPrimary = data.teamMembers.slice(1)
+		render: (data) => {
+			const nonPrimary = data.teamMembers.slice(1);
 
-    if (nonPrimary.length <= 1) {
-      return "" // No selection needed
-    }
+			if (nonPrimary.length <= 1) {
+				return ""; // No selection needed
+			}
 
-    return `Select ONE non-primary agent to act as Devil's Advocate.
+			return `Select ONE non-primary agent to act as Devil's Advocate.
 
 TEAM:
 - ${data.teamMembers[0]} (PRIMARY - implementing)
@@ -119,7 +120,6 @@ The Devil's Advocate will:
 Select the agent best suited to provide critical pushback for this type of work.
 
 Respond with JSON only:
-{"devilsAdvocate": "agent-name"}`
-  },
-}
-
+{"devilsAdvocate": "agent-name"}`;
+		},
+	};

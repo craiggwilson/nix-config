@@ -5,28 +5,28 @@
  * delegated agents and team members.
  */
 
-import type { PromptSection } from "../prompt.js"
+import type { PromptSection } from "../prompt.js";
 
 /**
  * List of tools disabled in delegations
  */
 export const DISABLED_TOOLS = [
-  "project-create",
-  "project-close",
-  "project-create-issue",
-  "project-update-issue",
-  "project-work-on-issue",
-  "question",
-  "task",
-  "delegate",
-] as const
+	"project-create",
+	"project-close",
+	"project-create-issue",
+	"project-update-issue",
+	"project-work-on-issue",
+	"question",
+	"task",
+	"delegate",
+] as const;
 
 /**
  * Format the disabled tools as a bullet list
  */
 export function disabledToolsList(): string {
-  return `- ${DISABLED_TOOLS.slice(0, 5).join(", ")}
-- ${DISABLED_TOOLS.slice(5).join(", ")} (no recursive delegation)`
+	return `- ${DISABLED_TOOLS.slice(0, 5).join(", ")}
+- ${DISABLED_TOOLS.slice(5).join(", ")} (no recursive delegation)`;
 }
 
 /**
@@ -48,7 +48,7 @@ export const delegationConstraints: PromptSection = () => `
 You are running as a background delegation. The following tools are disabled:
 ${disabledToolsList()}
 
-Focus on completing your assigned role.`
+Focus on completing your assigned role.`;
 
 /**
  * Read-only constraints for reviewers.
@@ -56,4 +56,4 @@ Focus on completing your assigned role.`
  * Informs the agent that it should not modify files.
  */
 export const readOnlyConstraints: PromptSection = () =>
-  "Do NOT modify files - you are read-only."
+	"Do NOT modify files - you are read-only.";

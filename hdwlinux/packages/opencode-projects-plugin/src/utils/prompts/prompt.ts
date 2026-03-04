@@ -11,13 +11,15 @@
  * Using object instead of Record<string, unknown> to allow
  * specific interfaces without requiring index signatures.
  */
-export type PromptData = object
+export type PromptData = object;
 
 /**
  * A section is a function that renders part of a prompt.
  * Sections are composable building blocks for templates.
  */
-export type PromptSection<T extends PromptData = PromptData> = (data: T) => string
+export type PromptSection<T extends PromptData = PromptData> = (
+	data: T,
+) => string;
 
 /**
  * Template definition with typed slots.
@@ -41,10 +43,10 @@ export type PromptSection<T extends PromptData = PromptData> = (data: T) => stri
  * ```
  */
 export interface PromptTemplate<T extends PromptData> {
-  /** Unique template name for debugging/logging */
-  name: string
-  /** Human-readable description of what this template produces */
-  description?: string
-  /** Main render function that produces the prompt string */
-  render: (data: T) => string
+	/** Unique template name for debugging/logging */
+	name: string;
+	/** Human-readable description of what this template produces */
+	description?: string;
+	/** Main render function that produces the prompt string */
+	render: (data: T) => string;
 }

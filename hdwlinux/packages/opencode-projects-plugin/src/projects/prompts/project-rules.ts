@@ -124,4 +124,4 @@ Delegated agents cannot use state-modifying tools:
 - project-create, project-close, project-create-issue, project-update-issue, project-work-on-issue
 - task, delegate (no recursive delegation)
 
-</project-management-system>`
+</project-management-system>`;

@@ -5,32 +5,32 @@
  */
 
 export {
-  devilsAdvocateTemplate,
-  devilsAdvocateSelectionTemplate,
-  type DevilsAdvocateSelectionData,
-} from "./devil-advocate.js"
+	devilsAdvocateTemplate,
+	devilsAdvocateSelectionTemplate,
+	type DevilsAdvocateSelectionData,
+} from "./devil-advocate.js";
 
 export {
-  teamMemberTemplate,
-  type TeamMemberData,
-  type PrimaryMemberData,
-  type ReviewerMemberData,
-} from "./team-member.js"
+	teamMemberTemplate,
+	type TeamMemberData,
+	type PrimaryMemberData,
+	type ReviewerMemberData,
+} from "./team-member.js";
 
 export {
-  teamCompositionTemplate,
-  singleAgentSelectionTemplate,
-  type TeamCompositionData,
-  type SingleAgentSelectionData,
-  type AgentInfo,
-} from "./selection.js"
+	teamCompositionTemplate,
+	singleAgentSelectionTemplate,
+	type TeamCompositionData,
+	type SingleAgentSelectionData,
+	type AgentInfo,
+} from "./selection.js";
 
 export {
-  metadataGenerationTemplate,
-  type MetadataGenerationData,
-} from "./metadata.js"
+	metadataGenerationTemplate,
+	type MetadataGenerationData,
+} from "./metadata.js";
 
 export {
-  buildSessionSummaryPrompt,
-  type SessionSummaryInput,
-} from "./session-summary.js"
+	buildSessionSummaryPrompt,
+	type SessionSummaryInput,
+} from "./session-summary.js";

@@ -17,7 +17,7 @@ import {
   DEFAULT_TEAM_CONFIG,
   type IntegrationTestFixture,
 } from "./integration-test-utils.js"
-import { TeamNotifier, type Team, type TeamMember } from "../src/execution/index.js"
+import { TeamNotifier, type Team, type TeamMember } from "../src/teams/index.js"
 
 describe("Team Coordination Integration", () => {
   let fixture: IntegrationTestFixture

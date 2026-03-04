@@ -6,20 +6,20 @@
  */
 
 export type {
-  Artifact,
-  ArtifactRegistryData,
-  ArtifactError,
-  ArtifactInput,
-  ListOptions,
-} from "./artifact-registry.js"
+	Artifact,
+	ArtifactRegistryData,
+	ArtifactError,
+	ArtifactInput,
+	ListOptions,
+} from "./artifact-registry.js";
 
-export { ArtifactRegistry } from "./artifact-registry.js"
+export { ArtifactRegistry } from "./artifact-registry.js";
 
 export {
-  buildArtifactContext,
-  formatArtifactContext,
-  formatArtifactSummary,
-  hasArtifactContext,
-  type ArtifactContext,
-  type ArtifactsByType,
-} from "./prompts/artifact-context.js"
+	buildArtifactContext,
+	formatArtifactContext,
+	formatArtifactSummary,
+	hasArtifactContext,
+	type ArtifactContext,
+	type ArtifactsByType,
+} from "./prompts/artifact-context.js";

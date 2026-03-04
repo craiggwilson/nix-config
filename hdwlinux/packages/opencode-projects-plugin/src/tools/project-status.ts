@@ -2,230 +2,245 @@
  * project-status tool - Show project progress and blockers
  */
 
-import { tool } from "@opencode-ai/plugin"
+import { tool } from "@opencode-ai/plugin";
 
-import type { ProjectToolContext, Tool } from "./tools.js"
-import type { Logger } from "../utils/opencode-sdk/index.js"
-import type { ProjectManager } from "../projects/index.js"
-import { formatError } from "../utils/errors/index.js"
-import { renderIssueTree } from "../issues/index.js"
+import type { ProjectToolContext, Tool } from "./tools.js";
+import type { Logger } from "../utils/opencode-sdk/index.js";
+import type { ProjectManager } from "../projects/index.js";
+import { formatError } from "../utils/errors/index.js";
+import { renderIssueTree } from "../issues/index.js";
 import {
-  ProjectStatusArgsSchema,
-  validateToolArgs,
-  formatValidationError,
-  type ProjectStatusArgs,
-} from "../utils/validation/index.js"
-import { buildArtifactContext } from "../artifacts/index.js"
-import { buildDecisionContext } from "../decisions/index.js"
+	ProjectStatusArgsSchema,
+	validateToolArgs,
+	formatValidationError,
+} from "../utils/validation/index.js";
+import { buildArtifactContext } from "../artifacts/index.js";
+import { buildDecisionContext } from "../decisions/index.js";
 
 /**
  * Create the project-status tool
  */
 export function createProjectStatus(
-  projectManager: ProjectManager,
-  log: Logger,
+	projectManager: ProjectManager,
+	log: Logger,
 ): Tool {
-
-  return tool({
-    description: `Show detailed project status including progress and blockers.
+	return tool({
+		description: `Show detailed project status including progress and blockers.
 
 If no projectId is provided, uses the currently focused project.`,
 
-    args: {
-      projectId: tool.schema
-        .string()
-        .optional()
-        .describe("Project ID (default: focused project)"),
-      format: tool.schema
-        .enum(["summary", "detailed", "tree"])
-        .optional()
-        .describe("Output format: summary, detailed, or tree view"),
-    },
+		args: {
+			projectId: tool.schema
+				.string()
+				.optional()
+				.describe("Project ID (default: focused project)"),
+			format: tool.schema
+				.enum(["summary", "detailed", "tree"])
+				.optional()
+				.describe("Output format: summary, detailed, or tree view"),
+		},
 
-    async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
-      const validationResult = validateToolArgs(ProjectStatusArgsSchema, args)
-      if (!validationResult.ok) {
-        return formatValidationError(validationResult.error)
-      }
+		async execute(args: unknown, _ctx: ProjectToolContext): Promise<string> {
+			const validationResult = validateToolArgs(ProjectStatusArgsSchema, args);
+			if (!validationResult.ok) {
+				return formatValidationError(validationResult.error);
+			}
 
-      try {
-        const { format = "summary" } = validationResult.value
+			try {
+				const { format = "summary" } = validationResult.value;
 
-        const projectId = validationResult.value.projectId || projectManager.getFocusedProjectId()
+				const projectId =
+					validationResult.value.projectId ||
+					projectManager.getFocusedProjectId();
 
-        if (!projectId) {
-          return "No project specified and no project is currently focused.\n\nUse `project-list` to see available projects, then `project-focus(projectId)` to set context."
-        }
+				if (!projectId) {
+					return "No project specified and no project is currently focused.\n\nUse `project-list` to see available projects, then `project-focus(projectId)` to set context.";
+				}
 
-        await log.info(`Getting status for project: ${projectId}`)
+				await log.info(`Getting status for project: ${projectId}`);
 
-        // Get project status
-        const status = await projectManager.getProjectStatus(projectId)
+				// Get project status
+				const status = await projectManager.getProjectStatus(projectId);
 
-        if (!status) {
-          return `Project '${projectId}' not found.\n\nUse \`project-list\` to see available projects.`
-        }
+				if (!status) {
+					return `Project '${projectId}' not found.\n\nUse \`project-list\` to see available projects.`;
+				}
 
-        const { metadata, issueStatus } = status
+				const { metadata, issueStatus } = status;
 
-        // Get issues for detailed/tree view
-        const issues = format !== "summary" ? await projectManager.listIssues(projectId) : []
-        const readyIssues = await projectManager.getReadyIssues(projectId)
+				// Get issues for detailed/tree view
+				const issues =
+					format !== "summary"
+						? await projectManager.listIssues(projectId)
+						: [];
+				const readyIssues = await projectManager.getReadyIssues(projectId);
 
-        const lines: string[] = []
+				const lines: string[] = [];
 
-        // Header
-        lines.push(`## ${metadata.name}`)
-        lines.push("")
-        lines.push(`**ID:** ${projectId}`)
-        lines.push(`**Type:** ${metadata.type}`)
-        lines.push(`**Status:** ${metadata.status}`)
+				// Header
+				lines.push(`## ${metadata.name}`);
+				lines.push("");
+				lines.push(`**ID:** ${projectId}`);
+				lines.push(`**Type:** ${metadata.type}`);
+				lines.push(`**Status:** ${metadata.status}`);
 
-        if (metadata.description) {
-          lines.push(`**Description:** ${metadata.description}`)
-        }
+				if (metadata.description) {
+					lines.push(`**Description:** ${metadata.description}`);
+				}
 
-        lines.push("")
+				lines.push("");
 
-        // Progress
-        if (issueStatus) {
-          const percentage =
-            issueStatus.total > 0
-              ? Math.round((issueStatus.completed / issueStatus.total) * 100)
-              : 0
+				// Progress
+				if (issueStatus) {
+					const percentage =
+						issueStatus.total > 0
+							? Math.round((issueStatus.completed / issueStatus.total) * 100)
+							: 0;
 
-          lines.push("### Progress")
-          lines.push("")
-          lines.push(`${renderProgressBar(percentage)} ${percentage}%`)
-          lines.push("")
-          lines.push(`| Status | Count |`)
-          lines.push(`|--------|-------|`)
-          lines.push(`| Total | ${issueStatus.total} |`)
-          lines.push(`| Completed | ${issueStatus.completed} |`)
-          lines.push(`| In Progress | ${issueStatus.inProgress} |`)
-          lines.push(`| Blocked | ${issueStatus.blocked} |`)
-          lines.push("")
-        }
+					lines.push("### Progress");
+					lines.push("");
+					lines.push(`${renderProgressBar(percentage)} ${percentage}%`);
+					lines.push("");
+					lines.push(`| Status | Count |`);
+					lines.push(`|--------|-------|`);
+					lines.push(`| Total | ${issueStatus.total} |`);
+					lines.push(`| Completed | ${issueStatus.completed} |`);
+					lines.push(`| In Progress | ${issueStatus.inProgress} |`);
+					lines.push(`| Blocked | ${issueStatus.blocked} |`);
+					lines.push("");
+				}
 
-        // Artifact and decision counts
-        const artifactRegistry = await projectManager.getArtifactRegistry(projectId)
-        const decisionManager = await projectManager.getDecisionManager(projectId)
+				// Artifact and decision counts
+				const artifactRegistry =
+					await projectManager.getArtifactRegistry(projectId);
+				const decisionManager =
+					await projectManager.getDecisionManager(projectId);
 
-        let artifactCount = 0
-        let decisionCount = 0
-        let pendingDecisionCount = 0
+				let artifactCount = 0;
+				let decisionCount = 0;
+				let pendingDecisionCount = 0;
 
-        if (artifactRegistry) {
-          const artifactContext = buildArtifactContext(artifactRegistry)
-          artifactCount = artifactContext.count
-        }
+				if (artifactRegistry) {
+					const artifactContext = buildArtifactContext(artifactRegistry);
+					artifactCount = artifactContext.count;
+				}
 
-        if (decisionManager) {
-          const decisionContext = await buildDecisionContext(decisionManager)
-          decisionCount = decisionContext.totalDecided
-          pendingDecisionCount = decisionContext.pending.length
-        }
+				if (decisionManager) {
+					const decisionContext = await buildDecisionContext(decisionManager);
+					decisionCount = decisionContext.totalDecided;
+					pendingDecisionCount = decisionContext.pending.length;
+				}
 
-        if (artifactCount > 0 || decisionCount > 0 || pendingDecisionCount > 0) {
-          lines.push("### Knowledge Base")
-          lines.push("")
-          lines.push(`| Type | Count |`)
-          lines.push(`|------|-------|`)
-          if (artifactCount > 0) {
-            lines.push(`| Artifacts | ${artifactCount} |`)
-          }
-          if (decisionCount > 0) {
-            lines.push(`| Decisions | ${decisionCount} |`)
-          }
-          if (pendingDecisionCount > 0) {
-            lines.push(`| Pending Decisions | ${pendingDecisionCount} |`)
-          }
-          lines.push("")
-        }
+				if (
+					artifactCount > 0 ||
+					decisionCount > 0 ||
+					pendingDecisionCount > 0
+				) {
+					lines.push("### Knowledge Base");
+					lines.push("");
+					lines.push(`| Type | Count |`);
+					lines.push(`|------|-------|`);
+					if (artifactCount > 0) {
+						lines.push(`| Artifacts | ${artifactCount} |`);
+					}
+					if (decisionCount > 0) {
+						lines.push(`| Decisions | ${decisionCount} |`);
+					}
+					if (pendingDecisionCount > 0) {
+						lines.push(`| Pending Decisions | ${pendingDecisionCount} |`);
+					}
+					lines.push("");
+				}
 
-        // Ready issues
-        if (readyIssues.length > 0) {
-          lines.push("### Ready to Work (No Blockers)")
-          lines.push("")
-          for (const issue of readyIssues.slice(0, 5)) {
-            const priority = issue.priority !== undefined ? `P${issue.priority}` : ""
-            lines.push(`- **${issue.id}**: ${issue.title} ${priority}`)
-          }
-          if (readyIssues.length > 5) {
-            lines.push(`- ... and ${readyIssues.length - 5} more`)
-          }
-          lines.push("")
-        }
+				// Ready issues
+				if (readyIssues.length > 0) {
+					lines.push("### Ready to Work (No Blockers)");
+					lines.push("");
+					for (const issue of readyIssues.slice(0, 5)) {
+						const priority =
+							issue.priority !== undefined ? `P${issue.priority}` : "";
+						lines.push(`- **${issue.id}**: ${issue.title} ${priority}`);
+					}
+					if (readyIssues.length > 5) {
+						lines.push(`- ... and ${readyIssues.length - 5} more`);
+					}
+					lines.push("");
+				}
 
-        // Blockers
-        if (issueStatus && issueStatus.blockers.length > 0) {
-          lines.push("### Blockers")
-          lines.push("")
-          for (const blocker of issueStatus.blockers.slice(0, 5)) {
-            lines.push(`- **${blocker.issueId}**: ${blocker.title}`)
-            lines.push(`  Blocked by: ${blocker.blockedBy.join(", ")}`)
-          }
-          if (issueStatus.blockers.length > 5) {
-            lines.push(`- ... and ${issueStatus.blockers.length - 5} more`)
-          }
-          lines.push("")
-        }
+				// Blockers
+				if (issueStatus && issueStatus.blockers.length > 0) {
+					lines.push("### Blockers");
+					lines.push("");
+					for (const blocker of issueStatus.blockers.slice(0, 5)) {
+						lines.push(`- **${blocker.issueId}**: ${blocker.title}`);
+						lines.push(`  Blocked by: ${blocker.blockedBy.join(", ")}`);
+					}
+					if (issueStatus.blockers.length > 5) {
+						lines.push(`- ... and ${issueStatus.blockers.length - 5} more`);
+					}
+					lines.push("");
+				}
 
-        // Tree view
-        if (format === "tree" && issues.length > 0) {
-          lines.push("### Issue Hierarchy")
-          lines.push("")
-          lines.push("```")
-          lines.push(renderIssueTree(issues))
-          lines.push("```")
-          lines.push("")
-        }
+				// Tree view
+				if (format === "tree" && issues.length > 0) {
+					lines.push("### Issue Hierarchy");
+					lines.push("");
+					lines.push("```");
+					lines.push(renderIssueTree(issues));
+					lines.push("```");
+					lines.push("");
+				}
 
-        // Detailed view
-        if (format === "detailed" && issues.length > 0) {
-          lines.push("### All Issues")
-          lines.push("")
-          for (const issue of issues) {
-            const statusIcon =
-              issue.status === "closed"
-                ? "✅"
-                : issue.status === "in_progress"
-                  ? "🔄"
-                  : "⬜"
-            const priority = issue.priority !== undefined ? `P${issue.priority}` : ""
-            lines.push(`${statusIcon} **${issue.id}**: ${issue.title} ${priority}`)
-            if (issue.assignee) {
-              lines.push(`   Assignee: ${issue.assignee}`)
-            }
-            if (issue.blockedBy && issue.blockedBy.length > 0) {
-              lines.push(`   Blocked by: ${issue.blockedBy.join(", ")}`)
-            }
-          }
-          lines.push("")
-        }
+				// Detailed view
+				if (format === "detailed" && issues.length > 0) {
+					lines.push("### All Issues");
+					lines.push("");
+					for (const issue of issues) {
+						const statusIcon =
+							issue.status === "closed"
+								? "✅"
+								: issue.status === "in_progress"
+									? "🔄"
+									: "⬜";
+						const priority =
+							issue.priority !== undefined ? `P${issue.priority}` : "";
+						lines.push(
+							`${statusIcon} **${issue.id}**: ${issue.title} ${priority}`,
+						);
+						if (issue.assignee) {
+							lines.push(`   Assignee: ${issue.assignee}`);
+						}
+						if (issue.blockedBy && issue.blockedBy.length > 0) {
+							lines.push(`   Blocked by: ${issue.blockedBy.join(", ")}`);
+						}
+					}
+					lines.push("");
+				}
 
-        // Actions
-        lines.push("---")
-        lines.push("")
-        lines.push("**Actions:**")
-        lines.push("- `project-work-on-issue(issueId)` - Start work on an issue")
-        lines.push("- `project-create-issue(title)` - Add a new issue")
-        lines.push("- `project-plan` - Continue planning")
+				// Actions
+				lines.push("---");
+				lines.push("");
+				lines.push("**Actions:**");
+				lines.push(
+					"- `project-work-on-issue(issueId)` - Start work on an issue",
+				);
+				lines.push("- `project-create-issue(title)` - Add a new issue");
+				lines.push("- `project-plan` - Continue planning");
 
-        return lines.join("\n")
-      } catch (error) {
-        return formatError(error)
-      }
-    },
-  })
+				return lines.join("\n");
+			} catch (error) {
+				return formatError(error);
+			}
+		},
+	});
 }
 
 /**
  * Render ASCII progress bar
  */
 function renderProgressBar(percentage: number): string {
-  const width = 20
-  const filled = Math.round((percentage / 100) * width)
-  const empty = width - filled
-  return `[${"█".repeat(filled)}${"░".repeat(empty)}]`
+	const width = 20;
+	const filled = Math.round((percentage / 100) * width);
+	const empty = width - filled;
+	return `[${"█".repeat(filled)}${"░".repeat(empty)}]`;
 }

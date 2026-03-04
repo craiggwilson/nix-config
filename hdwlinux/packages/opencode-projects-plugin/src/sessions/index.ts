@@ -7,25 +7,30 @@
  */
 
 export type {
-  CaptureSessionOptions,
-  SessionError,
-  SessionIndex,
-  SessionSummary,
-  WriteSnapshotOptions,
-} from "./session-manager.js"
+	CaptureSessionOptions,
+	SessionError,
+	SessionIndex,
+	SessionSummary,
+	WriteSnapshotOptions,
+} from "./session-manager.js";
 
-export { SessionManager } from "./session-manager.js"
+export { SessionManager } from "./session-manager.js";
 
-export type { BuildSessionContextOptions, SessionContext } from "./prompts/session-context.js"
-
-export {
-  buildSessionContext,
-  formatSessionContext,
-  hasSessionContext,
-} from "./prompts/session-context.js"
+export type {
+	BuildSessionContextOptions,
+	SessionContext,
+} from "./prompts/session-context.js";
 
 export {
-  summarizeSession,
-  type SessionSummaryResult,
-  type SummarizeSessionOptions,
-} from "./session-summarizer.js"
+	buildSessionContext,
+	formatSessionContext,
+	hasSessionContext,
+} from "./prompts/session-context.js";
+
+export {
+	summarizeSession,
+	type SessionSummaryResult,
+	type SummarizeSessionOptions,
+} from "./session-summarizer.js";
+
+export { sessionsModule } from "./module.js";

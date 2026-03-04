@@ -9,10 +9,12 @@ src/
 ├── index.ts              # Plugin entry point and hook registration
 ├── agents/               # Agent selection and small model integration
 ├── config/               # Configuration loading and validation
-├── execution/            # Delegation and team management
+├── delegation/           # Background agent delegation management
+├── discussions/          # Discussion strategies (fixed-round, dynamic-round, realtime)
 ├── issues/               # Issue storage abstraction
 ├── planning/             # Planning session management
 ├── projects/             # Project and focus management
+├── teams/                # Multi-agent team management
 ├── tools/                # OpenCode tool implementations
 ├── utils/                # Shared utilities
 │   ├── errors/           # Error types and formatting
@@ -68,11 +70,38 @@ bun run build
 bun run typecheck
 ```
 
-### Linting
+### Linting and Formatting
+
+This project uses [Biome](https://biomejs.dev) for linting and formatting. The configuration is in `biome.json`.
 
 ```bash
+# Check for lint violations
 bun run lint
+
+# Auto-fix fixable violations
+bun run lint:fix
+
+# Check formatting
+bun run format
+
+# Auto-fix formatting
+bun run format:fix
 ```
+
+Formatting rules: tabs for indentation, double quotes, semicolons required.
+
+#### Active lint rules
+
+| Rule | Category | Description |
+|------|----------|-------------|
+| `noRestrictedImports` | style | Cross-module imports must go through the module's `index.ts` barrel. Pattern `../*/*` (excluding `../*/index.js`) flags direct internal-file imports across module boundaries. |
+| `noConsole` | suspicious | All logging must go through the injected `Logger`; `console.*` calls are forbidden in production code. |
+| `useImportType` | style | Type-only imports must use `import type`. |
+| `noUnusedImports` | correctness | Dead imports are forbidden. |
+| `noUnusedVariables` | correctness | Dead variables are forbidden. |
+| `noExplicitAny` | suspicious | `: any` type annotations are forbidden in production code (disabled in test files). |
+| `useThrowOnlyError` | style | Only `Error` instances (or subclasses) may be thrown. |
+| `noParameterAssign` | style | Reassigning function parameters is forbidden. |
 
 ### Running Unit Tests
 
@@ -98,14 +127,14 @@ bun test --test-name-pattern 'should create'
 
 ### Module Imports
 
-Cross-module imports must use the module's `index.ts` barrel export, not internal files:
+Cross-module imports must use the module's `index.ts` barrel export, not internal files. This rule is enforced by `bun run lint` via the `noRestrictedImports` Biome rule.
 
 ```typescript
 // ✅ Correct - import from module's index.ts
 import { ArtifactRegistry } from "../artifacts/index.js"
 import { DelegationManager, TeamManager } from "../execution/index.js"
 
-// ❌ Wrong - import from internal file
+// ❌ Wrong - import from internal file (lint error)
 import { ArtifactRegistry } from "../artifacts/artifact-registry.js"
 import { DelegationManager } from "../execution/delegation-manager.js"
 ```

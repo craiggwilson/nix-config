@@ -28,10 +28,10 @@
  * @module planning
  */
 
-export { PlanningManager } from "./planning-manager.js"
+export { PlanningManager } from "./planning-manager.js";
 export type {
-  PlanningPhase,
-  PlanningDecision,
-  PlanningUnderstanding,
-  PlanningState,
-} from "./planning-manager.js"
+	PlanningPhase,
+	PlanningDecision,
+	PlanningUnderstanding,
+	PlanningState,
+} from "./planning-manager.js";

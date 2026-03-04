@@ -1,0 +1,14 @@
+{
+  "id": "opencode-projects-plugin-hooks-0d2eb5",
+  "name": "opencode-projects-plugin-hooks",
+  "type": "project",
+  "description": "Design and implement a hooks abstraction for the opencode-projects-plugin to replace the current ad-hoc hook registration in src/index.ts with a clean, extensible system covering all hook types (chat, session, config, events, etc.)",
+  "storage": "local",
+  "workspace": "/home/craig/Projects/hdwlinux/nix-config",
+  "rootIssue": "opencode-projects-plugin-hooks-0d2eb5-944",
+  "createdAt": "2026-03-04T18:59:01.062Z",
+  "status": "completed",
+  "closedAt": "2026-03-04T21:23:46.443Z",
+  "closeReason": "completed",
+  "closeSummary": "Designed and implemented a composable hook abstraction for the opencode-projects-plugin. Delivered: TypeSafeContainer (two-phase DI, variadic tuple type inference, cycle detection), HookRegistry (composable handlers per hook name, priority ordering, error resilience), and migration of all 5 hooks to their owning modules. src/index.ts is now a thin bootstrap. 1339 tests passing."
+}

@@ -2,4 +2,4 @@
  * In-memory issue storage implementation
  */
 
-export { InMemoryIssueStorage } from "./storage.js"
+export { InMemoryIssueStorage } from "./storage.js";

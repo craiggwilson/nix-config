@@ -2,4 +2,4 @@
  * Git VCS adapter implementation
  */
 
-export { GitAdapter } from "./adapter.js"
+export { GitAdapter } from "./adapter.js";

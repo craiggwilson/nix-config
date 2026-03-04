@@ -7,12 +7,12 @@
 
 /** Options for XML wrapping */
 export interface XmlWrapOptions {
-  /** The XML tag name */
-  tag: string
-  /** Content to wrap (string or array of strings joined with newlines) */
-  content: string | string[]
-  /** Optional attributes to add to the opening tag */
-  attributes?: Record<string, string>
+	/** The XML tag name */
+	tag: string;
+	/** Content to wrap (string or array of strings joined with newlines) */
+	content: string | string[];
+	/** Optional attributes to add to the opening tag */
+	attributes?: Record<string, string>;
 }
 
 /**
@@ -33,29 +33,29 @@ export interface XmlWrapOptions {
  * // => '<data type="json">\nvalue\n</data>'
  * ```
  */
-export function xmlWrap(tag: string, content: string | string[]): string
-export function xmlWrap(options: XmlWrapOptions): string
+export function xmlWrap(tag: string, content: string | string[]): string;
+export function xmlWrap(options: XmlWrapOptions): string;
 export function xmlWrap(
-  tagOrOptions: string | XmlWrapOptions,
-  content?: string | string[]
+	tagOrOptions: string | XmlWrapOptions,
+	content?: string | string[],
 ): string {
-  const opts: XmlWrapOptions =
-    typeof tagOrOptions === "string"
-      ? { tag: tagOrOptions, content: content! }
-      : tagOrOptions
+	const opts: XmlWrapOptions =
+		typeof tagOrOptions === "string"
+			? { tag: tagOrOptions, content: content ?? "" }
+			: tagOrOptions;
 
-  const contentStr = Array.isArray(opts.content)
-    ? opts.content.join("\n")
-    : opts.content
+	const contentStr = Array.isArray(opts.content)
+		? opts.content.join("\n")
+		: opts.content;
 
-  const attrs = opts.attributes
-    ? " " +
-      Object.entries(opts.attributes)
-        .map(([k, v]) => `${k}="${v}"`)
-        .join(" ")
-    : ""
+	const attrs = opts.attributes
+		? " " +
+			Object.entries(opts.attributes)
+				.map(([k, v]) => `${k}="${v}"`)
+				.join(" ")
+		: "";
 
-  return `<${opts.tag}${attrs}>\n${contentStr}\n</${opts.tag}>`
+	return `<${opts.tag}${attrs}>\n${contentStr}\n</${opts.tag}>`;
 }
 
 /**
@@ -75,11 +75,13 @@ export function xmlWrap(
  * )
  * ```
  */
-export function lines(...parts: (string | string[] | null | undefined)[]): string {
-  return parts
-    .flat()
-    .filter((p): p is string => p != null)
-    .join("\n")
+export function lines(
+	...parts: (string | string[] | null | undefined)[]
+): string {
+	return parts
+		.flat()
+		.filter((p): p is string => p != null)
+		.join("\n");
 }
 
 /**
@@ -92,12 +94,12 @@ export function lines(...parts: (string | string[] | null | undefined)[]): strin
  * ```
  */
 export function section(
-  level: "#" | "##" | "###" | "####",
-  title: string,
-  content: string | string[]
+	level: "#" | "##" | "###" | "####",
+	title: string,
+	content: string | string[],
 ): string {
-  const contentStr = Array.isArray(content) ? content.join("\n") : content
-  return `${level} ${title}\n\n${contentStr}`
+	const contentStr = Array.isArray(content) ? content.join("\n") : content;
+	return `${level} ${title}\n\n${contentStr}`;
 }
 
 /**
@@ -110,7 +112,7 @@ export function section(
  * ```
  */
 export function bulletList(items: string[]): string {
-  return items.map((item) => `- ${item}`).join("\n")
+	return items.map((item) => `- ${item}`).join("\n");
 }
 
 /**
@@ -123,5 +125,5 @@ export function bulletList(items: string[]): string {
  * ```
  */
 export function numberedList(items: string[]): string {
-  return items.map((item, i) => `${i + 1}. ${item}`).join("\n")
+	return items.map((item, i) => `${i + 1}. ${item}`).join("\n");
 }

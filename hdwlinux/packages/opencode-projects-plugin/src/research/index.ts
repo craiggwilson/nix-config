@@ -6,10 +6,10 @@
  */
 
 export type {
-  ResearchEntry,
-  ResearchIndex,
-  ResearchError,
-  CreateResearchOptions,
-} from "./research-manager.js"
+	ResearchEntry,
+	ResearchIndex,
+	ResearchError,
+	CreateResearchOptions,
+} from "./research-manager.js";
 
-export { ResearchManager } from "./research-manager.js"
+export { ResearchManager } from "./research-manager.js";

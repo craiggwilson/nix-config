@@ -4,395 +4,470 @@
  * Stores all issues in memory with no persistence. Perfect for fast unit tests.
  */
 
-import * as crypto from "node:crypto"
+import * as crypto from "node:crypto";
 
 import type {
-  IssueStorage,
-  Issue,
-  IssueStatus,
-  CreateIssueOptions,
-  ListIssuesOptions,
-  ProjectStatus,
-  IssueStorageError,
-  UpdateIssueOptions,
-  IssueDelegationMetadata,
-} from "../issue-storage.js"
-import { StorageOperationError } from "../issue-storage.js"
-import type { Result } from "../../utils/result/index.js"
+	IssueStorage,
+	Issue,
+	IssueStatus,
+	CreateIssueOptions,
+	ListIssuesOptions,
+	ProjectStatus,
+	IssueStorageError,
+	UpdateIssueOptions,
+	IssueDelegationMetadata,
+} from "../issue-storage.js";
+import { StorageOperationError } from "../issue-storage.js";
+import type { Result } from "../../utils/result/index.js";
 
 /**
  * Generate a short random ID
  */
 function generateId(prefix: string): string {
-  const hash = crypto.randomBytes(3).toString("hex")
-  return `${prefix}-${hash}`
+	const hash = crypto.randomBytes(3).toString("hex");
+	return `${prefix}-${hash}`;
 }
 
 /**
  * InMemoryIssueStorage - stores issues in memory
  */
 export class InMemoryIssueStorage implements IssueStorage {
+	private projects: Map<string, Map<string, Issue>> = new Map();
+	private initialized: Set<string> = new Set();
+	private prefix: string;
 
-  private projects: Map<string, Map<string, Issue>> = new Map()
-  private initialized: Set<string> = new Set()
-  private prefix: string
+	constructor(options?: { prefix?: string }) {
+		this.prefix = options?.prefix || "mem";
+	}
 
-  constructor(options?: { prefix?: string }) {
-    this.prefix = options?.prefix || "mem"
-  }
+	/**
+	 * Get or create the issue map for a project
+	 */
+	private getProjectIssues(projectDir: string): Map<string, Issue> {
+		let issues = this.projects.get(projectDir);
+		if (!issues) {
+			issues = new Map();
+			this.projects.set(projectDir, issues);
+		}
+		return issues;
+	}
 
-  /**
-   * Get or create the issue map for a project
-   */
-  private getProjectIssues(projectDir: string): Map<string, Issue> {
-    let issues = this.projects.get(projectDir)
-    if (!issues) {
-      issues = new Map()
-      this.projects.set(projectDir, issues)
-    }
-    return issues
-  }
+	/**
+	 * Generate a hierarchical ID based on parent
+	 */
+	private generateIssueId(projectDir: string, parent?: string): string {
+		if (parent) {
+			const issues = this.getProjectIssues(projectDir);
+			let maxIndex = 0;
+			for (const [id] of issues) {
+				if (id.startsWith(`${parent}.`)) {
+					const suffix = id.slice(parent.length + 1);
+					const index = parseInt(suffix.split(".")[0], 10);
+					if (!Number.isNaN(index) && index > maxIndex) {
+						maxIndex = index;
+					}
+				}
+			}
+			return `${parent}.${maxIndex + 1}`;
+		}
+		return generateId(this.prefix);
+	}
 
-  /**
-   * Generate a hierarchical ID based on parent
-   */
-  private generateIssueId(projectDir: string, parent?: string): string {
-    if (parent) {
+	async isAvailable(): Promise<Result<boolean, IssueStorageError>> {
+		return { ok: true, value: true };
+	}
 
-      const issues = this.getProjectIssues(projectDir)
-      let maxIndex = 0
-      for (const [id] of issues) {
-        if (id.startsWith(`${parent}.`)) {
-          const suffix = id.slice(parent.length + 1)
-          const index = parseInt(suffix.split(".")[0], 10)
-          if (!isNaN(index) && index > maxIndex) {
-            maxIndex = index
-          }
-        }
-      }
-      return `${parent}.${maxIndex + 1}`
-    }
-    return generateId(this.prefix)
-  }
+	async init(
+		projectDir: string,
+		_options?: { stealth?: boolean },
+	): Promise<Result<void, IssueStorageError>> {
+		this.initialized.add(projectDir);
+		this.getProjectIssues(projectDir);
+		return { ok: true, value: undefined };
+	}
 
-  async isAvailable(): Promise<Result<boolean, IssueStorageError>> {
-    return { ok: true, value: true }
-  }
+	async isInitialized(
+		projectDir: string,
+	): Promise<Result<boolean, IssueStorageError>> {
+		return { ok: true, value: this.initialized.has(projectDir) };
+	}
 
-  async init(projectDir: string, _options?: { stealth?: boolean }): Promise<Result<void, IssueStorageError>> {
-    this.initialized.add(projectDir)
-    this.getProjectIssues(projectDir)
-    return { ok: true, value: undefined }
-  }
+	async createIssue(
+		projectDir: string,
+		title: string,
+		options?: CreateIssueOptions,
+	): Promise<Result<string, IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
 
-  async isInitialized(projectDir: string): Promise<Result<boolean, IssueStorageError>> {
-    return { ok: true, value: this.initialized.has(projectDir) }
-  }
+		// Validate parent exists if specified
+		if (options?.parent) {
+			const parentIssue = issues.get(options.parent);
+			if (!parentIssue) {
+				return {
+					ok: false,
+					error: new StorageOperationError(
+						`Parent issue '${options.parent}' not found`,
+						"Check that the parent issue ID is correct",
+					),
+				};
+			}
+		}
 
-  async createIssue(
-    projectDir: string,
-    title: string,
-    options?: CreateIssueOptions
-  ): Promise<Result<string, IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
+		const id = this.generateIssueId(projectDir, options?.parent);
 
-    // Validate parent exists if specified
-    if (options?.parent) {
-      const parentIssue = issues.get(options.parent)
-      if (!parentIssue) {
-        return {
-          ok: false,
-          error: new StorageOperationError(
-            `Parent issue '${options.parent}' not found`,
-            "Check that the parent issue ID is correct"
-          ),
-        }
-      }
-    }
+		const issue: Issue = {
+			id,
+			title,
+			description: options?.description,
+			status: "open",
+			priority: options?.priority,
+			parent: options?.parent,
+			blockedBy: options?.blockedBy,
+			labels: options?.labels,
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		};
 
-    const id = this.generateIssueId(projectDir, options?.parent)
+		issues.set(id, issue);
+		return { ok: true, value: id };
+	}
 
-    const issue: Issue = {
-      id,
-      title,
-      description: options?.description,
-      status: "open",
-      priority: options?.priority,
-      parent: options?.parent,
-      blockedBy: options?.blockedBy,
-      labels: options?.labels,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
+	async getIssue(
+		issueId: string,
+		projectDir: string,
+	): Promise<Result<Issue, IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const issue = issues.get(issueId);
+		if (!issue) {
+			return {
+				ok: false,
+				error: new StorageOperationError(
+					`Issue ${issueId} not found`,
+					"Check that the issue ID is correct",
+				),
+			};
+		}
+		return { ok: true, value: issue };
+	}
 
-    issues.set(id, issue)
-    return { ok: true, value: id }
-  }
+	async listIssues(
+		projectDir: string,
+		options?: ListIssuesOptions,
+	): Promise<Result<Issue[], IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		let result = Array.from(issues.values());
 
-  async getIssue(issueId: string, projectDir: string): Promise<Result<Issue, IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const issue = issues.get(issueId)
-    if (!issue) {
-      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
-    }
-    return { ok: true, value: issue }
-  }
+		if (options?.status) {
+			result = result.filter((i) => i.status === options.status);
+		}
+		if (options?.parent) {
+			result = result.filter((i) => i.parent === options.parent);
+		}
+		if (options?.labels?.length) {
+			result = result.filter((i) =>
+				options.labels?.some((label) => i.labels?.includes(label)),
+			);
+		}
 
-  async listIssues(projectDir: string, options?: ListIssuesOptions): Promise<Result<Issue[], IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    let result = Array.from(issues.values())
+		return { ok: true, value: result };
+	}
 
-    if (options?.status) {
-      result = result.filter((i) => i.status === options.status)
-    }
-    if (options?.parent) {
-      result = result.filter((i) => i.parent === options.parent)
-    }
-    if (options?.labels?.length) {
-      result = result.filter((i) =>
-        options.labels!.some((label) => i.labels?.includes(label))
-      )
-    }
+	async getReadyIssues(
+		projectDir: string,
+	): Promise<Result<Issue[], IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const allIssues = Array.from(issues.values());
 
-    return { ok: true, value: result }
-  }
+		// An issue is ready if:
+		// 1. It's open (not closed or in_progress)
+		// 2. It has no blockers, OR all blockers are closed
+		const readyIssues = allIssues.filter((issue) => {
+			if (issue.status !== "open") return false;
+			if (!issue.blockedBy || issue.blockedBy.length === 0) return true;
 
-  async getReadyIssues(projectDir: string): Promise<Result<Issue[], IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const allIssues = Array.from(issues.values())
+			return issue.blockedBy.every((blockerId) => {
+				const blocker = issues.get(blockerId);
+				return blocker?.status === "closed";
+			});
+		});
+		return { ok: true, value: readyIssues };
+	}
 
-    // An issue is ready if:
-    // 1. It's open (not closed or in_progress)
-    // 2. It has no blockers, OR all blockers are closed
-    const readyIssues = allIssues.filter((issue) => {
-      if (issue.status !== "open") return false
-      if (!issue.blockedBy || issue.blockedBy.length === 0) return true
+	async claimIssue(
+		issueId: string,
+		projectDir: string,
+		assignee?: string,
+	): Promise<Result<void, IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const issue = issues.get(issueId);
 
-      return issue.blockedBy.every((blockerId) => {
-        const blocker = issues.get(blockerId)
-        return blocker?.status === "closed"
-      })
-    })
-    return { ok: true, value: readyIssues }
-  }
+		if (!issue) {
+			return {
+				ok: false,
+				error: new StorageOperationError(
+					`Issue ${issueId} not found`,
+					"Check that the issue ID is correct",
+				),
+			};
+		}
 
-  async claimIssue(issueId: string, projectDir: string, assignee?: string): Promise<Result<void, IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const issue = issues.get(issueId)
+		issue.status = "in_progress";
+		if (assignee) {
+			issue.assignee = assignee;
+		}
+		issue.updatedAt = new Date().toISOString();
 
-    if (!issue) {
-      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
-    }
+		return { ok: true, value: undefined };
+	}
 
-    issue.status = "in_progress"
-    if (assignee) {
-      issue.assignee = assignee
-    }
-    issue.updatedAt = new Date().toISOString()
+	async updateStatus(
+		issueId: string,
+		status: IssueStatus,
+		projectDir: string,
+	): Promise<Result<void, IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const issue = issues.get(issueId);
 
-    return { ok: true, value: undefined }
-  }
+		if (!issue) {
+			return {
+				ok: false,
+				error: new StorageOperationError(
+					`Issue ${issueId} not found`,
+					"Check that the issue ID is correct",
+				),
+			};
+		}
 
-  async updateStatus(issueId: string, status: IssueStatus, projectDir: string): Promise<Result<void, IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const issue = issues.get(issueId)
+		issue.status = status;
+		issue.updatedAt = new Date().toISOString();
 
-    if (!issue) {
-      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
-    }
+		return { ok: true, value: undefined };
+	}
 
-    issue.status = status
-    issue.updatedAt = new Date().toISOString()
+	async updateIssue(
+		issueId: string,
+		projectDir: string,
+		options: UpdateIssueOptions,
+	): Promise<Result<void, IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const issue = issues.get(issueId);
 
-    return { ok: true, value: undefined }
-  }
+		if (!issue) {
+			return {
+				ok: false,
+				error: new StorageOperationError(
+					`Issue ${issueId} not found`,
+					"Check that the issue ID is correct",
+				),
+			};
+		}
 
-  async updateIssue(
-    issueId: string,
-    projectDir: string,
-    options: UpdateIssueOptions
-  ): Promise<Result<void, IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const issue = issues.get(issueId)
+		if (options.status !== undefined) {
+			issue.status = options.status;
+		}
+		if (options.assignee !== undefined) {
+			issue.assignee = options.assignee;
+		}
+		if (options.priority !== undefined) {
+			issue.priority = options.priority;
+		}
+		if (options.description !== undefined) {
+			issue.description = options.description;
+		}
+		if (options.labels !== undefined) {
+			issue.labels = options.labels;
+		}
+		if (options.blockedBy !== undefined) {
+			issue.blockedBy = options.blockedBy;
+		}
 
-    if (!issue) {
-      return { ok: false, error: new StorageOperationError(`Issue ${issueId} not found`, "Check that the issue ID is correct") }
-    }
+		issue.updatedAt = new Date().toISOString();
 
-    if (options.status !== undefined) {
-      issue.status = options.status
-    }
-    if (options.assignee !== undefined) {
-      issue.assignee = options.assignee
-    }
-    if (options.priority !== undefined) {
-      issue.priority = options.priority
-    }
-    if (options.description !== undefined) {
-      issue.description = options.description
-    }
-    if (options.labels !== undefined) {
-      issue.labels = options.labels
-    }
-    if (options.blockedBy !== undefined) {
-      issue.blockedBy = options.blockedBy
-    }
+		return { ok: true, value: undefined };
+	}
 
-    issue.updatedAt = new Date().toISOString()
+	async addDependency(
+		childId: string,
+		parentId: string,
+		projectDir: string,
+	): Promise<Result<void, IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const child = issues.get(childId);
+		const parent = issues.get(parentId);
 
-    return { ok: true, value: undefined }
-  }
+		if (!child || !parent) {
+			return {
+				ok: false,
+				error: new StorageOperationError(
+					"Issue not found",
+					"Check that both issue IDs are correct",
+				),
+			};
+		}
 
-  async addDependency(childId: string, parentId: string, projectDir: string): Promise<Result<void, IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const child = issues.get(childId)
-    const parent = issues.get(parentId)
+		if (!child.blockedBy) {
+			child.blockedBy = [];
+		}
 
-    if (!child || !parent) {
-      return { ok: false, error: new StorageOperationError("Issue not found", "Check that both issue IDs are correct") }
-    }
+		if (!child.blockedBy.includes(parentId)) {
+			child.blockedBy.push(parentId);
+		}
 
-    if (!child.blockedBy) {
-      child.blockedBy = []
-    }
+		child.updatedAt = new Date().toISOString();
+		return { ok: true, value: undefined };
+	}
 
-    if (!child.blockedBy.includes(parentId)) {
-      child.blockedBy.push(parentId)
-    }
+	private delegationMetadata: Map<string, IssueDelegationMetadata> = new Map();
 
-    child.updatedAt = new Date().toISOString()
-    return { ok: true, value: undefined }
-  }
+	private getDelegationKey(issueId: string, projectDir: string): string {
+		return `${projectDir}:${issueId}`;
+	}
 
+	async setDelegationMetadata(
+		issueId: string,
+		projectDir: string,
+		metadata: IssueDelegationMetadata,
+	): Promise<Result<void, IssueStorageError>> {
+		const key = this.getDelegationKey(issueId, projectDir);
+		this.delegationMetadata.set(key, metadata);
+		return { ok: true, value: undefined };
+	}
 
-  private delegationMetadata: Map<string, IssueDelegationMetadata> = new Map()
+	async getDelegationMetadata(
+		issueId: string,
+		projectDir: string,
+	): Promise<Result<IssueDelegationMetadata | null, IssueStorageError>> {
+		const key = this.getDelegationKey(issueId, projectDir);
+		return { ok: true, value: this.delegationMetadata.get(key) || null };
+	}
 
-  private getDelegationKey(issueId: string, projectDir: string): string {
-    return `${projectDir}:${issueId}`
-  }
+	async clearDelegationMetadata(
+		issueId: string,
+		projectDir: string,
+	): Promise<Result<void, IssueStorageError>> {
+		const key = this.getDelegationKey(issueId, projectDir);
+		this.delegationMetadata.delete(key);
+		return { ok: true, value: undefined };
+	}
 
-  async setDelegationMetadata(
-    issueId: string,
-    projectDir: string,
-    metadata: IssueDelegationMetadata
-  ): Promise<Result<void, IssueStorageError>> {
-    const key = this.getDelegationKey(issueId, projectDir)
-    this.delegationMetadata.set(key, metadata)
-    return { ok: true, value: undefined }
-  }
+	private comments: Map<string, string[]> = new Map();
 
-  async getDelegationMetadata(
-    issueId: string,
-    projectDir: string
-  ): Promise<Result<IssueDelegationMetadata | null, IssueStorageError>> {
-    const key = this.getDelegationKey(issueId, projectDir)
-    return { ok: true, value: this.delegationMetadata.get(key) || null }
-  }
+	async addComment(
+		issueId: string,
+		projectDir: string,
+		comment: string,
+	): Promise<Result<void, IssueStorageError>> {
+		const key = this.getDelegationKey(issueId, projectDir);
+		const existing = this.comments.get(key) || [];
+		existing.push(comment);
+		this.comments.set(key, existing);
+		return { ok: true, value: undefined };
+	}
 
-  async clearDelegationMetadata(issueId: string, projectDir: string): Promise<Result<void, IssueStorageError>> {
-    const key = this.getDelegationKey(issueId, projectDir)
-    this.delegationMetadata.delete(key)
-    return { ok: true, value: undefined }
-  }
+	async getProjectStatus(
+		projectDir: string,
+	): Promise<Result<ProjectStatus, IssueStorageError>> {
+		const issuesResult = await this.listIssues(projectDir);
+		if (!issuesResult.ok) return issuesResult;
+		const issues = issuesResult.value;
 
+		if (issues.length === 0) {
+			return {
+				ok: true,
+				value: {
+					total: 0,
+					completed: 0,
+					inProgress: 0,
+					blocked: 0,
+					blockers: [],
+				},
+			};
+		}
 
-  private comments: Map<string, string[]> = new Map()
+		const completed = issues.filter((i) => i.status === "closed").length;
+		const inProgress = issues.filter((i) => i.status === "in_progress").length;
 
-  async addComment(issueId: string, projectDir: string, comment: string): Promise<Result<void, IssueStorageError>> {
-    const key = this.getDelegationKey(issueId, projectDir)
-    const existing = this.comments.get(key) || []
-    existing.push(comment)
-    this.comments.set(key, existing)
-    return { ok: true, value: undefined }
-  }
+		const issueMap = new Map(issues.map((i) => [i.id, i]));
+		const blockedIssues = issues.filter((i) => {
+			if (!i.blockedBy || i.blockedBy.length === 0) return false;
+			return i.blockedBy.some((blockerId) => {
+				const blocker = issueMap.get(blockerId);
+				return blocker && blocker.status !== "closed";
+			});
+		});
 
-  async getProjectStatus(projectDir: string): Promise<Result<ProjectStatus, IssueStorageError>> {
-    const issuesResult = await this.listIssues(projectDir)
-    if (!issuesResult.ok) return issuesResult
-    const issues = issuesResult.value
+		const blockers = blockedIssues.map((i) => ({
+			issueId: i.id,
+			title: i.title,
+			blockedBy: i.blockedBy || [],
+		}));
 
-    if (issues.length === 0) {
-      return { ok: true, value: {
-        total: 0,
-        completed: 0,
-        inProgress: 0,
-        blocked: 0,
-        blockers: [],
-      }}
-    }
+		return {
+			ok: true,
+			value: {
+				total: issues.length,
+				completed,
+				inProgress,
+				blocked: blockedIssues.length,
+				blockers,
+			},
+		};
+	}
 
-    const completed = issues.filter((i) => i.status === "closed").length
-    const inProgress = issues.filter((i) => i.status === "in_progress").length
+	async getChildren(
+		issueId: string,
+		projectDir: string,
+	): Promise<Result<Issue[], IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		return {
+			ok: true,
+			value: Array.from(issues.values()).filter((i) => i.parent === issueId),
+		};
+	}
 
-    const issueMap = new Map(issues.map((i) => [i.id, i]))
-    const blockedIssues = issues.filter((i) => {
-      if (!i.blockedBy || i.blockedBy.length === 0) return false
-      return i.blockedBy.some((blockerId) => {
-        const blocker = issueMap.get(blockerId)
-        return blocker && blocker.status !== "closed"
-      })
-    })
+	async getTree(
+		projectDir: string,
+		rootId?: string,
+	): Promise<Result<Issue[], IssueStorageError>> {
+		const issues = this.getProjectIssues(projectDir);
+		const allIssues = Array.from(issues.values());
 
-    const blockers = blockedIssues.map((i) => ({
-      issueId: i.id,
-      title: i.title,
-      blockedBy: i.blockedBy || [],
-    }))
+		if (!rootId) {
+			return { ok: true, value: allIssues };
+		}
 
-    return { ok: true, value: {
-      total: issues.length,
-      completed,
-      inProgress,
-      blocked: blockedIssues.length,
-      blockers,
-    }}
-  }
+		// Return the root and all descendants
+		const result: Issue[] = [];
+		const collectDescendants = (parentId: string) => {
+			const children = allIssues.filter((i) => i.parent === parentId);
+			for (const child of children) {
+				result.push(child);
+				collectDescendants(child.id);
+			}
+		};
 
-  async getChildren(issueId: string, projectDir: string): Promise<Result<Issue[], IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    return { ok: true, value: Array.from(issues.values()).filter((i) => i.parent === issueId) }
-  }
+		const root = issues.get(rootId);
+		if (root) {
+			result.push(root);
+			collectDescendants(rootId);
+		}
 
-  async getTree(projectDir: string, rootId?: string): Promise<Result<Issue[], IssueStorageError>> {
-    const issues = this.getProjectIssues(projectDir)
-    const allIssues = Array.from(issues.values())
+		return { ok: true, value: result };
+	}
 
-    if (!rootId) {
-      return { ok: true, value: allIssues }
-    }
+	/**
+	 * Clear all data (useful for test cleanup)
+	 */
+	clear(): void {
+		this.projects.clear();
+		this.initialized.clear();
+	}
 
-    // Return the root and all descendants
-    const result: Issue[] = []
-    const collectDescendants = (parentId: string) => {
-      const children = allIssues.filter((i) => i.parent === parentId)
-      for (const child of children) {
-        result.push(child)
-        collectDescendants(child.id)
-      }
-    }
-
-    const root = issues.get(rootId)
-    if (root) {
-      result.push(root)
-      collectDescendants(rootId)
-    }
-
-    return { ok: true, value: result }
-  }
-
-  /**
-   * Clear all data (useful for test cleanup)
-   */
-  clear(): void {
-    this.projects.clear()
-    this.initialized.clear()
-  }
-
-  /**
-   * Clear data for a specific project
-   */
-  clearProject(projectDir: string): void {
-    this.projects.delete(projectDir)
-    this.initialized.delete(projectDir)
-  }
+	/**
+	 * Clear data for a specific project
+	 */
+	clearProject(projectDir: string): void {
+		this.projects.delete(projectDir);
+		this.initialized.delete(projectDir);
+	}
 }
