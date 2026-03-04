@@ -9,3 +9,4 @@ export { promptSmallModel } from "./small-model.js"
 export type { SmallModelOptions } from "./small-model.js"
 
 export { OPENCODE_PROJECTS_AGENT_CONFIG, OPENCODE_PROJECTS_AGENT_PROMPT } from "./projects-agent.js"
+

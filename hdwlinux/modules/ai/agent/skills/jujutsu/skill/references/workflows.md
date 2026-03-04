@@ -1,5 +1,47 @@
 # Jujutsu Workflows
 
+## Workspace Integration
+
+When integrating an isolated workspace back into mainline, **always rebase onto a moving feature bookmark — never squash or merge**. Name the bookmark after the feature or project being worked on.
+
+### Setup (once per feature)
+```bash
+# Name after the feature, e.g. "prompt-improvements" or "my-feature"
+jj bookmark create <feature-name> -r @
+```
+
+### Per workspace
+```bash
+# 1. Review full workspace delta against the feature bookmark
+jj diff --from <feature-name> --to <workspace-branch>@
+
+# 2. Rebase workspace tip onto the feature bookmark
+jj rebase -s <workspace-branch>@ -d <feature-name>
+
+# 3. Move the feature bookmark forward to the rebased commit
+jj bookmark set <feature-name> -r <rebased-commit-id>
+
+# 4. Clean up the workspace
+jj workspace forget <workspace-name>
+rm -rf <workspace-path>
+```
+
+### After all workspaces merged
+```bash
+jj new <feature-name>
+```
+
+### Multiple workspaces — rebase each onto the feature bookmark in order
+```bash
+jj rebase -s <workspace-a>@ -d <feature-name> && jj bookmark set <feature-name> -r <a-rebased>
+jj rebase -s <workspace-b>@ -d <feature-name> && jj bookmark set <feature-name> -r <b-rebased>
+jj new <feature-name>
+jj workspace forget <workspace-a-name>
+jj workspace forget <workspace-b-name>
+```
+
+**Why not squash?** `jj squash --from <branch>@` goes to the wrong parent when the workspace branched from an older commit, producing empty commits and non-linear history. The feature bookmark eliminates the need to track commit IDs manually.
+
 ## Feature Development
 
 ```bash

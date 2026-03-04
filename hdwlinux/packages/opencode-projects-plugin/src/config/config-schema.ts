@@ -59,15 +59,16 @@ export const DelegationSettingsSchema = z.object({
  * Schema for fixed-round discussion strategy settings
  */
 export const FixedRoundDiscussionSettingsSchema = z.object({
-  rounds: z.number().int().positive().default(2),
+  rounds: z.number().int().positive().default(3),
   roundTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
 })
 
 /**
- * Schema for convergence discussion strategy settings
+ * Schema for dynamic round discussion strategy settings
  */
-export const ConvergenceDiscussionSettingsSchema = z.object({
+export const DynamicRoundDiscussionSettingsSchema = z.object({
   maxRounds: z.number().int().positive().default(10),
+  minRounds: z.number().int().positive().default(2),
   roundTimeoutMs: z.number().int().positive().default(5 * 60 * 1000),
 })
 
@@ -89,7 +90,7 @@ export const RealtimeDiscussionSettingsSchema = z.object({
 export const TeamDiscussionsSchema = z.object({
   default: z.enum(["fixedRound", "dynamicRound", "realtime"]).default("fixedRound"),
   fixedRound: FixedRoundDiscussionSettingsSchema.default(FixedRoundDiscussionSettingsSchema.parse({})),
-  dynamicRound: ConvergenceDiscussionSettingsSchema.default(ConvergenceDiscussionSettingsSchema.parse({})),
+  dynamicRound: DynamicRoundDiscussionSettingsSchema.default(DynamicRoundDiscussionSettingsSchema.parse({})),
   realtime: RealtimeDiscussionSettingsSchema.default(RealtimeDiscussionSettingsSchema.parse({})),
 })
 
@@ -130,7 +131,7 @@ export type ProjectOverrides = z.infer<typeof ProjectOverridesSchema>
 export type WorktreeSettings = z.infer<typeof WorktreeSettingsSchema>
 export type DelegationSettings = z.infer<typeof DelegationSettingsSchema>
 export type FixedRoundDiscussionSettings = z.infer<typeof FixedRoundDiscussionSettingsSchema>
-export type ConvergenceDiscussionSettings = z.infer<typeof ConvergenceDiscussionSettingsSchema>
+export type DynamicRoundDiscussionSettings = z.infer<typeof DynamicRoundDiscussionSettingsSchema>
 export type RealtimeDiscussionSettings = z.infer<typeof RealtimeDiscussionSettingsSchema>
 export type TeamDiscussions = z.infer<typeof TeamDiscussionsSchema>
 export type TeamSettings = z.infer<typeof TeamSettingsSchema>

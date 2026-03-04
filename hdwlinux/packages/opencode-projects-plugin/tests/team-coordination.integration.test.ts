@@ -58,7 +58,7 @@ describe("Team Coordination Integration", () => {
         issueId,
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "pending", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "pending", retryCount: 0, prompt: "" },
         ],
         status: "running",
         results: {},
@@ -106,9 +106,9 @@ describe("Team Coordination Integration", () => {
         issueId,
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "pending", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "pending", retryCount: 0 },
-          { agent: "security-expert", role: "devilsAdvocate", status: "pending", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "pending", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "pending", retryCount: 0, prompt: "" },
+          { agent: "security-expert", role: "devilsAdvocate", status: "pending", retryCount: 0, prompt: "" },
         ],
         status: "running",
         results: {},
@@ -156,7 +156,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: issue1Id,
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         results: {},
         discussionHistory: [],
@@ -169,7 +169,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: issue1Id,
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "reviewer", role: "primary", status: "running", retryCount: 0 }],
+        members: [{ agent: "reviewer", role: "primary", status: "running", retryCount: 0, prompt: "" }],
         status: "running",
         results: {},
         discussionHistory: [],
@@ -182,7 +182,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: issue2Id,
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0, prompt: "" }],
         status: "running",
         results: {},
         discussionHistory: [],
@@ -219,7 +219,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "running", retryCount: 0, prompt: "" }],
         status: "running",
         results: {},
         discussionHistory: [],
@@ -232,7 +232,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-2",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         results: {},
         discussionHistory: [],
@@ -246,7 +246,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-3",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 1 }],
+        members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 1, prompt: "" }],
         status: "failed",
         results: {},
         discussionHistory: [],
@@ -279,8 +279,8 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -322,8 +322,8 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -371,8 +371,8 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -417,9 +417,9 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "running", retryCount: 0 },
-          { agent: "tester", role: "secondary", status: "pending", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "running", retryCount: 0, prompt: "" },
+          { agent: "tester", role: "secondary", status: "pending", retryCount: 0, prompt: "" },
         ],
         status: "running",
         results: {
@@ -466,7 +466,7 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "flaky-agent", role: "primary", status: "running", retryCount: 2 },
+          { agent: "flaky-agent", role: "primary", status: "running", retryCount: 2, prompt: "" },
         ],
         status: "running",
         results: {},
@@ -506,7 +506,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         foreground: true,
         results: {
@@ -547,7 +547,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 3 }],
+        members: [{ agent: "coder", role: "primary", status: "failed", retryCount: 3, prompt: "" }],
         status: "failed",
         foreground: true,
         results: {},
@@ -594,7 +594,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId,
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         foreground: true,
         // No worktreePath - this is the key difference for non-isolated mode
@@ -641,7 +641,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-analysis",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "analyst", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "analyst", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         foreground: true,
         results: {
@@ -684,8 +684,8 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-research",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "researcher", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "researcher", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         foreground: true,
@@ -790,7 +790,7 @@ describe("Team Coordination Integration", () => {
         projectDir: project.projectDir,
         issueId: "issue-clean",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         foreground: true,
         results: {
@@ -841,8 +841,8 @@ describe("Team Coordination Integration", () => {
         issueId,
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -916,9 +916,9 @@ describe("Team Coordination Integration", () => {
         issueId,
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -992,8 +992,8 @@ describe("Team Coordination Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -1059,8 +1059,8 @@ Request changes - security issues must be addressed`,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "agent-a", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "agent-a", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -1108,9 +1108,9 @@ Request changes - security issues must be addressed`,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer-agent", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "devils-advocate", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer-agent", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "devils-advocate", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -1171,7 +1171,7 @@ Request changes - security issues must be addressed`,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "solo-agent", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "solo-agent", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -1207,9 +1207,9 @@ Request changes - security issues must be addressed`,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "implementer", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -1270,8 +1270,8 @@ Request changes - security issues must be addressed`,
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "failed-reviewer", role: "secondary", status: "failed", retryCount: 1 },
+          { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "failed-reviewer", role: "secondary", status: "failed", retryCount: 1, prompt: "" },
         ],
         status: "completed", // Team can still complete if primary succeeds
         results: {

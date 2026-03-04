@@ -12,10 +12,8 @@ import type { Logger, OpencodeClient } from "../utils/opencode-sdk/index.js"
 import type { ProjectManager } from "../projects/index.js"
 import type { Team, TeamManager } from "../execution/index.js"
 import type { DiscussionStrategyType, TeamDiscussionStrategy } from "../execution/index.js"
-import { FixedRoundDiscussionStrategy } from "../execution/fixed-round/index.js"
-import { DynamicRoundDiscussionStrategy } from "../execution/dynamic-round/index.js"
-import { RealtimeDiscussionStrategy } from "../execution/realtime/index.js"
-import type { TeamDiscussionSettings } from "../config/index.js"
+import { FixedRoundDiscussionStrategy, DynamicRoundDiscussionStrategy, RealtimeDiscussionStrategy } from "../execution/index.js"
+import type { ConfigManager, TeamDiscussionSettings } from "../config/index.js"
 import { formatError } from "../utils/errors/index.js"
 import {
   ProjectWorkOnIssueArgsSchema,
@@ -37,6 +35,7 @@ function createStrategy(
     case "dynamicRound":
       return new DynamicRoundDiscussionStrategy(log, client, {
         maxRounds: settings.maxRounds,
+        minRounds: settings.minRounds,
         roundTimeoutMs: settings.roundTimeoutMs,
         smallModelTimeoutMs,
       })
@@ -62,9 +61,7 @@ export function createProjectWorkOnIssue(
   teamManager: TeamManager,
   log: Logger,
   client: OpencodeClient,
-  defaultDiscussionStrategy: DiscussionStrategyType,
-  getDiscussionSettings: (type: DiscussionStrategyType) => TeamDiscussionSettings,
-  smallModelTimeoutMs: number,
+  config: ConfigManager,
 ): Tool {
 
   return tool({
@@ -156,8 +153,8 @@ When isolate=true, the completion notification includes merge instructions.`,
         }
 
         // Create team (even single-agent work creates a team of 1)
-        const strategyType = discussionStrategyArg ?? defaultDiscussionStrategy
-        const discussionStrategy = createStrategy(getDiscussionSettings(strategyType), log, client, smallModelTimeoutMs, projectDir)
+        const strategyType = discussionStrategyArg ?? config.getDefaultDiscussionStrategy()
+        const discussionStrategy = createStrategy(config.getTeamDiscussionSettings(strategyType), log, client, config.getSmallModelTimeoutMs(), projectDir)
         const teamResult = await teamManager.create({
           projectId,
           projectDir,

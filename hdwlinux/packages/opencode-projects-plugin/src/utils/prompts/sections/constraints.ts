@@ -36,6 +36,13 @@ export function disabledToolsList(): string {
  * and lists the tools that are disabled.
  */
 export const delegationConstraints: PromptSection = () => `
+## Hard Blocks (NEVER violate)
+
+- **Never commit** without being explicitly asked to
+- **Never push to remote** under any circumstances
+- **Never leave code in a broken state** — if you can't complete something, restore the previous working state and say so explicitly
+- **Never deliver a final answer** before collecting all reviewer feedback
+
 ## Constraints
 
 You are running as a background delegation. The following tools are disabled:

@@ -59,6 +59,7 @@ const WRITE_TOOLS: readonly string[] = [
  * - Primary agents: Full tool access (except delegation/state tools)
  * - Secondary/reviewer agents: Read-only access (no edit/write)
  * - Devil's advocate agents: Same as secondary (read-only)
+ * - Mediator agents: Read-only access (analysis and proposal only, no implementation)
  *
  * All delegated agents are blocked from recursive delegation and
  * project state modifications.
@@ -91,7 +92,7 @@ export class PermissionManager {
     if (role === "primary") {
       // Primary agents retain write access - no additional restrictions
     } else {
-      // Secondary and devilsAdvocate roles are read-only
+      // Secondary, devilsAdvocate, and mediator roles are read-only
       for (const tool of WRITE_TOOLS) {
         permissions[tool] = false
       }
@@ -126,5 +127,15 @@ export class PermissionManager {
    */
   static hasWriteAccess(role: TeamMemberRole): boolean {
     return role === "primary"
+  }
+
+  /**
+   * Check if a role is read-only.
+   *
+   * @param role - The team member's role
+   * @returns true if the role is restricted to read-only tools
+   */
+  static isReadOnly(role: TeamMemberRole): boolean {
+    return role !== "primary"
   }
 }

@@ -166,11 +166,12 @@ export function sanitizePathComponent(input: string): string {
 /**
  * Creates a safe worktree name from project and issue IDs
  *
- * Validates both IDs and constructs a path-safe name.
- * The resulting name uses / as a separator but both components
- * are validated to not contain path traversal sequences.
+ * Validates both IDs and returns the issue ID as the worktree name.
+ * Since issue IDs already contain the project ID as a prefix (e.g.,
+ * `convergent-team-discussion-2c57d5-4by.37`), prepending the project ID
+ * again would be redundant.
  *
- * @param projectId - The project ID
+ * @param projectId - The project ID (validated but not included in the name)
  * @param issueId - The issue ID
  * @returns Result with the safe worktree name or a VCSError
  */
@@ -198,11 +199,7 @@ export function createSafeWorktreeName(
     )
   }
 
-  // Construct the name - the / here is intentional as a logical separator
-  // Both components have been validated to not contain path traversal
-  const name = `${projectResult.value}/${issueResult.value}`
-
-  return ok(name)
+  return ok(issueResult.value)
 }
 
 /**

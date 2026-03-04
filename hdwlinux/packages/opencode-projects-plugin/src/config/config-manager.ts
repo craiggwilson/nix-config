@@ -10,7 +10,7 @@ import {
   type ProjectConfig,
   type ProjectOverrides,
   type FixedRoundDiscussionSettings,
-  type ConvergenceDiscussionSettings,
+  type DynamicRoundDiscussionSettings,
   type RealtimeDiscussionSettings,
   BEADS_PATH,
   PROJECTS_PATH,
@@ -25,7 +25,7 @@ import type { DiscussionStrategyType } from "../execution/index.js"
  */
 export type TeamDiscussionSettings =
   | { type: "fixedRound" } & FixedRoundDiscussionSettings
-  | { type: "dynamicRound" } & ConvergenceDiscussionSettings
+  | { type: "dynamicRound" } & DynamicRoundDiscussionSettings
   | { type: "realtime" } & RealtimeDiscussionSettings
 
 const CONFIG_FILENAME = "opencode-projects.json"

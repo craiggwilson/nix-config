@@ -7,12 +7,14 @@
  * - Sending prompts and collecting responses
  */
 
-import type { Logger, OpencodeClient, MessageItem, Part } from "../../utils/opencode-sdk/index.js"
+import type { Logger, OpencodeClient } from "../../utils/opencode-sdk/index.js"
 import type { Team, TeamMember, DiscussionRound } from "../team-manager.js"
 import type { Clock } from "../../utils/clock/index.js"
 import type { TeamDiscussionStrategy } from "../discussion-strategy.js"
 import { systemClock } from "../../utils/clock/index.js"
 import { PermissionManager } from "../permission-manager.js"
+import { buildDiscussionContext } from "../discussion-context.js"
+import { waitForResponse } from "../response-poller.js"
 
 /**
  * Configuration for FixedRoundDiscussionStrategy.
@@ -41,6 +43,7 @@ export interface FixedRoundStrategyConfig {
  */
 export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
   readonly type = "fixedRound" as const
+  readonly memberLaunchOrdering = "sequential" as const
 
   private log: Logger
   private client: OpencodeClient
@@ -55,7 +58,7 @@ export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
   constructor(
     log: Logger,
     client: OpencodeClient,
-    config: FixedRoundStrategyConfig
+    config: FixedRoundStrategyConfig,
   ) {
     this.log = log
     this.client = client
@@ -87,14 +90,20 @@ export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
     )
 
     const discussionHistory: DiscussionRound[] = [...team.discussionHistory]
+    const discussionStartTime = this.clock.now()
+    let totalSuccesses = 0
+    let totalFailures = 0
 
     for (let round = 1; round <= this.config.rounds; round++) {
+      const roundStartTime = this.clock.now()
       await this.log.info(
-        `Team ${team.id}: discussion round ${round}/${this.config.rounds}`
+        `Team ${team.id}: discussion round ${round}/${this.config.rounds} starting`
       )
 
       const roundResponses: Record<string, string> = {}
-      const context = this.buildDiscussionContext(team, round, discussionHistory)
+      const context = buildDiscussionContext(team, round, discussionHistory)
+      let roundSuccesses = 0
+      let roundFailures = 0
 
       for (const member of team.members) {
         if (!member.sessionId) {
@@ -102,6 +111,7 @@ export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
             `Team ${team.id}: ${member.agent} has no session for discussion`
           )
           roundResponses[member.agent] = "(no session)"
+          roundFailures++
           continue
         }
 
@@ -113,6 +123,7 @@ export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
             context
           )
           roundResponses[member.agent] = response
+          roundSuccesses++
           await this.log.debug(
             `Team ${team.id}: ${member.agent} responded to round ${round}`
           )
@@ -122,8 +133,17 @@ export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
             `Team ${team.id}: ${member.agent} discussion failed: ${errorMsg}`
           )
           roundResponses[member.agent] = `(error: ${errorMsg})`
+          roundFailures++
         }
       }
+
+      totalSuccesses += roundSuccesses
+      totalFailures += roundFailures
+      const roundDurationMs = this.clock.now() - roundStartTime
+
+      await this.log.info(
+        `Team ${team.id}: round ${round}/${this.config.rounds} complete successes=${roundSuccesses} failures=${roundFailures} durationMs=${roundDurationMs}`
+      )
 
       discussionHistory.push({ round, responses: roundResponses })
 
@@ -132,67 +152,15 @@ export class FixedRoundDiscussionStrategy implements TeamDiscussionStrategy {
       }
     }
 
-    await this.log.info(`Team ${team.id}: discussion complete`)
+    const totalDurationMs = this.clock.now() - discussionStartTime
+    const totalResponses = totalSuccesses + totalFailures
+    const successRate = totalResponses > 0 ? (totalSuccesses / totalResponses).toFixed(2) : "N/A"
+
+    await this.log.info(
+      `Team ${team.id}: discussion complete rounds=${this.config.rounds} successes=${totalSuccesses} failures=${totalFailures} successRate=${successRate} totalDurationMs=${totalDurationMs}`
+    )
+
     return discussionHistory
-  }
-
-  /**
-   * Build context for a discussion round.
-   *
-   * Assembles context from:
-   * - Primary agent's implementation
-   * - Other agents' initial findings
-   * - Previous discussion rounds (if any)
-   *
-   * @param team - The team with results
-   * @param round - Current round number (1-based)
-   * @param discussionHistory - Previous rounds' responses
-   * @returns Formatted context string for the discussion prompt
-   */
-  buildDiscussionContext(
-    team: Team,
-    round: number,
-    discussionHistory: DiscussionRound[]
-  ): string {
-    const lines: string[] = []
-
-    // Primary agent's work
-    const primary = team.members.find((m) => m.role === "primary")
-    if (primary && team.results[primary.agent]) {
-      lines.push("## Primary Agent's Implementation")
-      lines.push("")
-      lines.push(team.results[primary.agent].result)
-      lines.push("")
-    }
-
-    // Other agents' initial findings
-    lines.push("## Team Findings")
-    lines.push("")
-    for (const member of team.members) {
-      if (member.role !== "primary" && team.results[member.agent]) {
-        lines.push(`### ${member.agent}`)
-        lines.push("")
-        lines.push(team.results[member.agent].result)
-        lines.push("")
-      }
-    }
-
-    // Previous discussion rounds
-    if (round > 1 && discussionHistory.length > 0) {
-      lines.push("## Previous Discussion")
-      lines.push("")
-      for (const prevRound of discussionHistory) {
-        lines.push(`### Round ${prevRound.round}`)
-        lines.push("")
-        for (const [agent, response] of Object.entries(prevRound.responses)) {
-          lines.push(`**${agent}:**`)
-          lines.push(response)
-          lines.push("")
-        }
-      }
-    }
-
-    return lines.join("\n")
   }
 
   /**
@@ -236,64 +204,6 @@ Keep response focused and actionable.`
       },
     })
 
-    return await this.waitForResponse(
-      member.sessionId!,
-      this.config.roundTimeoutMs
-    )
-  }
-
-  /**
-   * Wait for a response from a session with timeout.
-   *
-   * Polls the session for new assistant messages until a response is found
-   * or timeout is reached.
-   *
-   * @param sessionId - The session to poll
-   * @param timeoutMs - Maximum time to wait
-   * @returns The response text
-   * @throws Error if timeout is reached
-   */
-  private async waitForResponse(
-    sessionId: string,
-    timeoutMs: number
-  ): Promise<string> {
-    const startTime = this.clock.now()
-    const pollInterval = 2000
-
-    while (this.clock.now() - startTime < timeoutMs) {
-      await this.clock.sleep(pollInterval)
-
-      try {
-        const messages = await this.client.session.messages({
-          path: { id: sessionId },
-        })
-
-        const messageData: MessageItem[] | undefined = messages.data
-        if (!messageData || messageData.length === 0) {
-          continue
-        }
-
-        const assistantMessages = messageData.filter(
-          (m) => m.info?.role === "assistant"
-        )
-        if (assistantMessages.length === 0) {
-          continue
-        }
-
-        const lastMessage = assistantMessages[assistantMessages.length - 1]
-
-        const parts: Part[] = lastMessage.parts || []
-        const textParts = parts.filter((p) => p.type === "text")
-        const text = textParts.map((p) => p.text || "").join("\n")
-
-        if (text && text.length > 0) {
-          return text
-        }
-      } catch (error) {
-        await this.log.debug(`Error polling session ${sessionId}: ${error}`)
-      }
-    }
-
-    throw new Error(`Timeout waiting for response after ${timeoutMs / 1000}s`)
+    return await waitForResponse(this.client, member.sessionId!, this.config.roundTimeoutMs, this.clock, this.log)
   }
 }

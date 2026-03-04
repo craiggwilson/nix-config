@@ -91,7 +91,7 @@ When the delegation used \`isolate=true\`, the notification includes worktree in
   <status>complete</status>
   <worktree>
     <path>/path/to/worktree</path>
-    <branch>project-id/issue-id</branch>
+    <branch>issue-id</branch>
     <vcs>jj|git</vcs>
   </worktree>
   <merge-instructions>

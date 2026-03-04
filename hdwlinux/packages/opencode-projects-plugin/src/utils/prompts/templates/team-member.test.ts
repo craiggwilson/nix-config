@@ -122,7 +122,7 @@ describe("teamMemberTemplate", () => {
       const prompt = teamMemberTemplate.render(baseReviewerData)
 
       expect(prompt).toContain("Review their approach")
-      expect(prompt).toContain("Identify issues")
+      expect(prompt).toContain("Identify BLOCKING issues")
       expect(prompt).toContain("constructive feedback")
     })
 
@@ -183,27 +183,24 @@ describe("teamMemberTemplate", () => {
       const prompt = teamMemberTemplate.render(devilsAdvocateData)
 
       expect(prompt).toContain("Review their approach")
-      expect(prompt).toContain("Identify issues")
+      expect(prompt).toContain("Identify BLOCKING issues")
     })
 
     it("includes critical analysis responsibilities", () => {
       const prompt = teamMemberTemplate.render(devilsAdvocateData)
 
       // Verify devil's advocate specific guidance is injected
-      expect(prompt).toContain("Challenge assumptions")
-      expect(prompt).toContain("Identify risks")
-      expect(prompt).toContain("Find gaps")
-      expect(prompt).toContain("Propose alternatives")
+      expect(prompt).toContain("Your Mandate")
+      expect(prompt).toContain("What Constitutes a Blocker")
+      expect(prompt).toContain("Do NOT rubber-stamp")
     })
 
     it("includes output format guidance", () => {
       const prompt = teamMemberTemplate.render(devilsAdvocateData)
 
       // Verify expected output sections are mentioned
-      expect(prompt).toContain("Concerns")
-      expect(prompt).toContain("Risks")
-      expect(prompt).toContain("Gaps")
-      expect(prompt).toContain("Alternative Approaches")
+      expect(prompt).toContain("Blockers (if any)")
+      expect(prompt).toContain("Concerns (non-blocking)")
       expect(prompt).toContain("Verdict")
     })
 
@@ -211,9 +208,9 @@ describe("teamMemberTemplate", () => {
       const prompt = teamMemberTemplate.render(devilsAdvocateData)
 
       // Verify guidelines are present
-      expect(prompt).toContain("constructive but thorough")
-      expect(prompt).toContain("find problems")
-      expect(prompt).toContain("actionable feedback")
+      expect(prompt).toContain("find problems others missed")
+      expect(prompt).toContain("Anti-Patterns")
+      expect(prompt).toContain("Maintain your position if you believe you're right")
     })
 
     it("devil's advocate prompt is different from regular reviewer", () => {

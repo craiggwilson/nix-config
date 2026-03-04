@@ -22,7 +22,7 @@ import type { Clock, TimeoutHandle } from "../utils/clock/index.js"
 import { systemClock } from "../utils/clock/index.js"
 
 import type { TeamMemberRole } from "./team-manager.js"
-import { promptSmallModel } from "../agents/index.js"
+import { promptSmallModel, discoverAgents } from "../agents/index.js"
 import { metadataGenerationTemplate } from "../utils/prompts/index.js"
 import type { Result } from "../utils/result/index.js"
 import type { VCSType } from "../vcs/index.js"
@@ -306,6 +306,9 @@ export class DelegationManager {
   /**
    * Fire the prompt with retry logic (fire-and-forget).
    *
+   * Validates the agent exists before prompting to work around OpenCode framework
+   * null-safety bug (TypeError when agent.model is accessed on undefined agent).
+   *
    * Retries on transient errors with exponential backoff.
    * On final failure, marks the delegation as failed and notifies.
    */
@@ -315,13 +318,55 @@ export class DelegationManager {
     // Resolve role-based permissions for this delegation
     const toolPermissions = PermissionManager.resolvePermissions(delegation.role)
 
-    withRetry(
+    // Validate agent exists before prompting (workaround for OpenCode null-safety bug)
+    this.validateAndPrompt(delegation, sessionId, toolPermissions)
+  }
+
+  /**
+   * Validate agent exists and fire the prompt.
+   *
+   * OpenCode's Agent.get() returns undefined for unknown agents, then crashes
+   * accessing agent.model. We validate the agent exists first and fall back
+   * to no agent (uses OpenCode's default) if validation fails.
+   */
+  private async validateAndPrompt(
+    delegation: Delegation,
+    sessionId: string,
+    toolPermissions: Record<string, boolean>
+  ): Promise<void> {
+    if (!this.client) return
+
+    let agentToUse = delegation.agent
+
+    // Validate agent exists if one was specified
+    if (agentToUse) {
+      try {
+        const availableAgents = await discoverAgents(this.client, this.log)
+        const agentExists = availableAgents.some((a) => a.name === agentToUse)
+
+        if (!agentExists) {
+          await this.log.warn(
+            `Agent '${agentToUse}' not found in OpenCode configuration. ` +
+            `Available agents: ${availableAgents.map((a) => a.name).join(", ")}. ` +
+            `Falling back to default agent.`
+          )
+          agentToUse = undefined
+        }
+      } catch (error) {
+        await this.log.warn(
+          `Failed to validate agent '${agentToUse}': ${error}. Falling back to default agent.`
+        )
+        agentToUse = undefined
+      }
+    }
+
+    const result = await withRetry(
       "session.prompt",
       async () => {
         const result = await this.client!.session.prompt({
           path: { id: sessionId },
           body: {
-            agent: delegation.agent,
+            agent: agentToUse,
             parts: [{ type: "text", text: delegation.prompt }],
             tools: toolPermissions,
           },
@@ -334,27 +379,19 @@ export class DelegationManager {
       },
       this.log,
       { maxAttempts: 3, initialDelayMs: 500, maxDelayMs: 5000 }
-    ).then(async (result) => {
-      if (!result.ok) {
-        const retryError = result.error
-        const errorMessage = this.formatApiError("session.prompt", retryError)
-        await this.log.error(`Delegation ${delegation.id} prompt failed: ${errorMessage}`)
-        const failResult = await this.fail(delegation.id, errorMessage)
-        if (!failResult.ok) {
-          await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
-        }
-        // Notify via callback
-        if (delegation.onComplete) await delegation.onComplete(delegation.id)
-      }
-    }).catch(async (error: Error) => {
-      // Catch any unexpected errors from the retry logic itself
-      await this.log.error(`Delegation ${delegation.id} prompt failed unexpectedly: ${error.message}`)
-      const failResult = await this.fail(delegation.id, error.message)
+    )
+
+    if (!result.ok) {
+      const retryError = result.error
+      const errorMessage = this.formatApiError("session.prompt", retryError)
+      await this.log.error(`Delegation ${delegation.id} prompt failed: ${errorMessage}`)
+      const failResult = await this.fail(delegation.id, errorMessage)
       if (!failResult.ok) {
         await this.log.error(`Failed to mark delegation as failed: ${failResult.error.type}`)
       }
+      // Notify via callback
       if (delegation.onComplete) await delegation.onComplete(delegation.id)
-    })
+    }
   }
 
   /**

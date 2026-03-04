@@ -107,7 +107,8 @@ export class WorktreeManager {
   /**
    * Create an isolated worktree for working on an issue
    *
-   * The worktree name is derived from projectId and issueId
+   * The worktree name is the issue ID. Since issue IDs already contain the
+   * project ID as a prefix, prepending it again would be redundant.
    */
   async createIsolatedWorktree(options: CreateWorktreeOptions): Promise<Result<WorktreeInfo, VCSError>> {
     const adapterResult = await this.detectVCS()
@@ -132,6 +133,9 @@ export class WorktreeManager {
 
   /**
    * List all worktrees for a project
+   *
+   * Filters by worktrees whose name starts with the project ID, since issue IDs
+   * are formatted as `{projectId}-{shortId}`.
    */
   async listProjectWorktrees(projectId: string): Promise<Result<WorktreeInfo[], VCSError>> {
     const adapterResult = await this.detectVCS()
@@ -144,7 +148,7 @@ export class WorktreeManager {
       return worktreesResult
     }
 
-    const filtered = worktreesResult.value.filter((wt) => wt.name.startsWith(`${projectId}/`))
+    const filtered = worktreesResult.value.filter((wt) => wt.name.startsWith(`${projectId}-`))
     return ok(filtered)
   }
 
@@ -170,7 +174,12 @@ export class WorktreeManager {
     }
     const name = nameResult.value
 
-    const worktreesResult = await this.listProjectWorktrees(projectId)
+    const adapterResult = await this.detectVCS()
+    if (!isOk(adapterResult)) {
+      return adapterResult
+    }
+
+    const worktreesResult = await adapterResult.value.listWorktrees()
     if (!isOk(worktreesResult)) {
       return worktreesResult
     }

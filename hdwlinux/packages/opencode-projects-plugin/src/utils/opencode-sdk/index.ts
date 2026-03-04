@@ -11,6 +11,103 @@ import type { ToolContext, PluginInput } from "@opencode-ai/plugin"
  */
 export type BunShell = PluginInput["$"]
 
+// ============================================================================
+// Session Event Types
+// ============================================================================
+
+/**
+ * Session status - represents the current activity state of a session
+ */
+export type SessionStatus =
+  | { type: "idle" }
+  | { type: "busy" }
+  | { type: "retry"; attempt: number; message: string; next: number }
+
+/**
+ * Event fired when a session's status changes
+ */
+export type EventSessionStatus = {
+  type: "session.status"
+  properties: {
+    sessionID: string
+    status: SessionStatus
+  }
+}
+
+/**
+ * Event fired when a session becomes idle (no active processing)
+ */
+export type EventSessionIdle = {
+  type: "session.idle"
+  properties: {
+    sessionID: string
+  }
+}
+
+/**
+ * Event fired when a session is compacted (conversation history summarized)
+ */
+export type EventSessionCompacted = {
+  type: "session.compacted"
+  properties: {
+    sessionID: string
+  }
+}
+
+/**
+ * Event fired when a new session is created
+ */
+export type EventSessionCreated = {
+  type: "session.created"
+  properties: {
+    info: Session
+  }
+}
+
+/**
+ * Event fired when a session is updated
+ */
+export type EventSessionUpdated = {
+  type: "session.updated"
+  properties: {
+    info: Session
+  }
+}
+
+/**
+ * Event fired when a session is deleted (on app exit or new session start)
+ */
+export type EventSessionDeleted = {
+  type: "session.deleted"
+  properties: {
+    info: Session
+  }
+}
+
+/**
+ * Event fired when a session encounters an error
+ */
+export type EventSessionError = {
+  type: "session.error"
+  properties: {
+    sessionID?: string
+    error?: unknown
+  }
+}
+
+/**
+ * Union of all known event types.
+ * Used for type-safe event handling in the plugin event handler.
+ */
+export type Event =
+  | EventSessionStatus
+  | EventSessionIdle
+  | EventSessionCompacted
+  | EventSessionCreated
+  | EventSessionUpdated
+  | EventSessionDeleted
+  | EventSessionError
+
 /**
  * OpenCode SDK client type (simplified for our needs)
  */

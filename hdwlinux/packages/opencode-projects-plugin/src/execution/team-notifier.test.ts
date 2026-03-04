@@ -21,7 +21,7 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -57,7 +57,7 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         worktreePath: "/tmp/worktree/issue-1",
@@ -88,8 +88,8 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {},
@@ -176,7 +176,7 @@ describe("TeamNotifier", () => {
         issueId: "issue-with-&-ampersand",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "agent-with-\"quotes\"", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "agent-with-\"quotes\"", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -212,7 +212,7 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {},
@@ -251,8 +251,8 @@ describe("TeamNotifier", () => {
 
       const instructions = notifier.getMergeInstructions(team)
 
-      expect(instructions).toContain("jj diff --from main --to my-branch")
-      expect(instructions).toContain("jj squash --from my-branch")
+      expect(instructions).toContain("jj diff --from main --to my-branch@")
+      expect(instructions).toContain("jj squash --from my-branch@")
       expect(instructions).toContain("jj workspace forget my-branch")
     })
 
@@ -318,7 +318,7 @@ describe("TeamNotifier", () => {
         issueId: "issue-research",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "researcher", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "researcher", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         // No worktreePath, worktreeBranch, or vcs - this is non-isolated
@@ -383,7 +383,7 @@ describe("TeamNotifier", () => {
         issueId: "issue-analysis",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "analyst", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "analyst", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         foreground: true,
@@ -420,8 +420,8 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "implementer", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -473,9 +473,9 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {
@@ -548,9 +548,9 @@ describe("TeamNotifier", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "primary", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "secondary", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "primary", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "secondary", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed",
         results: {

@@ -38,6 +38,7 @@ const mockClient = createMockClient()
 const mockContext = createMockContext()
 
 describe("Error paths", () => {
+  let config: ConfigManager
   let testDir: string
   let projectManager: ProjectManager
   let testShell: BunShell
@@ -48,7 +49,7 @@ describe("Error paths", () => {
   beforeAll(async () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), "error-paths-test-"))
 
-    const config = await ConfigManager.loadOrThrow()
+    config = await ConfigManager.loadOrThrow()
     issueStorage = new InMemoryIssueStorage({ prefix: "test" })
     const focus = new FocusManager()
     testShell = createTestShell()
@@ -141,7 +142,7 @@ describe("Error paths", () => {
 
   describe("project-work-on-issue with non-existent issue", () => {
     test("returns graceful error for non-existent issue ID", async () => {
-      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, "fixedRound", (type) => ({ type, rounds: 2, roundTimeoutMs: 300000 } as any), 30000)
+      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, config)
 
       // Focus on the project first
       projectManager.setFocus(projectId)
@@ -158,7 +159,7 @@ describe("Error paths", () => {
     })
 
     test("returns graceful error when no project is focused", async () => {
-      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, "fixedRound", (type) => ({ type, rounds: 2, roundTimeoutMs: 300000 } as any), 30000)
+      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, config)
 
       // Clear focus
       projectManager.clearFocus()
@@ -440,7 +441,7 @@ describe("Error paths", () => {
     })
 
     test("project-work-on-issue rejects empty issueId", async () => {
-      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, "fixedRound", (type) => ({ type, rounds: 2, roundTimeoutMs: 300000 } as any), 30000)
+      const tool = createProjectWorkOnIssue(projectManager, teamManager, mockLogger, mockClient, config)
 
       projectManager.setFocus(projectId)
 

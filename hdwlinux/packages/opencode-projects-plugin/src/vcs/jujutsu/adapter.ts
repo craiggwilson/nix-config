@@ -100,14 +100,10 @@ export class JujutsuAdapter implements VCSAdapter {
       )
     }
 
-    const changeCmd = buildCommand(this.$, "jj", ["-R", workspacePath, "log", "-r", "@", "--no-graph", "-T", "change_id"])
-    const changeResult = await this.runCommand(changeCmd)
-    const changeId = changeResult.stdout.trim()
-
     return ok({
       name,
       path: workspacePath,
-      branch: changeId,
+      branch: name,
       isMain: false,
     })
   }
@@ -176,16 +172,20 @@ export class JujutsuAdapter implements VCSAdapter {
 
     let mergeCmd: string
 
+    // Use <workspace-name>@ syntax so the reference always points to the
+    // current working copy of the named workspace, not a stale change_id.
+    const sourceRef = `${source}@`
+
     switch (strategy) {
       case "squash":
-        mergeCmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "squash", "--from", source, "--into", targetRev])
+        mergeCmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "squash", "--from", sourceRef, "--into", targetRev])
         break
       case "rebase":
-        mergeCmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "rebase", "-s", source, "-d", targetRev])
+        mergeCmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "rebase", "-s", sourceRef, "-d", targetRev])
         break
       case "merge":
       default:
-        mergeCmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "new", source, targetRev, "-m", `Merge ${source}`])
+        mergeCmd = buildCommand(this.$, "jj", ["-R", this.repoRoot, "new", sourceRef, targetRev, "-m", `Merge ${source}`])
         break
     }
 

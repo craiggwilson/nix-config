@@ -8,6 +8,16 @@ import type { Team, TeamMember, DiscussionRound } from "./team-manager.js"
 export type DiscussionStrategyType = "fixedRound" | "dynamicRound" | "realtime"
 
 /**
+ * Controls when secondary member delegations are launched relative to the primary.
+ *
+ * - sequential: secondary delegations are created only after the primary completes,
+ *   so reviewers can inspect finished work immediately
+ * - concurrent: all delegations are launched at the same time; reviewers must
+ *   poll the worktree and wait for the primary to produce changes
+ */
+export type TeamMemberLaunchOrdering = "sequential" | "concurrent"
+
+/**
  * Event-based lifecycle hooks for coordinating team discussion.
  *
  * All hooks are optional so strategies only implement what they need:
@@ -18,6 +28,14 @@ export type DiscussionStrategyType = "fixedRound" | "dynamicRound" | "realtime"
 export interface TeamDiscussionStrategy {
   /** The strategy type — persisted to the Team record when discussion runs */
   readonly type: DiscussionStrategyType
+
+  /**
+   * Controls when secondary member delegations are launched relative to the primary.
+   *
+   * Strategies declare this declaratively so team-manager.ts can apply the correct
+   * sequencing without conditional checks on strategy type.
+   */
+  readonly memberLaunchOrdering: TeamMemberLaunchOrdering
 
   /**
    * Called once after all member delegations have been started.

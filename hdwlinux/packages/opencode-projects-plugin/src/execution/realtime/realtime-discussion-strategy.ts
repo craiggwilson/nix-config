@@ -12,13 +12,15 @@
  * Latency: 500-2000ms is acceptable for this experimental strategy.
  */
 
-import type { Logger, OpencodeClient, MessageItem, Part } from "../../utils/opencode-sdk/index.js"
+import type { Logger, OpencodeClient } from "../../utils/opencode-sdk/index.js"
 import type { Team, TeamMember, DiscussionRound } from "../team-manager.js"
 import type { Clock } from "../../utils/clock/index.js"
 import type { TeamDiscussionStrategy } from "../discussion-strategy.js"
 import { systemClock } from "../../utils/clock/index.js"
 import { PermissionManager } from "../permission-manager.js"
 import { InboxManager, type InboxMessage } from "./inbox-manager.js"
+import { extractSignal } from "../convergence-signal.js"
+import { waitForResponse } from "../response-poller.js"
 
 /**
  * Configuration for RealtimeDiscussionStrategy.
@@ -32,16 +34,21 @@ export interface RealtimeStrategyConfig {
   maxWaitTimeMs: number
   /** Maximum time to wait for each agent's response per prompt (milliseconds) */
   promptTimeoutMs: number
+  /**
+   * Minimum number of exchanges each agent must complete before CONVERGED is honored.
+   * Prevents trivially short discussions where agents exit after a single message.
+   * Defaults to 2.
+   */
+  minRounds?: number
+  /**
+   * Number of consecutive poll cycles where any agent signals STUCK before the
+   * arbiter is invoked. Prevents triggering on a single transient STUCK signal.
+   * Defaults to 2.
+   */
+  stuckThreshold?: number
   /** Clock for timing operations (optional, uses system clock) */
   clock?: Clock
 }
-
-/**
- * Default configuration values.
- */
-const DEFAULT_POLL_INTERVAL_MS = 1000
-const DEFAULT_MAX_WAIT_TIME_MS = 30 * 60 * 1000 // 30 minutes
-const DEFAULT_PROMPT_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
 
 /**
  * Orchestrates realtime team discussions using a polling-based inbox.
@@ -59,6 +66,7 @@ const DEFAULT_PROMPT_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
  */
 export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
   readonly type = "realtime" as const
+  readonly memberLaunchOrdering = "concurrent" as const
 
   private log: Logger
   private client: OpencodeClient
@@ -68,6 +76,29 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
 
   /** Tracks cursor position per agent for efficient polling */
   private agentCursors: Map<string, number> = new Map()
+
+  /** Tracks how many chat exchanges each agent has completed */
+  private agentExchangeCount: Map<string, number> = new Map()
+
+  /**
+   * Tracks how many consecutive poll cycles each agent has signaled STUCK.
+   * Resets to 0 when an agent signals CONVERGED or CONTINUE.
+   */
+  private agentStuckCount: Map<string, number> = new Map()
+
+  /**
+   * Version counter per agent. Incremented before each prompt; checked before
+   * posting the response to the inbox. Prevents a stale concurrent call from
+   * posting a response that belongs to an earlier prompt cycle.
+   */
+  private agentPromptVersion: Map<string, number> = new Map()
+
+  /**
+   * Guards against concurrent `promptAgentToContinue` calls for the same agent.
+   * A second call arriving while the first is still awaiting a response is
+   * dropped — the in-flight call will post the response when it completes.
+   */
+  private agentExecuting: Set<string> = new Set()
 
   /**
    * @param log - Logger for diagnostic output
@@ -81,12 +112,7 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
   ) {
     this.log = log
     this.client = client
-    this.config = {
-      ...config,
-      pollIntervalMs: config.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS,
-      maxWaitTimeMs: config.maxWaitTimeMs ?? DEFAULT_MAX_WAIT_TIME_MS,
-      promptTimeoutMs: config.promptTimeoutMs ?? DEFAULT_PROMPT_TIMEOUT_MS,
-    }
+    this.config = config
     this.clock = config.clock ?? systemClock
     this.inboxManager = new InboxManager({
       baseDir: config.baseDir,
@@ -106,9 +132,12 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
     // Initialize the inbox
     await this.inboxManager.initialize(team.id)
 
-    // Initialize cursors for all agents
+    // Initialize per-agent state for all members
     for (const member of team.members) {
       this.agentCursors.set(member.agent, 0)
+      this.agentExchangeCount.set(member.agent, 0)
+      this.agentStuckCount.set(member.agent, 0)
+      this.agentPromptVersion.set(member.agent, 0)
     }
 
     // Send system message announcing the discussion
@@ -168,8 +197,11 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
             metadata: { phase: "discussion" },
           })
 
-          // Check if the agent signaled done
-          if (this.containsDoneSignal(response)) {
+          const exchanges = (this.agentExchangeCount.get(member.agent) ?? 0) + 1
+          this.agentExchangeCount.set(member.agent, exchanges)
+
+          // Only honor CONVERGED after the agent has completed the minimum exchanges
+          if (this.containsDoneSignal(response) && this.hasMetMinRounds(member.agent)) {
             await this.inboxManager.sendMessage(team.id, {
               from: member.agent,
               to: "broadcast",
@@ -205,6 +237,7 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
 
     const agentNames = team.members.map((m) => m.agent)
     const startTime = this.clock.now()
+    let arbiterInvoked = false
 
     try {
       // Poll until all agents signal done or timeout
@@ -244,6 +277,13 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
           }
         }
 
+        // Check if the team is deadlocked — any agent stuck for too many consecutive cycles
+        if (!arbiterInvoked && this.isTeamDeadlocked()) {
+          await this.log.info(`Team ${team.id}: team is deadlocked, invoking arbiter`)
+          arbiterInvoked = true
+          await this.invokeArbiter(team)
+        }
+
         await this.clock.sleep(this.config.pollIntervalMs)
       }
 
@@ -261,6 +301,10 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
       // Always cleanup inbox, even on error
       await this.inboxManager.cleanup(team.id)
       this.agentCursors.clear()
+      this.agentExchangeCount.clear()
+      this.agentStuckCount.clear()
+      this.agentPromptVersion.clear()
+      this.agentExecuting.clear()
     }
   }
 
@@ -272,6 +316,8 @@ export class RealtimeDiscussionStrategy implements TeamDiscussionStrategy {
       .map((m) => `- ${m.agent} (${m.role})`)
       .join("\n")
 
+    const minRounds = this.config.minRounds ?? 2
+
     return `# Realtime Team Discussion Started
 
 ## Issue: ${team.issueId}
@@ -281,15 +327,28 @@ ${memberList}
 
 ## Instructions
 
-This is a realtime discussion channel. You can:
-1. Share your findings and analysis
-2. Read and respond to other agents' messages
-3. Ask questions or raise concerns
-4. Signal when you're done with your analysis
+This is a realtime peer-to-peer discussion. You are expected to actively engage with your teammates — not just share your own analysis in isolation.
 
-When you have completed your analysis and have no more to add, include "DONE" in your response.
+**Your obligations in every response:**
+1. Directly address at least one specific point made by another agent (quote or paraphrase it)
+2. Either agree with reasoning (and explain why), or challenge it with a concrete counter-argument
+3. Raise any concerns, gaps, or risks you see in others' positions
+4. Share additional insights that build on or contradict what others have said
 
-The discussion will continue until all agents signal completion.`
+**Do NOT signal CONVERGED unless you have:**
+- Read and responded to every substantive point raised by other agents
+- Either resolved your disagreements or explicitly accepted the trade-offs
+- Confirmed there are no remaining concerns you haven't voiced
+
+End each response with exactly one of these signals on its own line:
+
+**CONVERGED** - You have exhausted your contributions and have nothing more to add. For the devil's advocate, this means you have no remaining blockers — not that you agree, but that you cannot find further reason to prevent convergence.
+**STUCK** - There is a blocker that is not being addressed. Use this to veto convergence until the issue is resolved.
+**CONTINUE** - You have more to contribute; explain what still needs to be resolved.
+
+The discussion ends only when ALL agents signal CONVERGED. Any agent signaling STUCK prevents convergence.
+
+**Minimum exchanges:** Each agent must complete at least ${minRounds} exchanges before CONVERGED is honored. CONVERGED signals before that threshold are treated as CONTINUE.`
   }
 
   /**
@@ -315,21 +374,14 @@ ${result}`
 
     const inboxContext = this.formatInboxMessages(messages, member.agent)
 
-    const prompt = `# Realtime Discussion - ${team.issueId}
+    const minRounds = this.config.minRounds ?? 2
+    const exchanges = this.agentExchangeCount.get(member.agent) ?? 0
+    const remainingExchanges = Math.max(0, minRounds - exchanges - 1)
+    const minRoundsNote = remainingExchanges > 0
+      ? `\n**Note:** You must complete at least ${remainingExchanges} more exchange(s) before CONVERGED will be honored. Use CONTINUE for now.`
+      : ""
 
-## Recent Messages from Team
-${inboxContext || "(No new messages)"}
-
-## Your Task
-
-Review the messages above and contribute to the discussion:
-1. Share any additional insights or concerns
-2. Respond to questions from other agents
-3. Highlight points of agreement or disagreement
-
-When you have completed your analysis and have nothing more to add, include "DONE" on its own line.
-
-Keep your response focused and actionable.`
+    const prompt = buildDiscussionPrompt(team.issueId, inboxContext, minRoundsNote)
 
     const toolPermissions = PermissionManager.resolvePermissions(member.role)
 
@@ -343,16 +395,26 @@ Keep your response focused and actionable.`
       },
     })
 
-    return await this.waitForResponse(member.sessionId!, this.config.promptTimeoutMs)
+    return await waitForResponse(this.client, member.sessionId!, this.config.promptTimeoutMs, this.clock, this.log)
   }
 
   /**
    * Prompt an agent to continue the discussion or signal done.
+   *
+   * Guards against concurrent calls for the same agent: if a call is already
+   * in-flight, the new call is dropped. The in-flight call will post the
+   * response when it completes.
    */
   private async promptAgentToContinue(
     team: Team,
     member: TeamMember
   ): Promise<void> {
+    // Drop concurrent calls for the same agent — the in-flight call handles it
+    if (this.agentExecuting.has(member.agent)) {
+      await this.log.debug(`Team ${team.id}: ${member.agent} already executing, skipping concurrent prompt`)
+      return
+    }
+
     // Read new messages since last check
     const cursor = this.agentCursors.get(member.agent) ?? 0
     const { messages, cursor: newCursor } = await this.inboxManager.readMessages(team.id, cursor)
@@ -364,34 +426,43 @@ Keep your response focused and actionable.`
 
     this.agentCursors.set(member.agent, newCursor)
 
-    const inboxContext = this.formatInboxMessages(messages, member.agent)
+    // Increment version before sending the prompt so we can detect if a newer
+    // prompt cycle supersedes this one before we post the response
+    const version = (this.agentPromptVersion.get(member.agent) ?? 0) + 1
+    this.agentPromptVersion.set(member.agent, version)
 
-    const prompt = `# New Messages in Discussion - ${team.issueId}
-
-${inboxContext}
-
-## Your Task
-
-Review the new messages and either:
-1. Respond with additional insights or concerns
-2. Signal "DONE" if you have nothing more to add
-
-Keep your response brief.`
-
-    const toolPermissions = PermissionManager.resolvePermissions(member.role)
-
-    await this.client.session.prompt({
-      path: { id: member.sessionId! },
-      body: {
-        agent: member.agent,
-        parts: [{ type: "text", text: prompt }],
-        noReply: false,
-        tools: toolPermissions,
-      },
-    })
-
+    this.agentExecuting.add(member.agent)
     try {
-      const response = await this.waitForResponse(member.sessionId!, this.config.promptTimeoutMs)
+      const inboxContext = this.formatInboxMessages(messages, member.agent)
+
+      const minRounds = this.config.minRounds ?? 2
+      const exchanges = this.agentExchangeCount.get(member.agent) ?? 0
+      const remainingExchanges = Math.max(0, minRounds - exchanges - 1)
+      const minRoundsNote = remainingExchanges > 0
+        ? `\n**Note:** You must complete at least ${remainingExchanges} more exchange(s) before CONVERGED will be honored. Use CONTINUE for now.`
+        : ""
+
+      const prompt = buildContinuationPrompt(team.issueId, inboxContext, minRoundsNote)
+
+      const toolPermissions = PermissionManager.resolvePermissions(member.role)
+
+      await this.client.session.prompt({
+        path: { id: member.sessionId! },
+        body: {
+          agent: member.agent,
+          parts: [{ type: "text", text: prompt }],
+          noReply: false,
+          tools: toolPermissions,
+        },
+      })
+
+      const response = await waitForResponse(this.client, member.sessionId!, this.config.promptTimeoutMs, this.clock, this.log)
+
+      // Discard the response if a newer prompt cycle has already superseded this one
+      if (this.agentPromptVersion.get(member.agent) !== version) {
+        await this.log.debug(`Team ${team.id}: ${member.agent} response discarded (stale version ${version})`)
+        return
+      }
 
       if (response && response.trim().length > 0) {
         // Post response to inbox
@@ -403,8 +474,20 @@ Keep your response brief.`
           metadata: { phase: "continuation" },
         })
 
-        // Check for done signal
-        if (this.containsDoneSignal(response)) {
+        const currentExchanges = (this.agentExchangeCount.get(member.agent) ?? 0) + 1
+        this.agentExchangeCount.set(member.agent, currentExchanges)
+
+        // Track STUCK signals to detect deadlock; reset on any other signal
+        const signal = extractSignal(response)
+        if (signal === "STUCK") {
+          const stuckCount = (this.agentStuckCount.get(member.agent) ?? 0) + 1
+          this.agentStuckCount.set(member.agent, stuckCount)
+        } else {
+          this.agentStuckCount.set(member.agent, 0)
+        }
+
+        // Only honor CONVERGED after the agent has completed the minimum exchanges
+        if (this.containsDoneSignal(response) && this.hasMetMinRounds(member.agent)) {
           await this.inboxManager.sendMessage(team.id, {
             from: member.agent,
             to: "broadcast",
@@ -414,7 +497,9 @@ Keep your response brief.`
         }
       }
     } catch (error) {
-      // Timeout or error - agent may be busy, will retry on next poll
+      // Timeout or error — agent may be busy, will retry on next poll
+    } finally {
+      this.agentExecuting.delete(member.agent)
     }
   }
 
@@ -437,14 +522,94 @@ Keep your response brief.`
   }
 
   /**
-   * Check if a response contains a "done" signal.
+   * Check if a response signals that the agent is done contributing.
    *
-   * Requires "DONE" to appear as a standalone line (case-insensitive).
-   * This avoids false positives like "ABANDONED" or "I AM NOT DONE".
+   * An agent is done when they signal CONVERGED. STUCK is not done — it is a
+   * veto that keeps the discussion open. CONTINUE means more work remains.
    */
   private containsDoneSignal(response: string): boolean {
-    const lines = response.split("\n").map((l) => l.trim().toUpperCase())
-    return lines.some((line) => line === "DONE")
+    return extractSignal(response) === "CONVERGED"
+  }
+
+  /**
+   * Check if an agent has completed the minimum number of exchanges required
+   * before their CONVERGED signal can be honored.
+   */
+  private hasMetMinRounds(agentName: string): boolean {
+    const minRounds = this.config.minRounds ?? 2
+    const exchanges = this.agentExchangeCount.get(agentName) ?? 0
+    return exchanges >= minRounds
+  }
+
+  /**
+   * Check if the team is deadlocked — any agent has signaled STUCK for at least
+   * `stuckThreshold` consecutive poll cycles without making progress.
+   */
+  private isTeamDeadlocked(): boolean {
+    const threshold = this.config.stuckThreshold ?? 2
+    for (const count of this.agentStuckCount.values()) {
+      if (count >= threshold) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * Invoke the primary agent as arbiter to break a deadlock.
+   *
+   * Posts the arbiter's decision to the inbox so all agents can see it and
+   * potentially unblock. The arbiter is the primary agent acting as final
+   * decision-maker with full visibility into the discussion history.
+   */
+  private async invokeArbiter(team: Team): Promise<void> {
+    const primary = team.members.find((m) => m.role === "primary")
+    if (!primary?.sessionId) {
+      await this.log.warn(`Team ${team.id}: no primary agent available for arbiter`)
+      return
+    }
+
+    const allMessages = await this.inboxManager.readAllMessages(team.id)
+    const stuckAgents = Array.from(this.agentStuckCount.entries())
+      .filter(([, count]) => count >= (this.config.stuckThreshold ?? 2))
+      .map(([agent]) => agent)
+
+    const prompt = buildArbiterPrompt(team.issueId, stuckAgents, allMessages)
+    const toolPermissions = PermissionManager.resolvePermissions(primary.role)
+
+    try {
+      await this.client.session.prompt({
+        path: { id: primary.sessionId },
+        body: {
+          agent: primary.agent,
+          parts: [{ type: "text", text: prompt }],
+          noReply: false,
+          tools: toolPermissions,
+        },
+      })
+
+      const response = await waitForResponse(this.client, primary.sessionId, this.config.promptTimeoutMs, this.clock, this.log)
+
+      if (response && response.trim().length > 0) {
+        await this.inboxManager.sendMessage(team.id, {
+          from: `${primary.agent} (arbiter)`,
+          to: "broadcast",
+          text: response,
+          type: "chat",
+          metadata: { phase: "arbiter" },
+        })
+
+        // Reset stuck counts so agents can respond to the arbiter's decision
+        for (const agent of this.agentStuckCount.keys()) {
+          this.agentStuckCount.set(agent, 0)
+        }
+
+        await this.log.info(`Team ${team.id}: arbiter decision posted to inbox`)
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      await this.log.warn(`Team ${team.id}: arbiter invocation failed: ${errorMsg}`)
+    }
   }
 
   /**
@@ -502,56 +667,152 @@ Keep your response brief.`
   }
 
   /**
-   * Wait for a response from a session with timeout.
-   */
-  private async waitForResponse(
-    sessionId: string,
-    timeoutMs: number
-  ): Promise<string> {
-    const startTime = this.clock.now()
-    const pollInterval = 2000
-
-    while (this.clock.now() - startTime < timeoutMs) {
-      await this.clock.sleep(pollInterval)
-
-      try {
-        const messages = await this.client.session.messages({
-          path: { id: sessionId },
-        })
-
-        const messageData: MessageItem[] | undefined = messages.data
-        if (!messageData || messageData.length === 0) {
-          continue
-        }
-
-        const assistantMessages = messageData.filter(
-          (m) => m.info?.role === "assistant"
-        )
-        if (assistantMessages.length === 0) {
-          continue
-        }
-
-        const lastMessage = assistantMessages[assistantMessages.length - 1]
-        const parts: Part[] = lastMessage.parts || []
-        const textParts = parts.filter((p) => p.type === "text")
-        const text = textParts.map((p) => p.text || "").join("\n")
-
-        if (text && text.length > 0) {
-          return text
-        }
-      } catch (error) {
-        await this.log.debug(`Error polling session ${sessionId}: ${error}`)
-      }
-    }
-
-    throw new Error(`Timeout waiting for response after ${timeoutMs / 1000}s`)
-  }
-
-  /**
    * Get the inbox manager for testing purposes.
    * @internal
    */
   get _inboxManager(): InboxManager {
     return this.inboxManager
   }
+
+  /**
+   * Get the exchange count map for testing purposes.
+   * @internal
+   */
+  get _agentExchangeCount(): Map<string, number> {
+    return this.agentExchangeCount
+  }
+
+  /**
+   * Get the stuck count map for testing purposes.
+   * @internal
+   */
+  get _agentStuckCount(): Map<string, number> {
+    return this.agentStuckCount
+  }
+
+  /**
+   * Get the prompt version map for testing purposes.
+   * @internal
+   */
+  get _agentPromptVersion(): Map<string, number> {
+    return this.agentPromptVersion
+  }
+
+  /**
+   * Get the executing agents set for testing purposes.
+   * @internal
+   */
+  get _agentExecuting(): Set<string> {
+    return this.agentExecuting
+  }
+
+}
+
+/**
+ * Build the initial discussion prompt for an agent joining the realtime discussion.
+ *
+ * Instructs the agent to contribute to the discussion and end with an explicit
+ * convergence signal so the orchestrator can determine when all agents are done.
+ */
+export function buildDiscussionPrompt(issueId: string, inboxContext: string, minRoundsNote = ""): string {
+  return `# Realtime Discussion - ${issueId}
+
+## Messages from Your Teammates
+${inboxContext || "(No messages yet — share your initial analysis and any concerns)"}
+
+## Your Task
+
+Engage substantively with your teammates. You must:
+1. **Directly respond** to specific points made by other agents — quote or paraphrase what they said, then agree or push back with reasoning
+2. **Challenge positions** you find incomplete, risky, or wrong — do not let weak arguments pass unchallenged
+3. **Raise concerns** about gaps, risks, or trade-offs that haven't been addressed
+4. **Build on agreements** by adding depth, caveats, or implementation considerations
+
+Do NOT signal CONVERGED unless you have responded to every substantive point from other agents and have no remaining concerns to voice.
+
+End your response with exactly one of these signals on its own line:
+
+**CONVERGED** - You have exhausted your contributions and have nothing more to add. For the devil's advocate, this means you have no remaining blockers — not that you agree, but that you cannot find further reason to prevent convergence.
+**STUCK** - There is a blocker that is not being addressed. Use this to veto convergence until the issue is resolved.
+**CONTINUE** - You have more to contribute; explain what still needs to be resolved.
+${minRoundsNote}`
+}
+
+/**
+ * Build the continuation prompt for an agent with new inbox messages.
+ *
+ * Used when polling detects new messages for an agent that has not yet signaled
+ * CONVERGED. Instructs the agent to respond and re-emit a convergence signal.
+ */
+export function buildContinuationPrompt(issueId: string, inboxContext: string, minRoundsNote = ""): string {
+  return `# New Messages in Discussion - ${issueId}
+
+${inboxContext}
+
+## Your Task
+
+Your teammates have spoken — now respond directly to what they said. You must:
+1. **Address specific points** — pick out the key claims or arguments and respond to each one explicitly
+2. **Challenge or affirm with reasoning** — don't just say "I agree" or "I disagree"; explain *why*
+3. **Raise anything unresolved** — if a concern hasn't been addressed, say so clearly
+
+Only signal CONVERGED if you have genuinely engaged with all outstanding points and have nothing more to add. If you haven't yet responded to something important, signal CONTINUE and address it.
+
+End your response with exactly one of these signals on its own line:
+
+**CONVERGED** - You have exhausted your contributions and have nothing more to add. For the devil's advocate, this means you have no remaining blockers — not that you agree, but that you cannot find further reason to prevent convergence.
+**STUCK** - There is a blocker that is not being addressed; use this to prevent convergence.
+**CONTINUE** - You have more to contribute; explain what still needs to be resolved.
+${minRoundsNote}`
+}
+
+/**
+ * Build the arbiter prompt for the primary agent to break a realtime deadlock.
+ *
+ * Unlike the dynamicRound arbiter which receives structured discussion rounds,
+ * this arbiter receives the raw inbox message history so it has full context
+ * of the peer-to-peer conversation that led to the deadlock.
+ */
+export function buildArbiterPrompt(
+  issueId: string,
+  stuckAgents: string[],
+  inboxMessages: InboxMessage[]
+): string {
+  const chatMessages = inboxMessages.filter((m) => m.type === "chat" && m.from !== "system")
+  const historyText = chatMessages
+    .map((m) => {
+      const timestamp = new Date(m.timestamp).toISOString()
+      return `**[${timestamp}] ${m.from}:**\n${m.text}`
+    })
+    .join("\n\n---\n\n")
+
+  const stuckList = stuckAgents.length > 0
+    ? `The following agent(s) are stuck: ${stuckAgents.join(", ")}.`
+    : "The team has been unable to converge."
+
+  return `# Arbiter Decision Required
+
+## Issue: ${issueId}
+
+The realtime discussion has reached a deadlock. ${stuckList}
+
+## Full Discussion History
+
+${historyText || "(No messages yet)"}
+
+## Your Role as Arbiter
+
+You are the primary agent and final decision-maker. Review the full discussion and:
+
+1. Identify the core points of disagreement
+2. Evaluate the merits of each position
+3. Make a final binding decision that resolves the deadlock
+4. Explain your reasoning clearly
+
+Your decision will be posted to the shared inbox so all agents can see it. Be decisive and specific. After your decision, agents will have the opportunity to signal CONVERGED.
+
+End your response with exactly one of these signals on its own line:
+
+**CONVERGED** - Your decision resolves the deadlock and you have nothing more to add.
+**CONTINUE** - Your decision is posted but you expect further discussion before convergence.`
 }

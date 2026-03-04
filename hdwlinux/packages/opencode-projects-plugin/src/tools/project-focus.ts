@@ -53,14 +53,14 @@ Call without arguments to see current focus.`,
         return lines.join("\n")
       }
 
-      try {
-        const { projectId, clear } = validationResult.value
+       try {
+         const { projectId, clear } = validationResult.value
 
-        if (clear) {
-          projectManager.clearFocus()
-          await log.info("Focus cleared")
-          return "Focus cleared. No project is currently active."
-        }
+         if (clear) {
+           projectManager.clearFocus()
+           await log.info("Focus cleared")
+           return "Focus cleared. No project is currently active."
+         }
 
         if (!projectId) {
           const currentProjectId = projectManager.getFocusedProjectId()

@@ -68,7 +68,7 @@ describe("Worktree Isolation Integration", () => {
       expect(result.ok).toBe(true)
       if (result.ok) {
         const worktree = result.value
-        expect(worktree.name).toBe(`${project.projectId}/${issueId}`)
+        expect(worktree.name).toBe(issueId)
         expect(worktree.isMain).toBe(false)
 
         // Verify directory exists
@@ -126,17 +126,22 @@ describe("Worktree Isolation Integration", () => {
       })
 
       // Create worktrees for different projects
+      // Issue IDs use the project ID as a prefix, matching real-world usage
+      const issueA1 = `${projectA.projectId}-a1`
+      const issueA2 = `${projectA.projectId}-a2`
+      const issueB1 = `${projectB.projectId}-b1`
+
       await fixture.worktreeManager.createIsolatedWorktree({
         projectId: projectA.projectId,
-        issueId: "issue-a1",
+        issueId: issueA1,
       })
       await fixture.worktreeManager.createIsolatedWorktree({
         projectId: projectA.projectId,
-        issueId: "issue-a2",
+        issueId: issueA2,
       })
       await fixture.worktreeManager.createIsolatedWorktree({
         projectId: projectB.projectId,
-        issueId: "issue-b1",
+        issueId: issueB1,
       })
 
       const projectAWorktrees = await fixture.worktreeManager.listProjectWorktrees(projectA.projectId)
@@ -151,9 +156,9 @@ describe("Worktree Isolation Integration", () => {
       }
 
       // Clean up
-      await fixture.worktreeManager.removeWorktree(`${projectA.projectId}/issue-a1`)
-      await fixture.worktreeManager.removeWorktree(`${projectA.projectId}/issue-a2`)
-      await fixture.worktreeManager.removeWorktree(`${projectB.projectId}/issue-b1`)
+      await fixture.worktreeManager.removeWorktree(issueA1)
+      await fixture.worktreeManager.removeWorktree(issueA2)
+      await fixture.worktreeManager.removeWorktree(issueB1)
     })
 
     test("gets specific worktree by issue", async () => {
@@ -174,11 +179,11 @@ describe("Worktree Isolation Integration", () => {
       expect(result.ok).toBe(true)
       if (result.ok) {
         expect(result.value).not.toBeNull()
-        expect(result.value!.name).toBe(`${project.projectId}/find-me`)
+        expect(result.value!.name).toBe("find-me")
       }
 
       // Clean up
-      await fixture.worktreeManager.removeWorktree(`${project.projectId}/find-me`)
+      await fixture.worktreeManager.removeWorktree("find-me")
     })
 
     test("returns null for non-existent worktree", async () => {
@@ -423,7 +428,7 @@ describe("Worktree Isolation Integration", () => {
 
       expect(result.ok).toBe(true)
       if (result.ok) {
-        expect(result.value.name).toBe(`${project.projectId}/bd-a3f8.1.2`)
+        expect(result.value.name).toBe("bd-a3f8.1.2")
         await fixture.worktreeManager.removeWorktree(result.value.name)
       }
     })
@@ -449,11 +454,11 @@ describe("Worktree Isolation Integration", () => {
       if (result.ok) {
         expect(result.value.length).toBeGreaterThanOrEqual(2) // Main + created
         expect(result.value.some((w) => w.isMain)).toBe(true)
-        expect(result.value.some((w) => w.name === `${project.projectId}/list-all-1`)).toBe(true)
+        expect(result.value.some((w) => w.name === "list-all-1")).toBe(true)
       }
 
       // Clean up
-      await fixture.worktreeManager.removeWorktree(`${project.projectId}/list-all-1`)
+      await fixture.worktreeManager.removeWorktree("list-all-1")
     })
   })
 })
@@ -482,7 +487,7 @@ describe("Background delegation with isolation", () => {
   })
 
   describe("Worktree creation for isolated delegation", () => {
-    test("creates worktree at correct path with project-id/issue-id naming", async () => {
+    test("creates worktree at correct path with issue-id naming", async () => {
       if (!gitAvailable) return
 
       const project = await fixture.projectManager.createProject({
@@ -504,8 +509,8 @@ describe("Background delegation with isolation", () => {
       expect(result.ok).toBe(true)
       if (result.ok) {
         const worktree = result.value
-        // Verify naming convention: project-id/issue-id
-        expect(worktree.name).toBe(`${project.projectId}/${issueId}`)
+        // Verify naming convention: issue-id only (issue IDs already contain the project ID prefix)
+        expect(worktree.name).toBe(issueId)
         // Verify path is within worktree base
         const basePath = fixture.worktreeManager.getWorktreeBasePath()
         expect(basePath).not.toBeNull()
@@ -560,7 +565,7 @@ describe("Background delegation with isolation", () => {
 
       expect(result.ok).toBe(true)
       if (result.ok) {
-        expect(result.value.name).toBe(`${project.projectId}/bd-a3f8.1.2`)
+        expect(result.value.name).toBe("bd-a3f8.1.2")
         // Dots should be preserved in the name
         expect(result.value.name.includes(".")).toBe(true)
 
@@ -598,7 +603,7 @@ describe("Background delegation with isolation", () => {
         projectDir: project.projectDir,
         issueId: "notify-test",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         worktreePath: worktree.path,
         worktreeBranch: worktree.branch,
@@ -636,7 +641,7 @@ describe("Background delegation with isolation", () => {
         projectDir: fixture.testDir,
         issueId: "merge-test",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         worktreePath: "/tmp/worktree",
         worktreeBranch: "test-project-merge-test",
@@ -672,7 +677,7 @@ describe("Background delegation with isolation", () => {
         projectDir: fixture.testDir,
         issueId: "merge-test",
         discussionStrategyType: "fixedRound",
-        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0 }],
+        members: [{ agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" }],
         status: "completed",
         worktreePath: "/tmp/worktree",
         worktreeBranch: "test-project/merge-test",

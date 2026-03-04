@@ -9,7 +9,7 @@ import { z } from "zod"
 import type { Logger, OpencodeClient } from "../../utils/opencode-sdk/index.js"
 import type { DiscussionRound } from "../team-manager.js"
 import type { Result } from "../../utils/result/index.js"
-import { promptSmallModel } from "../../agents/small-model.js"
+import { promptSmallModel } from "../../agents/index.js"
 
 /**
  * Signal emitted by an individual agent indicating their convergence state.

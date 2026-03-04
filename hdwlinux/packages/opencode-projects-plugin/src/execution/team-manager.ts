@@ -31,6 +31,7 @@ import {
 import type {
   DelegationManager,
   CreateDelegationOptions,
+  Delegation,
 } from "./delegation-manager.js"
 import type { WorktreeManager } from "../vcs/index.js"
 import { TeamComposer, type TeamComposerConfig } from "./team-composer.js"
@@ -41,11 +42,13 @@ import { TeamNotifier } from "./team-notifier.js"
 /**
  * Role of a team member in multi-agent execution.
  *
- * - primary: Does the main implementation work, has access to worktree
+ * - primary: Does the main implementation work
  * - secondary: Reviews and provides feedback on primary's work
  * - devilsAdvocate: Critically analyzes for potential issues and edge cases
+ * - mediator: Injected dynamically when a discussion reaches an impasse after the arbiter fails;
+ *   reviews the full history and proposes a path forward
  */
-export type TeamMemberRole = "primary" | "secondary" | "devilsAdvocate"
+export type TeamMemberRole = "primary" | "secondary" | "devilsAdvocate" | "mediator"
 
 /**
  * Lifecycle status of a team.
@@ -78,6 +81,8 @@ export interface TeamMember {
   status: TeamMemberStatus
   /** Number of retry attempts after failure */
   retryCount: number
+  /** The prompt used for this member's delegation, stored for retry reuse */
+  prompt: string
 }
 
 /**
@@ -250,6 +255,14 @@ export class TeamManager {
 
   /** Pending completion promises for foreground mode */
   private completionPromises: Map<string, (team: Team) => void> = new Map()
+
+  /**
+   * Stores issue context for teams using sequential launch ordering.
+   *
+   * Secondary delegations are created after the primary completes, so the
+   * issue context must be retained in memory until that point.
+   */
+  private pendingIssueContexts: Map<string, string> = new Map()
 
   /**
    * @param log - Logger for diagnostic output
@@ -468,6 +481,7 @@ export class TeamManager {
         role,
         status: "pending",
         retryCount: 0,
+        prompt: "",
       }
     })
 
@@ -495,57 +509,79 @@ export class TeamManager {
   /**
    * Create delegations for all team members.
    *
-   * Each member gets a delegation with a role-specific prompt.
-   * Primary agent gets worktree access; others work in read-only mode.
+   * For sequential strategies, only the primary delegation is launched here.
+   * Secondary delegations are deferred until the primary completes so reviewers
+   * can inspect finished work immediately rather than polling for changes.
+   *
+   * For concurrent strategies, all delegations are launched immediately.
    */
   private async createMemberDelegations(
     team: Team,
     issueContext: string
   ): Promise<Result<void, TeamError>> {
-    for (const member of team.members) {
+    const isSequential = team.strategy?.memberLaunchOrdering === "sequential"
+
+    const membersToLaunch = isSequential
+      ? team.members.filter((m) => m.role === "primary")
+      : team.members
+
+    if (isSequential && team.members.length > 1) {
+      this.pendingIssueContexts.set(team.id, issueContext)
+    }
+
+    for (const member of membersToLaunch) {
       const prompt = this.buildMemberPrompt(team, member, issueContext)
+      member.prompt = prompt
 
-      const delegationOptions: CreateDelegationOptions = {
-        issueId: team.issueId,
-        prompt,
-        teamId: team.id,
-        role: member.role,
-        worktreePath: member.role === "primary" ? team.worktreePath : undefined,
-        worktreeBranch: team.worktreeBranch,
-        vcs: team.vcs,
-        agent: member.agent,
-        parentSessionId: team.parentSessionId,
-        parentAgent: team.parentAgent,
-        onComplete: (delegationId: string) =>
-          this.handleDelegationComplete(delegationId),
+      const result = await this.launchDelegation(team, member)
+      if (!result.ok) {
+        return result
       }
-
-      const delegationResult = await this.delegationManager.create(
-        team.projectId,
-        team.projectDir,
-        delegationOptions
-      )
-      if (!delegationResult.ok) {
-        return {
-          ok: false,
-          error: {
-            type: "persistence_failed",
-            teamId: team.id,
-            message: `Failed to create delegation: ${delegationResult.error.type}`,
-          },
-        }
-      }
-
-      const delegation = delegationResult.value
-      member.delegationId = delegation.id
-      member.sessionId = delegation.sessionId
-      member.status = "running"
-
-      // Track delegation -> team mapping
-      this.delegationToTeam.set(delegation.id, team.id)
     }
 
     return { ok: true, value: undefined }
+  }
+
+  /**
+   * Launch secondary delegations after the primary completes.
+   *
+   * Called by sequential strategies once the primary member finishes,
+   * so reviewers can inspect completed work rather than polling for changes.
+   */
+  private async launchSecondaryDelegations(team: Team): Promise<void> {
+    const issueContext = this.pendingIssueContexts.get(team.id)
+    if (!issueContext) return
+
+    this.pendingIssueContexts.delete(team.id)
+
+    const secondaryMembers = team.members.filter((m) => m.role !== "primary")
+    if (secondaryMembers.length === 0) return
+
+    await this.log.info(
+      `Team ${team.id}: primary complete, launching ${secondaryMembers.length} secondary delegation(s)`
+    )
+
+    for (const member of secondaryMembers) {
+      const prompt = this.buildMemberPrompt(team, member, issueContext)
+      member.prompt = prompt
+
+      const result = await this.launchDelegation(team, member)
+      if (!result.ok) {
+        const msg = "message" in result.error ? result.error.message : result.error.type
+        await this.log.error(
+          `Team ${team.id}: failed to create secondary delegation for ${member.agent}: ${msg}`
+        )
+        member.status = "failed"
+        team.results[member.agent] = {
+          agent: member.agent,
+          result: `Failed to create delegation: ${msg}`,
+          completedAt: this.clock.toISOString(),
+        }
+        continue
+      }
+    }
+
+    await this.save(team)
   }
 
   /**
@@ -621,6 +657,46 @@ export class TeamManager {
   }
 
   /**
+   * Resolves the team, member, and delegation for a given delegation ID.
+   *
+   * Returns `null` if any lookup fails, logging the reason at the appropriate level.
+   */
+  private async loadTeamForDelegation(
+    delegationId: string
+  ): Promise<{ team: Team; member: TeamMember; delegation: Delegation } | null> {
+    const teamId = this.delegationToTeam.get(delegationId)
+    if (!teamId) {
+      await this.log.debug(
+        `Delegation ${delegationId} not associated with a team`
+      )
+      return null
+    }
+
+    const teamResult = await this.get(teamId)
+    if (!teamResult.ok) {
+      await this.log.warn(
+        `Team ${teamId} not found for delegation ${delegationId}`
+      )
+      return null
+    }
+    const team = teamResult.value
+
+    const delegationResult = await this.delegationManager.get(delegationId)
+    if (!delegationResult.ok) {
+      await this.log.warn(`Delegation ${delegationId} not found`)
+      return null
+    }
+
+    const member = team.members.find((m) => m.delegationId === delegationId)
+    if (!member) {
+      await this.log.warn(`No member found for delegation ${delegationId}`)
+      return null
+    }
+
+    return { team, member, delegation: delegationResult.value }
+  }
+
+  /**
    * Handle delegation completion callback.
    *
    * Called when a member's delegation completes. Updates member status,
@@ -630,39 +706,11 @@ export class TeamManager {
    * @param delegationId - The completed delegation ID
    */
   async handleDelegationComplete(delegationId: string): Promise<void> {
-    const teamId = this.delegationToTeam.get(delegationId)
-    if (!teamId) {
-      await this.log.debug(
-        `Delegation ${delegationId} not associated with a team`
-      )
-      return
-    }
+    const loaded = await this.loadTeamForDelegation(delegationId)
+    if (!loaded) return
+    const { team, member, delegation } = loaded
 
-    const teamResult = await this.get(teamId)
-    if (!teamResult.ok) {
-      await this.log.warn(
-        `Team ${teamId} not found for delegation ${delegationId}`
-      )
-      return
-    }
-    const team = teamResult.value
-
-    // Get the delegation to check its status
-    const delegationResult = await this.delegationManager.get(delegationId)
-    if (!delegationResult.ok) {
-      await this.log.warn(`Delegation ${delegationId} not found`)
-      return
-    }
-    const delegation = delegationResult.value
-
-    // Find and update the member
-    const member = team.members.find((m) => m.delegationId === delegationId)
-    if (!member) {
-      await this.log.warn(`No member found for delegation ${delegationId}`)
-      return
-    }
-
-    // Update member status based on delegation status
+    // Update member status based on delegation outcome
     await this.updateMemberStatus(team, member, delegation)
     await this.save(team)
 
@@ -675,7 +723,16 @@ export class TeamManager {
       }
     }
 
-    // Check if all members complete
+    // For sequential strategies, launch secondary delegations once the primary finishes
+    if (
+      member.role === "primary" &&
+      team.strategy?.memberLaunchOrdering === "sequential" &&
+      this.pendingIssueContexts.has(team.id)
+    ) {
+      await this.launchSecondaryDelegations(team)
+    }
+
+    // Check if all members are done
     const allComplete = team.members.every(
       (m) => m.status === "completed" || m.status === "failed"
     )
@@ -685,16 +742,14 @@ export class TeamManager {
         (m) => m.status === "pending" || m.status === "running"
       )
       await this.log.info(
-        `Team ${teamId}: waiting for ${pending.length} more member(s)`
+        `Team ${team.id}: waiting for ${pending.length} more member(s)`
       )
       return
     }
 
     await this.log.info(
-      `Team ${teamId}: all members complete, proceeding to next phase`
+      `Team ${team.id}: all members complete, proceeding to next phase`
     )
-
-    // Finalize team
     await this.finalizeTeam(team)
   }
 
@@ -816,7 +871,6 @@ export class TeamManager {
   private async cleanupWorktreeOnFailure(team: Team): Promise<void> {
     if (!team.worktreeBranch) return
 
-    // Extract worktree name from branch (format: projectId/issueId)
     const worktreeName = team.worktreeBranch
 
     await this.log.info(
@@ -886,6 +940,7 @@ export class TeamManager {
         : {
             role: member.role === "devilsAdvocate" ? "devilsAdvocate" : "reviewer",
             agent: member.agent,
+            isConcurrent: team.strategy?.memberLaunchOrdering === "concurrent",
             issueContext,
             issueId: team.issueId,
             primaryAgent: primary?.agent || "unknown",
@@ -897,32 +952,21 @@ export class TeamManager {
   }
 
   /**
-   * Retry a failed member by creating a new delegation.
+   * Creates and tracks a delegation for a team member using `member.prompt`.
    *
-   * Appends a retry notice to the original prompt and creates a fresh delegation.
+   * On success, updates `member.delegationId`, `member.sessionId`, `member.status`,
+   * and registers the delegation in `delegationToTeam`.
    */
-  private async retryMember(team: Team, member: TeamMember): Promise<void> {
-    if (!member.delegationId) return
-
-    // Get the original delegation for context
-    const originalDelegationResult = await this.delegationManager.get(
-      member.delegationId
-    )
-    if (!originalDelegationResult.ok) return
-    const originalDelegation = originalDelegationResult.value
-
-    // Remove old mapping
-    this.delegationToTeam.delete(member.delegationId)
-
-    // Create a new delegation
+  private async launchDelegation(
+    team: Team,
+    member: TeamMember
+  ): Promise<Result<void, TeamError>> {
     const delegationOptions: CreateDelegationOptions = {
       issueId: team.issueId,
-      prompt:
-        originalDelegation.prompt +
-        "\n\n[RETRY: Previous attempt failed. Please try again.]",
+      prompt: member.prompt,
       teamId: team.id,
       role: member.role,
-      worktreePath: member.role === "primary" ? team.worktreePath : undefined,
+      worktreePath: team.worktreePath,
       worktreeBranch: team.worktreeBranch,
       vcs: team.vcs,
       agent: member.agent,
@@ -932,25 +976,47 @@ export class TeamManager {
         this.handleDelegationComplete(delegationId),
     }
 
-    const newDelegationResult = await this.delegationManager.create(
+    const delegationResult = await this.delegationManager.create(
       team.projectId,
       team.projectDir,
       delegationOptions
     )
-    if (!newDelegationResult.ok) {
-      await this.log.error(
-        `Failed to create retry delegation: ${newDelegationResult.error.type}`
-      )
-      return
+    if (!delegationResult.ok) {
+      return {
+        ok: false,
+        error: {
+          type: "persistence_failed",
+          teamId: team.id,
+          message: `Failed to create delegation: ${delegationResult.error.type}`,
+        },
+      }
     }
-    const newDelegation = newDelegationResult.value
 
-    member.delegationId = newDelegation.id
-    member.sessionId = newDelegation.sessionId
+    const delegation = delegationResult.value
+    member.delegationId = delegation.id
+    member.sessionId = delegation.sessionId
     member.status = "running"
+    this.delegationToTeam.set(delegation.id, team.id)
 
-    // Track new delegation
-    this.delegationToTeam.set(newDelegation.id, team.id)
+    return { ok: true, value: undefined }
+  }
+
+  /**
+   * Retry a failed member by creating a new delegation using the stored prompt.
+   */
+  private async retryMember(team: Team, member: TeamMember): Promise<void> {
+    // Remove old delegation mapping before creating a new one
+    if (member.delegationId) {
+      this.delegationToTeam.delete(member.delegationId)
+    }
+
+    const result = await this.launchDelegation(team, member)
+    if (!result.ok) {
+      const msg = "message" in result.error ? result.error.message : result.error.type
+      await this.log.error(
+        `Failed to create retry delegation: ${msg}`
+      )
+    }
   }
 
   /**

@@ -163,8 +163,8 @@ describe("Timeout Scenarios Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "timeout", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "timeout", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "completed", // Team can still complete if some members timeout
         results: {
@@ -209,8 +209,8 @@ describe("Timeout Scenarios Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "timeout", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "timeout", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "timeout", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "timeout", retryCount: 0, prompt: "" },
         ],
         status: "failed",
         results: {},
@@ -297,7 +297,7 @@ describe("Timeout Scenarios Integration", () => {
         issueId: "issue-1",
         discussionStrategyType: "fixedRound",
         members: [
-          { agent: "flaky-agent", role: "primary", status: "running", retryCount: 3 },
+          { agent: "flaky-agent", role: "primary", status: "running", retryCount: 3, prompt: "" },
         ],
         status: "running",
         results: {},

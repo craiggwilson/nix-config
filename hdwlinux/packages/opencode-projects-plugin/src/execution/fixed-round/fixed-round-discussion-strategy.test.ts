@@ -2,19 +2,59 @@
  * Tests for FixedRoundDiscussionStrategy
  */
 
-import { describe, test, expect } from "bun:test"
+import { describe, test, expect, mock } from "bun:test"
 import {
   FixedRoundDiscussionStrategy,
   type FixedRoundStrategyConfig,
 } from "./fixed-round-discussion-strategy.js"
+import { buildDiscussionContext } from "../discussion-context.js"
 import { createMockLogger } from "../../utils/testing/index.js"
 import type { Team, DiscussionRound } from "../team-manager.js"
+import type { Clock } from "../../utils/clock/index.js"
 
 const mockLogger = createMockLogger()
 
 const defaultConfig: FixedRoundStrategyConfig = {
   rounds: 2,
   roundTimeoutMs: 5 * 60 * 1000,
+}
+
+/**
+ * Create a mock clock that advances time predictably.
+ */
+function createMockClock(startTime = 0): Clock {
+  let time = startTime
+  return {
+    now: () => time,
+    toISOString: () => new Date(time).toISOString(),
+    sleep: async (ms: number) => { time += ms },
+  }
+}
+
+/**
+ * Create a mock client that returns a canned response after one poll.
+ */
+function createMockClientWithResponse(responseText: string) {
+  let promptCalled = false
+  return {
+    session: {
+      prompt: async () => {
+        promptCalled = true
+        return {}
+      },
+      messages: async () => {
+        if (!promptCalled) return { data: [] }
+        return {
+          data: [
+            {
+              info: { role: "assistant" },
+              parts: [{ type: "text", text: responseText }],
+            },
+          ],
+        }
+      },
+    },
+  }
 }
 
 describe("FixedRoundDiscussionStrategy", () => {
@@ -33,8 +73,8 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -53,7 +93,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         startedAt: "2024-01-01T00:00:00Z",
       }
 
-      const context = coordinator.buildDiscussionContext(team, 1, [])
+      const context = buildDiscussionContext(team, 1, [])
 
       expect(context).toContain("## Primary Agent's Implementation")
       expect(context).toContain("Primary implementation details")
@@ -76,8 +116,8 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -94,7 +134,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         { round: 1, responses: { coder: "Round 1 coder response", reviewer: "Round 1 reviewer response" } },
       ]
 
-      const context = coordinator.buildDiscussionContext(team, 2, discussionHistory)
+      const context = buildDiscussionContext(team, 2, discussionHistory)
 
       expect(context).toContain("## Previous Discussion")
       expect(context).toContain("### Round 1")
@@ -118,7 +158,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "coder", role: "primary", status: "completed", retryCount: 0 },
+          { agent: "coder", role: "primary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -128,7 +168,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         startedAt: "2024-01-01T00:00:00Z",
       }
 
-      const context = coordinator.buildDiscussionContext(team, 1, [])
+      const context = buildDiscussionContext(team, 1, [])
 
       expect(context).not.toContain("## Previous Discussion")
     })
@@ -147,8 +187,8 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "secondary-agent", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "primary-agent", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "secondary-agent", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -159,7 +199,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         startedAt: "2024-01-01T00:00:00Z",
       }
 
-      const context = coordinator.buildDiscussionContext(team, 1, [])
+      const context = buildDiscussionContext(team, 1, [])
 
       // Primary should be in its own section, not in Team Findings
       expect(context).toContain("## Primary Agent's Implementation")
@@ -185,9 +225,9 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "implementer", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "implementer", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "critic", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -199,7 +239,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         startedAt: "2024-01-01T00:00:00Z",
       }
 
-      const context = coordinator.buildDiscussionContext(team, 1, [])
+      const context = buildDiscussionContext(team, 1, [])
 
       // Devil's advocate should be in Team Findings
       expect(context).toContain("### critic")
@@ -223,9 +263,9 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0 },
-          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0 },
+          { agent: "typescript-expert", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "code-reviewer", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "security-expert", role: "devilsAdvocate", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -237,7 +277,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         startedAt: "2024-01-01T00:00:00Z",
       }
 
-      const context = coordinator.buildDiscussionContext(team, 1, [])
+      const context = buildDiscussionContext(team, 1, [])
 
       // Verify primary agent section
       expect(context).toContain("## Primary Agent's Implementation")
@@ -265,8 +305,8 @@ describe("FixedRoundDiscussionStrategy", () => {
         issueId: "issue-1",
           discussionStrategyType: "fixedRound",
         members: [
-          { agent: "agent-a", role: "primary", status: "completed", retryCount: 0 },
-          { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0 },
+          { agent: "agent-a", role: "primary", status: "completed", retryCount: 0, prompt: "" },
+          { agent: "agent-b", role: "secondary", status: "completed", retryCount: 0, prompt: "" },
         ],
         status: "discussing",
         results: {
@@ -285,7 +325,7 @@ describe("FixedRoundDiscussionStrategy", () => {
         { round: 2, responses: { "agent-a": "Round 2 A", "agent-b": "Round 2 B" } },
       ]
 
-      const context = coordinator.buildDiscussionContext(team, 3, discussionHistory)
+      const context = buildDiscussionContext(team, 3, discussionHistory)
 
       // Verify all previous rounds are included
       expect(context).toContain("## Previous Discussion")
@@ -297,4 +337,5 @@ describe("FixedRoundDiscussionStrategy", () => {
       expect(context).toContain("Round 2 B")
     })
   })
+
 })

@@ -165,8 +165,8 @@ export class TeamNotifier {
 
     if (team.vcs === "jj") {
       return `Review and merge the changes from the jj workspace:
-1. Review: \`jj diff --from main --to ${branch}\`
-2. Squash: \`jj squash --from ${branch}\` (from main workspace)
+1. Review: \`jj diff --from main --to ${branch}@\`
+2. Squash: \`jj squash --from ${branch}@\` (from main workspace)
 3. Clean up: \`jj workspace forget ${branch}\``
     } else {
       return `Review and merge the changes from the git worktree:

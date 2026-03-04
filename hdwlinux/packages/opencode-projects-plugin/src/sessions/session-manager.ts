@@ -99,6 +99,48 @@ export interface CaptureSessionOptions {
 }
 
 /**
+ * Options for writing an incremental session snapshot.
+ *
+ * Snapshots are written on every `session.idle` event for the orchestrator
+ * session. They are cheap — no model calls, just raw state.
+ */
+export interface WriteSnapshotOptions {
+  /** Session ID from OpenCode */
+  sessionId: string
+  /** ISO timestamp of the snapshot */
+  timestamp: string
+  /** Current project state summary */
+  projectState: string
+  /** Last N messages from the conversation, formatted as text */
+  recentMessages: string
+}
+
+/**
+ * Formats the content of a session snapshot file.
+ *
+ * @param options - Snapshot options
+ * @returns Markdown content for the snapshot file
+ */
+function formatSnapshotContent(options: WriteSnapshotOptions): string {
+  const { sessionId, timestamp, projectState, recentMessages } = options
+  const lines: string[] = []
+
+  lines.push(`# Session Snapshot`)
+  lines.push("")
+  lines.push(`**Session ID:** ${sessionId}`)
+  lines.push(`**Updated:** ${timestamp}`)
+  lines.push("")
+  lines.push("## Project State")
+  lines.push(projectState)
+  lines.push("")
+  lines.push("## Recent Conversation")
+  lines.push(recentMessages || "*No messages yet*")
+  lines.push("")
+
+  return lines.join("\n")
+}
+
+/**
  * Manages session history for a project.
  *
  * The SessionManager maintains a chronological record of all sessions,
@@ -341,6 +383,73 @@ export class SessionManager {
    */
   getRecentSessions(limit: number): SessionSummary[] {
     return this.index.sessions.slice(0, limit)
+  }
+
+  /**
+   * Writes a lightweight incremental snapshot for the current session.
+   *
+   * Called on every `session.idle` event for the orchestrator session.
+   * Overwrites the snapshot file each time — always reflects current state.
+   * Does NOT call the small model; this is intentionally cheap.
+   *
+   * The snapshot file is written to `sessions/<sessionId>.md` and the
+   * session index is updated to reference it.
+   *
+   * @param options - Snapshot options
+   */
+  async writeSnapshot(options: WriteSnapshotOptions): Promise<void> {
+    await this.ensureSessionsDir()
+
+    const { sessionId, timestamp, projectState, recentMessages } = options
+    const snapshotFilename = `${sessionId}.md`
+    const snapshotPath = path.join(this.getSessionsDir(), snapshotFilename)
+
+    const content = formatSnapshotContent({ sessionId, timestamp, projectState, recentMessages })
+    await fs.writeFile(snapshotPath, content, "utf-8")
+
+    // Update the index to reference the current snapshot
+    await this.updateSnapshotIndex(sessionId, snapshotFilename, timestamp)
+
+    await this.log.debug(`Wrote session snapshot: ${snapshotFilename}`)
+  }
+
+  /**
+   * Updates the session index to reference the current snapshot file.
+   *
+   * Reads the existing index, updates the current session reference, and
+   * writes it back. This is a lightweight update — no session history is
+   * modified.
+   *
+   * @param sessionId - The orchestrator session ID
+   * @param snapshotFilename - The snapshot filename
+   * @param timestamp - ISO timestamp of the snapshot
+   */
+  private async updateSnapshotIndex(
+    sessionId: string,
+    snapshotFilename: string,
+    timestamp: string,
+  ): Promise<void> {
+    const indexPath = this.getIndexPath()
+
+    let content: string
+    try {
+      content = await fs.readFile(indexPath, "utf-8")
+    } catch {
+      content = ""
+    }
+
+    const currentRef = `**Current session:** [${sessionId}](./${snapshotFilename}) (updated ${timestamp})`
+
+    // Replace or prepend the current session reference
+    const currentRefPattern = /^\*\*Current session:\*\*.*$/m
+    if (currentRefPattern.test(content)) {
+      content = content.replace(currentRefPattern, currentRef)
+    } else {
+      // Prepend to the index
+      content = `${currentRef}\n\n${content}`
+    }
+
+    await fs.writeFile(indexPath, content, "utf-8")
   }
 
   /**

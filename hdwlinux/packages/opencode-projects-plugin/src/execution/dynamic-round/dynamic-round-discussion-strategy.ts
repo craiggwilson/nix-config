@@ -5,13 +5,16 @@
  * or hits the hard cap on rounds.
  */
 
-import type { Logger, OpencodeClient, MessageItem, Part } from "../../utils/opencode-sdk/index.js"
+import type { Logger, OpencodeClient } from "../../utils/opencode-sdk/index.js"
 import type { Team, TeamMember, DiscussionRound } from "../team-manager.js"
 import type { Clock } from "../../utils/clock/index.js"
 import type { TeamDiscussionStrategy } from "../discussion-strategy.js"
 import { systemClock } from "../../utils/clock/index.js"
 import { PermissionManager } from "../permission-manager.js"
 import { ConvergenceAssessor } from "./convergence-assessor.js"
+import { extractSignal, parseAgentSignals, countSignals, ensureSignal } from "../convergence-signal.js"
+import { buildDiscussionContext } from "../discussion-context.js"
+import { waitForResponse } from "../response-poller.js"
 
 /**
  * Configuration for DynamicRoundDiscussionStrategy.
@@ -19,10 +22,14 @@ import { ConvergenceAssessor } from "./convergence-assessor.js"
 export interface DynamicRoundStrategyConfig {
   /** Hard cap on discussion rounds regardless of convergence state */
   maxRounds: number
+  /** Minimum rounds before convergence assessment fires, even if all agents signal CONVERGED */
+  minRounds?: number
   /** Maximum time to wait for each agent's response per round (milliseconds) */
   roundTimeoutMs: number
   /** Timeout for small model convergence assessment queries (milliseconds) */
   smallModelTimeoutMs: number
+  /** Maximum response size in characters before truncation (0 or omitted = no limit) */
+  maxResponseChars?: number
   /** Clock for timing operations (optional, uses system clock) */
   clock?: Clock
 }
@@ -42,6 +49,7 @@ export interface DynamicRoundStrategyConfig {
  */
 export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
   readonly type = "dynamicRound" as const
+  readonly memberLaunchOrdering = "sequential" as const
 
   private log: Logger
   private client: OpencodeClient
@@ -88,12 +96,18 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
       return []
     }
 
+    const minRounds = this.config.minRounds ?? 2
+    const startTime = this.clock.now()
+
     await this.log.info(
-      `Team ${team.id}: starting convergence discussion (max ${this.config.maxRounds} rounds)`
+      `Team ${team.id}: starting convergence discussion (min ${minRounds}, max ${this.config.maxRounds} rounds)`
     )
 
     const discussionHistory: DiscussionRound[] = [...team.discussionHistory]
     let round = 1
+    let convergenceAssessmentCount = 0
+    let arbiterInvocations = 0
+    let mediatorInvocations = 0
 
     while (round <= this.config.maxRounds) {
       await this.log.info(
@@ -119,7 +133,9 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
             round,
             context
           )
-          roundResponses[member.agent] = response
+          const normalized = await this.normalizeAgentResponse(response, member.agent, team.id)
+          const truncated = await this.truncateResponseIfNeeded(normalized, member.agent, team.id)
+          roundResponses[member.agent] = truncated
           await this.log.debug(
             `Team ${team.id}: ${member.agent} responded to round ${round}`
           )
@@ -132,6 +148,8 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
         }
       }
 
+      await this.logRoundMetrics(round, roundResponses, team.id)
+
       const completedRound: DiscussionRound = { round, responses: roundResponses }
       discussionHistory.push(completedRound)
 
@@ -139,7 +157,18 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
         await onProgress(discussionHistory)
       }
 
+      // Skip convergence assessment until minRounds have completed to ensure
+      // agents have had a meaningful exchange before early termination is possible.
+      if (round < minRounds) {
+        await this.log.info(
+          `Team ${team.id}: round ${round} complete (minRounds=${minRounds}, skipping convergence assessment)`
+        )
+        round++
+        continue
+      }
+
       // Assess convergence after collecting all responses
+      convergenceAssessmentCount++
       const assessment = await this.assessor.assess(
         completedRound,
         round,
@@ -159,11 +188,24 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
         await this.log.info(
           `Team ${team.id}: team stuck after ${round} round(s), invoking arbiter`
         )
+        arbiterInvocations++
         const arbiterRound = await this.invokeArbiter(team, round, discussionHistory)
         if (arbiterRound) {
           discussionHistory.push(arbiterRound)
           if (onProgress) {
             await onProgress(discussionHistory)
+          }
+        } else {
+          await this.log.info(
+            `Team ${team.id}: arbiter failed, invoking mediator as last resort`
+          )
+          mediatorInvocations++
+          const mediatorRound = await this.invokeMediator(team, round, discussionHistory)
+          if (mediatorRound) {
+            discussionHistory.push(mediatorRound)
+            if (onProgress) {
+              await onProgress(discussionHistory)
+            }
           }
         }
         break
@@ -178,7 +220,10 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
       )
     }
 
-    await this.log.info(`Team ${team.id}: convergence discussion complete`)
+    const durationMs = this.clock.now() - startTime
+    await this.log.info(
+      `Team ${team.id}: convergence discussion complete totalRounds=${round <= this.config.maxRounds ? round : this.config.maxRounds} convergenceAssessments=${convergenceAssessmentCount} arbiterInvocations=${arbiterInvocations} mediatorInvocations=${mediatorInvocations} durationMs=${durationMs}`
+    )
     return discussionHistory
   }
 
@@ -187,6 +232,7 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
    *
    * The prompt instructs the agent to include an explicit convergence signal
    * (CONVERGED / STUCK / CONTINUE) so the assessor can parse team state.
+   * On timeout, returns a default CONTINUE response rather than throwing.
    */
   private async sendConvergencePrompt(
     team: Team,
@@ -207,7 +253,18 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
       },
     })
 
-    return await this.waitForResponse(member.sessionId!, this.config.roundTimeoutMs)
+    try {
+      return await waitForResponse(this.client, member.sessionId!, this.config.roundTimeoutMs, this.clock, this.log)
+    } catch (error) {
+      // Only degrade gracefully on timeout — other errors (network, auth) should propagate
+      if (error instanceof Error && error.message.startsWith("Timeout waiting for response")) {
+        await this.log.warn(
+          `Team ${team.id}: ${member.agent} timed out in round ${round}, defaulting to CONTINUE`
+        )
+        return "CONTINUE"
+      }
+      throw error
+    }
   }
 
   /**
@@ -241,7 +298,7 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
         },
       })
 
-      const response = await this.waitForResponse(primary.sessionId, this.config.roundTimeoutMs)
+      const response = await waitForResponse(this.client, primary.sessionId, this.config.roundTimeoutMs, this.clock, this.log)
       return {
         round: stuckAtRound + 1,
         responses: { [`${primary.agent} (arbiter)`]: response },
@@ -254,107 +311,169 @@ export class DynamicRoundDiscussionStrategy implements TeamDiscussionStrategy {
   }
 
   /**
-   * Wait for a response from a session with timeout.
+   * Invoke a neutral mediator in a fresh session to break a deadlock after the arbiter fails.
    *
-   * Polls the session for new assistant messages until a response is found
-   * or timeout is reached.
-   *
-   * @param sessionId - The session to poll
-   * @param timeoutMs - Maximum time to wait
-   * @returns The response text
-   * @throws Error if timeout is reached
+   * Unlike the arbiter (which re-uses the primary's session), the mediator is a fresh
+   * session with no prior context bias. It reviews the full discussion history and
+   * proposes a concrete path forward without making binding decisions.
    */
-  private async waitForResponse(
-    sessionId: string,
-    timeoutMs: number
+  private async invokeMediator(
+    team: Team,
+    stuckAtRound: number,
+    discussionHistory: DiscussionRound[]
+  ): Promise<DiscussionRound | null> {
+    const primary = team.members.find((m) => m.role === "primary")
+    const mediatorAgent = primary?.agent
+
+    try {
+      const sessionResult = await this.client.session.create({
+        body: { title: `Mediator: ${team.issueId}` },
+      })
+      const sessionId = sessionResult.data?.id
+      if (!sessionId) {
+        await this.log.warn(`Team ${team.id}: mediator session creation returned no ID`)
+        return null
+      }
+
+      const prompt = buildMediatorPrompt(team.issueId, stuckAtRound, discussionHistory)
+      const toolPermissions = PermissionManager.resolvePermissions("mediator")
+
+      await this.client.session.prompt({
+        path: { id: sessionId },
+        body: {
+          agent: mediatorAgent,
+          parts: [{ type: "text", text: prompt }],
+          noReply: false,
+          tools: toolPermissions,
+        },
+      })
+
+      const response = await waitForResponse(this.client, sessionId, this.config.roundTimeoutMs, this.clock, this.log)
+
+      // Clean up the temporary mediator session
+      await this.client.session.delete({ path: { id: sessionId } }).catch(() => {
+        // Non-fatal: session cleanup failure should not block result
+      })
+
+      return {
+        round: stuckAtRound + 1,
+        responses: { "mediator": response },
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      await this.log.warn(`Team ${team.id}: mediator invocation failed: ${errorMsg}`)
+      return null
+    }
+  }
+
+  /**
+   * Validate and normalize an agent's response to ensure it contains
+   * a valid convergence signal on its own line.
+   *
+   * If the signal is missing, appends CONTINUE and logs a warning.
+   * If the signal appears mid-response (not on its own line), normalizes
+   * to CONTINUE since the intent is ambiguous.
+   *
+   * @param response - The raw agent response
+   * @param agentName - Agent name for logging context
+   * @param teamId - Team ID for logging context
+   * @returns Normalized response with valid signal on its own line
+   */
+  private async normalizeAgentResponse(
+    response: string,
+    agentName: string,
+    teamId: string
   ): Promise<string> {
-    const startTime = this.clock.now()
-    const pollInterval = 2000
-
-    while (this.clock.now() - startTime < timeoutMs) {
-      await this.clock.sleep(pollInterval)
-
-      try {
-        const messages = await this.client.session.messages({
-          path: { id: sessionId },
-        })
-
-        const messageData: MessageItem[] | undefined = messages.data
-        if (!messageData || messageData.length === 0) {
-          continue
-        }
-
-        const assistantMessages = messageData.filter(
-          (m) => m.info?.role === "assistant"
-        )
-        if (assistantMessages.length === 0) {
-          continue
-        }
-
-        const lastMessage = assistantMessages[assistantMessages.length - 1]
-        const parts: Part[] = lastMessage.parts || []
-        const textParts = parts.filter((p) => p.type === "text")
-        const text = textParts.map((p) => p.text || "").join("\n")
-
-        if (text && text.length > 0) {
-          return text
-        }
-      } catch (error) {
-        await this.log.debug(`Error polling session ${sessionId}: ${error}`)
-      }
+    if (extractSignal(response) !== undefined) {
+      return response
     }
 
-    throw new Error(`Timeout waiting for response after ${timeoutMs / 1000}s`)
-  }
-}
-
-/**
- * Build context for a convergence discussion round.
- *
- * Assembles context from primary agent's work, other agents' findings,
- * and all previous discussion rounds.
- */
-export function buildDiscussionContext(
-  team: Team,
-  round: number,
-  discussionHistory: DiscussionRound[]
-): string {
-  const lines: string[] = []
-
-  const primary = team.members.find((m) => m.role === "primary")
-  if (primary && team.results[primary.agent]) {
-    lines.push("## Primary Agent's Implementation")
-    lines.push("")
-    lines.push(team.results[primary.agent].result)
-    lines.push("")
-  }
-
-  lines.push("## Team Findings")
-  lines.push("")
-  for (const member of team.members) {
-    if (member.role !== "primary" && team.results[member.agent]) {
-      lines.push(`### ${member.agent}`)
-      lines.push("")
-      lines.push(team.results[member.agent].result)
-      lines.push("")
+    // Signal appears somewhere in the response but not on its own line
+    const VALID_SIGNALS = ["CONVERGED", "STUCK", "CONTINUE"]
+    const hasEmbeddedSignal = VALID_SIGNALS.some((s) => response.includes(s))
+    if (hasEmbeddedSignal) {
+      await this.log.warn(
+        `Team ${teamId}: ${agentName} convergence signal not on own line, normalizing to CONTINUE`
+      )
+    } else {
+      await this.log.warn(
+        `Team ${teamId}: ${agentName} missing convergence signal, defaulting to CONTINUE`
+      )
     }
+
+    return ensureSignal(response, "CONTINUE")
   }
 
-  if (round > 1 && discussionHistory.length > 0) {
-    lines.push("## Previous Discussion")
-    lines.push("")
-    for (const prevRound of discussionHistory) {
-      lines.push(`### Round ${prevRound.round}`)
-      lines.push("")
-      for (const [agent, response] of Object.entries(prevRound.responses)) {
-        lines.push(`**${agent}:**`)
-        lines.push(response)
-        lines.push("")
-      }
+  /**
+   * Truncate an agent response if it exceeds the configured size threshold,
+   * while preserving the convergence signal on the last line.
+   *
+   * No-op when maxResponseChars is not configured or response is within limit.
+   *
+   * @param response - The agent response (should already be normalized)
+   * @param agentName - Agent name for logging context
+   * @param teamId - Team ID for logging context
+   * @returns Truncated response with signal preserved, or original if within limit
+   */
+  private async truncateResponseIfNeeded(
+    response: string,
+    agentName: string,
+    teamId: string
+  ): Promise<string> {
+    const maxChars = this.config.maxResponseChars
+    if (!maxChars || maxChars <= 0 || response.length <= maxChars) {
+      return response
     }
+
+    const lines = response.split("\n")
+    const lastLine = lines[lines.length - 1].trim()
+    const VALID_SIGNALS = ["CONVERGED", "STUCK", "CONTINUE"]
+    const hasSignalOnLastLine = VALID_SIGNALS.includes(lastLine)
+
+    const body = hasSignalOnLastLine ? lines.slice(0, -1).join("\n") : response
+    const signal = hasSignalOnLastLine ? lastLine : "CONTINUE"
+    // Reserve space for the truncation marker and signal
+    const truncatedBody = body.substring(0, maxChars - 50)
+
+    await this.log.info(
+      `Team ${teamId}: ${agentName} response truncated from ${response.length} to ${truncatedBody.length} chars`
+    )
+
+    return `${truncatedBody}\n[... truncated ...]\n${signal}`
   }
 
-  return lines.join("\n")
+  /**
+   * Log convergence signal metrics for a completed discussion round.
+   *
+   * Parses signals from all agent responses and logs a summary with
+   * per-agent breakdown for observability.
+   *
+   * @param round - Round number
+   * @param responses - Agent responses keyed by agent name
+   * @param teamId - Team ID for logging context
+   */
+  private async logRoundMetrics(
+    round: number,
+    responses: Record<string, string>,
+    teamId: string
+  ): Promise<void> {
+    const signals = parseAgentSignals(responses)
+    const counts = countSignals(signals)
+    const total = Object.keys(responses).length
+    const convergenceRate = total > 0 ? ((counts.CONVERGED / total) * 100).toFixed(1) : "0.0"
+
+    await this.log.info(
+      `Team ${teamId}: round ${round} metrics converged=${counts.CONVERGED}/${total} (${convergenceRate}%) stuck=${counts.STUCK} continue=${counts.CONTINUE} unknown=${counts.UNKNOWN}`
+    )
+
+    const agentSignalStr = Object.entries(signals)
+      .map(([agent, signal]) => `${agent}=${signal ?? "UNKNOWN"}`)
+      .join(" ")
+    await this.log.debug(
+      `Team ${teamId}: round ${round} agent signals ${agentSignalStr}`
+    )
+  }
+
 }
 
 /**
@@ -388,9 +507,11 @@ As ${agentName}, provide your updated analysis considering:
 
 End your response with exactly one of these signals on its own line:
 
-**CONVERGED** - You agree with the current direction and have no blocking concerns
-**STUCK** - You have unresolved concerns that are not being addressed by others
+**CONVERGED** - You have no remaining blockers. For the primary, this means you are satisfied with the outcome and believe the work is sound. For the devil's advocate, this means you have exhausted your objections and cannot find further reason to prevent convergence — not that you agree, but that you have no remaining blockers.
+**STUCK** - There is a blocker the primary has not addressed. Use this to veto convergence until the issue is resolved.
 **CONTINUE** - You have remaining points but are making progress
+
+Note: The discussion ends only when BOTH the primary AND the devil's advocate signal CONVERGED. Do not signal CONVERGED out of politeness or to end the discussion — only signal it when you have genuinely run out of objections or concerns.
 
 Keep response focused and actionable.`
 }
@@ -406,14 +527,7 @@ export function buildArbiterPrompt(
   stuckAtRound: number,
   discussionHistory: DiscussionRound[]
 ): string {
-  const historyText = discussionHistory
-    .map((r) => {
-      const responses = Object.entries(r.responses)
-        .map(([agent, response]) => `**${agent}:**\n${response}`)
-        .join("\n\n")
-      return `### Round ${r.round}\n\n${responses}`
-    })
-    .join("\n\n")
+  const historyText = buildHistoryText(discussionHistory)
 
   return `# Arbiter Decision Required
 
@@ -435,4 +549,55 @@ You are the primary agent and final decision-maker. Review the full discussion a
 4. Explain your reasoning clearly
 
 Your decision is final. All team members will accept it. Be decisive and specific.`
+}
+
+/**
+ * Build the mediator prompt for a neutral agent to propose a path forward.
+ *
+ * The mediator is a last resort invoked in a fresh session when the arbiter
+ * fails to break a deadlock. Unlike the arbiter, the mediator does not make
+ * binding decisions — it identifies the root of the disagreement and proposes
+ * a concrete path forward that the team can act on.
+ */
+export function buildMediatorPrompt(
+  issueId: string,
+  stuckAtRound: number,
+  discussionHistory: DiscussionRound[]
+): string {
+  const historyText = buildHistoryText(discussionHistory)
+
+  return `# Mediation Required
+
+## Issue: ${issueId}
+
+A team of agents has been unable to resolve a disagreement after ${stuckAtRound} discussion round(s). The primary agent's arbiter attempt also failed to break the deadlock. You are being brought in as a neutral mediator.
+
+## Full Discussion History
+
+${historyText}
+
+## Your Role as Mediator
+
+You are a neutral third party with no prior involvement in this discussion. Your job is not to pick a winner, but to unblock the team. Review the full history and:
+
+1. Identify the root cause of the disagreement (what is the team actually stuck on?)
+2. Separate factual disputes from preference disputes
+3. Propose a concrete, actionable path forward that addresses the core concern
+4. Explain why your proposed path is reasonable given the constraints
+
+Be specific and practical. The team needs a clear next step, not a summary of the problem.`
+}
+
+/**
+ * Format discussion history rounds into a readable text block.
+ */
+function buildHistoryText(discussionHistory: DiscussionRound[]): string {
+  return discussionHistory
+    .map((r) => {
+      const responses = Object.entries(r.responses)
+        .map(([agent, response]) => `**${agent}:**\n${response}`)
+        .join("\n\n")
+      return `### Round ${r.round}\n\n${responses}`
+    })
+    .join("\n\n")
 }

@@ -183,7 +183,7 @@ describe("createSafeWorktreeName", () => {
     const result = createSafeWorktreeName("my-project", "issue-123")
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.value).toBe("my-project/issue-123")
+      expect(result.value).toBe("issue-123")
     }
   })
 
@@ -191,7 +191,7 @@ describe("createSafeWorktreeName", () => {
     const result = createSafeWorktreeName("project-abc", "bd-a3f8.1.2")
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.value).toBe("project-abc/bd-a3f8.1.2")
+      expect(result.value).toBe("bd-a3f8.1.2")
     }
   })
 

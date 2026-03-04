@@ -31,23 +31,39 @@ export { TeamNotifier } from "./team-notifier.js"
 export { PermissionManager } from "./permission-manager.js"
 export type { ToolPermissions } from "./permission-manager.js"
 
-export { FixedRoundDiscussionStrategy } from "./fixed-round/index.js"
-export type { FixedRoundStrategyConfig } from "./fixed-round/index.js"
+export { FixedRoundDiscussionStrategy } from "./fixed-round/fixed-round-discussion-strategy.js"
+export type { FixedRoundStrategyConfig } from "./fixed-round/fixed-round-discussion-strategy.js"
 
-export { DynamicRoundDiscussionStrategy, ConvergenceAssessor } from "./dynamic-round/index.js"
+export { DynamicRoundDiscussionStrategy } from "./dynamic-round/dynamic-round-discussion-strategy.js"
+export type { DynamicRoundStrategyConfig } from "./dynamic-round/dynamic-round-discussion-strategy.js"
+
+export { ConvergenceAssessor } from "./dynamic-round/convergence-assessor.js"
 export type {
-  DynamicRoundStrategyConfig,
   ConvergenceAssessorConfig,
   ConvergenceAssessment,
   AgentConvergenceSignal,
   TeamConvergenceState,
-} from "./dynamic-round/index.js"
+} from "./dynamic-round/convergence-assessor.js"
 
-export { RealtimeDiscussionStrategy, InboxManager } from "./realtime/index.js"
+export {
+  extractSignal,
+  hasValidSignal,
+  ensureSignal,
+  parseAgentSignals,
+  countSignals,
+} from "./convergence-signal.js"
+export type { ConvergenceSignal } from "./convergence-signal.js"
+
+export { waitForResponse } from "./response-poller.js"
+export { buildDiscussionContext } from "./discussion-context.js"
+
+export { RealtimeDiscussionStrategy } from "./realtime/realtime-discussion-strategy.js"
+export type { RealtimeStrategyConfig } from "./realtime/realtime-discussion-strategy.js"
+
+export { InboxManager } from "./realtime/inbox-manager.js"
 export type {
-  RealtimeStrategyConfig,
   InboxManagerConfig,
   InboxMessage,
   MessageType,
   ReadResult,
-} from "./realtime/index.js"
+} from "./realtime/inbox-manager.js"

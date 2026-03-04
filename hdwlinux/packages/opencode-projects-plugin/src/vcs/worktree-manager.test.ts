@@ -87,7 +87,7 @@ describe("WorktreeManager", () => {
 
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.value.name).toBe("test-project/issue-123")
+      expect(result.value.name).toBe("issue-123")
       expect(result.value.isMain).toBe(false)
 
       const stat = await fs.stat(result.value.path)
@@ -102,11 +102,11 @@ describe("WorktreeManager", () => {
 
     await manager.createIsolatedWorktree({
       projectId: "project-a",
-      issueId: "issue-1",
+      issueId: "project-a-issue-1",
     })
     await manager.createIsolatedWorktree({
       projectId: "project-b",
-      issueId: "issue-2",
+      issueId: "project-b-issue-2",
     })
 
     const projectAResult = await manager.listProjectWorktrees("project-a")
@@ -117,14 +117,14 @@ describe("WorktreeManager", () => {
 
     if (projectAResult.ok && projectBResult.ok) {
       expect(projectAResult.value.length).toBe(1)
-      expect(projectAResult.value[0].name).toBe("project-a/issue-1")
+      expect(projectAResult.value[0].name).toBe("project-a-issue-1")
 
       expect(projectBResult.value.length).toBe(1)
-      expect(projectBResult.value[0].name).toBe("project-b/issue-2")
+      expect(projectBResult.value[0].name).toBe("project-b-issue-2")
     }
 
-    await manager.removeWorktree("project-a/issue-1")
-    await manager.removeWorktree("project-b/issue-2")
+    await manager.removeWorktree("project-a-issue-1")
+    await manager.removeWorktree("project-b-issue-2")
   })
 
   test("getWorktree finds specific worktree", async () => {
@@ -140,10 +140,10 @@ describe("WorktreeManager", () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.value).not.toBeNull()
-      expect(result.value!.name).toBe("find-project/find-issue")
+      expect(result.value!.name).toBe("find-issue")
     }
 
-    await manager.removeWorktree("find-project/find-issue")
+    await manager.removeWorktree("find-issue")
   })
 
   test("listAllWorktrees includes main and created worktrees", async () => {
@@ -151,7 +151,7 @@ describe("WorktreeManager", () => {
 
     await manager.createIsolatedWorktree({
       projectId: "list-all",
-      issueId: "issue",
+      issueId: "list-all-issue",
     })
 
     const result = await manager.listAllWorktrees()
@@ -160,10 +160,10 @@ describe("WorktreeManager", () => {
     if (result.ok) {
       expect(result.value.length).toBeGreaterThanOrEqual(2)
       expect(result.value.some((w) => w.isMain)).toBe(true)
-      expect(result.value.some((w) => w.name === "list-all/issue")).toBe(true)
+      expect(result.value.some((w) => w.name === "list-all-issue")).toBe(true)
     }
 
-    await manager.removeWorktree("list-all/issue")
+    await manager.removeWorktree("list-all-issue")
   })
 
   test("removeWorktree removes the worktree", async () => {
@@ -439,7 +439,7 @@ describe("WorktreeManager path traversal protection", () => {
 
     expect(result.ok).toBe(true)
     if (result.ok) {
-      expect(result.value.name).toBe("test-project/bd-a3f8.1.2")
+      expect(result.value.name).toBe("bd-a3f8.1.2")
       await manager.removeWorktree(result.value.name)
     }
   })
