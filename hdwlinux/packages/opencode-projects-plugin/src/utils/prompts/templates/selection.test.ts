@@ -51,7 +51,7 @@ describe("teamCompositionTemplate", () => {
       agents: [{ name: "coder" }],
     })
 
-    expect(prompt).toContain("2-4 agents")
+    expect(prompt).toContain("3-4 agents")
     expect(prompt).toContain("PRIMARY")
     expect(prompt).toContain("REVIEW")
     expect(prompt).toContain("complementary skills")

@@ -30,7 +30,7 @@ export interface TeamCompositionData {
 /**
  * Template for team composition selection.
  *
- * Used by the small model to select 2-4 agents to work on an issue
+ * Used by the small model to select 3-4 agents to work on an issue
  * as a team, with the first agent being the primary implementer.
  */
 export const teamCompositionTemplate: PromptTemplate<TeamCompositionData> = {
@@ -42,7 +42,7 @@ export const teamCompositionTemplate: PromptTemplate<TeamCompositionData> = {
       .map((a) => `- ${a.name}: ${a.description || "(no description)"}`)
       .join("\n")
 
-    return `Select 2-4 agents to work on this issue as a team.
+    return `Select 3-4 agents to work on this issue as a team.
 
 ISSUE:
 ${data.issueContext.slice(0, 5000)}
@@ -55,6 +55,7 @@ RULES:
 2. Other agents REVIEW the primary's work
 3. Choose agents with complementary skills
 4. Consider: implementation, testing, security, documentation needs
+5. Default to 3 agents; use 4 for large or high-stakes work; use fewer only with a specific reason
 
 Respond with JSON only:
 {"agents": ["primary-agent", "reviewer-1", "reviewer-2"]}`

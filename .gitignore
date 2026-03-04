@@ -1,9 +1,9 @@
-# Flake build results
 /result/
 tmp*
 
 .idea/*
 .jj
 .opencode
+.projects
 .vscode/*
 *.code-workspace

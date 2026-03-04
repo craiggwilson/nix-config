@@ -163,7 +163,7 @@ Retrieves a delegation result by ID. Use after session compaction when a notific
 ### Team Selection
 - Omit `agents` to let the small model auto-select (recommended for most tasks)
 - Specify agents explicitly when you need a particular skill set or review perspective
-- Two agents (primary + devil's advocate) is the sweet spot for most code changes
+- 3–4 agents is the ideal team size for most tasks; use 1–2 only with a specific reason
 - The devil's advocate is adversarial by design — it assumes something is wrong and looks hard
 
 ### Delegation Flow

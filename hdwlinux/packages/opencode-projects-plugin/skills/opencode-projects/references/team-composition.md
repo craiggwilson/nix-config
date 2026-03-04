@@ -2,36 +2,37 @@
 
 ## Team Sizes
 
-### Single Agent (no discussion)
+**3–4 agents is the ideal team size.** Smaller teams should be the exception, not the default.
+
+### Single Agent (use sparingly)
 ```json
 { "agents": ["<implementation-agent>"] }
 ```
-Best for: Simple, well-defined tasks. Fast. No review overhead.
+Only for: Trivial, mechanical tasks with no meaningful risk of error. Avoid unless there is a specific reason — no review means no catch.
 
-### Two Agents (primary + devil's advocate)
+### Two Agents (use sparingly)
 ```json
 { "agents": ["<implementation-agent>", "<review-agent>"] }
 ```
-Best for: Code changes that benefit from review. The second agent acts as devil's advocate.
+Only for: Tasks where a single reviewer is clearly sufficient and a larger team would add no value. Prefer three agents unless you have a specific reason to limit to two.
 
-### Three Agents
+### Three Agents (default sweet spot)
 ```json
 { "agents": ["<architecture-agent>", "<implementation-agent>", "<review-agent>"] }
 ```
-Best for: Complex features requiring multiple perspectives. First agent is primary.
+Best for: Most tasks. Multiple perspectives, meaningful review, manageable overhead. First agent is primary.
 
-### Four+ Agents
+### Four Agents (high-stakes or complex)
 ```json
 { "agents": ["<implementation-agent>", "<review-agent>", "<security-agent>", "<docs-agent>"] }
 ```
-Best for: Large, high-stakes changes. More discussion rounds, slower but thorough.
+Best for: Large, high-stakes, or cross-cutting changes where thoroughness matters more than speed.
 
 ### Auto-Selection (recommended)
 ```json
-{ "isolate": true }
 // No agents specified — small model selects the best team
 ```
-The auto-selector reads the issue title and description and picks 2-4 appropriate agents.
+The auto-selector reads the issue title and description and picks 3–4 appropriate agents.
 
 ## Team Roles
 

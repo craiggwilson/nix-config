@@ -77,7 +77,7 @@ Parameters:
 - isolate=false (default): Runs in repo root. Good for research, analysis, documentation.
 - isolate=true: Creates isolated worktree. Required for code changes that need merging.
 - agents: Array of agent names to use. Options:
-  - Not specified: Small model auto-selects a team (2-4 agents)
+  - Not specified: Small model auto-selects a team (3-4 agents; use 1-2 only with a specific reason)
   - ["agent-name"]: Single agent (team of 1)
   - ["agent1", "agent2"]: Explicit team (first is PRIMARY, others REVIEW)
 - foreground=false (default): Fire-and-forget, notified via <team-notification> when complete.
