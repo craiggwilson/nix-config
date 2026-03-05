@@ -60,14 +60,19 @@
           mutableExtensionsDir = true;
 
           profiles.default = {
-            extensions = with pkgs.vscode-extensions; [
+            extensions = [
+              themeExtension
+            ]
+            ++ (with pkgs.vscode-extensions; [
+              bazelbuild.vscode-bazel
+              biomejs.biome
               golang.go
+              jnoortheen.nix-ide
+              redhat.java
               rust-lang.rust-analyzer
               tamasfe.even-better-toml
-              jnoortheen.nix-ide
               visualjj.visualjj
-              themeExtension
-            ];
+            ]);
 
             userSettings = lib.mkMerge [
               {
