@@ -80,11 +80,13 @@
                 "editor.inlineSuggest.enabled" = true;
                 "editor.fontFamily" = "FiraCode Nerd Font Mono";
                 "editor.fontLigatures" = true;
+                "excalidraw.theme" = "auto";
                 "explorer.confirmDelete" = false;
                 "go.lintOnSave" = "package";
                 "go.lintTool" = "golangci-lint";
                 "go.vetOnSave" = "off";
                 "lldb.suppressUpdateNotifications" = true;
+                "mcp.servers" = vscodeMcpServers;
                 "nix.enableLanguageServer" = true;
                 "nix.formatterPath" = [
                   "nix"
@@ -147,8 +149,14 @@
                   "files.insertFinalNewline" = true;
                   "files.trimFinalNewlines" = true;
                 };
-                "mcp.servers" = vscodeMcpServers;
-                "excalidraw.theme" = "auto";
+                "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css][graphql]" = {
+                  "editor.defaultFormatter" = "biomejs.biome";
+                  "editor.formatOnSave" = true;
+                  "editor.codeActionsOnSave" = {
+                    "quickfix.biome" = "explicit";
+                    "source.organizeImports.biome" = "explicit";
+                  };
+                };
               }
             ];
           };
