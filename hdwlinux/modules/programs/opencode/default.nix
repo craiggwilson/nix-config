@@ -85,7 +85,7 @@
         # Provider metadata: OpenCode-specific configuration for each provider
         providerMeta = {
           augment = {
-            npm = "file://${pkgs.hdwlinux.opencode-augment-provider}/lib/node_modules/opencode-augment-provider";
+            npm = "file://${config.home.homeDirectory}/Projects/opencode/opencode-augment-provider";
           };
 
           "llama.cpp" = {
@@ -146,7 +146,7 @@
           permission = config.hdwlinux.ai.agent.tools;
           small_model = resolveAlias "fast";
           plugin = [
-            "file://${config.lib.file.mkOutOfStoreSymlink "${config.hdwlinux.flake}/packages/opencode-projects-plugin"}"
+            "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
           ];
           keybinds = {
             "app_exit" = "ctrl+q";
