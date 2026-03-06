@@ -119,6 +119,7 @@
           ./shells/mongotune
           ./shells/observability
           ./shells/rust
+          ./shells/typescript
         ];
 
         nixosModules = [
