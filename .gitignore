@@ -1,8 +1,9 @@
-/result/
-tmp*
+result
+result-*
+/tmp/*
 
-.idea/*
 .jj
 .opencode
 .vscode/*
 *.code-workspace
+.direnv
