@@ -72,8 +72,6 @@
         colors = config.hdwlinux.theme.colors.withHashtag;
       in
       {
-        imports = [ inputs.nirinit.homeModules.nirinit ];
-
         home.packages = [
           (pkgs.xwayland-satellite.override { withSystemd = false; })
           inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.niri-scratchpad

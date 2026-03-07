@@ -6,7 +6,6 @@
 
     homeManager =
       {
-        inputs,
         config,
         lib,
         pkgs,
@@ -156,7 +155,7 @@
       in
       {
         home.packages = [
-          inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode
+          pkgs.opencode
           pkgs.beads
         ];
 
