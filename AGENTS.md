@@ -1,24 +1,26 @@
 # Agent Guidelines for nix-config
 
-This repository contains NixOS/Home Manager configurations using a custom
-framework called "substrate" for modular, tag-based configuration management.
+This repository contains NixOS/Home Manager configurations using the
+[substrate](../substrate) framework for modular, tag-based configuration management.
 
 ## Repository Structure
 
 ```
 nix-config/
-├── hdwlinux/           # Main flake with modules, packages, shells
-│   ├── flake.nix       # Entry point - imports substrate and modules
-│   ├── lib/            # Shared utilities (e.g., colors.nix)
-│   ├── modules/        # NixOS/Home Manager modules organized by category
-│   ├── packages/       # Custom package definitions
-│   └── shells/         # Development shell definitions
-└── substrate/          # Core framework for modular configuration
-    ├── core/           # Core module system, finders, lib
-    ├── extensions/     # Tags, home-manager, nixos, packages, etc.
-    ├── builders/       # Flake-parts integration
-    └── tests/          # Test suite
+├── flake.nix           # Entry point - imports substrate and modules
+├── flake.lock          # Locked dependencies
+├── lib/                # Shared utilities (e.g., colors.nix)
+├── modules/            # NixOS/Home Manager modules organized by category
+├── packages/           # Custom package definitions
+└── shells/             # Development shell definitions
 ```
+
+## External Dependencies
+
+- **substrate**: Core framework at `../substrate` - provides the module system,
+  tag-based filtering, and build infrastructure
+- **nix-private**: Private configuration at `../nix-private` - contains secrets
+  and host-specific private data
 
 ## Build and Test Commands
 
@@ -32,20 +34,6 @@ nix build .#nixosConfigurations.<hostname>.config.system.build.toplevel
 sudo nixos-rebuild switch --flake .#<hostname>
 ```
 
-### Running Tests
-
-```bash
-# Run all substrate checks
-nix flake check ./substrate
-
-# Run a specific test
-nix eval -f substrate/tests/core/modules-test.nix
-
-# Run individual test files
-nix eval -f substrate/tests/core/lib-test.nix
-nix eval -f substrate/tests/extensions/tags-test.nix
-```
-
 ### Development Shells
 
 ```bash
@@ -54,6 +42,15 @@ nix develop .#hdwlinux
 
 # Enter other shells (go, rust, typescript, etc.)
 nix develop .#<shell-name>
+```
+
+### Testing Substrate
+
+Substrate tests are in the separate substrate repository:
+
+```bash
+# Run all substrate checks
+nix flake check ../substrate
 ```
 
 ## Version Control
@@ -161,29 +158,6 @@ Tags control which modules are enabled for hosts/users:
 
 Tags are validated at evaluation time. Invalid tags cause build failures.
 
-## Testing Patterns
-
-Tests use the shared test library in `substrate/tests/lib.nix`:
-
-```nix
-{ pkgs ? import <nixpkgs> { } }:
-let
-  testLib = import ../lib.nix { inherit pkgs; };
-  inherit (testLib) runTests evalSubstrate;
-
-  tests = {
-    testName = {
-      check =
-        let
-          eval = evalSubstrate [ /* modules */ ];
-        in
-        eval.config.some.path ? expectedAttr;
-    };
-  };
-in
-runTests "Test Suite Name" tests
-```
-
 ## Common Patterns
 
 ### Conditional Configuration
@@ -219,7 +193,8 @@ in {
 
 ## Important Files
 
-- `hdwlinux/flake.nix` - Main entry point, defines hosts, users, tags
-- `substrate/core/modules.nix` - Module tree type system
-- `substrate/extensions/tags/default.nix` - Tag system implementation
-- `substrate/tests/lib.nix` - Shared test utilities
+- `flake.nix` - Main entry point, defines hosts, users, tags
+- `modules/hosts/` - Host-specific configurations
+- `modules/users/` - User-specific configurations
+- `packages/` - Custom package definitions
+- `shells/` - Development shell definitions

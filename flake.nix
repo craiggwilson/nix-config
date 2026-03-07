@@ -70,7 +70,7 @@
     };
 
     substrate = {
-      url = "path:../substrate";
+      url = "git+file:///home/craig/Projects/hdwlinux/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
