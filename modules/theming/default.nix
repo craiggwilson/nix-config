@@ -3,10 +3,16 @@
     nixos =
       { lib, config, ... }:
       {
-        options.hdwlinux.theme.colors = lib.mkOption {
-          description = "The current theme colors, including ansi sub-attrset.";
-          type = lib.types.attrs;
-          default = { };
+        options.hdwlinux.theme = {
+          colors = lib.mkOption {
+            description = "The current theme colors, including ansi sub-attrset.";
+            type = lib.types.attrs;
+            default = { };
+          };
+          system = lib.mkOption {
+            description = "The name of the theme that applies to NixOS-level settings (e.g., Plymouth, TTY colors).";
+            type = lib.types.str;
+          };
         };
 
         config = lib.mkIf (config.hdwlinux.theme.colors != { }) {

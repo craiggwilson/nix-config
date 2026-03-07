@@ -29,7 +29,7 @@
           };
         };
 
-        config = {
+        config = lib.mkIf (flake != null) {
           home.packages = [
             (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
               name = "hdwlinux";

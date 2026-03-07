@@ -8,11 +8,13 @@ in
 {
   substrate.users = {
     "${name}@personal" = {
+      system = "x86_64-linux";
       tags = [
         "users:${name}:personal"
       ];
     };
     "${name}@work" = {
+      system = "x86_64-linux";
       tags = [
         "users:${name}:work"
       ];

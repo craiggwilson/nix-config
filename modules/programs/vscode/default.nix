@@ -101,7 +101,7 @@
                 "nix.serverPath" = "${pkgs.nixd}/bin/nixd";
                 "nix.serverSettings" = {
                   "nixd" = {
-                    "nixpkgs" = {
+                    "nixpkgs" = lib.mkIf (flake != null) {
                       "expr" = ''import (builtins.getFlake "${flake}").inputs.nixpkgs { }'';
                     };
                     "formatting" = {
@@ -112,7 +112,7 @@
                         "--"
                       ];
                     };
-                    "options" = {
+                    "options" = lib.mkIf (flake != null) {
                       "enable" = true;
                       "nixos" = {
                         "expr" = ''(builtins.getFlake "${flake}").nixosConfigurations.${host}.options'';

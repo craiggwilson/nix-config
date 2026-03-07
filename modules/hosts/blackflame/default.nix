@@ -25,6 +25,7 @@ in
         diskoConfig
       ];
 
+      hdwlinux.theme.system = "catppuccin";
       system.stateVersion = "23.05";
     };
   };

@@ -61,7 +61,7 @@
 
             switch.enable = true;
 
-            autoUpgrade = lib.mkIf (hasTag "users:craig:work") {
+            autoUpgrade = lib.mkIf (hasTag "users:craig:work" && config.hdwlinux.flake != null) {
               enable = true;
               flake = config.hdwlinux.flake;
               allowReboot = false;

@@ -130,9 +130,11 @@ in
     tags = [ "theming:catppuccin" ];
 
     nixos =
-      { ... }:
+      { config, lib, ... }:
       {
-        hdwlinux.theme.colors = colorLib;
+        config = lib.mkIf (config.hdwlinux.theme.system == "catppuccin") {
+          hdwlinux.theme.colors = colorLib;
+        };
       };
 
     homeManager =

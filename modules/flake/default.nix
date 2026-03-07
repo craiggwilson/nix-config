@@ -11,14 +11,16 @@
       };
 
     homeManager =
-      { config, ... }:
+      { config, lib, ... }:
       let
         flake = config.hdwlinux.flake;
       in
       {
-        hdwlinux.programs.hdwlinux.subcommands.flake = {
-          update = "nix flake update --flake ${flake} \"$@\"";
-          "*" = "echo ${flake}";
+        config = lib.mkIf (flake != null) {
+          hdwlinux.programs.hdwlinux.subcommands.flake = {
+            update = "nix flake update --flake ${flake} \"$@\"";
+            "*" = "echo ${flake}";
+          };
         };
       };
   };

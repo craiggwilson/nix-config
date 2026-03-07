@@ -36,8 +36,8 @@
           "Llama-3.1-8B-Instruct-Q4_0" = {
             type = "gguf";
             categories = [
-              "small"
-              "explore"
+              "fast"
+              "writer"
             ];
             settings = {
               opencode = {
@@ -74,10 +74,9 @@
           "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M" = {
             type = "gguf";
             categories = [
-              "default"
-              "coding"
-              "reasoning"
-              "planning"
+              "balanced"
+              "coder"
+              "analyst"
             ];
             settings = {
               opencode = {

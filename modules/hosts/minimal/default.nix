@@ -12,6 +12,7 @@ in
     tags = [ "host:${hostname}" ];
 
     nixos = {
+      hdwlinux.theme.system = "none";
       system.stateVersion = "23.05";
 
       boot.loader.grub.devices = [ "/dev/sda" ];
@@ -31,4 +32,3 @@ in
     };
   };
 }
-

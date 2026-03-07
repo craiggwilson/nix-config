@@ -126,6 +126,11 @@
           inputs.disko.nixosModules.disko
         ];
 
+        homeManagerModules = [
+          # Allow unfree packages in standalone home-manager builds
+          { nixpkgs.config.allowUnfree = true; }
+        ];
+
         overlays = [
           # NUR (Nix User Repository)
           inputs.nur.overlays.default
