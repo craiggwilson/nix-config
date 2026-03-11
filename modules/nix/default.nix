@@ -61,7 +61,7 @@
 
             switch.enable = true;
 
-            autoUpgrade = lib.mkIf (hasTag "users:craig:work" && config.hdwlinux.flake != null) {
+            autoUpgrade = lib.mkIf (hasTag "users:craig:work") {
               enable = true;
               flake = config.hdwlinux.flake;
               allowReboot = false;
@@ -91,8 +91,6 @@
               nixpkgs.flake = inputs.nixpkgs;
               stable.flake = inputs.nixpkgs-stable;
               unstable.flake = inputs.nixpkgs;
-            }
-            // lib.optionalAttrs (config.hdwlinux.flake != null) {
               hdwlinux.to = {
                 type = "path";
                 path = config.hdwlinux.flake;

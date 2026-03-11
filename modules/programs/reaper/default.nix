@@ -18,7 +18,7 @@
           pkgs.x42-plugins
           pkgs.x42-gmsynth
           pkgs.dragonfly-reverb
-          pkgs.guitarix
+          #pkgs.guitarix
           pkgs.fil-plugins
           pkgs.sfizz
           pkgs.yabridge
@@ -34,4 +34,3 @@
       };
   };
 }
-

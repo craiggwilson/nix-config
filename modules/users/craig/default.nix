@@ -24,6 +24,10 @@ in
   substrate.modules.users.${name} = {
     tags = [ "users:${name}" ];
 
+    generic = {
+      hdwlinux.flake = "/home/craig/Projects/hdwlinux/nix-config";
+    };
+
     nixos =
       { hasTag, ... }:
       {

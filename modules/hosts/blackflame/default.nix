@@ -15,10 +15,6 @@ in
   substrate.modules.hosts.${hostname} = {
     tags = [ "host:${hostname}" ];
 
-    generic = {
-      hdwlinux.flake = "/home/craig/Projects/hdwlinux/nix-config";
-    };
-
     nixos = {
       imports = [
         inputs.disko.nixosModules.disko
