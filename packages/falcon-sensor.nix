@@ -1,8 +1,8 @@
 { lib, pkgs, ... }:
 let
   src = pkgs.requireFile rec {
-    name = "falcon-sensor_9_10_11_12.deb";
-    sha256 = "0gak6p8fzvifqy2yz03fi12m1yqs5w3xdn17j2qji3yk08vv61lw";
+    name = "falcon-sensor.deb";
+    sha256 = "1h2xvd3zadv6v8p09fm1di4shnqyaj0n5gg8m02wsiwnfhpc2fhc";
     message = ''
       In order to install the CrowdStrike Falcon Sensor, you must first download the
       debian package from here:
@@ -12,7 +12,7 @@ let
       Once you have downloaded the file, please use the following
       commands and re-run the installation.
 
-      mv "falcon.deb" $PWD/${name}
+      mv "falcon-sensor.deb" $PWD/${name}
       nix-prefetch-url file://$PWD/${name}
     '';
   };
