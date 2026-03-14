@@ -2,4 +2,9 @@ user: "craig.wilson"
 api_key: "@@API_KEY@@"
 api_server_host: "https://evergreen.mongodb.com/api"
 ui_server_host: "https://evergreen.mongodb.com"
+oauth:
+    issuer: "https://dex.prod.corp.mongodb.com"
+    client_id: "login"
+    connector_id: "oidc"
+    do_not_use_browser: false
 
