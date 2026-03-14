@@ -49,6 +49,7 @@
               colocate = true;
               private-commits = "private()";
               sign-on-push = true;
+              write-change-id-header = true;
             };
 
             remotes = {
