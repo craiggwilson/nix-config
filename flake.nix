@@ -102,6 +102,7 @@
           ./packages/context7-mcp.nix
           ./packages/engflow_auth.nix
           ./packages/evergreen.nix
+          ./packages/evergreen-mcp-server.nix
           ./packages/falcon-sensor.nix
           ./packages/fern.nix
           ./packages/mcp-atlassian.nix
