@@ -64,11 +64,9 @@
               themeExtension
             ]
             ++ (with pkgs.vscode-extensions; [
-              bazelbuild.vscode-bazel
               biomejs.biome
               golang.go
               jnoortheen.nix-ide
-              redhat.java
               rust-lang.rust-analyzer
               tamasfe.even-better-toml
               visualjj.visualjj
