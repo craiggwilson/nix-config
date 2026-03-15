@@ -10,10 +10,25 @@
 
           settings = {
             aliases = {
+              editf = [
+                "edit"
+                "--ignore-immutable"
+              ];
+
               mine = [
                 "log"
                 "-r"
                 "mutable() & mine() | bookmarks()::"
+              ];
+
+              rebasef = [
+                "rebase"
+                "--ignore-immutable"
+              ];
+
+              squashf = [
+                "squash"
+                "--ignore-immutable"
               ];
 
               sync = [
@@ -32,11 +47,9 @@
 
               tug = [
                 "bookmark"
-                "move"
-                "--from"
-                "heads(::@ & bookmarks())"
-                "--to"
-                "closest_pushable(@)"
+                "advance"
+                "-t"
+                "@-"
               ];
             };
 
@@ -62,8 +75,6 @@
             };
 
             revset-aliases = {
-              "closest_pushable(to)" =
-                "heads(::to & mutable() & ~description(exact:\"\") & (~empty() | merges()))";
               "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
               "private()" = "description(glob:'private:*')";
             };
