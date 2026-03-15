@@ -191,6 +191,27 @@
           };
         };
 
+        # Map hdwlinux MCP server definitions to programs.mcp.servers so that
+        # any program with enableMcpIntegration can pick them up automatically.
+        config.programs.mcp = {
+          enable = true;
+          servers = lib.mapAttrs (
+            _: server:
+            if server ? stdio then
+              {
+                command = server.stdio.command;
+                args = server.stdio.args;
+              }
+            else if server ? http then
+              {
+                url = server.http.url;
+                headers = server.http.headers;
+              }
+            else
+              throw "Unknown MCP server type"
+          ) config.hdwlinux.ai.agent.mcpServers;
+        };
+
         config.hdwlinux.ai.agent.tools = {
           bash = {
             "*" = "allow";

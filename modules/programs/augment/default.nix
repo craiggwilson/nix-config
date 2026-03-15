@@ -153,11 +153,6 @@
           ".augment/mcp-servers.json".text = builtins.toJSON { inherit mcpServers; };
         };
 
-        programs.vscode.profiles.default.userSettings = lib.mkIf config.programs.vscode.enable {
-          "github.copilot.enable" = {
-            "*" = false;
-          };
-        };
       };
   };
 }

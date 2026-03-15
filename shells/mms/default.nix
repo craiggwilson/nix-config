@@ -16,7 +16,7 @@ in
     pkgs.hdwlinux.engflow_auth
     pkgs.libz
     pkgs.pkg-config
-    pkgs.stable.bazel-buildtools
+    pkgs.bazel-buildtools
 
     # Java
     javapkg
