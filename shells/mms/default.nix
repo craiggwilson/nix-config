@@ -1,14 +1,13 @@
 {
-  pkgs ? import <nixpkgs> { },
   lib,
+  pkgs,
   ...
 }:
 let
   javapkg = pkgs.temurin-bin-17;
 in
-(pkgs.buildFHSEnv {
-  name = "mms";
-  targetPkgs = pkgs: [
+pkgs.mkShell {
+  buildInputs = [
     # Bazel
     pkgs.bazelisk
     pkgs.gcc
@@ -32,7 +31,6 @@ in
     # python
     pkgs.openblas
     pkgs.python3.pkgs.python
-    pkgs.python3.pkgs.venvShellHook
 
     # fern
     pkgs.hdwlinux.fern
@@ -64,7 +62,7 @@ in
     pkgs.pango
 
     (pkgs.writeShellScriptBin "bazel" ''
-      bazelisk $@
+      bazelisk "$@"
     '')
 
     (pkgs.writeShellScriptBin "start-mongod" ''
@@ -76,26 +74,31 @@ in
     '')
   ];
 
-  includeClosures = true;
-  runScript = "zsh";
-  profile = ''
-    export LD_LIBRARY_PATH=${
-      lib.makeLibraryPath [
-        pkgs.glibc
-        "/usr/lib"
-        "$LD_LIBRARY_PATH"
-      ]
-    } 
-    export venvDir="./.venv"
+  nativeBuildInputs = [
+    pkgs.python3.pkgs.venvShellHook
+  ];
 
-    export AWS_PROFILE="mms-scratch"
-    export BAZEL_SKIP_ENGFLOW_CERT_CHECK=1
-    export BAZEL_TELEMETRY=0
-    export FERN_BASE_DIRECTORY="$XDG_DATA_HOME/fern"
-    export GOPRIVATE="github.com/10gen"
-    export JAVA_HOME="${javapkg.home}";
-    export MMS_HOME="$PWD";
+  LD_LIBRARY_PATH = lib.makeLibraryPath [
+    pkgs.glibc
+    pkgs.libz
+    pkgs.openssl
+  ];
 
-    mkdir -p $TMPDIR
+  venvDir = "./.venv";
+
+  AWS_PROFILE = "mms-scratch";
+  BAZEL_SKIP_ENGFLOW_CERT_CHECK = 1;
+  BAZEL_TELEMETRY = 0;
+  FERN_BASE_DIRECTORY = "$XDG_DATA_HOME/fern";
+  GOPRIVATE = "github.com/10gen";
+  JAVA_HOME = javapkg.home;
+
+  shellHook = ''
+    export MMS_HOME="$PWD"
+    mkdir -p "$TMPDIR"
+    # Only exec zsh when entering the shell interactively, not via direnv
+    if [ -z "$DIRENV_IN_ENVRC" ]; then
+      exec zsh
+    fi
   '';
-}).env
+}

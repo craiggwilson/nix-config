@@ -203,6 +203,7 @@
           }
           {
             "users:craig:work" = [
+              "filesystem:envfs"
               "virtualization:docker"
             ];
           }
@@ -247,6 +248,7 @@
           "desktop:custom:hyprland"
           "desktop:custom:niri"
           "dictation"
+          "filesystem:envfs"
           "filesystem:nfs"
           "flatpaks"
           "fonts"
