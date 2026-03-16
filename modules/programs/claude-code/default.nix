@@ -196,8 +196,7 @@
             disableBypassPermissionsMode = "disable";
           };
           sandbox = {
-            enabled = true;
-            autoAllowBashIfSandboxed = true;
+            enabled = false;
           };
           autoUpdatesChannel = "latest";
           includeGitInstructions = false;

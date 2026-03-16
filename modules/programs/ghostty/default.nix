@@ -3,7 +3,12 @@
     tags = [ "gui" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         colors = config.hdwlinux.theme.colors or { };
         hasColors = colors != { };
@@ -24,8 +29,12 @@
           enableZshIntegration = config.programs.zsh.enable;
 
           settings = {
+            command = "tmux new-session";
             theme = "hdwlinux";
             gtk-titlebar = false;
+            window-padding-x = 0;
+            window-padding-y = 0;
+            window-padding-balance = 0;
             font-family = "FiraCode Nerd Font Mono";
             font-size = 11;
             keybind = [
@@ -67,4 +76,3 @@
       };
   };
 }
-
