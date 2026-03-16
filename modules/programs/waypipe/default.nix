@@ -7,9 +7,8 @@
       {
         environment.systemPackages = [
           pkgs.waypipe
-          pkgs.xorg.xauth
+          pkgs.xauth
         ];
       };
   };
 }
-
