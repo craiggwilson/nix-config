@@ -215,12 +215,30 @@
         config.hdwlinux.ai.agent.tools = {
           bash = {
             "*" = "allow";
+            # Unconditional denies
             "git *" = "deny";
             "reboot *" = "deny";
+            "rm -rf *" = "deny";
+            "rm -rf /" = "deny";
             "shutdown *" = "deny";
+            "su *" = "deny";
             "sudo *" = "deny";
+            "ssh *.10gen.cc" = "deny";
+            # Require confirmation for cloud/infra/privileged tools
+            "aws *" = "ask";
+            "az *" = "ask";
+            "gcloud *" = "ask";
+            "kubectl *" = "ask";
+            "op" = "ask";
+            "ssh *" = "ask";
+            "terraform apply *" = "ask";
           };
-          edit = "allow";
+          edit = {
+            "*" = "allow";
+            "**/.env" = "deny";
+            "**/.env.*" = "deny";
+            "**/secrets/**" = "ask";
+          };
           external_directory = {
             "*" = "ask";
             "~/Projects/*" = "allow";
@@ -233,8 +251,31 @@
           question = "allow";
           read = {
             "*" = "allow";
-            "*.env" = "deny";
-            "*.env.*" = "deny";
+            # Environment files
+            "./.env" = "deny";
+            "./.env.*" = "deny";
+            "**/.env" = "deny";
+            "**/.env.*" = "deny";
+            # Credential and key files
+            "**/*.jks" = "deny";
+            "**/*.key" = "deny";
+            "**/*.keystore" = "deny";
+            "**/*.p12" = "deny";
+            "**/*.pem" = "deny";
+            "**/*.pfx" = "deny";
+            # Sensitive config directories
+            "~/.aws/*" = "deny";
+            "~/.config/gcloud/*" = "deny";
+            "~/.git-credentials" = "deny";
+            "~/.kanopy/**" = "deny";
+            "~/.kube/*" = "deny";
+            "~/.ssh/*" = "deny";
+            # Infrastructure state
+            "**/terraform.tfstate" = "deny";
+            "**/terraform.tfstate.backup" = "deny";
+            # Secrets directories require confirmation
+            "./secrets/**" = "ask";
+            "**/secrets/**" = "ask";
           };
           skill = "allow";
           task = "allow";
@@ -242,6 +283,25 @@
           todowrite = "allow";
           webfetch = "allow";
           websearch = "allow";
+          write = {
+            "*" = "allow";
+            # Environment files
+            "./.env*" = "deny";
+            "**/.env*" = "deny";
+            # Credential and key files
+            "**/*.key" = "deny";
+            "**/*.p12" = "deny";
+            "**/*.pem" = "deny";
+            # Sensitive config directories
+            "~/.kanopy/**" = "deny";
+            "~/.ssh/*" = "deny";
+            # Infrastructure state
+            "**/terraform.tfstate" = "deny";
+            "**/terraform.tfstate.backup" = "deny";
+            # Secrets directories require confirmation
+            "./secrets/**" = "ask";
+            "**/secrets/**" = "ask";
+          };
         };
       };
   };
