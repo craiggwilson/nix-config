@@ -10,6 +10,8 @@
           desktopName = "firefox.desktop";
         };
 
+        hdwlinux.programs.browserctl.browsers.firefox = "firefox.desktop";
+
         programs.firefox = {
           enable = true;
           profiles."default" = {

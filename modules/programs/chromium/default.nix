@@ -10,6 +10,8 @@
         #   desktopName = "chromium.desktop";
         # };
 
+        hdwlinux.programs.browserctl.browsers.chromium = "chromium.desktop";
+
         programs.chromium = {
           enable = true;
           package = pkgs.chromium;
