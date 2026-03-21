@@ -8,9 +8,7 @@ The first argument specifies the planning phase or operation:
 
 - **init** - Initialize a new planning cycle (roadmap/project/task)
 - **research** - Conduct focused research on a topic
-- **codebase-map** - Map and document a codebase's architecture
 - **continue** - Resume an in-progress planning cycle
-- **finalize** - Complete and validate planning artifacts
 
 Additional arguments depend on the phase (see skill references for details).
 
@@ -46,23 +44,15 @@ Load `references/init.md` and execute initialization workflow.
 ### `/planning research <topic>`
 Load `references/research.md` and conduct research.
 
-### `/planning codebase-map <repo-or-focus>`
-Load `references/codebase-map.md` and document codebase.
-
 ### `/planning continue [focus]`
 Load `references/continue.md` and resume planning.
-
-### `/planning finalize [focus]`
-Load `references/finalize.md` and complete planning cycle.
 
 ## Example Usage
 
 ```
 /planning init project API-redesign
 /planning research authentication-patterns
-/planning codebase-map api-gateway
 /planning continue risk-assessment
-/planning finalize
 ```
 
 **Now load the planning skill and begin the requested workflow.**

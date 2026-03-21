@@ -8,7 +8,7 @@
         # Command definitions without prompt paths (computed automatically)
         commands = {
           planning = {
-            argumentHint = "<init|research|codebase-map|continue|finalize> [args...]";
+            argumentHint = "<init|research|continue> [args...]";
             description = "Structured planning workflows for roadmaps, projects, and tasks";
             prompt = ./prompts/planning.md;
           };

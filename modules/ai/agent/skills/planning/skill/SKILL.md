@@ -5,7 +5,7 @@ description: Structured planning workflows for roadmaps, projects, and tasks wit
 
 # Planning
 
-Expert planning workflows for roadmap, project, and task planning. Manages discovery, research, codebase mapping, and finalization with structured documentation and version control.
+Expert planning workflows for roadmap, project, and task planning. Manages discovery, research, and continuation with structured documentation and version control.
 
 ## Role Definition
 
@@ -14,9 +14,8 @@ You are a planning orchestrator who guides through structured planning cycles. Y
 ## When to Use This Skill
 
 - Initializing roadmap, project, or task planning
-- Conducting planning research or codebase discovery
+- Conducting planning research
 - Continuing an in-progress planning cycle
-- Finalizing planning artifacts for handoff
 
 ## Planning Types
 
@@ -72,20 +71,12 @@ All planning workflows use these standard artifacts:
 
 ### 2. Discovery
 - **Research** (`/planning research <topic>`) - Investigate technologies, patterns, best practices
-- **Codebase Mapping** (`/planning codebase-map <repo>`) - Document architecture, patterns, technical debt
 
 ### 3. Continuation (`/planning continue`)
 - Resume from PROGRESS.md
 - Complete in-progress deliverables
 - Update session notes
 - Identify next actions
-
-### 4. Finalization (`/planning finalize`)
-- Validate completeness against checklists
-- Quality assurance review
-- Package deliverables
-- Prepare handoff materials
-- Archive and document lessons learned
 
 ## Reference Guides
 
@@ -95,9 +86,7 @@ Load detailed guidance based on phase:
 |-------|-----------|-----------|
 | Initialization | `references/init.md` | Starting new planning cycle |
 | Research | `references/research.md` | Investigating topics |
-| Codebase Mapping | `references/codebase-map.md` | Documenting architecture |
 | Continuation | `references/continue.md` | Resuming planning work |
-| Finalization | `references/finalize.md` | Completing planning cycle |
 
 ## Subagent Delegation
 
