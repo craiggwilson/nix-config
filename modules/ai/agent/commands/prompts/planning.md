@@ -1,58 +1,75 @@
 # Planning Command
 
-Load the `planning` skill and execute the appropriate planning workflow based on the command arguments.
+Load the `planning` skill to establish state management framework for planning sessions.
 
-**Arguments**: $ARGUMENTS
+**Arguments**: $ARGUMENTS (optional)
 
-The first argument specifies the planning phase or operation:
+This command loads the planning skill, which provides a framework for:
+- Loading current planning state at session start
+- Tracking decisions and progress during work
+- Persisting state at session end
+- Investigating planning history
 
-- **init** - Initialize a new planning cycle (roadmap/project/task)
-- **research** - Conduct focused research on a topic
-- **continue** - Resume an in-progress planning cycle
+## What This Command Does
 
-Additional arguments depend on the phase (see skill references for details).
-
-## Process
-
-1. Load the `planning` skill
-2. Parse the command arguments to determine the phase
-3. Load the appropriate reference guide from the skill
-4. Execute the planning workflow for that phase
+1. **Loads the planning skill** - Establishes state management framework
+2. **Assesses current state** - Reads CONTEXT.md, PROGRESS.md, recent sessions
+3. **Executes planning work** - Based on PROGRESS.md "Next Steps" or provided arguments
+4. **Persists state** - Updates PROGRESS.md, creates session note, commits changes
 
 ## Skill Loading
 
-**IMPORTANT**: Always load the `planning` skill at the start of this command:
+**IMPORTANT**: Always load the `planning` skill at the start:
 
 ```
-I'm loading the planning skill to guide this workflow...
+Loading planning skill for state management...
 ```
 
 The skill provides:
-- Complete planning methodology
-- Reference guides for each phase
-- Subagent delegation patterns
-- Version control integration
-- Artifact templates and quality criteria
+- State loading patterns (how to read current state)
+- State persistence patterns (how to save progress)
+- History investigation patterns (how to trace decisions)
+- Consistency patterns (how to maintain continuity)
 
-## Phase Routing
+## Usage Patterns
 
-Based on the first argument:
-
-### `/planning init [roadmap|project|task] [focus]`
-Load `references/init.md` and execute initialization workflow.
-
-### `/planning research <topic>`
-Load `references/research.md` and conduct research.
-
-### `/planning continue [focus]`
-Load `references/continue.md` and resume planning.
-
-## Example Usage
-
+### Start a Planning Session
 ```
-/planning init project API-redesign
-/planning research authentication-patterns
-/planning continue risk-assessment
+/planning
 ```
+Loads skill, reads current state from PROGRESS.md, begins work on "Next Steps"
 
-**Now load the planning skill and begin the requested workflow.**
+### Start with Specific Focus
+```
+/planning [focus-area]
+```
+Loads skill, reads current state, focuses on specific area (e.g., "risk assessment", "dependency mapping")
+
+### Continue Previous Work
+```
+/planning continue
+```
+Explicit signal to resume from PROGRESS.md "Next Steps"
+
+## What to Expect
+
+The agent will:
+1. Load the planning skill
+2. Read CONTEXT.md and PROGRESS.md
+3. Review recent session notes
+4. State understanding of current phase and next steps
+5. Execute planning work
+6. Create session note documenting decisions
+7. Update PROGRESS.md with new state
+8. Commit with structured message
+9. State what next session should do
+
+## State Management Focus
+
+This command emphasizes **consistency across sessions**:
+- Always loads state before beginning work
+- Always persists state before ending
+- Tracks all decisions with rationale
+- Maintains clear "Next Steps" for continuity
+
+**Now load the planning skill and establish state management for this session.**

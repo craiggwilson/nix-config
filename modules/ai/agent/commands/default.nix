@@ -8,8 +8,8 @@
         # Command definitions without prompt paths (computed automatically)
         commands = {
           planning = {
-            argumentHint = "<init|research|continue> [args...]";
-            description = "Structured planning workflows for roadmaps, projects, and tasks";
+            argumentHint = "[focus-area]";
+            description = "State management framework for maintaining consistency across planning sessions";
             prompt = ./prompts/planning.md;
           };
         };

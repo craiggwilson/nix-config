@@ -9,7 +9,7 @@
         rules = {
           coding-practices = {
             description = "Personal coding practices and style guidelines";
-            loadMode = "always";
+            loadMode = "auto";
           };
 
           github = {
@@ -29,7 +29,7 @@
 
           markdown-formatting = {
             description = "Markdown formatting standards for all generated documents";
-            loadMode = "always";
+            loadMode = "auto";
           };
 
           mongodb-fiscal-calendar = {
