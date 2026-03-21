@@ -107,6 +107,7 @@
           ./packages/fern.nix
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
+          ./packages/oh-my-opencode-slim.nix
           ./packages/songtool.nix
           ./packages/workspace-mcp.nix
           ./packages/writeShellApplicationWithSubcommands.nix

@@ -134,6 +134,61 @@
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
 
+        # oh-my-opencode-slim plugin directory in the nix store
+        ohMyOpencodeSlimDir = "${pkgs.hdwlinux.oh-my-opencode-slim}/lib/oh-my-opencode-slim";
+
+        # oh-my-opencode-slim plugin configuration
+        ohMyOpencodeSlimConfig = {
+          "$schema" = "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json";
+          preset = "augment";
+          # MCP servers are managed by Nix; disable plugin-installed ones
+          disabled_mcps = [
+            "context7"
+            "grep_app"
+            "websearch"
+          ];
+          presets = {
+            augment = {
+              orchestrator = {
+                model = resolveAlias "balanced";
+                skills = [ ];
+                mcps = [ "*" ];
+              };
+              oracle = {
+                model = resolveAlias "analyst";
+                skills = [ ];
+                mcps = [ ];
+              };
+              librarian = {
+                model = resolveAlias "balanced";
+                skills = [ ];
+                mcps = [ "*" ];
+              };
+              explorer = {
+                model = resolveAlias "fast";
+                skills = [ ];
+                mcps = [ ];
+              };
+              designer = {
+                model = resolveAlias "coder";
+                skills = [ ];
+                mcps = [ ];
+              };
+              fixer = {
+                model = resolveAlias "fast";
+                skills = [ ];
+                mcps = [ ];
+              };
+            };
+          };
+          # tmux is the default terminal; enable pane spawning for sub-agents
+          tmux = {
+            enabled = true;
+            layout = "main-vertical";
+            main_pane_size = 60;
+          };
+        };
+
         # OpenCode configuration
         opencodeConfig = {
           "$schema" = "https://opencode.ai/config.json";
@@ -145,7 +200,7 @@
           permission = config.hdwlinux.ai.agent.tools;
           small_model = resolveAlias "fast";
           plugin = [
-            "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
+            "file://${ohMyOpencodeSlimDir}"
           ];
           keybinds = {
             "app_exit" = "ctrl+q";
@@ -161,6 +216,7 @@
 
         home.file = {
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
+          ".config/opencode/oh-my-opencode-slim.json".text = builtins.toJSON ohMyOpencodeSlimConfig;
           ".config/opencode/skills".source = skillsDir;
         };
       };
