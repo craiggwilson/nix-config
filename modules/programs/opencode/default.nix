@@ -201,10 +201,18 @@
           };
         };
 
+        # Wrapper that picks a random available port, exports it as OPENCODE_PORT
+        # so that oh-my-opencode-slim tmux integration can connect, then launches opencode.
+        opencodeWrapped = pkgs.writeShellScriptBin "opencode" ''
+          port=$(${pkgs.python3}/bin/python3 -c "import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()")
+          export OPENCODE_PORT="$port"
+          exec ${pkgs.opencode}/bin/opencode --port "$port" "$@"
+        '';
+
       in
       {
         home.packages = [
-          pkgs.opencode
+          opencodeWrapped
           pkgs.beads
         ];
 

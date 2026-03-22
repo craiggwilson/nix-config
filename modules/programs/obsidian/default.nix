@@ -3,13 +3,30 @@
     tags = [ "gui" ];
 
     homeManager =
-      { config, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         colors = config.hdwlinux.theme.colors.withHashtag;
+
+        # Wrap obsidian to include python3 in PATH for the terminal plugin
+        obsidianWithPython = pkgs.symlinkJoin {
+          name = "obsidian-with-python";
+          paths = [ pkgs.obsidian ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          postBuild = ''
+            wrapProgram $out/bin/obsidian \
+              --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]}
+          '';
+        };
       in
       {
         programs.obsidian = {
           enable = true;
+          package = obsidianWithPython;
           cli.enable = true;
 
           vaults.kb.target = "Projects/kb";
@@ -25,8 +42,9 @@
 
             communityPlugins = [
               { pkg = pkgs.callPackage ./plugins/_excalidraw.nix { }; }
-              { pkg = pkgs.callPackage ./plugins/_folder-notes.nix { }; }
               { pkg = pkgs.callPackage ./plugins/_file-ignore.nix { }; }
+              { pkg = pkgs.callPackage ./plugins/_folder-notes.nix { }; }
+              { pkg = pkgs.callPackage ./plugins/_terminal.nix { }; }
             ];
 
             cssSnippets = [
