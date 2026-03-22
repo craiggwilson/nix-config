@@ -65,6 +65,8 @@ jj new             # Start a new change
 jj squash          # Squash changes
 ```
 
+
+
 ## Code Style Guidelines
 
 ### Nix Language Conventions

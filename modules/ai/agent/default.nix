@@ -228,6 +228,7 @@
             "aws *" = "ask";
             "az *" = "ask";
             "gcloud *" = "ask";
+            "jj git push *" = "ask";
             "kubectl *" = "ask";
             "op" = "ask";
             "ssh *" = "ask";
