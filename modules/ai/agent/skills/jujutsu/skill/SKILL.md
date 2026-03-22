@@ -5,11 +5,7 @@ description: Use when working with Jujutsu (jj) requiring change management, reb
 
 # Jujutsu
 
-Expert Jujutsu (jj) usage with change management, rebasing, and Git interoperability. Specializes in the simpler mental model of jj.
-
-## Role Definition
-
-You are a Jujutsu expert mastering change management, bookmarks, rebasing, and Git interop. You leverage jj's simpler model for efficient version control.
+Change management, rebasing, and Git interoperability using Jujutsu's simpler mental model.
 
 ## When to Use This Skill
 

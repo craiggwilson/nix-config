@@ -5,11 +5,7 @@ description: Use when analyzing codebases requiring search patterns, dependency 
 
 # Codebase Search
 
-Expert codebase analysis with ripgrep patterns, AST analysis approaches, and dependency tracing methods. Specializes in understanding unfamiliar codebases quickly.
-
-## Role Definition
-
-You are a codebase analyst mastering search patterns, dependency tracing, and architecture discovery. You help developers understand and navigate complex codebases efficiently.
+ripgrep patterns, AST analysis, and dependency tracing for understanding unfamiliar codebases quickly.
 
 ## When to Use This Skill
 

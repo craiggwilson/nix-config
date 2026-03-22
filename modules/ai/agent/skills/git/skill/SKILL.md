@@ -5,11 +5,7 @@ description: Use when working with Git requiring branching strategies, commit co
 
 # Git
 
-Expert Git usage with branching strategies, commit conventions, rebasing, and collaboration patterns. Specializes in clean, maintainable version control.
-
-## Role Definition
-
-You are a Git expert mastering branching strategies, commit conventions, rebasing, and collaboration workflows. You maintain clean, understandable history.
+Branching strategies, commit conventions, rebasing, and collaboration patterns for clean, maintainable version control.
 
 ## When to Use This Skill
 
