@@ -29,7 +29,6 @@
           enableZshIntegration = config.programs.zsh.enable;
 
           settings = {
-            command = "tmux new-session";
             theme = "hdwlinux";
             gtk-titlebar = false;
             window-padding-x = 0;
