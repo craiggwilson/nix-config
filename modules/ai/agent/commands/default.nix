@@ -7,10 +7,16 @@
       let
         # Command definitions without prompt paths (computed automatically)
         commands = {
-          planning = {
-            argumentHint = "[focus-area]";
-            description = "State management framework for maintaining consistency across planning sessions";
-            prompt = ./prompts/planning.md;
+          session = {
+            argumentHint = "[project]";
+            description = "Start a KB project session from anywhere — reads progress, does work, updates state";
+            prompt = ./prompts/session.md;
+          };
+
+          research = {
+            argumentHint = "[topic] [area]";
+            description = "Conduct research and capture findings in the KB";
+            prompt = ./prompts/research.md;
           };
         };
 

@@ -151,33 +151,27 @@
             augment = {
               orchestrator = {
                 model = resolveAlias "balanced";
-                skills = [ ];
-                mcps = [ "*" ];
+                skills = [ "*" ];
               };
               oracle = {
                 model = resolveAlias "analyst";
-                skills = [ ];
-                mcps = [ ];
+                skills = [ "*" ];
               };
               librarian = {
                 model = resolveAlias "balanced";
-                skills = [ ];
-                mcps = [ "*" ];
+                skills = [ "*" ];
               };
               explorer = {
                 model = resolveAlias "fast";
-                skills = [ ];
-                mcps = [ ];
+                skills = [ "*" ];
               };
               designer = {
                 model = resolveAlias "coder";
-                skills = [ ];
-                mcps = [ ];
+                skills = [ "*" ];
               };
               fixer = {
                 model = resolveAlias "fast";
-                skills = [ ];
-                mcps = [ ];
+                skills = [ "*" ];
               };
             };
           };

@@ -36,6 +36,11 @@
             description = "MongoDB fiscal year and quarter conventions used during planning.";
             loadMode = "auto";
           };
+
+          obsidian = {
+            description = "Obsidian knowledge base location and usage for research, planning, and ideas";
+            loadMode = "always";
+          };
         };
 
         # Add prompt path to each rule based on its name
