@@ -215,29 +215,31 @@
         config.hdwlinux.ai.agent.tools = {
           bash = {
             "*" = "allow";
-            # Unconditional denies
+
             "git *" = "deny";
             "reboot *" = "deny";
             "rm -rf *" = "deny";
-            "rm -rf /" = "deny";
             "shutdown *" = "deny";
             "su *" = "deny";
             "sudo *" = "deny";
             "ssh *.10gen.cc" = "deny";
-            # Require confirmation for cloud/infra/privileged tools
+
             "aws *" = "ask";
             "az *" = "ask";
             "gcloud *" = "ask";
+            "jj git push" = "ask";
             "jj git push *" = "ask";
             "kubectl *" = "ask";
-            "op" = "ask";
+            "op *" = "ask";
             "ssh *" = "ask";
             "terraform apply *" = "ask";
           };
           edit = {
             "*" = "allow";
+
             "**/.env" = "deny";
             "**/.env.*" = "deny";
+
             "**/secrets/**" = "ask";
           };
           external_directory = {
