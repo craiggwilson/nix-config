@@ -213,7 +213,7 @@
       {
         home.packages = [
           opencodeWrapped
-          pkgs.beads
+          pkgs.opencode-desktop
         ];
 
         home.file = {
