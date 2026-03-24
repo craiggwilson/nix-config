@@ -7,3 +7,6 @@ result-*
 .vscode/*
 *.code-workspace
 .direnv
+
+# Rust build artifacts
+packages/*/target/

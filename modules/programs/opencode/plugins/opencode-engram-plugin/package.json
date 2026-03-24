@@ -1,0 +1,9 @@
+{
+  "name": "opencode-engram-plugin",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "devDependencies": {
+    "@opencode-ai/plugin": "latest"
+  }
+}

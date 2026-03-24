@@ -134,8 +134,15 @@
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
 
+        # engram plugin source directory — pointed directly at source for rapid iteration
+        engramPluginDir = "${
+          pkgs.callPackage ./plugins/_opencode-engram-plugin.nix { }
+        }/lib/opencode-engram-plugin";
+
         # oh-my-opencode-slim plugin directory in the nix store
-        ohMyOpencodeSlimDir = "${pkgs.hdwlinux.oh-my-opencode-slim}/lib/oh-my-opencode-slim";
+        ohMyOpencodeSlimDir = "${
+          pkgs.callPackage ./plugins/_oh-my-opencode-slim.nix { }
+        }/lib/oh-my-opencode-slim";
 
         # oh-my-opencode-slim plugin configuration
         ohMyOpencodeSlimConfig = {
@@ -195,6 +202,7 @@
           small_model = resolveAlias "fast";
           plugin = [
             "file://${ohMyOpencodeSlimDir}"
+            "file://${engramPluginDir}"
           ];
           keybinds = {
             "app_exit" = "ctrl+q";
@@ -220,6 +228,9 @@
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
           ".config/opencode/oh-my-opencode-slim.json".text = builtins.toJSON ohMyOpencodeSlimConfig;
           ".config/opencode/skills".source = skillsDir;
+          # Note: the engram module also creates ~/.config/opencode/engram.json with configFile.
+          # These should be merged in the NixOS config if both modules are active.
+          # Removed to avoid conflicts; the engram module handles this.
         };
       };
   };
