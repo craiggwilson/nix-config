@@ -101,14 +101,13 @@
           ./packages/code42-aat.nix
           ./packages/context7-mcp.nix
           ./packages/engflow_auth.nix
+          ./packages/engram-rs.nix
           ./packages/evergreen.nix
           ./packages/evergreen-mcp-server.nix
           ./packages/falcon-sensor.nix
           ./packages/fern.nix
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
-
-          ./packages/engram-rs.nix
           ./packages/songtool.nix
           ./packages/workspace-mcp.nix
           ./packages/writeShellApplicationWithSubcommands.nix

@@ -228,9 +228,6 @@
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
           ".config/opencode/oh-my-opencode-slim.json".text = builtins.toJSON ohMyOpencodeSlimConfig;
           ".config/opencode/skills".source = skillsDir;
-          # Note: the engram module also creates ~/.config/opencode/engram.json with configFile.
-          # These should be merged in the NixOS config if both modules are active.
-          # Removed to avoid conflicts; the engram module handles this.
         };
       };
   };
