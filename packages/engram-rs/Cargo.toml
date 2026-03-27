@@ -20,11 +20,22 @@ serde_yaml = "0.9"
 toml = "0.8"
 walkdir = "2"
 
-# Embedding model (same as packages/engram)
+# Embedding model
 candle-core = { version = "0.8", default-features = false }
 candle-nn = { version = "0.8", default-features = false }
 candle-transformers = { version = "0.8", default-features = false }
 tokenizers = { version = "0.20", default-features = false, features = ["onig"] }
+owo-colors = { version = "4.3.0", features = ["supports-colors"] }
+
+# PDF text extraction
+pdf-extract = "0.10"
+
+# Image decoding
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "bmp", "tiff", "webp"] }
+
+# OCR
+ocrs = "0.12"
+rten = "0.24"
 
 [build-dependencies]
 ureq = { version = "2", features = ["tls"] }

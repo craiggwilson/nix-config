@@ -211,10 +211,25 @@
 
         # Wrapper that picks a random available port, exports it as OPENCODE_PORT
         # so that oh-my-opencode-slim tmux integration can connect, then launches opencode.
+        # Only injects --port if the caller has not already supplied one, so that
+        # tools (e.g. the SDK's createOpencodeServer) can pass their own port without
+        # ending up with two conflicting --port flags.
         opencodeWrapped = pkgs.writeShellScriptBin "opencode" ''
-          port=$(${pkgs.python3}/bin/python3 -c "import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()")
-          export OPENCODE_PORT="$port"
-          exec ${pkgs.opencode}/bin/opencode --port "$port" "$@"
+          case " $* " in
+            *" --port"*)
+              # Caller supplied --port; extract it for OPENCODE_PORT so the
+              # tmux integration can still connect, then pass args through as-is.
+              port=$(echo "$*" | grep -oP '(?<=--port[= ])\d+')
+              export OPENCODE_PORT="$port"
+              exec ${pkgs.opencode}/bin/opencode "$@"
+              ;;
+            *)
+              # No --port supplied; pick a free port and inject it.
+              port=$(${pkgs.python3}/bin/python3 -c "import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()")
+              export OPENCODE_PORT="$port"
+              exec ${pkgs.opencode}/bin/opencode --port "$port" "$@"
+              ;;
+          esac
         '';
 
       in

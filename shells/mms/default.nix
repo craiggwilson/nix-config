@@ -22,7 +22,7 @@ pkgs.mkShell {
     pkgs.google-java-format
 
     # Go
-    pkgs.go_1_24
+    pkgs.go_1_25
 
     # node
     pkgs.nodejs_22

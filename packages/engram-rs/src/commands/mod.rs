@@ -1,4 +1,10 @@
 pub mod add;
-pub mod decay;
+pub mod clear;
+pub mod config;
 pub mod ingest;
+pub mod list;
+pub mod maintain;
+pub mod remove;
 pub mod search;
+pub mod stats;
+pub mod types;

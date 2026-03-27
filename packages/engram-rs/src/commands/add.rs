@@ -1,12 +1,9 @@
 use crate::config::Config;
 use crate::db::{self, UpsertOptions};
 use crate::embed;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use chrono::Utc;
 use std::path::PathBuf;
-
-/// Valid memory classification types.
-const VALID_TYPES: &[&str] = &["episodic", "preference", "fact"];
 
 /// Arguments for the `add` command.
 pub struct AddArgs {
@@ -21,13 +18,14 @@ pub struct AddArgs {
 /// embeds the content, and upserts the record into the database.
 /// Prints the created file path to stdout.
 pub fn run(cfg: &Config, args: AddArgs) -> Result<()> {
-    if !VALID_TYPES.contains(&args.memory_type.as_str()) {
-        bail!(
+    let memory_type_config = cfg.memory_type(&args.memory_type).ok_or_else(|| {
+        let valid_types: Vec<&str> = cfg.memory_types.iter().map(|t| t.classification.as_str()).collect();
+        anyhow::anyhow!(
             "invalid --type '{}'; must be one of: {}",
             args.memory_type,
-            VALID_TYPES.join(", ")
-        );
-    }
+            valid_types.join(", ")
+        )
+    })?;
 
     let now = Utc::now();
     let timestamp = now.format("%Y-%m-%d-%H%M%S").to_string();
@@ -55,10 +53,11 @@ pub fn run(cfg: &Config, args: AddArgs) -> Result<()> {
         .unwrap_or_default()
         .as_secs() as i64;
 
-    let embedding = embed::embed(&args.content).context("failed to embed content")?;
+    let embedding = embed::embed_passage(&args.content, cfg.passage_prefix.as_deref().unwrap_or("")).context("failed to embed content")?;
 
-    let (importance, decay_rate) = metadata_for_type(&args.memory_type);
-    let strength = compute_strength(importance, 1, 0.5, 0.5);
+    let importance = memory_type_config.importance;
+    let decay_rate = memory_type_config.decay_rate;
+    let strength = compute_strength(importance, 1, 0.5, &cfg.strength_weights);
 
     let tags_json = format!(r#"["memory","{}"]"#, args.memory_type);
 
@@ -72,6 +71,7 @@ pub fn run(cfg: &Config, args: AddArgs) -> Result<()> {
         Some("memory"),
         Some(&tags_json),
         &args.memory_type,
+        true,
         importance,
         0.5,
         decay_rate,
@@ -98,15 +98,6 @@ fn build_frontmatter(date: &str, memory_type: &str, correlation_id: Option<&str>
     fm
 }
 
-/// Return (importance, decay_rate) for a given memory type.
-pub fn metadata_for_type(memory_type: &str) -> (f64, f64) {
-    match memory_type {
-        "preference" => (0.8, 0.0),
-        "fact" => (0.7, 0.0),
-        _ => (0.4, 0.05), // episodic
-    }
-}
-
 /// Compute memory strength using the 7-feature model.
 ///
 /// - recency: 0.0 (always fresh on add)
@@ -116,20 +107,25 @@ pub fn metadata_for_type(memory_type: &str) -> (f64, f64) {
 /// - novelty: 0.5
 /// - confidence: 0.5
 /// - interference: 0.0
-pub fn compute_strength(importance: f64, frequency: u64, confidence: f64, _utility: f64) -> f64 {
+pub fn compute_strength(
+    importance: f64,
+    frequency: u64,
+    confidence: f64,
+    strength_weights: &crate::config::StrengthWeights,
+) -> f64 {
     let recency = 0.0_f64;
     let frequency_score = (1.0_f64).min(((frequency as f64 + 1.0).ln()) / (10.0_f64).ln());
     let utility = 0.5_f64;
     let novelty = 0.5_f64;
     let interference = 0.0_f64;
 
-    let strength = recency * 0.20
-        + frequency_score * 0.15
-        + importance * 0.25
-        + utility * 0.20
-        + novelty * 0.10
-        + confidence * 0.10
-        + interference * (-0.10);
+    let strength = recency * strength_weights.recency
+        + frequency_score * strength_weights.frequency
+        + importance * strength_weights.importance
+        + utility * strength_weights.utility
+        + novelty * strength_weights.novelty
+        + confidence * strength_weights.confidence
+        + interference * (-strength_weights.interference);
 
     strength.clamp(0.0, 1.0)
 }
@@ -162,23 +158,9 @@ mod tests {
     }
 
     #[test]
-    fn test_metadata_for_type() {
-        let (imp, decay) = metadata_for_type("preference");
-        assert_eq!(imp, 0.8);
-        assert_eq!(decay, 0.0);
-
-        let (imp, decay) = metadata_for_type("fact");
-        assert_eq!(imp, 0.7);
-        assert_eq!(decay, 0.0);
-
-        let (imp, decay) = metadata_for_type("episodic");
-        assert_eq!(imp, 0.4);
-        assert_eq!(decay, 0.05);
-    }
-
-    #[test]
     fn test_compute_strength_clamped() {
-        let s = compute_strength(1.0, 100, 1.0, 1.0);
+        let weights = crate::config::StrengthWeights::default();
+        let s = compute_strength(1.0, 100, 1.0, &weights);
         assert!(s <= 1.0);
         assert!(s >= 0.0);
     }

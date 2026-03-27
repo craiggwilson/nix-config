@@ -10,3 +10,20 @@ result-*
 
 # Rust build artifacts
 packages/*/target/
+
+# Node/Bun dependencies
+node_modules/
+bun.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Editor and IDE
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode-settings/
+
+# OS
+Thumbs.db

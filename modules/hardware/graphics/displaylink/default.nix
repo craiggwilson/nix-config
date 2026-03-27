@@ -4,7 +4,7 @@
       { config, lib, ... }:
       let
         needsDisplaylink = builtins.any (m: m.displaylink or false) (
-          builtins.attrValues config.hdwlinux.hardware.monitors
+          builtins.attrValues (config.hdwlinux.hardware.monitors or { })
         );
       in
       {

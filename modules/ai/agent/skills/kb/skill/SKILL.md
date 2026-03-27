@@ -50,9 +50,24 @@ Use Obsidian wikilinks with full vault-root paths:
 [[reference/mongodb/fiscal-calendar]]
 ```
 
+## Finding Information
+
+The KB vault is indexed by engram, so `engram-search` is the fastest way to locate relevant notes — it searches across all vault files by semantic similarity and returns snippets with file paths. Use it before reaching for the Obsidian CLI or manually navigating the vault structure.
+
+## Storing information — KB vs engram
+
+| What | Where |
+|:-----|:------|
+| Stable, permanent knowledge (decisions, research, references) | Write a KB file |
+| Short-lived or session-scoped context worth recalling later | `engram-add` (type: episodic) |
+| Standing preferences or constraints | `engram-add` (type: preference) |
+
+Engram memories complement the KB — use them for things that don't warrant a full note but are worth remembering across sessions. The KB is for things you'd want to find and read in full; engram is for things you just want to surface as context.
+
 ## Anti-Patterns
 
 ❌ Starting work without reading `progress.md`
 ❌ Ending a session without updating `progress.md`
 ❌ Making decisions without recording them in the session file
 ❌ Using git instead of jj
+❌ Manually browsing vault structure when `engram-search` would find it faster

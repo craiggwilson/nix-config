@@ -5,15 +5,99 @@ import type { Plugin } from "@opencode-ai/plugin";
 
 const ENGRAM = "engram";
 
-/** Maximum memories to store per idle cycle. */
-const MAX_MEMORIES_PER_IDLE = 3;
+// ─── Configuration types ──────────────────────────────────────────────────────
 
-interface EngramConfig {
-  /** Path to the engram SQLite database. If not specified, defaults to $XDG_DATA_HOME/engram/engram.db */
-  db?: string;
-  /** Path to the engram config file (TOML). If not specified, engram defaults to $XDG_CONFIG_HOME/engram/engram.toml */
-  configFile?: string;
+/**
+ * Engram plugin configuration, loaded from a JSON config file.
+ *
+ * The plugin looks for config in:
+ * 1. File path specified by `OPENCODE_ENGRAM_CONFIG` environment variable
+ * 2. Default: `$HOME/.config/opencode/engram.json`
+ *
+ * Example engram.json:
+ * {
+ *   "config_file": "/path/to/engram.toml",
+ *   "auto_classify": {
+ *     "model": "anthropic/claude-haiku-4-5",
+ *     "enabled": true,
+ *     "min_messages": 10,
+ *     "max_memories": 3,
+ *     "temperature": 0.2,
+ *     "search_limit": 8
+ *   }
+ * }
+ */
+interface EngramPluginConfig {
+  /** Path to the engram TOML config file. Defaults to engram's built-in default. */
+  config_file?: string;
+  /** Auto-classification settings. */
+  auto_classify?: AutoClassifyConfig;
 }
+
+/**
+ * Auto-classification settings, all optional.
+ */
+interface AutoClassifyConfig {
+  /**
+   * Master switch for automatic classification.
+   * When false, no classification runs on idle or compaction — the
+   * engram-add tool remains available for manual storage.
+   * Default: true
+   */
+  enabled?: boolean;
+  /**
+   * Minimum number of buffered messages required before idle classification
+   * will run. Prevents low-context classifications that produce noisy memories.
+   * Does not apply to compaction, which always has full context.
+   * Default: 10
+   */
+  min_messages?: number;
+  /**
+   * Maximum number of memories to store per classification run.
+   * Also controls the "at most N" instruction in the classifier prompt.
+   * Default: 3
+   */
+  max_memories?: number;
+  /**
+   * Temperature passed to the classifier model.
+   * Lower values produce more deterministic, conservative classifications.
+   * Default: 0.2
+   */
+  temperature?: number;
+  /**
+   * Number of memories to fetch from engram when injecting into the system
+   * prompt or compaction context.
+   * Default: 8
+   */
+  search_limit?: number;
+  /**
+   * Model to use for classification, in "provider/model" format.
+   * Resolution order: this value → opencode's small_model → classification disabled.
+   * Example: "anthropic/claude-haiku-4-5"
+   */
+  model?: string;
+}
+
+/** Resolved auto-classify settings with all defaults applied. */
+interface ResolvedAutoClassify {
+  enabled: boolean;
+  minMessages: number;
+  maxMemories: number;
+  temperature: number;
+  searchLimit: number;
+  /** Resolved model, or null if classification is disabled. */
+  model: ParsedModel | null;
+}
+
+const AUTO_CLASSIFY_DEFAULTS = {
+  enabled: true,
+  minMessages: 10,
+  maxMemories: 3,
+  temperature: 0.2,
+  searchLimit: 8,
+} as const;
+
+// ─── Internal types ───────────────────────────────────────────────────────────
 
 interface BufferEntry {
   role: string;
@@ -21,44 +105,42 @@ interface BufferEntry {
   isSummary: boolean;
 }
 
-type ClassifierResult = { store: false } | { store: true; type: "episodic" | "preference" | "fact"; content: string };
+type ClassifierResult = { store: false } | { store: true; type: string; content: string };
+
+interface EngramMemoryType {
+  name: string;
+  description: string;
+}
 
 interface ParsedModel {
   providerID: string;
   modelID: string;
 }
 
+// ─── Configuration loading ────────────────────────────────────────────────────
+
 /**
- * Load engram plugin configuration from ~/.config/opencode/engram.json.
- * This JSON file can specify:
- *   - db: path to the SQLite database (optional, engram has a default)
- *   - configFile: path to the engram TOML config file (optional, engram has a default)
- * If the file doesn't exist or can't be parsed, returns empty config and engram uses its defaults.
+ * Load engram plugin configuration from file.
+ *
+ * Checks OPENCODE_ENGRAM_CONFIG env var first, then defaults to
+ * $HOME/.config/opencode/engram.json. Returns empty config if file
+ * is missing or unparseable.
  */
-function loadConfig(): EngramConfig {
-  const configPath = `${homedir()}/.config/opencode/engram.json`;
+function loadPluginConfig(): EngramPluginConfig {
+  const configPath = process.env.OPENCODE_ENGRAM_CONFIG ||
+    `${homedir()}/.config/opencode/engram.json`;
+
   try {
     const content = readFileSync(configPath, "utf8");
-    return JSON.parse(content) as EngramConfig;
+    return JSON.parse(content) as EngramPluginConfig;
   } catch {
+    // File missing, unparseable, or unreadable — return empty config.
+    // The plugin will work with engram's defaults.
     return {};
   }
 }
 
-const engramConfig = loadConfig();
-
-/** Run engram and return stdout as a string. */
-function engram(args: string[]): string {
-  const engramArgs: string[] = [];
-  if (engramConfig.db) engramArgs.push("--db", engramConfig.db);
-  if (engramConfig.configFile) engramArgs.push("--config", engramConfig.configFile);
-  engramArgs.push(...args);
-
-  return execFileSync(ENGRAM, engramArgs, {
-    encoding: "utf8",
-    timeout: 15_000,
-  }).trim();
-}
+// ─── Pure helpers (no engram config dependency) ───────────────────────────────
 
 /** Parse "provider/model" string into { providerID, modelID }. */
 function parseModel(modelStr: string): ParsedModel | null {
@@ -79,44 +161,82 @@ function partsToText(parts: Array<{ type: string; synthetic?: boolean; ignored?:
     .trim();
 }
 
-/** Search engram and return formatted memory lines, or [] if nothing useful. */
-async function prefetchMemories(sessionID: string, client: any, buffer: BufferEntry[]): Promise<string[]> {
-  const queryParts: string[] = [];
+/** Build the classifier system prompt from the configured memory types and limits. */
+function buildClassifierPrompt(types: EngramMemoryType[], maxMemories: number): string {
+  const typeNames = types.map((t) => `"${t.name}"`).join(" | ");
+  const typeList = types.map((t) => `- ${t.name}: ${t.description}`).join("\n");
 
-  // Session title is the highest-signal context.
-  try {
-    const sessionRes = await client.session.info({ path: { id: sessionID } });
-    const title = sessionRes.data?.title;
-    if (title) queryParts.push(title);
-  } catch {
-    // Non-fatal — proceed without title.
-  }
+  return `You are a memory classifier for a personal knowledge base assistant.
+Given a conversation excerpt, identify up to ${maxMemories} distinct pieces of information worth storing as long-term memories.
 
-  // Last 2 user messages from the buffer (most recent context).
-  const recentUser = buffer.filter((e) => e.role === "User").slice(-2).map((e) => e.text);
-  queryParts.push(...recentUser);
+Respond with a JSON array only — no prose, no markdown fences.
 
-  if (queryParts.length === 0) return [];
+Each element must be one of:
+{ "store": false }
+OR
+{ "store": true, "type": ${typeNames}, "content": "<concise memory to store>" }
 
-  const query = queryParts.join(" ");
-  const raw = engram(["search", "--json", "--limit", "8", query]);
-  const memories = JSON.parse(raw) as Array<{ Classification?: string; Snippet?: string; Title?: string }>;
+Type definitions:
+${typeList}
 
-  return memories.map((m) => {
-    const tag = m.Classification ? ` [${m.Classification}]` : "";
-    return `- ${m.Snippet || m.Title}${tag}`;
-  });
+Rules:
+- Return at most ${maxMemories} elements total.
+- Only include { "store": true } entries for information genuinely useful to recall in a future session.
+- Do NOT store: questions, greetings, trivial exchanges, tool outputs, file contents, or anything session-specific that won't matter later.
+- Summary messages (marked [SUMMARY]) are higher-signal — prefer extracting memories from them.
+- Each memory must be self-contained and concise (one or two sentences max).
+- Each memory MUST include enough context to be useful in isolation — include the project name, repository, or topic so the memory is not ambiguous when recalled in a different session.`;
 }
 
+// ─── Plugin factory ───────────────────────────────────────────────────────────
+
 export default async ({ client }: { client: any }): Promise<Plugin> => {
-  let smallModel: ParsedModel | null = null;
+  // Load plugin config from file at module initialization.
+  const pluginConfig = loadPluginConfig();
+
+  /**
+   * Load memory types from engram once config is available.
+   */
+  function loadMemoryTypes(): EngramMemoryType[] {
+    const raw = engram(["types", "--json"]);
+    const parsed = JSON.parse(raw) as EngramMemoryType[];
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error("engram types returned no memory types — check engram config");
+    }
+    return parsed;
+  }
+
+  // Load memory types at module init.
+  let memoryTypes: EngramMemoryType[] = [];
+  try {
+    memoryTypes = loadMemoryTypes();
+  } catch (err) {
+    // Will be caught again in config() and re-thrown with context.
+  }
+
+  // Mutable config state — populated in config() before any hooks fire.
+  let autoClassify: ResolvedAutoClassify = { ...AUTO_CLASSIFY_DEFAULTS, model: null };
 
   function clog(level: "debug" | "info" | "warn" | "error", message: string, extra?: Record<string, unknown>) {
     client.app.log({ body: { service: "engram-plugin", level, message, extra: extra ?? {} } }).catch(() => {});
   }
 
+  /**
+   * Run engram with the configured db and config_file flags prepended.
+   */
+  function engram(args: string[]): string {
+    const engramArgs: string[] = [];
+    if (pluginConfig.config_file) engramArgs.push("--config", pluginConfig.config_file);
+    engramArgs.push(...args);
+
+    return execFileSync(ENGRAM, engramArgs, {
+      encoding: "utf8",
+      timeout: 15_000,
+    }).trim();
+  }
+
   // Per-session message buffer: sessionID -> array of { role, text, isSummary }
-  // Accumulates across turns; drained on each session.idle.
+  // Accumulates across turns; drained on each session idle.
   const sessionBuffers = new Map<string, BufferEntry[]>();
 
   // Per-session prefetch cache: sessionID -> Promise<string[]> of formatted memory lines.
@@ -134,11 +254,63 @@ export default async ({ client }: { client: any }): Promise<Plugin> => {
     return sessionBuffers.get(sessionID)!;
   }
 
-  async function classifyAndStore(sessionID: string): Promise<void> {
-    clog("info", "classifyAndStore called", { sessionID });
+  /** Search engram with a query and return formatted memory lines. */
+  async function searchMemories(query: string): Promise<string[]> {
+    const raw = engram(["search", "--json", "--limit", String(autoClassify.searchLimit), query]);
+    const memories = JSON.parse(raw) as Array<{ Classification?: string; Snippet?: string; Title?: string }>;
+    return memories.map((m) => {
+      const tag = m.Classification ? ` [${m.Classification}]` : "";
+      return `- ${m.Snippet || m.Title}${tag}`;
+    });
+  }
 
-    if (!smallModel) {
-      clog("warn", "smallModel not set, skipping classification");
+  /** Search engram and return formatted memory lines, or [] if nothing useful. */
+  async function prefetchMemories(
+    sessionID: string,
+    buffer: BufferEntry[],
+  ): Promise<string[]> {
+    const queryParts: string[] = [];
+
+    // Session title is the highest-signal context.
+    try {
+      const sessionRes = await client.session.info({ path: { id: sessionID } });
+      const title = sessionRes.data?.title;
+      if (title) queryParts.push(title);
+    } catch {
+      // Non-fatal — proceed without title.
+    }
+
+    // Last 2 user messages from the buffer (most recent context).
+    const recentUser = buffer.filter((e) => e.role === "User").slice(-2).map((e) => e.text);
+    queryParts.push(...recentUser);
+
+    if (queryParts.length === 0) return [];
+
+    const query = queryParts.join(" ");
+    return searchMemories(query);
+  }
+
+  /**
+   * Classify the session buffer and store memorable facts via engram.
+   *
+   * When `compactionContext` is provided (from `experimental.session.compacting`),
+   * it is used directly as the excerpt — this is the highest-signal path because
+   * the context contains the full conversation that is about to be summarised,
+   * including any existing summary messages. The buffer is cleared but not used.
+   *
+   * When called without `compactionContext` (e.g. from `session.status` idle),
+   * the buffer is drained and used to build the excerpt instead. Classification
+   * is skipped if fewer than `min_messages` are buffered.
+   */
+  async function classifyAndStore(sessionID: string, compactionContext?: string[]): Promise<void> {
+    clog("info", "classifyAndStore called", { sessionID, fromCompaction: !!compactionContext });
+
+    if (!autoClassify.enabled) {
+      clog("info", "auto-classification disabled, skipping");
+      return;
+    }
+    if (!autoClassify.model) {
+      clog("warn", "no model configured for classification, skipping");
       return;
     }
     if (classifierSessions.has(sessionID)) {
@@ -146,28 +318,50 @@ export default async ({ client }: { client: any }): Promise<Plugin> => {
       return;
     }
 
-    const buffer = sessionBuffers.get(sessionID);
-    clog("info", "buffer state", { sessionID, entries: buffer?.length ?? 0 });
-    if (!buffer || buffer.length === 0) {
-      clog("info", "buffer empty, skipping classification", { sessionID });
-      return;
+    let excerpt: string;
+
+    if (compactionContext) {
+      // Compaction path: use the context provided by opencode directly.
+      // This is the full conversation being compacted — the richest possible signal.
+      // Compaction always has full context, so it bypasses min_messages constraints.
+      // Clear the buffer so the idle path doesn't re-classify the same content.
+      const buffer = sessionBuffers.get(sessionID);
+      if (buffer) buffer.splice(0);
+      excerpt = compactionContext.join("\n\n");
+    } else {
+      // Idle path: drain the message buffer accumulated since last classification.
+      const buffer = sessionBuffers.get(sessionID);
+      const count = buffer?.length ?? 0;
+      clog("info", "buffer state", { sessionID, entries: count });
+
+      if (!buffer || count === 0) {
+        clog("info", "buffer empty, skipping classification", { sessionID });
+        return;
+      }
+      if (count < autoClassify.minMessages) {
+        clog("info", "buffer below min_messages threshold, skipping classification", {
+          sessionID,
+          count,
+          minMessages: autoClassify.minMessages,
+        });
+        return;
+      }
+
+      const entries = buffer.splice(0);
+      clog("info", "drained buffer", { sessionID, entries: entries.length });
+
+      // Summaries first — they are higher signal than raw exchanges.
+      const summaries = entries.filter((e) => e.isSummary);
+      const rest = entries.filter((e) => !e.isSummary);
+      const ordered = [...summaries, ...rest];
+
+      excerpt = ordered
+        .map((e) => {
+          const label = e.isSummary ? `${e.role} [SUMMARY]` : e.role;
+          return `${label}: ${e.text}`;
+        })
+        .join("\n\n");
     }
-
-    // Drain the buffer — take everything accumulated since last idle.
-    const entries = buffer.splice(0);
-    clog("info", "drained buffer", { sessionID, entries: entries.length });
-
-    // Build excerpt: summary entries first (higher signal), then the rest.
-    const summaries = entries.filter((e) => e.isSummary);
-    const rest = entries.filter((e) => !e.isSummary);
-    const ordered = [...summaries, ...rest];
-
-    const excerpt = ordered
-      .map((e) => {
-        const label = e.isSummary ? `${e.role} [SUMMARY]` : e.role;
-        return `${label}: ${e.text}`;
-      })
-      .join("\n\n");
 
     if (!excerpt.trim()) {
       clog("info", "excerpt empty, skipping", { sessionID });
@@ -196,15 +390,13 @@ export default async ({ client }: { client: any }): Promise<Plugin> => {
     clog("info", "created classifier session", { sessionID, classifierSessionID });
 
     try {
-      clog("info", "prompting classifier", { classifierSessionID, model: `${smallModel.providerID}/${smallModel.modelID}` });
-      // Use the "engram-classifier" agent defined in opencode.json — its prompt
-      // is the classifier system prompt, so we send just the excerpt as the user message.
+      clog("info", "prompting classifier", { classifierSessionID, model: `${autoClassify.model.providerID}/${autoClassify.model.modelID}` });
       const promptRes = await client.session.prompt({
         path: { id: classifierSessionID },
         body: {
           model: {
-            modelID: smallModel.modelID,
-            providerID: smallModel.providerID,
+            modelID: autoClassify.model.modelID,
+            providerID: autoClassify.model.providerID,
           },
           agent: "engram-classifier",
           tools: {},
@@ -243,7 +435,7 @@ export default async ({ client }: { client: any }): Promise<Plugin> => {
 
       let stored = 0;
       for (const result of results) {
-        if (stored >= MAX_MEMORIES_PER_IDLE) break;
+        if (stored >= autoClassify.maxMemories) break;
         if (result.store && result.type && result.content) {
           try {
             clog("info", "storing memory", { type: result.type, preview: result.content.substring(0, 80) });
@@ -268,45 +460,62 @@ export default async ({ client }: { client: any }): Promise<Plugin> => {
   return {
     async config(cfg: { small_model?: string; agent?: Record<string, unknown> }) {
       clog("info", "config called", { small_model: cfg.small_model });
-      if (cfg.small_model) {
-        smallModel = parseModel(cfg.small_model);
-        clog("info", "smallModel set", { providerID: smallModel?.providerID, modelID: smallModel?.modelID });
-      } else {
-        clog("warn", "no small_model in config");
+
+       clog("info", "engram config", {
+         config_file: pluginConfig.config_file,
+       });
+
+      // Reload memory types in case engram state changed.
+      try {
+        memoryTypes = loadMemoryTypes();
+        clog("info", "loaded memory types", { count: memoryTypes.length, types: memoryTypes.map((t) => t.name) });
+      } catch (err) {
+        throw new Error(`failed to load engram memory types: ${err}`);
       }
 
-      // Inject the engram-classifier agent directly into config so Agent.state
-      // picks it up when lazily initialized — no need to define it in opencode.json.
-      // Must mutate cfg.agent in-place (Object.assign on the nested object),
-      // not replace the top-level key — same pattern as opencode-projects-plugin.
+      // Resolve classification model: engram config > small_model > null (disabled).
+      const ac = pluginConfig.auto_classify ?? {};
+      const resolvedModel =
+        parseModel(ac.model ?? "") ??
+        parseModel(cfg.small_model ?? "") ??
+        null;
+
+      if (!resolvedModel) {
+        clog("warn", "no model configured for classification — auto-classification will not run");
+      } else {
+        clog("info", "classification model resolved", {
+          providerID: resolvedModel.providerID,
+          modelID: resolvedModel.modelID,
+          source: ac.model ? "engram config" : "small_model",
+        });
+      }
+
+      // Merge user-supplied auto_classify settings over defaults.
+      autoClassify = {
+        enabled:     ac.enabled      ?? AUTO_CLASSIFY_DEFAULTS.enabled,
+        minMessages: ac.min_messages ?? AUTO_CLASSIFY_DEFAULTS.minMessages,
+        maxMemories: ac.max_memories ?? AUTO_CLASSIFY_DEFAULTS.maxMemories,
+        temperature: ac.temperature  ?? AUTO_CLASSIFY_DEFAULTS.temperature,
+        searchLimit: ac.search_limit ?? AUTO_CLASSIFY_DEFAULTS.searchLimit,
+        model:       resolvedModel,
+      };
+      clog("info", "auto_classify config", {
+        enabled: autoClassify.enabled,
+        minMessages: autoClassify.minMessages,
+        maxMemories: autoClassify.maxMemories,
+        temperature: autoClassify.temperature,
+        searchLimit: autoClassify.searchLimit,
+        model: resolvedModel ? `${resolvedModel.providerID}/${resolvedModel.modelID}` : null,
+      });
+
+      // Inject the engram-classifier agent.
       if (!cfg.agent) cfg.agent = {};
       Object.assign(cfg.agent, {
         "engram-classifier": {
           description: "Internal: classifies conversation excerpts into memories for engram. Outputs JSON only.",
           mode: "subagent",
-          prompt: `You are a memory classifier for a personal knowledge base assistant.
-Given a conversation excerpt, identify up to 3 distinct pieces of information worth storing as long-term memories.
-
-Respond with a JSON array only — no prose, no markdown fences.
-
-Each element must be one of:
-{ "store": false }
-OR
-{ "store": true, "type": "episodic" | "preference" | "fact", "content": "<concise memory to store>" }
-
-Type definitions:
-- episodic: what happened in this exchange — decisions made, tasks completed, context established. Decays after ~3 days.
-- preference: standing user preferences, constraints, workflow rules, coding style. Permanent.
-- fact: stable knowledge — decisions about architecture, things learned, project-specific facts. Permanent.
-
-Rules:
-- Return at most 3 elements total.
-- Only include { "store": true } entries for information genuinely useful to recall in a future session.
-- Do NOT store: questions, greetings, trivial exchanges, tool outputs, file contents, or anything session-specific that won't matter later.
-- Summary messages (marked [SUMMARY]) are higher-signal — prefer extracting memories from them.
-- Each memory must be self-contained and concise (one or two sentences max).
-- Each memory MUST include enough context to be useful in isolation — include the project name, repository, or topic so the memory is not ambiguous when recalled in a different session.`,
-          temperature: 0.1,
+          prompt: buildClassifierPrompt(memoryTypes, autoClassify.maxMemories),
+          temperature: autoClassify.temperature,
         },
       });
       clog("info", "injected engram-classifier agent into config");
@@ -333,11 +542,11 @@ Rules:
       // We replace any in-flight prefetch — only the latest context matters.
       memoryCache.set(
         sessionID,
-        prefetchMemories(sessionID, client, buffer).catch(() => []),
+        prefetchMemories(sessionID, buffer).catch(() => []),
       );
     },
 
-    async event({ event }: { event: { type: string; properties?: { sessionID: string } } }) {
+    async event({ event }: { event: { type: string; properties?: { sessionID: string; status?: { type: string } } } }) {
       const { sessionID } = event.properties || {};
       if (!sessionID) return;
       if (classifierSessions.has(sessionID)) {
@@ -347,17 +556,22 @@ Rules:
 
       clog("debug", "event received", { type: event.type, sessionID });
 
-      if (event.type === "session.idle") {
-        clog("info", "session.idle — triggering classification", { sessionID });
+      // session.idle is deprecated as of opencode Nov 2025; the replacement is
+      // session.status with properties.status.type === "idle".
+      const isIdle =
+        event.type === "session.status" && event.properties?.status?.type === "idle";
+
+      if (isIdle) {
+        clog("info", "session idle — triggering classification", { sessionID });
         classifyAndStore(sessionID).catch((err) => {
           clog("error", "classifyAndStore failed", { sessionID, error: String(err) });
         });
         memoryCache.delete(sessionID);
       } else if (event.type === "session.compacted") {
-        clog("info", "session.compacted — triggering classification", { sessionID });
-        classifyAndStore(sessionID).catch((err) => {
-          clog("error", "classifyAndStore failed", { sessionID, error: String(err) });
-        });
+        // Classification was already kicked off in experimental.session.compacting
+        // using the full context. Just invalidate the memory cache so the next
+        // system transform picks up any newly stored memories.
+        clog("info", "session.compacted — invalidating memory cache", { sessionID });
         memoryCache.delete(sessionID);
       }
     },
@@ -365,18 +579,26 @@ Rules:
     async "experimental.session.compacting"({ sessionID }: { sessionID: string }, output: { context: string[] }) {
       clog("info", "experimental.session.compacting called", { sessionID });
       try {
+        // Inject relevant existing memories so they survive the compaction summary.
         const cached = memoryCache.get(sessionID);
         const buffer = sessionBuffers.get(sessionID) ?? [];
         const lines = cached
           ? await cached
-          : await prefetchMemories(sessionID, client, buffer).catch(() => []);
+          : await prefetchMemories(sessionID, buffer).catch(() => []);
 
         clog("info", "compacting memory lines", { sessionID, count: lines.length });
-        if (lines.length === 0) return;
+        if (lines.length > 0) {
+          output.context.push(
+            `## Relevant memories from your knowledge base\n\n${lines.join("\n")}`
+          );
+        }
 
-        output.context.push(
-          `## Relevant memories from your knowledge base\n\n${lines.join("\n")}`
-        );
+        // Classify the full compaction context while we have it. This is the
+        // highest-signal moment — the context contains everything about to be
+        // summarised, so we don't have to guess at ordering with session.compacted.
+        classifyAndStore(sessionID, output.context).catch((e) => {
+          clog("error", "background classification failed", { sessionID, error: String(e) });
+        });
       } catch (e) {
         clog("error", "compacting hook failed", { sessionID, error: String(e) });
       }
@@ -390,7 +612,7 @@ Rules:
         const buffer = sessionBuffers.get(sessionID) ?? [];
         const lines = cached
           ? await cached
-          : await prefetchMemories(sessionID, client, buffer).catch(() => []);
+          : await prefetchMemories(sessionID, buffer).catch(() => []);
 
         clog("debug", "system.transform memory lines", { sessionID, count: lines.length });
         if (lines.length === 0) return;
@@ -403,8 +625,36 @@ Rules:
       }
     },
 
+    async "tool.execute.after"(
+      input: { tool: string; sessionID: string; callID: string; args: any },
+      output: { title: string; output: string; metadata: any }
+    ) {
+      const { sessionID, tool } = input;
+      if (classifierSessions.has(sessionID)) return;
+      if (tool === "engram-search" || tool === "engram-add") return;
+
+      const toolKeyArgs = ["filePath", "command", "path", "query"]
+        .map((key) => input.args[key])
+        .filter((v) => v !== undefined)
+        .join(" ");
+
+      const toolName = tool || "";
+      const resultPreview = output.output.trim().substring(0, 200);
+
+      const queryParts = [toolName, toolKeyArgs, resultPreview].filter(Boolean);
+      const query = queryParts.join(" ");
+
+      try {
+        const results = await searchMemories(query);
+        memoryCache.set(sessionID, Promise.resolve(results));
+        clog("debug", "tool.execute.after memory update", { tool, sessionID, queryLength: query.length, resultCount: results.length });
+      } catch (e) {
+        clog("debug", "tool.execute.after search failed (non-fatal)", { tool, error: String(e) });
+      }
+    },
+
     tool: {
-      "memory-search": {
+      "engram-search": {
         description:
           "Search the knowledge base and memory for relevant context. " +
           "Use this at the start of tasks to recall relevant past decisions, " +
@@ -434,12 +684,10 @@ Rules:
         },
       },
 
-      "memory-add": {
+      "engram-add": {
         description:
           "Save a memory to the knowledge base. " +
-          "Use 'episodic' for session observations and what happened today. " +
-          "Use 'preference' for standing user preferences, constraints, and workflow rules. " +
-          "Use 'fact' for decisions made, things learned, and stable factual knowledge.",
+          memoryTypes.map((t) => `Use '${t.name}' for ${t.description.toLowerCase().replace(/\.$/, "")}.`).join(" "),
         parameters: {
           type: "object",
           properties: {
@@ -449,11 +697,8 @@ Rules:
             },
             type: {
               type: "string",
-              enum: ["episodic", "preference", "fact"],
-              description:
-                "episodic = temporal/session memory (decays after ~3 days); " +
-                "preference = standing rules and user preferences (permanent); " +
-                "fact = decisions, learnings, stable knowledge (permanent)",
+              enum: memoryTypes.map((t) => t.name),
+              description: memoryTypes.map((t) => `${t.name} = ${t.description}`).join("; "),
             },
           },
           required: ["content", "type"],
@@ -469,19 +714,6 @@ Rules:
       },
     },
 
-    // Re-index the vault and apply memory decay at the end of each session.
-    async afterSession() {
-      clog("info", "afterSession: running ingest and decay");
-      try {
-        engram(["ingest"]);
-      } catch (e) {
-        clog("error", "ingest failed", { error: String(e) });
-      }
-      try {
-        engram(["decay"]);
-      } catch (e) {
-        clog("error", "decay failed", { error: String(e) });
-      }
-    },
+
   };
 };

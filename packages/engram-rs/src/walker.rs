@@ -1,9 +1,22 @@
+use crate::ocr;
 use anyhow::{Context, Result};
 use ignore::WalkBuilder;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
 
-/// A parsed markdown file from the vault.
+/// Extensions treated as markdown — frontmatter parsing is attempted.
+const MARKDOWN_EXTENSIONS: &[&str] = &["md", "mdx", "markdown"];
+
+/// Extensions treated as PDF documents.
+const PDF_EXTENSIONS: &[&str] = &["pdf"];
+
+/// Extensions treated as images — OCR is attempted.
+const IMAGE_EXTENSIONS: &[&str] = &["jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "tif"];
+
+/// Number of bytes to sample when probing for binary content.
+const BINARY_PROBE_BYTES: usize = 8192;
+
+/// A parsed file from the vault.
 #[derive(Debug, Clone)]
 pub struct File {
     /// Absolute path to the file.
@@ -30,8 +43,9 @@ pub fn walk(root: &Path) -> Result<Vec<File>> {
     }
 
     let walker = WalkBuilder::new(root)
-        .hidden(true)   // skip hidden files/dirs
+        .hidden(true)
         .git_ignore(true)
+        .add_custom_ignore_filename(".engramignore")
         .build();
 
     let mut files = Vec::new();
@@ -44,16 +58,27 @@ pub fn walk(root: &Path) -> Result<Vec<File>> {
             continue;
         }
 
-        if path.extension().and_then(|e| e.to_str()) != Some("md") {
-            continue;
-        }
+        let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+        let ext = ext.as_str();
+        let parse_result = if MARKDOWN_EXTENSIONS.contains(&ext) {
+            Some(parse_markdown(path))
+        } else if PDF_EXTENSIONS.contains(&ext) {
+            Some(parse_pdf(path))
+        } else if IMAGE_EXTENSIONS.contains(&ext) {
+            Some(parse_image(path))
+        } else if is_text_file(path) {
+            Some(parse_text(path))
+        } else {
+            None
+        };
 
-        match parse_file(path) {
-            Ok(f) => files.push(f),
-            Err(e) => {
+        match parse_result {
+            Some(Ok(f)) => files.push(f),
+            Some(Err(e)) => {
                 // Log but don't abort the walk for a single bad file.
                 eprintln!("warning: skipping {}: {e}", path.display());
             }
+            None => {}
         }
     }
 
@@ -77,19 +102,140 @@ pub fn walk_all(roots: &[PathBuf]) -> Result<Vec<File>> {
     Ok(files)
 }
 
-/// Parse a single markdown file into a [`File`].
-fn parse_file(path: &Path) -> Result<File> {
-    let raw = std::fs::read_to_string(path)
-        .with_context(|| format!("failed to read {}", path.display()))?;
-
-    let mtime = path
+/// Read the modification time of a file as Unix seconds.
+fn mtime(path: &Path) -> Result<i64> {
+    Ok(path
         .metadata()
         .with_context(|| format!("failed to stat {}", path.display()))?
         .modified()
         .with_context(|| format!("failed to get mtime for {}", path.display()))?
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default()
-        .as_secs() as i64;
+        .as_secs() as i64)
+}
+
+/// Returns true if the file appears to be text — reads the first
+/// `BINARY_PROBE_BYTES` and checks for null bytes and valid UTF-8.
+/// This mirrors the heuristic used by git and ripgrep.
+fn is_text_file(path: &Path) -> bool {
+    let mut buf = vec![0u8; BINARY_PROBE_BYTES];
+    let n = match std::fs::File::open(path).and_then(|mut f| {
+        use std::io::Read;
+        f.read(&mut buf)
+    }) {
+        Ok(n) => n,
+        Err(_) => return false,
+    };
+    let sample = &buf[..n];
+    // Null bytes → binary.
+    if sample.contains(&0u8) {
+        return false;
+    }
+    // Invalid UTF-8 → binary.
+    std::str::from_utf8(sample).is_ok()
+}
+
+/// Parse a plain text file into a [`File`], using the filename stem as title.
+fn parse_text(path: &Path) -> Result<File> {
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("failed to read {}", path.display()))?;
+
+    let mtime = mtime(path)?;
+
+    let title = path
+        .file_stem()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
+    let doc_type = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_lowercase());
+
+    Ok(File {
+        path: path.to_path_buf(),
+        title,
+        content,
+        mtime,
+        doc_type,
+        tags: None,
+    })
+}
+
+/// Parse a PDF file into a [`File`] by extracting its text content.
+///
+/// Pages with no extractable text (e.g. scanned pages) are silently skipped.
+/// Returns an error if the file cannot be read or parsed at all.
+fn parse_pdf(path: &Path) -> Result<File> {
+    let content = pdf_extract::extract_text(path)
+        .with_context(|| format!("failed to extract text from PDF {}", path.display()))?;
+
+    // Normalise whitespace — pdf-extract can produce runs of blank lines.
+    let content = content
+        .lines()
+        .map(|l| l.trim())
+        .filter(|l| !l.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let mtime = mtime(path)?;
+
+    let title = path
+        .file_stem()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
+    Ok(File {
+        path: path.to_path_buf(),
+        title,
+        content,
+        mtime,
+        doc_type: Some("pdf".to_string()),
+        tags: None,
+    })
+}
+
+/// Parse an image file into a [`File`] by running OCR on it.
+///
+/// Returns an error if the image cannot be decoded. Files where no text is
+/// detected produce an empty `content` and are still indexed (so the filename
+/// is searchable), but will embed poorly — callers may choose to skip them.
+fn parse_image(path: &Path) -> Result<File> {
+    let content = ocr::extract_text(path)
+        .with_context(|| format!("failed to OCR {}", path.display()))?;
+
+    let mtime = mtime(path)?;
+
+    let title = path
+        .file_stem()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
+
+    let ext = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("image")
+        .to_lowercase();
+
+    Ok(File {
+        path: path.to_path_buf(),
+        title,
+        content,
+        mtime,
+        doc_type: Some(ext),
+        tags: None,
+    })
+}
+
+/// Parse a markdown file into a [`File`], attempting frontmatter extraction.
+fn parse_markdown(path: &Path) -> Result<File> {
+    let raw = std::fs::read_to_string(path)
+        .with_context(|| format!("failed to read {}", path.display()))?;
+
+    let mtime = mtime(path)?;
 
     let (frontmatter, body) = split_frontmatter(&raw);
 
@@ -107,7 +253,11 @@ fn parse_file(path: &Path) -> Result<File> {
                 .to_string()
         });
 
-    let doc_type = fm.as_ref().and_then(|fm| fm.doc_type.clone());
+    let doc_type = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.to_lowercase())
+        .or_else(|| Some("md".to_string()));
 
     let tags = fm.as_ref().and_then(|fm| {
         if fm.tags.is_empty() {
@@ -131,8 +281,6 @@ fn parse_file(path: &Path) -> Result<File> {
 #[derive(Debug, Deserialize)]
 struct Frontmatter {
     title: Option<String>,
-    #[serde(rename = "type")]
-    doc_type: Option<String>,
     #[serde(default)]
     tags: Vec<String>,
 }

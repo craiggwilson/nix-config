@@ -2,32 +2,38 @@ use crate::config::Config;
 use crate::db;
 use anyhow::{Context, Result};
 
-/// Minimum strength below which a memory is deleted.
-const STRENGTH_THRESHOLD: f64 = 0.05;
+/// Arguments for the `maintain` command.
+pub struct MaintainArgs;
 
-/// Arguments for the `decay` command.
-pub struct DecayArgs;
-
-/// Execute the `decay` command.
+/// Execute the `maintain` command.
 ///
-/// Applies Ebbinghaus forgetting curve decay to all episodic memories.
-/// Memories whose strength drops below the threshold are deleted.
-/// Prints a summary of how many memories were decayed.
-pub fn run(cfg: &Config, _args: DecayArgs) -> Result<()> {
+/// Applies Ebbinghaus forgetting curve decay to all memories whose type has a
+/// non-zero decay rate. Memories whose strength drops below the configured
+/// threshold are deleted. Then updates the corpus mean. Prints a summary of how
+/// many memories were decayed.
+pub fn run(cfg: &Config, _args: MaintainArgs) -> Result<()> {
     let conn = db::open(&cfg.db_path)?;
 
-    let episodic = db::all_episodic(&conn).context("failed to load episodic memories")?;
+    let decayable = db::all_decayable(&conn).context("failed to load decayable memories")?;
 
     let now = now_unix();
     let mut decayed = 0usize;
 
-    for (id, path, strength, decay_rate, last_accessed) in episodic {
+    for (id, path, strength, decay_rate, last_accessed) in decayable {
         let hours_since = hours_elapsed(last_accessed, now);
         let new_strength = apply_decay(strength, decay_rate, hours_since);
 
-        if new_strength < STRENGTH_THRESHOLD {
+        if new_strength < cfg.scoring.decay_threshold {
             db::delete_by_id(&conn, id)
                 .with_context(|| format!("failed to delete decayed memory {path}"))?;
+            // Remove the file from disk if it lives under memory_path, so it
+            // isn't resurrected on the next ingest.
+            let file_path = std::path::Path::new(&path);
+            if file_path.starts_with(&cfg.memory_path) && file_path.exists() {
+                std::fs::remove_file(file_path).with_context(|| {
+                    format!("failed to delete decayed memory file {path}")
+                })?;
+            }
         } else {
             db::update_strength(&conn, id, new_strength)
                 .with_context(|| format!("failed to update strength for {path}"))?;
@@ -36,7 +42,9 @@ pub fn run(cfg: &Config, _args: DecayArgs) -> Result<()> {
         decayed += 1;
     }
 
-    println!("decayed {decayed} episodic memories");
+    println!("decayed {decayed} memories");
+
+    db::update_corpus_mean(&conn).context("failed to update corpus mean")?;
 
     Ok(())
 }
@@ -79,9 +87,9 @@ mod tests {
 
     #[test]
     fn test_apply_decay_below_threshold() {
-        // After enough time, strength should drop below threshold.
+        // After enough time, strength should drop below threshold (0.05).
         let new = apply_decay(0.06, 0.05, 1000.0);
-        assert!(new < STRENGTH_THRESHOLD);
+        assert!(new < 0.05);
     }
 
     #[test]
