@@ -26,6 +26,7 @@
           userDirs = {
             enable = true;
             createDirectories = true;
+            setSessionVariables = true;
             extraConfig = {
               PROJECTS = "${config.home.homeDirectory}/Projects";
             };

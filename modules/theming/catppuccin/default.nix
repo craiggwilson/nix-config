@@ -175,6 +175,10 @@ in
             name = gtkName;
             package = gtkPkg;
           };
+          gtk4.theme = {
+            name = gtkName;
+            package = gtkPkg;
+          };
 
           iconTheme = lib.mkDefault {
             name = "Papirus-Dark";

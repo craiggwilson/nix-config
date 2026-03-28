@@ -7,6 +7,7 @@
       {
         programs.git = {
           enable = true;
+          signing.format = null;
           attributes = [ "*.sh eol=lf" ];
           lfs.enable = true;
           ignores = [
@@ -112,4 +113,3 @@
       };
   };
 }
-
