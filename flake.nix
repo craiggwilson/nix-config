@@ -12,6 +12,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    engram = {
+      url = "git+file:///home/craig/Projects/hdwlinux/engram";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.substrate.follows = "substrate";
+    };
+
     flake-parts.url = "github:hercules-ci/flake-parts";
 
     googleworkspace-cli = {
@@ -93,6 +99,7 @@
         inputs.substrate.substrateModules.nixos
         inputs.substrate.substrateModules.overlays
         inputs.substrate.substrateModules.packages
+        inputs.substrate.substrateModules.published-modules
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.types
@@ -100,39 +107,48 @@
 
       substrate.settings = {
         packageNamespace = "hdwlinux";
-        packages = [
-          ./packages/atlas-cli.nix
-          ./packages/auggie.nix
-          ./packages/code42-aat.nix
-          ./packages/context7-mcp.nix
-          ./packages/engflow_auth.nix
-          ./packages/engram-rs.nix
-          ./packages/evergreen.nix
-          ./packages/evergreen-mcp-server.nix
-          ./packages/falcon-sensor.nix
-          ./packages/fern.nix
-          ./packages/mcp-atlassian.nix
-          ./packages/mongo-orchestration.nix
-          ./packages/songtool.nix
-          ./packages/writeShellApplicationWithSubcommands.nix
-        ];
 
-        shells = [
-          ./shells/automation
-          ./shells/go
-          ./shells/hdwlinux
-          ./shells/mms
-          ./shells/mongotune
-          ./shells/observability
-          ./shells/rust
-          ./shells/typescript
+        homeManagerModules = [
+          inputs.engram.homeManagerModules.engram
         ];
 
         nixosModules = [
           inputs.disko.nixosModules.disko
         ];
 
+        publish = {
+          packages = [
+            ./packages/atlas-cli.nix
+            ./packages/auggie.nix
+            ./packages/code42-aat.nix
+            ./packages/context7-mcp.nix
+            ./packages/engflow_auth.nix
+            ./packages/evergreen.nix
+            ./packages/evergreen-mcp-server.nix
+            ./packages/falcon-sensor.nix
+            ./packages/fern.nix
+            ./packages/mcp-atlassian.nix
+            ./packages/mongo-orchestration.nix
+            ./packages/songtool.nix
+            ./packages/writeShellApplicationWithSubcommands.nix
+          ];
+
+          shells = [
+            ./shells/automation
+            ./shells/go
+            ./shells/hdwlinux
+            ./shells/mms
+            ./shells/mongotune
+            ./shells/observability
+            ./shells/rust
+            ./shells/typescript
+          ];
+        };
+
         overlays = [
+          # Engram — exposes pkgs.engram.{engram,opencode-plugin,skill}
+          inputs.engram.overlays.packages
+
           # NUR (Nix User Repository)
           inputs.nur.overlays.default
 

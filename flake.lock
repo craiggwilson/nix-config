@@ -20,6 +20,30 @@
         "type": "github"
       }
     },
+    "engram": {
+      "inputs": {
+        "flake-parts": "flake-parts",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-overlay": "rust-overlay",
+        "substrate": [
+          "substrate"
+        ]
+      },
+      "locked": {
+        "lastModified": 1774959889,
+        "narHash": "sha256-r06tOBXTcLid5/FqQnvd8ihsm8k5KU3FDRtqT8w7R5I=",
+        "rev": "3b6cf2a8f759aed386dc2eda061dde925f8127a6",
+        "revCount": 5,
+        "type": "git",
+        "url": "file:///home/craig/Projects/hdwlinux/engram"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///home/craig/Projects/hdwlinux/engram"
+      }
+    },
     "fenix": {
       "inputs": {
         "nixpkgs": [
@@ -77,6 +101,24 @@
       }
     },
     "flake-parts_2": {
+      "inputs": {
+        "nixpkgs-lib": "nixpkgs-lib_2"
+      },
+      "locked": {
+        "lastModified": 1772408722,
+        "narHash": "sha256-rHuJtdcOjK7rAHpHphUb1iCvgkU3GpfvicLMwwnfMT0=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "f20dc5d9b8027381c474144ecabc9034d6a839a3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "flake-parts_3": {
       "inputs": {
         "nixpkgs-lib": [
           "nur",
@@ -402,6 +444,21 @@
         "type": "github"
       }
     },
+    "nixpkgs-lib_2": {
+      "locked": {
+        "lastModified": 1772328832,
+        "narHash": "sha256-e+/T/pmEkLP6BHhYjx6GmwP5ivonQQn0bJdH9YrRB+Q=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "c185c7a5e5dd8f9add5b2f8ebeff00888b070742",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1751274312,
@@ -436,7 +493,7 @@
     },
     "nur": {
       "inputs": {
-        "flake-parts": "flake-parts_2",
+        "flake-parts": "flake-parts_3",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -499,7 +556,8 @@
     "root": {
       "inputs": {
         "disko": "disko",
-        "flake-parts": "flake-parts",
+        "engram": "engram",
+        "flake-parts": "flake-parts_2",
         "googleworkspace-cli": "googleworkspace-cli",
         "hdwlinux-private": "hdwlinux-private",
         "home-manager": "home-manager",
@@ -516,7 +574,7 @@
         "nur": "nur",
         "opencode": "opencode",
         "opnix": "opnix",
-        "rust-overlay": "rust-overlay",
+        "rust-overlay": "rust-overlay_2",
         "spicetify-nix": "spicetify-nix",
         "substrate": "substrate"
       }
@@ -539,6 +597,27 @@
       }
     },
     "rust-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "engram",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1774667365,
+        "narHash": "sha256-+JamhonkPyti+oqfl1ySAyF2L02adhCEcdZOzpSukq8=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "98caaa8cd1fbcc45913d1bb2b7fbabcf3e8d967a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -586,10 +665,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1773626027,
-        "narHash": "sha256-ab68WmDBvUXHTxozrnOIk0uKyBeQKPShp7fVxtYAdag=",
-        "rev": "606f0763aaf1d2698bfaf774b2b3b10056b3e510",
-        "revCount": 2,
+        "lastModified": 1774806719,
+        "narHash": "sha256-0WnVPXWru2ap3nHrPNlAyIj0DAcQSdlt3MITLEP2v60=",
+        "rev": "be0fbfecbbd1581e51a81ed6d10241f02d7061c2",
+        "revCount": 11,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/substrate"
       },

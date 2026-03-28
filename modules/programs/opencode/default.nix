@@ -134,10 +134,8 @@
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
 
-        # engram plugin source directory — pointed directly at source for rapid iteration
-        engramPluginDir = "${
-          pkgs.callPackage ./plugins/_opencode-engram-plugin.nix { }
-        }/lib/opencode-engram-plugin";
+        # engram plugin source directory — built from the engram flake
+        engramPluginDir = "${pkgs.engram.opencode-plugin}/lib/opencode-engram-plugin";
 
         # oh-my-openagent plugin directory in the nix store
         ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";

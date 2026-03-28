@@ -2,15 +2,11 @@
   config.substrate.modules.programs.engram = {
     tags = [ "ai:agent" ];
 
-    homeManager =
-      { pkgs, ... }:
-      let
-        toml = pkgs.formats.toml { };
-      in
-      {
-        home.packages = [ pkgs.hdwlinux.engram-rs ];
+    homeManager = {
+      programs.engram = {
+        enable = true;
 
-        home.file.".config/engram/engram.toml".source = toml.generate "engram.toml" {
+        settings = {
           indexed_paths = [
             {
               path = "~/Projects/kb/codebases";
@@ -40,5 +36,6 @@
           ];
         };
       };
+    };
   };
 }
