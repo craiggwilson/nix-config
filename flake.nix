@@ -14,6 +14,11 @@
 
     flake-parts.url = "github:hercules-ci/flake-parts";
 
+    googleworkspace-cli = {
+      url = "github:googleworkspace/cli";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -109,7 +114,6 @@
           ./packages/mcp-atlassian.nix
           ./packages/mongo-orchestration.nix
           ./packages/songtool.nix
-          ./packages/workspace-mcp.nix
           ./packages/writeShellApplicationWithSubcommands.nix
         ];
 

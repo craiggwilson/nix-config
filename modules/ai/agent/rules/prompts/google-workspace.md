@@ -1,20 +1,16 @@
 # Google Workspace Access
 
-Use the Google Workspace MCP server for all Google Workspace operations.
+Use the `gws` CLI for all Google Workspace operations.
 
-## Configuration
+## Skills
 
-- **Email**: `craig.wilson@mongodb.com`
+Load the relevant skill before performing any operation:
 
-When making calls to Google Workspace MCP tools, always use:
-
-```
-user_google_email: craig.wilson@mongodb.com
-```
-
-## Related Skills
-
-For advanced document operations, load these skills:
-
-- `google-docs` - Document content operations (read, create, edit, format)
-- `google-drive` - File management (upload, download, share, search, organize)
+- `gws-shared` - Authentication, global flags, and output formatting (always load this)
+- `gws-drive` - Drive file and folder management
+- `gws-drive-upload` - Upload files to Drive
+- `gws-docs` - Docs API operations
+- `gws-docs-write` - Append text to a document
+- `gws-sheets` - Sheets API operations
+- `gws-sheets-read` - Read values from a spreadsheet
+- `gws-sheets-append` - Append rows to a spreadsheet
