@@ -139,50 +139,70 @@
           pkgs.callPackage ./plugins/_opencode-engram-plugin.nix { }
         }/lib/opencode-engram-plugin";
 
-        # oh-my-opencode-slim plugin directory in the nix store
-        ohMyOpencodeSlimDir = "${
-          pkgs.callPackage ./plugins/_oh-my-opencode-slim.nix { }
-        }/lib/oh-my-opencode-slim";
+        # oh-my-openagent plugin directory in the nix store
+        ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";
 
-        # oh-my-opencode-slim plugin configuration
-        ohMyOpencodeSlimConfig = {
-          "$schema" = "https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json";
-          preset = "augment";
+        # oh-my-openagent plugin configuration
+        ohMyOpenagentConfig = {
+          "$schema" =
+            "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json";
           # MCP servers are managed by Nix; disable plugin-installed ones
           disabled_mcps = [
             "context7"
             "grep_app"
             "websearch"
           ];
-          presets = {
-            augment = {
-              orchestrator = {
-                model = resolveAlias "balanced";
-                skills = [ "*" ];
-              };
-              oracle = {
-                model = resolveAlias "analyst";
-                skills = [ "*" ];
-              };
-              librarian = {
-                model = resolveAlias "balanced";
-                skills = [ "*" ];
-              };
-              explorer = {
-                model = resolveAlias "fast";
-                skills = [ "*" ];
-              };
-              designer = {
-                model = resolveAlias "coder";
-                skills = [ "*" ];
-              };
-              fixer = {
-                model = resolveAlias "fast";
-                skills = [ "*" ];
-              };
+          # Override each agent's model to use the augment provider exclusively.
+          # oh-my-openagent's built-in fallback chains reference providers
+          # (anthropic, openai, google) that are not configured here.
+          agents = {
+            # Primary orchestrator — balanced model for planning and delegation
+            sisyphus = {
+              model = resolveAlias "balanced";
+            };
+            # Deep strategic reasoning — most capable model
+            oracle = {
+              model = resolveAlias "analyst";
+            };
+            # Planner — delegates to sisyphus model by default; keep it there
+            prometheus = { };
+            # Research and doc lookup — balanced is fine
+            librarian = {
+              model = resolveAlias "balanced";
+            };
+            # Codebase search and discovery — fast model sufficient
+            explore = {
+              model = resolveAlias "fast";
+            };
+            # Autonomous deep worker — coder model
+            hephaestus = {
+              model = resolveAlias "coder";
+            };
+            # Multimodal tasks not needed; disable to avoid fallback confusion
+            multimodal-looker = {
+              disable = true;
             };
           };
-          # tmux is the default terminal; enable pane spawning for sub-agents
+          # Category overrides — control what model task() picks when delegating
+          categories = {
+            quick = {
+              model = resolveAlias "fast";
+            };
+            "unspecified-low" = {
+              model = resolveAlias "balanced";
+            };
+            "unspecified-high" = {
+              model = resolveAlias "analyst";
+            };
+            writing = {
+              model = resolveAlias "writer";
+            };
+            # visual-engineering and other GPU-heavy categories fall back to analyst
+            "visual-engineering" = {
+              model = resolveAlias "coder";
+            };
+          };
+          # tmux pane spawning for sub-agents
           tmux = {
             enabled = true;
             layout = "main-vertical";
@@ -201,7 +221,7 @@
           permission = config.hdwlinux.ai.agent.tools;
           small_model = resolveAlias "fast";
           plugin = [
-            "file://${ohMyOpencodeSlimDir}"
+            "file://${ohMyOpenagentDir}"
             "file://${engramPluginDir}"
           ];
           keybinds = {
@@ -210,7 +230,7 @@
         };
 
         # Wrapper that picks a random available port, exports it as OPENCODE_PORT
-        # so that oh-my-opencode-slim tmux integration can connect, then launches opencode.
+        # so that oh-my-openagent tmux integration can connect, then launches opencode.
         # Only injects --port if the caller has not already supplied one, so that
         # tools (e.g. the SDK's createOpencodeServer) can pass their own port without
         # ending up with two conflicting --port flags.
@@ -221,6 +241,14 @@
               # tmux integration can still connect, then pass args through as-is.
               port=$(echo "$*" | grep -oP '(?<=--port[= ])\d+')
               export OPENCODE_PORT="$port"
+              exec ${pkgs.opencode}/bin/opencode "$@"
+              ;;
+            *" attach "*)
+              # 'attach' subcommand connects to an existing server via URL — it
+              # does not accept --port.  Pass through unchanged; extract the port
+              # from the URL so OPENCODE_PORT is still available if needed.
+              port=$(echo "$*" | grep -oP '(?<=:)\d+(?=/)')
+              [ -n "$port" ] && export OPENCODE_PORT="$port"
               exec ${pkgs.opencode}/bin/opencode "$@"
               ;;
             *)
@@ -241,7 +269,7 @@
 
         home.file = {
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
-          ".config/opencode/oh-my-opencode-slim.json".text = builtins.toJSON ohMyOpencodeSlimConfig;
+          ".config/opencode/oh-my-openagent.json".text = builtins.toJSON ohMyOpenagentConfig;
           ".config/opencode/skills".source = skillsDir;
         };
       };
