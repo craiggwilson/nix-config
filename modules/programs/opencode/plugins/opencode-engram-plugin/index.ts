@@ -639,7 +639,7 @@ export default async ({ client }: { client: any }): Promise<Plugin> => {
         .join(" ");
 
       const toolName = tool || "";
-      const resultPreview = output.output.trim().substring(0, 200);
+      const resultPreview = (output.output ?? "").toString().trim().substring(0, 200);
 
       const queryParts = [toolName, toolKeyArgs, resultPreview].filter(Boolean);
       const query = queryParts.join(" ");
