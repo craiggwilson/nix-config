@@ -144,6 +144,14 @@
         ohMyOpenagentConfig = {
           "$schema" =
             "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json";
+
+          dynamic_context_pruning = {
+            enabled = true;
+            notification = "minimal";
+          };
+
+          hashline_edit = true;
+
           # MCP servers are managed by Nix; disable plugin-installed ones
           disabled_mcps = [
             "context7"
@@ -163,7 +171,9 @@
               model = resolveAlias "analyst";
             };
             # Planner — delegates to sisyphus model by default; keep it there
-            prometheus = { };
+            prometheus = {
+              prompt_append = "Leverage deep & quick agents heavily, always in parallel.";
+            };
             # Research and doc lookup — balanced is fine
             librarian = {
               model = resolveAlias "balanced";
@@ -186,17 +196,17 @@
             quick = {
               model = resolveAlias "fast";
             };
-            "unspecified-low" = {
+            unspecified-low = {
               model = resolveAlias "balanced";
             };
-            "unspecified-high" = {
+            unspecified-high = {
               model = resolveAlias "analyst";
             };
             writing = {
               model = resolveAlias "writer";
             };
             # visual-engineering and other GPU-heavy categories fall back to analyst
-            "visual-engineering" = {
+            visual-engineering = {
               model = resolveAlias "coder";
             };
           };

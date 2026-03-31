@@ -15,6 +15,8 @@
             ".envrc"
             ".direnv"
             ".idea"
+            ".jj"
+            ".sisyphus"
             ".venv"
             ".vscode"
           ];

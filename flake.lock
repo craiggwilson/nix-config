@@ -32,10 +32,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1774959889,
-        "narHash": "sha256-r06tOBXTcLid5/FqQnvd8ihsm8k5KU3FDRtqT8w7R5I=",
-        "rev": "3b6cf2a8f759aed386dc2eda061dde925f8127a6",
-        "revCount": 5,
+        "lastModified": 1775009766,
+        "narHash": "sha256-hPFP3AudgyUcRvddyONPidYRd6JYLo67lAAySN4WbyI=",
+        "rev": "62ad2f9b9e8a672f9ee61cf0e2d8bbed00029108",
+        "revCount": 22,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/engram"
       },
