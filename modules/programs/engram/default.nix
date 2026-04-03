@@ -5,6 +5,24 @@
     homeManager = {
       programs.engram = {
         enable = true;
+        # localEmbeddingModel = {
+        #   name = "bge-m3";
+        #   url = "https://huggingface.co/Vsevolod/bge-m3-safetensors/resolve/main";
+        #   files = {
+        #     model = {
+        #       name = "model.safetensors";
+        #       hash = "sha256-vwZTgSt0D8LViAzXe+sb4dLKCAy5XeLh0UUs/ioXpco=";
+        #     };
+        #     tokenizer = {
+        #       name = "tokenizer.json";
+        #       hash = "sha256-IRBrbX2rKVLB1Jb7IdXcnbdcKO02GgX1Agu7ongQ3Qg=";
+        #     };
+        #     config = {
+        #       name = "config.json";
+        #       hash = "sha256-JhWeetBlBzRIRgEX6yS3pFcvb0546t/2XcChHAUkSfo=";
+        #     };
+        #   };
+        # };
 
         settings = {
           indexed_paths = [
