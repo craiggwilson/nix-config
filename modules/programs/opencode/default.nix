@@ -230,7 +230,7 @@
           small_model = resolveAlias "fast";
           plugin = [
             "file://${ohMyOpenagentDir}"
-            "file://${engramPluginDir}"
+            #"file://${engramPluginDir}"
           ];
           keybinds = {
             "app_exit" = "ctrl+q";
