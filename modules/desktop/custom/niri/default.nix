@@ -9,12 +9,9 @@
       {
         lib,
         pkgs,
-        inputs,
         ...
       }:
       {
-        imports = [ inputs.nirinit.nixosModules.nirinit ];
-
         programs = {
           niri.enable = true;
           uwsm = {
@@ -30,7 +27,6 @@
         };
 
         services = {
-          nirinit.enable = true;
           xserver.desktopManager.runXdgAutostartIfNone = true;
         };
 

@@ -41,11 +41,6 @@
 
     musnix.url = "github:musnix/musnix";
 
-    nirinit = {
-      url = "github:amaanq/nirinit";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     niri-scratchpad = {
       url = "github:gvolpe/niri-scratchpad";
       inputs.nixpkgs.follows = "nixpkgs";
