@@ -1,6 +1,6 @@
 # Project Management
 
-How projects are structured, started, continued, and completed in this KB.
+How projects are structured, started, continued, and archived in this KB.
 
 ## Project Structure
 
@@ -79,24 +79,39 @@ type: session
 3. Create `projects/<name>/progress.md` from the progress template — initial state
 4. Commit: `jj describe -m "project: start <name>" && jj new`
 
-## Continuing a Project (Session Workflow)
+## Session Workflow
 
+**Starting**: Use `/kb-start-project-session`
 1. Read `progress.md` — orient fully before doing anything
 2. Read the most recent session file if more context is needed
-3. State your understanding of current state before acting
+3. State understanding of current state before acting
 4. Do the work
-5. Update `progress.md` to reflect actual new state
-6. Create `sessions/YYYY-MM-DD.md`
-7. Commit: `jj describe -m "<project>: <description>" && jj new`
 
-## Completing a Project
+**Completing**: Use `/kb-complete-project-session`
+1. Update `progress.md` to reflect actual new state
+2. Create `sessions/YYYY-MM-DD.md`
+3. Commit: `jj describe -m "<project>: <description>" && jj new`
 
-1. Do a final session — wrap up any loose ends
-2. Update `progress.md`: set status to complete, summarize outcomes
-3. Update `<name>.md`: set `status: archived` in frontmatter
-4. Move `projects/<name>/` to `projects/archive/<name>/` (if archiving)
-5. Remove from any active project lists
-6. Commit: `jj describe -m "project: complete <name>" && jj new`
+## Archiving a Project
+
+Use `/kb-archive-project` when a project is fully done.
+
+1. Update `progress.md` — write a final outcomes summary: what shipped, what didn't, key decisions made
+2. Set `status: archived` in `<name>.md` frontmatter, update `updated:` date
+3. Move the project directory:
+   ```bash
+   # From ~/Projects/kb
+   mkdir -p projects/archive
+   mv projects/<name> projects/archive/<name>
+   ```
+4. Obsidian resolves links by filename, not path — existing wikilinks in `notes/` and `mocs/` pointing
+   to project files will continue to resolve correctly after the move.
+5. Commit: `jj describe -m "project: archive <name>" && jj new`
+
+**What to keep**: Everything — progress, sessions, decisions. The archive is a record, not a trash can.
+
+**What not to do**: Don't delete session files, don't summarize-and-destroy, don't update `notes/` or
+`mocs/` links (they resolve automatically).
 
 ## Decisions
 

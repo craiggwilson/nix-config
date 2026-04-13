@@ -1,6 +1,6 @@
-# /kb-continue-project
+# /kb-start-project-session
 
-Continue work on an active KB project — read current state, do the work, update progress, log the session.
+Start a working session on an active KB project — read current state, orient, then do the work.
 
 **Arguments**: `$ARGUMENTS` — project name (e.g. `mvcp`, `data-plane-availability`). If omitted, ask which project.
 
@@ -11,16 +11,15 @@ Continue work on an active KB project — read current state, do the work, updat
 3. Reads the most recent session file in `projects/<project>/sessions/` if more context needed
 4. States understanding of current phase, what's in flight, and what's next — before acting
 5. Does the work
-6. Updates `projects/<project>/progress.md` to reflect actual new state
-7. Creates `projects/<project>/sessions/YYYY-MM-DD.md`
-8. Commits: `jj describe -m "<project>: <description>" && jj new`
+
+**This command starts the session. Use `/kb-complete-project-session` when done.**
 
 ## Usage
 
 ```
-/kb-continue-project mvcp
-/kb-continue-project data-plane-availability
-/kb-continue-project                          # will ask which project
+/kb-start-project-session mvcp
+/kb-start-project-session data-plane-availability
+/kb-start-project-session          # will ask which project
 ```
 
 ## State Artifacts
@@ -28,8 +27,8 @@ Continue work on an active KB project — read current state, do the work, updat
 | Artifact | Path | Role |
 |:---------|:-----|:-----|
 | Project overview | `projects/<project>/<project>.md` | Stable context — read, rarely change |
-| Progress | `projects/<project>/progress.md` | Current state — read first, update last |
-| Session | `projects/<project>/sessions/YYYY-MM-DD.md` | Today's log — create at end |
+| Progress | `projects/<project>/progress.md` | Current state — read first |
+| Recent sessions | `projects/<project>/sessions/` | Additional context if needed |
 
 ## Skills to Load
 

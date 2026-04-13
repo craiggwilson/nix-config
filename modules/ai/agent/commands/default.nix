@@ -7,18 +7,6 @@
       let
         # Command definitions without prompt paths (computed automatically)
         commands = {
-          session = {
-            argumentHint = "[project]";
-            description = "Start a KB project session from anywhere — reads progress, does work, updates state";
-            prompt = ./prompts/session.md;
-          };
-
-          research = {
-            argumentHint = "[topic] [area]";
-            description = "Conduct research and capture findings in the KB";
-            prompt = ./prompts/research.md;
-          };
-
           kb-add-to-inbox = {
             argumentHint = "[thought or content]";
             description = "Append a thought or fragment to the KB inbox";
@@ -43,16 +31,22 @@
             prompt = ./prompts/kb-start-project.md;
           };
 
-          kb-continue-project = {
+          kb-start-project-session = {
             argumentHint = "[project]";
-            description = "Continue an active KB project — read state, do work, update progress, log session";
-            prompt = ./prompts/kb-continue-project.md;
+            description = "Start a working session on an active KB project";
+            prompt = ./prompts/kb-start-project-session.md;
           };
 
-          kb-complete-project = {
+          kb-complete-project-session = {
             argumentHint = "[project]";
-            description = "Wrap up a completed KB project — archive state and final session";
-            prompt = ./prompts/kb-complete-project.md;
+            description = "Complete a KB project session — update progress, log session, commit";
+            prompt = ./prompts/kb-complete-project-session.md;
+          };
+
+          kb-archive-project = {
+            argumentHint = "[project]";
+            description = "Archive a completed KB project — final progress, set status, move to archive";
+            prompt = ./prompts/kb-archive-project.md;
           };
         };
 
