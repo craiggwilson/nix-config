@@ -71,7 +71,10 @@ Load detailed guidance based on context:
 
 | Topic | Reference | Load When |
 |:------|:----------|:----------|
-| Inbox processing | `references/process-inbox.md` | User asks to process inbox, synthesize captures, or clear inbox items |
+| Zettelkasten | `references/zettelkasten.md` | Creating or linking notes, unsure what belongs in notes/ vs elsewhere |
+| Research | `references/research.md` | Conducting research, creating new notes from investigation |
+| Project management | `references/project-management.md` | Starting, continuing, or completing a project |
+| Inbox processing | `references/process-inbox.md` | Processing inbox, synthesizing captures, clearing inbox items |
 
 ## Anti-Patterns
 
