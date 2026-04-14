@@ -134,8 +134,8 @@
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
 
-        # engram plugin source directory — built from the engram flake
-        engramPluginDir = "${pkgs.engram.opencode-plugin}/lib/opencode-engram-plugin";
+        # mestra plugin source directory — built from the mestra flake
+        mestraPluginDir = "${pkgs.mestra.opencode-plugin}/lib/opencode-mestra-plugin";
 
         # oh-my-openagent plugin directory in the nix store
         ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";
@@ -230,7 +230,7 @@
           small_model = resolveAlias "fast";
           plugin = [
             "file://${ohMyOpenagentDir}"
-            #"file://${engramPluginDir}"
+            #"file://${mestraPluginDir}"
           ];
           keybinds = {
             "app_exit" = "ctrl+q";

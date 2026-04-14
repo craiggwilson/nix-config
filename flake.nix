@@ -12,8 +12,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    engram = {
-      url = "git+file:///home/craig/Projects/hdwlinux/engram";
+    mestra = {
+      url = "git+file:///home/craig/Projects/mestra";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.substrate.follows = "substrate";
     };
@@ -104,7 +104,7 @@
         packageNamespace = "hdwlinux";
 
         homeManagerModules = [
-          inputs.engram.homeManagerModules.engram
+          inputs.mestra.homeManagerModules.mestra
         ];
 
         nixosModules = [
@@ -141,8 +141,8 @@
         };
 
         overlays = [
-          # Engram — exposes pkgs.engram.{engram,opencode-plugin,skill}
-          inputs.engram.overlays.packages
+          # mestra — exposes pkgs.mestra.{mestra,opencode-plugin,skill}
+          inputs.mestra.overlays.packages
 
           # NUR (Nix User Repository)
           inputs.nur.overlays.default

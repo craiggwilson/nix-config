@@ -1,9 +1,9 @@
 {
-  config.substrate.modules.programs.engram = {
+  config.substrate.modules.programs.mestra = {
     tags = [ "ai:agent" ];
 
     homeManager = {
-      programs.engram = {
+      programs.mestra = {
         enable = true;
         enableCuda = true;
         localEmbeddingModel = {
