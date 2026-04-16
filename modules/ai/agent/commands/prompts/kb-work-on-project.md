@@ -1,8 +1,8 @@
-# /kb-start-project-session
+# /kb-work-on-project
 
 Start a working session on an active KB project — read current state, orient, then do the work.
 
-**Arguments**: `$ARGUMENTS` — project name (e.g. `mvcp`, `data-plane-availability`). If omitted, ask which project.
+**Arguments**: `$ARGUMENTS` — project name (e.g. `mvcp`, `data-plane-availability`). If omitted, ask which project. May also be followed by initial instructions.
 
 ## What This Does
 
@@ -12,14 +12,14 @@ Start a working session on an active KB project — read current state, orient, 
 4. States understanding of current phase, what's in flight, and what's next — before acting
 5. Does the work
 
-**This command starts the session. Use `/kb-complete-project-session` when done.**
+**This command starts the session. Use `/kb-save-work-on-project` when done.**
 
 ## Usage
 
 ```
-/kb-start-project-session mvcp
-/kb-start-project-session data-plane-availability
-/kb-start-project-session          # will ask which project
+/kb-work-on-project mvcp
+/kb-work-on-project data-plane-availability
+/kb-work-on-project          # will ask which project
 ```
 
 ## State Artifacts
@@ -34,8 +34,6 @@ Start a working session on an active KB project — read current state, orient, 
 
 Always load:
 - `kb` — conventions, vault structure, load `references/project-management.md`
-- `obsidian-markdown` — for creating and editing vault files
 
 Load if needed:
 - `jujutsu` — for commit workflow detail
-- `obsidian-cli` — if Obsidian is open and you want to use the CLI

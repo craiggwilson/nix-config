@@ -1,4 +1,4 @@
-# /kb-complete-project-session
+# /kb-save-work-on-project
 
 Complete the current working session on a KB project — update progress, create session log, commit.
 
@@ -11,7 +11,7 @@ Complete the current working session on a KB project — update progress, create
 3. Creates `projects/<project>/sessions/YYYY-MM-DD.md` — session log
 4. Commits: `jj describe -m "<project>: <description>" && jj new`
 
-**Use this after `/kb-start-project-session` when the session's work is done.**
+**Use this after `/kb-work-on-project` when the session's work is done.**
 
 ## Session Log Sections
 
@@ -49,9 +49,9 @@ Wikilinks to notes, MOCs, or other files touched.
 ## Usage
 
 ```
-/kb-complete-project-session mvcp
-/kb-complete-project-session data-plane-availability
-/kb-complete-project-session       # will ask which project
+/kb-save-work-on-project mvcp
+/kb-save-work-on-project data-plane-availability
+/kb-save-work-on-project       # will ask which project
 ```
 
 ## State Artifacts Updated
@@ -65,7 +65,7 @@ Wikilinks to notes, MOCs, or other files touched.
 
 Always load:
 - `kb` — conventions, vault structure, load `references/project-management.md`
-- `obsidian-markdown` — for creating and editing vault files
+- `obsidian-markdown` — for creating vault files
 
 Load if needed:
 - `jujutsu` — for commit workflow detail
