@@ -55,6 +55,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    openspec = {
+      url = "github:Fission-AI/OpenSpec";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     opnix = {
       url = "github:craiggwilson/opnix";
       inputs.nixpkgs.follows = "nixpkgs";

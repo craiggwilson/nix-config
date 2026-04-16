@@ -489,6 +489,26 @@
         "type": "github"
       }
     },
+    "openspec": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1776249123,
+        "narHash": "sha256-HmyIaFCw2d6UBg2DW5SjOj9ZnK4x74K+oZ2xVY3p58w=",
+        "owner": "Fission-AI",
+        "repo": "OpenSpec",
+        "rev": "f529b2596896afd95d855507b0c53b5d515433b5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Fission-AI",
+        "repo": "OpenSpec",
+        "type": "github"
+      }
+    },
     "opnix": {
       "inputs": {
         "flake-utils": "flake-utils_3",
@@ -529,6 +549,7 @@
         "nixpkgs-stable": "nixpkgs-stable",
         "nur": "nur",
         "opencode": "opencode",
+        "openspec": "openspec",
         "opnix": "opnix",
         "rust-overlay": "rust-overlay_2",
         "spicetify-nix": "spicetify-nix",
