@@ -4,7 +4,7 @@
 
     homeManager = {
       programs.mestra = {
-        enable = true;
+        enable = false;
         enableCuda = true;
         localEmbeddingModel = {
           name = "bge-m3";

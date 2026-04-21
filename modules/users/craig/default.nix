@@ -101,6 +101,17 @@ in
         };
 
         home.shellAliases = {
+          "nix-update" = ''
+            set -e
+            # nix flake update doesn't write flake.lock when the source is a jj
+            # repo because jj's git backend causes nix to resolve the flake from
+            # an immutable store path. Work around by temporarily hiding .git so
+            # nix uses the path: fetcher and writes directly to the filesystem.
+            _nix_config_dir=$(git -C "''${1:-.}" rev-parse --show-toplevel 2>/dev/null || echo "''${1:-.}")
+            mv "$_nix_config_dir/.git" "$_nix_config_dir/.git.bak"
+            nix flake update --flake "$_nix_config_dir" --allow-dirty-locks || { mv "$_nix_config_dir/.git.bak" "$_nix_config_dir/.git"; return 1; }
+            mv "$_nix_config_dir/.git.bak" "$_nix_config_dir/.git"
+          '';
           "start" = "xdg-open";
           "use" = "hdwlinux develop";
         };

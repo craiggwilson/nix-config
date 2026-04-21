@@ -39,7 +39,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    musnix.url = "github:musnix/musnix";
+    musnix = {
+      url = "github:musnix/musnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     niri-scratchpad = {
       url = "github:gvolpe/niri-scratchpad";
