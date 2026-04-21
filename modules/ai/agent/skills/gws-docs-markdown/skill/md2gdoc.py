@@ -13,6 +13,7 @@ Outputs the document ID (create) or tab ID (add-tab) to stdout.
 from __future__ import annotations
 
 import argparse
+import difflib
 import json
 import re
 import subprocess
@@ -54,6 +55,52 @@ class BuildState:
     deferred_links: list[tuple[int, int, str]] = field(default_factory=list)
 
 
+@dataclass
+class Region:
+    """A leaf editable region extracted from a live Google Doc tab."""
+
+    kind: str
+    tab_id: str
+    start_api: int
+    end_api: int
+    text: str
+    row: int = 0
+    col: int = 0
+    table_start_api: int = 0
+    # 1-6 for headings, 0 for all other regions.
+    heading_level: int = 0
+    # Raw API paragraph dict — populated by extract_tab_regions for rendering.
+    raw_para: dict = field(default_factory=dict)
+    # True when this cell is in the header row of a table.
+    is_table_header: bool = False
+    # Original markdown source for local regions — preserves [[wikilink]] syntax
+    # so link_diff_region can detect missing tab/heading link styling.
+    raw_markdown: str = ""
+
+@dataclass
+class Hunk:
+    """A minimal text replacement within a Region."""
+
+    tab_id: str
+    start_api: int
+    end_api: int
+    new_text: str
+
+
+@dataclass
+class StructuralChange:
+    """A section-level structural difference between live doc and local markdown."""
+
+    kind: str
+    # 'renamed'  — heading text changed (but section matched)
+    # 'reordered' — section exists in both but at different positions
+    # 'added'    — section exists in local only
+    # 'removed'  — section exists in live only
+    live_heading: str    # normalized heading text from live doc (empty if added)
+    local_heading: str   # normalized heading text from local file (empty if removed)
+    live_position: int   # 0-based section index in live, -1 if added
+    local_position: int  # 0-based section index in local, -1 if removed
+
 # ---------------------------------------------------------------------------
 # Markdown parser
 # ---------------------------------------------------------------------------
@@ -89,6 +136,51 @@ def parse(text: str) -> tuple[dict, SyntaxTreeNode]:
     return meta, root
 
 
+def patch_frontmatter(path: Path, updates: dict) -> None:
+    """Update or insert YAML frontmatter fields in *path* in-place.
+
+    Preserves all existing frontmatter fields and body content.
+    If no frontmatter block exists, prepends one.
+    """
+    text = path.read_text(encoding="utf-8")
+    fm_pattern = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+    match = fm_pattern.match(text)
+    if match:
+        existing: dict = yaml.safe_load(match.group(1)) or {}
+        existing.update(updates)
+        new_fm = "---\n" + yaml.dump(existing, default_flow_style=False, allow_unicode=True) + "---\n"
+        new_text = new_fm + text[match.end():]
+    else:
+        new_fm = "---\n" + yaml.dump(updates, default_flow_style=False, allow_unicode=True) + "---\n"
+        new_text = new_fm + text
+    path.write_text(new_text, encoding="utf-8")
+
+
+def load_tab_slug_map_from_files(files: list[Path]) -> dict[str, str]:
+    """Build a tabId → filename-stem-slug map from local markdown frontmatter.
+
+    Reads each file's frontmatter for 'gdoc_tab_id'. When found, maps that
+    tab ID to the file's stem slugified (e.g. '00-README' → '00-readme',
+    '04-scope-process' → '04-scope-process').
+
+    This gives the exact mapping needed to render internal tab links as
+    Obsidian wikilinks that match the local filenames.
+    """
+    result: dict[str, str] = {}
+    fm_pattern = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+    for path in files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        match = fm_pattern.match(text)
+        if not match:
+            continue
+        fm: dict = yaml.safe_load(match.group(1)) or {}
+        tab_id = fm.get("gdoc_tab_id", "")
+        if tab_id:
+            result[tab_id] = _slugify(path.stem)
+    return result
 # ---------------------------------------------------------------------------
 # Text extraction helpers (inline spans)
 # ---------------------------------------------------------------------------
@@ -108,6 +200,55 @@ def plain_text(node: SyntaxTreeNode) -> str:
     for child in node.children:
         parts.append(plain_text(child))
     return "".join(parts)
+
+
+def plain_text_nowiki(node: SyntaxTreeNode) -> str:
+    """Like plain_text() but strips Obsidian wikilink syntax.
+
+    [[target|display]] → display
+    [[target]]         → target
+
+    Used when building Region.text for local markdown regions so that the
+    text matches what the live Google Doc stores (plain display text, no
+    wikilink brackets).
+    """
+    raw = plain_text(node)
+    raw = re.sub(r"\[\[([^|\]]+)\|([^\]]+)\]\]", r"\2", raw)
+    raw = re.sub(r"\[\[([^\]]+)\]\]", r"\1", raw)
+    return raw
+
+
+def raw_text(node: SyntaxTreeNode) -> str:
+    """Return the raw source text of an inline node, preserving [[wikilink]] syntax.
+
+    Unlike plain_text(), this does not strip wikilink brackets or other markup.
+    Used to populate Region.raw_markdown so link_diff_region can detect
+    wikilinks that need tab link styling in the live doc.
+    """
+    if node.type == "text":
+        return node.token.content  # type: ignore[union-attr]
+    if node.type == "softbreak" or node.type == "hardbreak":
+        return " "
+    if node.type == "code_inline":
+        return node.token.content  # type: ignore[union-attr]
+    if node.type in ("html_inline", "html_block"):
+        return re.sub(r"<[^>]+>", "", node.token.content or "")  # type: ignore[union-attr]
+    return "".join(raw_text(child) for child in node.children)
+
+def _to_utf16_units(text: str) -> list[str]:
+    """Return a list of UTF-16 code units for *text*.
+
+    Characters outside the BMP (codepoint > 0xFFFF) become two entries.
+    """
+    units = []
+    for ch in text:
+        cp = ord(ch)
+        if cp > 0xFFFF:
+            units.append(ch)
+            units.append(ch)
+        else:
+            units.append(ch)
+    return units
 
 
 @dataclass
@@ -1182,6 +1323,808 @@ def build_requests(path: Path, state: BuildState) -> list[Request]:
     return state.requests
 
 
+def extract_tab_regions(doc: dict, tab_id: str) -> list[Region]:
+    """Extract editable leaf regions from *tab_id* in *doc*.
+
+    Each Region carries *raw_para* — the full API paragraph dict — so that
+    render_tab_as_markdown() can reconstruct inline styles and structure.
+    """
+    regions: list[Region] = []
+    tab = _find_tab(doc.get("tabs", []), tab_id)
+    if tab is None:
+        return []
+
+    body = tab.get("documentTab", {}).get("body", {})
+    for el in body.get("content", []):
+        para = el.get("paragraph")
+        if para is not None:
+            text = _paragraph_text_from_api(para)
+            named_style = para.get("paragraphStyle", {}).get("namedStyleType", "")
+            hlevel = _NAMED_STYLE_TO_HEADING.get(named_style, 0)
+            regions.append(Region(
+                kind="paragraph",
+                tab_id=tab_id,
+                start_api=el.get("startIndex", 0),
+                end_api=el.get("endIndex", 0),
+                text=text,
+                heading_level=hlevel,
+                raw_para=para,
+            ))
+            continue
+
+        table = el.get("table")
+        if table is not None:
+            table_start = el.get("startIndex", 0)
+            num_header_rows = table.get("tableStyle", {}).get("tableColumnProperties", [])
+            # Detect header rows: the first row of a table is treated as the
+            # header when all its cells have bold text or when the table has a
+            # headerRowCount. Fall back to row_idx == 0 as a safe heuristic.
+            header_row_count = 1  # GDocs tables always treat row 0 as header for MD purposes
+            for row_idx, row in enumerate(table.get("tableRows", [])):
+                is_header = row_idx < header_row_count
+                for col_idx, cell in enumerate(row.get("tableCells", [])):
+                    content = cell.get("content", [])
+                    if not content:
+                        continue
+                    for cell_el in content:
+                        cell_para = cell_el.get("paragraph")
+                        if cell_para is None:
+                            continue
+                        cell_text = _paragraph_text_from_api(cell_para)
+                        regions.append(Region(
+                            kind="table_cell",
+                            tab_id=tab_id,
+                            start_api=cell_el.get("startIndex", 0),
+                            end_api=cell_el.get("endIndex", 0),
+                            text=cell_text,
+                            row=row_idx,
+                            col=col_idx,
+                            table_start_api=table_start,
+                            raw_para=cell_para,
+                            is_table_header=is_header,
+                        ))
+            continue
+
+    return regions
+
+
+def markdown_to_regions(path: Path, tab_id: str) -> list[Region]:
+    """Parse *path* and return a flat list of textual regions."""
+    text = path.read_text(encoding="utf-8")
+    _meta, root = parse(text)
+    regions: list[Region] = []
+    _markdown_node_to_regions(root, tab_id, regions)
+    return regions
+
+
+def _split_into_sections(
+    regions: list[Region],
+    anchor_levels: frozenset[int] = frozenset({1, 2, 3}),
+) -> list[tuple[Region | None, list[Region]]]:
+    """Split *regions* into sections anchored by heading levels.
+
+    Returns a list of (heading_region | None, body_regions) pairs.
+    The first section may have heading_region=None for content before any heading.
+    """
+    sections: list[tuple[Region | None, list[Region]]] = []
+    current_heading: Region | None = None
+    current_body: list[Region] = []
+
+    for r in regions:
+        if r.heading_level in anchor_levels:
+            sections.append((current_heading, current_body))
+            current_heading = r
+            current_body = []
+        else:
+            current_body.append(r)
+
+    sections.append((current_heading, current_body))
+    return sections
+
+
+def _normalize_heading_text(text: str) -> str:
+    """Normalize heading text for matching: lowercase, collapse whitespace.
+
+    Handles both live-doc headings ('01 Decision Chart') and local markdown
+    headings ('[[01-decision-chart]]') by stripping wikilinks and collapsing
+    hyphens to spaces before comparison.
+    """
+    import re
+    # Strip wikilinks: [[target|display]] → display; [[target]] → target
+    text = re.sub(r"\[\[([^|\]]+)\|([^\]]+)\]\]", r"\2", text)
+    text = re.sub(r"\[\[([^\]]+)\]\]", r"\1", text)
+    # Strip markdown bold/italic markers
+    text = re.sub(r"[*_]+", "", text)
+    # Collapse hyphens to spaces so '01-decision-chart' == '01 decision chart'
+    text = text.replace("-", " ")
+    return " ".join(text.lower().split())
+
+
+def _match_headings(
+    live_sections: list[tuple[Region | None, list[Region]]],
+    local_sections: list[tuple[Region | None, list[Region]]],
+) -> tuple[list[tuple[int, int]], list[StructuralChange]]:
+    """Match live sections to local sections by normalized heading text.
+
+    Returns:
+      matched  — list of (live_idx, local_idx) pairs for sections whose text
+                 can be diffed (equal + single-rename).
+      changes  — list of StructuralChange describing reorders, additions,
+                 removals, and renames.
+
+    Reorder detection: an insert+delete pair whose normalized headings are
+    identical is classified as 'reordered' rather than added+removed.
+    """
+    live_keys = [
+        _normalize_heading_text(h.text) if h else "" for h, _ in live_sections
+    ]
+    local_keys = [
+        _normalize_heading_text(h.text) if h else "" for h, _ in local_sections
+    ]
+    matcher = difflib.SequenceMatcher(None, live_keys, local_keys, autojunk=False)
+    opcodes = matcher.get_opcodes()
+
+    matched: list[tuple[int, int]] = []
+    changes: list[StructuralChange] = []
+
+    # Collect raw inserts and deletes to detect reordering.
+    raw_inserts: list[tuple[int, int, int]] = []   # (j1, j2, opcode_index)
+    raw_deletes: list[tuple[int, int, int]] = []   # (i1, i2, opcode_index)
+
+    for op_idx, (tag, i1, i2, j1, j2) in enumerate(opcodes):
+        if tag == "equal":
+            for di in range(i2 - i1):
+                matched.append((i1 + di, j1 + di))
+        elif tag == "replace" and (i2 - i1) == 1 and (j2 - j1) == 1:
+            # Single heading replace: treat as rename if both sides are non-empty.
+            if live_keys[i1] and local_keys[j1]:
+                matched.append((i1, j1))
+                h_live = live_sections[i1][0]
+                h_local = local_sections[j1][0]
+                changes.append(StructuralChange(
+                    kind="renamed",
+                    live_heading=h_live.text if h_live else "",
+                    local_heading=h_local.text if h_local else "",
+                    live_position=i1,
+                    local_position=j1,
+                ))
+        elif tag == "insert":
+            raw_inserts.append((j1, j2, op_idx))
+        elif tag == "delete":
+            raw_deletes.append((i1, i2, op_idx))
+        elif tag == "replace":
+            # Multi-replace: treat each live side as deleted, each local as inserted.
+            raw_deletes.append((i1, i2, op_idx))
+            raw_inserts.append((j1, j2, op_idx))
+
+    # Match inserts to deletes with identical normalized heading to detect reorders.
+    # Build lookup: normalized key → list of live section indices being deleted.
+    deleted_by_key: dict[str, list[int]] = {}
+    for i1, i2, _ in raw_deletes:
+        for i in range(i1, i2):
+            key = live_keys[i]
+            deleted_by_key.setdefault(key, []).append(i)
+
+    handled_live: set[int] = set()
+    handled_local: set[int] = set()
+
+    for j1, j2, _ in raw_inserts:
+        for j in range(j1, j2):
+            key = local_keys[j]
+            if key and key in deleted_by_key and deleted_by_key[key]:
+                # Same normalized heading on both sides — this is a reorder.
+                live_i = deleted_by_key[key].pop(0)
+                h_live = live_sections[live_i][0]
+                h_local = local_sections[j][0]
+                changes.append(StructuralChange(
+                    kind="reordered",
+                    live_heading=h_live.text if h_live else key,
+                    local_heading=h_local.text if h_local else key,
+                    live_position=live_i,
+                    local_position=j,
+                ))
+                handled_live.add(live_i)
+                handled_local.add(j)
+            else:
+                # Genuinely new section.
+                h_local = local_sections[j][0]
+                changes.append(StructuralChange(
+                    kind="added",
+                    live_heading="",
+                    local_heading=h_local.text if h_local else key,
+                    live_position=-1,
+                    local_position=j,
+                ))
+                handled_local.add(j)
+
+    # Remaining deletes that weren’t matched to an insert are genuine removals.
+    for i1, i2, _ in raw_deletes:
+        for i in range(i1, i2):
+            if i not in handled_live and deleted_by_key.get(live_keys[i]):
+                # Still in the lookup list — means it was consumed above; skip.
+                pass
+            elif i not in handled_live:
+                h_live = live_sections[i][0]
+                changes.append(StructuralChange(
+                    kind="removed",
+                    live_heading=h_live.text if h_live else live_keys[i],
+                    local_heading="",
+                    live_position=i,
+                    local_position=-1,
+                ))
+
+    return matched, changes
+
+
+def _align_body_regions(
+    live_body: list[Region],
+    local_body: list[Region],
+) -> list[tuple[Region, Region]]:
+    """Align body regions within a matched section via SequenceMatcher.
+
+    Returns 1:1 matched pairs where text differs. Structural changes (insert,
+    delete, multi-replace) are skipped — fail closed.
+    """
+    pairs: list[tuple[Region, Region]] = []
+    live_texts = [r.text for r in live_body]
+    local_texts = [r.text for r in local_body]
+    sm = difflib.SequenceMatcher(None, live_texts, local_texts, autojunk=False)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag == "equal":
+            continue
+        if tag == "replace" and (i2 - i1) == 1 and (j2 - j1) == 1:
+            lr, ll = live_body[i1], local_body[j1]
+            if lr.kind == ll.kind:
+                pairs.append((lr, ll))
+        # insert / delete / multi-replace: skip — structural change, fail closed
+    return pairs
+
+
+def align_regions(live: list[Region], local: list[Region]) -> list[tuple[Region, Region]]:
+    """Align live and local regions using heading-anchored structural matching.
+
+    Returns only matched (live, local) region pairs where text differs.
+    Use diff_tab_structure() to get text pairs, all pairs, and structural changes.
+    """
+    text_pairs, _all_pairs, _ = diff_tab_structure(live, local)
+    return text_pairs
+
+
+def diff_tab_structure(
+    live: list[Region],
+    local: list[Region],
+) -> tuple[list[tuple[Region, Region]], list[tuple[Region, Region]], list[StructuralChange]]:
+    """Full structural diff of live doc regions vs local markdown regions.
+
+    Returns:
+      text_pairs  — (live, local) pairs whose text differs (for update-tab text hunks).
+      all_pairs   — ALL 1:1 matched (live, local) pairs including equal ones
+                    (for link diff — links may be missing even when text matches).
+      changes     — StructuralChange list for reordered/added/removed sections.
+    """
+    live_sections = _split_into_sections(live)
+    local_sections = _split_into_sections(local)
+    matched_indices, structural_changes = _match_headings(live_sections, local_sections)
+
+    text_pairs: list[tuple[Region, Region]] = []
+    all_pairs: list[tuple[Region, Region]] = []
+
+    for live_si, local_si in matched_indices:
+        live_h, live_body = live_sections[live_si]
+        local_h, local_body = local_sections[local_si]
+
+        # Heading regions.
+        if live_h and local_h:
+            all_pairs.append((live_h, local_h))
+            if live_h.text != local_h.text:
+                text_pairs.append((live_h, local_h))
+
+        if live_body and local_body:
+            live_texts = [r.text for r in live_body]
+            local_texts = [r.text for r in local_body]
+            sm = difflib.SequenceMatcher(None, live_texts, local_texts, autojunk=False)
+            for tag, i1, i2, j1, j2 in sm.get_opcodes():
+                if tag == "equal":
+                    for di in range(i2 - i1):
+                        all_pairs.append((live_body[i1 + di], local_body[j1 + di]))
+                elif tag == "replace" and (i2 - i1) == 1 and (j2 - j1) == 1:
+                    lr, ll = live_body[i1], local_body[j1]
+                    if lr.kind == ll.kind:
+                        all_pairs.append((lr, ll))
+                        if lr.text != ll.text:
+                            text_pairs.append((lr, ll))
+                # insert/delete/multi-replace: skip
+
+    return text_pairs, all_pairs, structural_changes
+
+
+def diff_region(live: Region, local: Region) -> list[Hunk]:
+    """Return minimal replacement hunks from *live* to *local*."""
+    live_units = _to_utf16_units(live.text)
+    local_units = _to_utf16_units(local.text)
+    api_by_cu = [live.start_api + i for i in range(len(live_units) + 1)]
+    matcher = difflib.SequenceMatcher(None, live_units, local_units)
+    hunks: list[Hunk] = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        hunks.append(Hunk(
+            tab_id=live.tab_id,
+            start_api=api_by_cu[i1],
+            end_api=api_by_cu[i2],
+            new_text="".join(local_units[j1:j2]),
+        ))
+    return hunks
+
+# Maximum number of unchanged UTF-16 units allowed between two change opcodes
+# before they are treated as separate hunks rather than merged into one.
+_HUNK_MERGE_GAP = 8
+
+
+def merge_region_hunks(live: Region, local: Region, hunks: list[Hunk]) -> list[Hunk]:
+    """Merge adjacent hunks within a region separated by <= _HUNK_MERGE_GAP equal chars.
+
+    SequenceMatcher produces fine-grained hunks that share common characters
+    (e.g. adding wikilinks around existing text produces many small insert ops).
+    Merging groups nearby hunks into a single coarser delete+insert that covers
+    the whole changed span, dramatically reducing the number of API requests.
+
+    The merged new_text is taken directly from the local region's UTF-16 units
+    for the corresponding span, so it is always correct regardless of gap size.
+    """
+    if len(hunks) <= 1:
+        return hunks
+
+    live_units = _to_utf16_units(live.text)
+    local_units = _to_utf16_units(local.text)
+    api_by_cu = [live.start_api + i for i in range(len(live_units) + 1)]
+
+    # Re-derive opcodes so we can work directly with unit indices.
+    sm = difflib.SequenceMatcher(None, live_units, local_units, autojunk=False)
+    non_equal = [
+        (i1, i2, j1, j2)
+        for tag, i1, i2, j1, j2 in sm.get_opcodes()
+        if tag != "equal"
+    ]
+    if not non_equal:
+        return []
+
+    # Group non-equal spans where the gap between consecutive ones <= _HUNK_MERGE_GAP.
+    groups: list[tuple[int, int, int, int]] = []
+    cur_i1, cur_i2, cur_j1, cur_j2 = non_equal[0]
+    for i1, i2, j1, j2 in non_equal[1:]:
+        gap = i1 - cur_i2  # number of equal live units between the two spans
+        if gap <= _HUNK_MERGE_GAP:
+            cur_i2 = i2
+            cur_j2 = j2
+        else:
+            groups.append((cur_i1, cur_i2, cur_j1, cur_j2))
+            cur_i1, cur_i2, cur_j1, cur_j2 = i1, i2, j1, j2
+    groups.append((cur_i1, cur_i2, cur_j1, cur_j2))
+
+    return [
+        Hunk(
+            tab_id=live.tab_id,
+            start_api=api_by_cu[i1],
+            end_api=api_by_cu[i2],
+            new_text="".join(local_units[j1:j2]),
+        )
+        for i1, i2, j1, j2 in groups
+    ]
+
+# Regex matching Obsidian wikilinks in raw markdown.
+_WIKILINK_RE_EXTRACT = re.compile(r"\[\[([^|\]]+)(?:\|([^\]]+))?\]\]")
+
+
+def link_diff_region(
+    live_r: Region,
+    local_r: Region,
+    slug_to_tab_id: dict[str, str],
+    segment_tab_id: str,
+) -> list[dict]:
+    """Return updateTextStyle requests for wikilinks in *local_r* whose
+    corresponding span in the live doc is missing or has the wrong tabId link.
+
+    Only called when live_r.text == local_r.text (text is already in sync).
+    Walks *local_r.raw_markdown* for [[slug|display]] / [[slug]] patterns,
+    resolves each slug to a tabId via *slug_to_tab_id*, locates the display
+    text span in the live doc's UTF-16 unit sequence, checks whether the live
+    doc already has the correct link, and emits a fix request if not.
+    """
+    if not local_r.raw_markdown or not live_r.raw_para:
+        return []
+
+    live_units = _to_utf16_units(live_r.text)
+    api_by_cu = [live_r.start_api + i for i in range(len(live_units) + 1)]
+
+    # Build a map of (start_cu, end_cu) -> current tabId from the live raw_para.
+    live_links: dict[tuple[int, int], str] = {}
+    offset = 0
+    for pel in live_r.raw_para.get("elements", []):
+        run = pel.get("textRun", {})
+        content = run.get("content", "").replace("\n", "")
+        if not content:
+            continue
+        run_units = _to_utf16_units(content)
+        run_len = len(run_units)
+        link = run.get("textStyle", {}).get("link", {})
+        tab_link = link.get("tabId", "")
+        if tab_link:
+            live_links[(offset, offset + run_len)] = tab_link
+        offset += run_len
+
+    requests: list[dict] = []
+    # Track positions already consumed so duplicate display texts are matched
+    # in order of appearance.
+    search_start = 0
+
+    for m in _WIKILINK_RE_EXTRACT.finditer(local_r.raw_markdown):
+        slug = m.group(1).strip()
+        display = (m.group(2) or slug).strip()
+        target_tab_id = slug_to_tab_id.get(slug, "")
+        if not target_tab_id:
+            continue  # unresolvable slug — skip
+
+        display_units = _to_utf16_units(display)
+        display_len = len(display_units)
+
+        # Find the next occurrence of display_units in live_units from search_start.
+        found_at = -1
+        for i in range(search_start, len(live_units) - display_len + 1):
+            if live_units[i:i + display_len] == display_units:
+                found_at = i
+                break
+        if found_at == -1:
+            continue
+
+        search_start = found_at + display_len
+        span = (found_at, found_at + display_len)
+
+        # Check whether the live doc already has the correct link covering this span.
+        # A run may cover more than the display text (e.g. 'LRR)' covering 'LRR'),
+        # so we check for any live run that CONTAINS our span with the right tabId.
+        target_start = found_at
+        target_end = found_at + display_len
+        already_correct = any(
+            lt == target_tab_id and ls <= target_start and le >= target_end
+            for (ls, le), lt in live_links.items()
+        )
+        if already_correct:
+            continue  # already correct
+
+        # Emit updateTextStyle to apply the correct tabId link.
+        requests.append({
+            "updateTextStyle": {
+                "range": {
+                    "startIndex": api_by_cu[found_at],
+                    "endIndex": api_by_cu[found_at + display_len],
+                    "segmentId": "",
+                    "tabId": segment_tab_id,
+                },
+                "textStyle": {"link": {"tabId": target_tab_id}},
+                "fields": "link",
+            }
+        })
+
+    return requests
+
+def rogue_link_requests(
+    live_r: Region,
+    local_r: Region,
+    slug_to_tab_id: dict[str, str],
+    segment_tab_id: str,
+) -> list[dict]:
+    """Return updateTextStyle requests to CLEAR spurious tabId links.
+
+    Walks every textRun in live_r.raw_para that carries a tabId link.
+    A run is legitimate if it is fully contained within a wikilink display
+    span in local_r.raw_markdown that resolves to the same tabId.
+    Any run that fails that test gets a clear request: link = {}.
+    """
+    if not live_r.raw_para:
+        return []
+    # Note: empty raw_markdown is valid — it means no wikilinks expected,
+    # so any tabId link on the region is rogue.
+        return []
+
+    # Phase 1: parse wikilinks → (start_cu, end_cu, tab_id) in display coordinates.
+    legitimate_spans: list[tuple[int, int, str]] = []
+    display_cu = 0
+    md_pos = 0
+    md = local_r.raw_markdown
+    for m in _WIKILINK_RE_EXTRACT.finditer(md):
+        # Accumulate display chars from the text between wikilinks.
+        display_cu += len(_to_utf16_units(md[md_pos:m.start()]))
+        slug = m.group(1).strip()
+        display = (m.group(2) or slug).strip()
+        tid = slug_to_tab_id.get(slug, "")
+        if tid:
+            span_len = len(_to_utf16_units(display))
+            legitimate_spans.append((display_cu, display_cu + span_len, tid))
+        display_cu += len(_to_utf16_units(display))
+        md_pos = m.end()
+
+    # Phase 2: walk API runs, flag any tabId link not covered by a legitimate span.
+    requests: list[dict] = []
+    run_cu = 0
+    api_base = live_r.start_api
+    for pel in live_r.raw_para.get("elements", []):
+        run = pel.get("textRun")
+        if not run:
+            continue
+        content = run.get("content", "").replace("\n", "")
+        run_len = len(_to_utf16_units(content))
+        run_start, run_end = run_cu, run_cu + run_len
+        run_cu = run_end
+        run_tab_id = run.get("textStyle", {}).get("link", {}).get("tabId", "")
+        if not run_tab_id:
+            continue
+        # Legitimate: the run is fully contained in a span with the matching tabId.
+        legitimate = any(
+            tid == run_tab_id and s <= run_start and run_end <= e
+            for s, e, tid in legitimate_spans
+        )
+        if not legitimate:
+            requests.append({
+                "updateTextStyle": {
+                    "range": {
+                        "startIndex": api_base + run_start,
+                        "endIndex": api_base + run_end,
+                        "segmentId": "",
+                        "tabId": segment_tab_id,
+                    },
+                    "textStyle": {},  # empty = clear the link field
+                    "fields": "link",
+                }
+            })
+    return requests
+
+def link_diff_to_requests(
+    pairs: list[tuple[Region, Region]],
+    slug_to_tab_id: dict[str, str],
+    segment_tab_id: str,
+    all_live_regions: list[Region] | None = None,
+) -> list[dict]:
+    """Return all updateTextStyle link-fix requests across all matched pairs.
+
+    *all_live_regions* is the full list of live regions for the tab. When
+    provided, every live region is scanned for rogue links — not just those
+    that were successfully matched to a local counterpart. This catches rogues
+    in task-list items and other regions that the structural aligner skips.
+    """
+    requests: list[dict] = []
+
+    # Build lookup: live start_api -> local_r for matched pairs.
+    paired_local: dict[int, Region] = {live_r.start_api: local_r for live_r, local_r in pairs}
+
+    # Scan ALL live regions for rogue links.
+    # For unmatched regions, any tabId link is rogue.
+    live_to_scan = all_live_regions if all_live_regions is not None else [lr for lr, _ in pairs]
+    for live_r in live_to_scan:
+        if not live_r.raw_para:
+            continue
+        local_r = paired_local.get(live_r.start_api)
+        effective_local = local_r if local_r is not None else Region(
+            kind=live_r.kind, tab_id=live_r.tab_id,
+            start_api=0, end_api=0, text=live_r.text,
+        )
+        requests.extend(
+            rogue_link_requests(live_r, effective_local, slug_to_tab_id, segment_tab_id)
+        )
+
+    # Missing links: only for matched pairs where local has wikilinks.
+    for live_r, local_r in pairs:
+        if local_r.raw_markdown and "[[" in local_r.raw_markdown:
+            requests.extend(
+                link_diff_region(live_r, local_r, slug_to_tab_id, segment_tab_id)
+            )
+
+    clears = [r for r in requests if "link" not in r["updateTextStyle"]["textStyle"]]
+    sets = [r for r in requests if "link" in r["updateTextStyle"]["textStyle"]]
+    return clears + sets
+def hunks_to_requests(hunks: list[Hunk]) -> list[Request]:
+    """Convert text hunks to Docs API batchUpdate requests."""
+    requests: list[Request] = []
+    for hunk in sorted(hunks, key=lambda h: h.start_api, reverse=True):
+        if hunk.end_api > hunk.start_api:
+            requests.append({
+                "deleteContentRange": {
+                    "range": {
+                        "startIndex": hunk.start_api,
+                        "endIndex": hunk.end_api,
+                        "segmentId": "",
+                        "tabId": hunk.tab_id,
+                    }
+                }
+            })
+        if hunk.new_text:
+            requests.append({
+                "insertText": {
+                    "location": {
+                        "index": hunk.start_api,
+                        "segmentId": "",
+                        "tabId": hunk.tab_id,
+                    },
+                    "text": hunk.new_text,
+                }
+            })
+    return requests
+
+
+def find_tab_by_title_or_id(doc: dict, title_or_id: str) -> tuple[str, str]:
+    """Return (tab_id, tab_title) for *title_or_id* from *doc*."""
+    wanted_title = title_or_id.casefold()
+    title_match = _find_tab_by_title(doc.get("tabs", []), wanted_title)
+    if title_match is not None:
+        props = title_match.get("tabProperties", {})
+        return props.get("tabId", ""), props.get("title", "")
+
+    id_match = _find_tab(doc.get("tabs", []), title_or_id)
+    if id_match is not None:
+        props = id_match.get("tabProperties", {})
+        return props.get("tabId", ""), props.get("title", "")
+
+    known = ", ".join(_tab_labels(doc.get("tabs", [])))
+    print(f"Tab not found: {title_or_id}. Available tabs: {known}", file=sys.stderr)
+    sys.exit(1)
+
+
+def _find_tab(tabs: list[dict], tab_id: str) -> dict | None:
+    for tab in tabs:
+        props = tab.get("tabProperties", {})
+        if props.get("tabId") == tab_id:
+            return tab
+        child_match = _find_tab(tab.get("childTabs", []), tab_id)
+        if child_match is not None:
+            return child_match
+    return None
+
+
+def _find_tab_by_title(tabs: list[dict], wanted_title: str) -> dict | None:
+    for tab in tabs:
+        props = tab.get("tabProperties", {})
+        if str(props.get("title", "")).casefold() == wanted_title:
+            return tab
+        child_match = _find_tab_by_title(tab.get("childTabs", []), wanted_title)
+        if child_match is not None:
+            return child_match
+    return None
+
+
+def _tab_labels(tabs: list[dict]) -> list[str]:
+    labels: list[str] = []
+    for tab in tabs:
+        props = tab.get("tabProperties", {})
+        title = props.get("title", "")
+        tab_id = props.get("tabId", "")
+        if title and tab_id:
+            labels.append(f"{title} ({tab_id})")
+        labels.extend(_tab_labels(tab.get("childTabs", [])))
+    return labels
+
+
+def _markdown_node_to_regions(node: SyntaxTreeNode, tab_id: str,
+                              regions: list[Region]) -> None:
+    if node.type in ("front_matter", "html_block", "hr"):
+        return
+
+    if node.type == "heading":
+        inline = node.children[0] if node.children else None
+        # markdown-it-py stores heading level in token.tag: 'h1'..'h6'
+        token = node.token  # type: ignore[union-attr]
+        tag = token.tag if token else "h1"
+        hlevel = int(tag[1]) if tag and tag[0] == "h" and tag[1:].isdigit() else 1
+        regions.append(Region(
+            kind="paragraph",
+            tab_id=tab_id,
+            start_api=0,
+            end_api=0,
+            text=plain_text_nowiki(inline) if inline else "",
+            raw_markdown=raw_text(inline) if inline else "",
+            heading_level=hlevel,
+        ))
+        return
+
+    if node.type == "paragraph":
+        inline = node.children[0] if node.children else None
+        regions.append(Region(
+            kind="paragraph",
+            tab_id=tab_id,
+            start_api=0,
+            end_api=0,
+            text=plain_text_nowiki(inline) if inline else "",
+            raw_markdown=raw_text(inline) if inline else "",
+        ))
+        return
+
+    if node.type in ("fence", "code_block"):
+        token = node.token  # type: ignore[union-attr]
+        content = token.content if token else ""
+        if content.endswith("\n"):
+            content = content[:-1]
+        regions.append(Region(
+            kind="paragraph",
+            tab_id=tab_id,
+            start_api=0,
+            end_api=0,
+            text=content,
+        ))
+        return
+
+    if node.type in ("bullet_list", "ordered_list"):
+        _list_to_regions(node, tab_id, regions)
+        return
+
+    if node.type == "table":
+        _table_to_regions(node, tab_id, regions)
+        return
+
+    for child in node.children:
+        _markdown_node_to_regions(child, tab_id, regions)
+
+
+def _list_to_regions(node: SyntaxTreeNode, tab_id: str, regions: list[Region]) -> None:
+    for item in node.children:
+        for child in item.children:
+            if child.type == "paragraph":
+                inline = child.children[0] if child.children else None
+                regions.append(Region(
+                    kind="paragraph",
+                    tab_id=tab_id,
+                    start_api=0,
+                    end_api=0,
+                    text=plain_text_nowiki(inline) if inline else "",
+                    raw_markdown=raw_text(inline) if inline else "",
+                ))
+            elif child.type in ("bullet_list", "ordered_list"):
+                _list_to_regions(child, tab_id, regions)
+            elif child.type == "inline":
+                regions.append(Region(
+                    kind="paragraph",
+                    tab_id=tab_id,
+                    start_api=0,
+                    end_api=0,
+                    text=plain_text_nowiki(child),
+                    raw_markdown=raw_text(child),
+                ))
+
+
+def _table_to_regions(node: SyntaxTreeNode, tab_id: str, regions: list[Region]) -> None:
+    rows: list[SyntaxTreeNode] = []
+    thead = next((c for c in node.children if c.type == "thead"), None)
+    if thead is not None:
+        rows.extend(thead.children)
+    for tbody in (c for c in node.children if c.type == "tbody"):
+        rows.extend(tbody.children)
+
+    for row_idx, row in enumerate(rows):
+        for col_idx, cell in enumerate(row.children):
+            inline = cell.children[0] if cell.children else None
+            regions.append(Region(
+                kind="table_cell",
+                tab_id=tab_id,
+                start_api=0,
+                end_api=0,
+                text=plain_text_nowiki(inline) if inline else "",
+                raw_markdown=raw_text(inline) if inline else "",
+                row=row_idx,
+                col=col_idx,
+            ))
+
+
+def _paragraph_text_from_api(paragraph: dict) -> str:
+    parts: list[str] = []
+    for el in paragraph.get("elements", []):
+        run = el.get("textRun")
+        if run is None:
+            continue
+        parts.append(run.get("content", ""))
+    text = "".join(parts)
+    if text.endswith("\n"):
+        text = text[:-1]
+    return text
+
+
 # ---------------------------------------------------------------------------
 # gws CLI helpers
 # ---------------------------------------------------------------------------
@@ -1493,8 +2436,16 @@ def cmd_create(args: argparse.Namespace) -> None:
     # Second pass: resolve deferred fragment and relative-file links.
     resolve_deferred_links(doc_id, tab_id_list, tab_map, deferred_per_tab)
 
-    print(doc_id)
+    # Write back gdoc_url and gdoc_tab_id into each source file's frontmatter.
+    doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
+    for path, tab_id in zip(files, tab_id_list):
+        patch_frontmatter(path, {
+            "gdoc_url": doc_url,
+            "gdoc_tab_id": tab_id,
+        })
+        print(f"Updated frontmatter: {path.name}", file=sys.stderr)
 
+    print(doc_id)
 
 def cmd_add_tab(args: argparse.Namespace) -> None:
     path = Path(args.file)
@@ -1527,7 +2478,478 @@ def cmd_add_tab(args: argparse.Namespace) -> None:
     deferred_per_tab = {tab_id: state.deferred_links}
     resolve_deferred_links(doc_id, [tab_id], tab_map, deferred_per_tab)
 
+    # Write back gdoc_url and gdoc_tab_id into the source file's frontmatter.
+    doc_url = f"https://docs.google.com/document/d/{doc_id}/edit"
+    patch_frontmatter(path, {
+        "gdoc_url": doc_url,
+        "gdoc_tab_id": tab_id,
+    })
+    print(f"Updated frontmatter: {path.name}", file=sys.stderr)
+
     print(tab_id)
+
+# ---------------------------------------------------------------------------
+# Markdown rendering from live API content
+# ---------------------------------------------------------------------------
+
+
+_NAMED_STYLE_TO_HEADING: dict[str, int] = {
+    "HEADING_1": 1,
+    "HEADING_2": 2,
+    "HEADING_3": 3,
+    "HEADING_4": 4,
+    "HEADING_5": 5,
+    "HEADING_6": 6,
+}
+
+
+def _slugify(title: str) -> str:
+    """Convert a tab title to a lowercase-hyphenated slug.
+
+    'Proposal process' -> 'proposal-process'
+    'Senior Staff+ Design Consultation' -> 'senior-staff-design-consultation'
+    """
+    import re
+    slug = title.lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    return slug.strip("-")
+
+
+def _build_tab_slug_map(doc: dict) -> dict[str, str]:
+    """Return a mapping of tabId → slug derived from tab titles.
+
+    Used to render internal tab links as Obsidian wikilinks.
+    """
+    result: dict[str, str] = {}
+
+    def _walk(tabs: list) -> None:
+        for tab in tabs:
+            props = tab.get("tabProperties", {})
+            tab_id = props.get("tabId", "")
+            title = props.get("title", "")
+            if tab_id and title:
+                result[tab_id] = _slugify(title)
+            _walk(tab.get("childTabs", []))
+
+    _walk(doc.get("tabs", []))
+    return result
+
+
+def _build_heading_slug_map(doc: dict, tab_id: str) -> dict[str, str]:
+    """Return a mapping of headingId → slug for all headings in *tab_id*.
+
+    Used to render internal heading links as Obsidian wikilinks.
+    A link to heading id 'h.vppnh7y8ykem' whose text is
+    '01 Decision Chart — Process selection' renders as
+    '[[01-decision-chart---process-selection|display]]'.
+    """
+    result: dict[str, str] = {}
+    tab = _find_tab(doc.get("tabs", []), tab_id)
+    if tab is None:
+        return result
+    body = tab.get("documentTab", {}).get("body", {})
+    for el in body.get("content", []):
+        para = el.get("paragraph")
+        if not para:
+            continue
+        ps = para.get("paragraphStyle", {})
+        heading_id = ps.get("headingId", "")
+        if not heading_id:
+            continue
+        text = "".join(
+            pe.get("textRun", {}).get("content", "")
+            for pe in para.get("elements", [])
+        ).strip()
+        if text:
+            result[heading_id] = _slugify(text)
+    return result
+
+
+def _render_text_run(
+    run: dict,
+    tab_slug_map: dict[str, str] | None = None,
+    heading_slug_map: dict[str, str] | None = None,
+    strip_bold: bool = False,
+) -> str:
+    """Render a single textRun dict as inline markdown.
+
+    Applies bold, italic, strikethrough, code (monospace font), and links.
+    Internal tab links are rendered as Obsidian wikilinks using *tab_slug_map*.
+    Set *strip_bold* to suppress bold markers (used for table header cells).
+    """
+    content = run.get("content", "")
+    if not content or content == "\n":
+        return ""
+    content = content.replace("\n", "")
+    if not content:
+        return ""
+    style = run.get("textStyle", {})
+
+    is_code = bool(
+        style.get("weightedFontFamily", {}).get("fontFamily", "") == "Courier New"
+    )
+    is_bold = bool(style.get("bold")) and not strip_bold
+    is_italic = bool(style.get("italic"))
+    is_strike = bool(style.get("strikethrough"))
+    link = style.get("link", {})
+    link_url = link.get("url", "") or ""
+
+    text = content
+
+    if is_code:
+        escaped = text.replace("`", "\\`")
+        text = f"`{escaped}`"
+    else:
+        if is_strike:
+            text = f"~~{text}~~"
+        if is_bold and is_italic:
+            text = f"***{text}***"
+        elif is_bold:
+            text = f"**{text}**"
+        elif is_italic:
+            text = f"*{text}*"
+
+    if link_url:
+        text = f"[{text}]({link_url})"
+    elif "tabId" in link:
+        tab_id = link["tabId"]
+        slug = (tab_slug_map or {}).get(tab_id, tab_id)
+        # Render as Obsidian wikilink: [[slug|display]] or [[slug]] if display == slug
+        display = content  # use unstyled content as display text
+        text = f"[[{slug}|{display}]]"
+    elif "headingId" in link:
+        # Internal heading anchor — render as [[#headingId|display]]
+        heading_id = link["headingId"]
+        slug = (heading_slug_map or {}).get(heading_id, "")
+        display = content
+        if slug:
+            text = f"[[{slug}|{display}]]" if display != slug else f"[[{slug}]]"
+        else:
+            text = f"[[#{heading_id}|{display}]]"
+
+    return text
+
+
+def _render_paragraph_as_markdown(
+    para: dict,
+    bullet_counters: dict,
+    tab_slug_map: dict[str, str] | None = None,
+    strip_bold: bool = False,
+) -> str:
+    """Render a single API paragraph dict as a markdown string (no trailing newline).
+
+    *bullet_counters* is a mutable dict used to track ordered-list counters
+    keyed by (listId, nestingLevel).
+    *tab_slug_map* is used to resolve internal tab links to wikilinks.
+    *strip_bold* suppresses bold markers (used for table header cells).
+    """
+    ps = para.get("paragraphStyle", {})
+    named_style = ps.get("namedStyleType", "NORMAL_TEXT")
+    bullet = para.get("bullet")
+
+    # Thematic break: empty paragraph with a bottom border.
+    if ps.get("borderBottom") and not any(
+        pe.get("textRun", {}).get("content", "").strip()
+        for pe in para.get("elements", [])
+    ):
+        return "---"
+
+    # Build inline content from text runs.
+    inline = ""
+    for pel in para.get("elements", []):
+        run = pel.get("textRun")
+        if run is not None:
+            inline += _render_text_run(run, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map, strip_bold=strip_bold)
+
+    # Task list checkboxes: \u2610 (unchecked) or \u2611 (checked) prefix.
+    # These were written by md2gdoc from '- [ ]' / '- [x]' syntax.
+    if inline.startswith("\u2610  "):
+        return "- [ ] " + inline[3:]
+    if inline.startswith("\u2611  "):
+        return "- [x] " + inline[3:]
+
+    # Heading.
+    heading_level = _NAMED_STYLE_TO_HEADING.get(named_style, 0)
+    if heading_level:
+        prefix = "#" * heading_level
+        return f"{prefix} {inline}"
+
+    # List item.
+    if bullet is not None:
+        nesting = bullet.get("nestingLevel", 0)
+        indent = "  " * nesting
+        list_props = bullet.get("listProperties", {})
+        nesting_levels = list_props.get("nestingLevels", [])
+        glyph_type = ""
+        if nesting_levels and nesting < len(nesting_levels):
+            glyph_type = nesting_levels[nesting].get("glyphType", "")
+        if glyph_type in ("DECIMAL", "ALPHA", "ROMAN",
+                          "UPPER_ALPHA", "UPPER_ROMAN",
+                          "LOWER_ALPHA", "LOWER_ROMAN"):
+            key = (bullet.get("listId", ""), nesting)
+            bullet_counters[key] = bullet_counters.get(key, 0) + 1
+            return f"{indent}{bullet_counters[key]}. {inline}"
+        return f"{indent}- {inline}"
+
+    # Normal paragraph.
+    return inline
+
+
+def _collect_table_regions(regions: list[Region]) -> list[list[list[Region]]]:
+    """Group consecutive table_cell regions into a 2-D grid.
+
+    Returns a list of tables; each table is a list of rows; each row is a list
+    of cell Regions. Assumes regions are in document order.
+    """
+    tables: list[list[list[Region]]] = []
+    i = 0
+    while i < len(regions):
+        if regions[i].kind != "table_cell":
+            i += 1
+            continue
+        # Collect all consecutive table_cell regions from the same table.
+        table_start_api = regions[i].table_start_api
+        cells: list[Region] = []
+        while i < len(regions) and regions[i].kind == "table_cell" and regions[i].table_start_api == table_start_api:
+            cells.append(regions[i])
+            i += 1
+        if not cells:
+            continue
+        # Determine grid dimensions.
+        max_row = max(c.row for c in cells)
+        max_col = max(c.col for c in cells)
+        grid: list[list[Region | None]] = [
+            [None] * (max_col + 1) for _ in range(max_row + 1)
+        ]
+        for c in cells:
+            grid[c.row][c.col] = c
+        tables.append(grid)  # type: ignore[arg-type]
+    return tables
+
+
+def render_tab_as_markdown(
+    regions: list[Region],
+    tab_slug_map: dict[str, str] | None = None,
+    heading_slug_map: dict[str, str] | None = None,
+) -> str:
+    """Render a list of Regions extracted from a live tab as a markdown string.
+
+    Paragraph regions are rendered using their *raw_para* dict to recover inline
+    styles (bold, italic, code, links). Table cell regions are grouped into
+    GFM tables. Internal tab links are rendered as Obsidian wikilinks when
+    *tab_slug_map* is provided.
+    """
+    lines: list[str] = []
+    bullet_counters: dict = {}
+    i = 0
+    while i < len(regions):
+        region = regions[i]
+
+        if region.kind == "paragraph":
+            if not region.raw_para.get("bullet"):
+                bullet_counters = {}
+            md = _render_paragraph_as_markdown(
+                region.raw_para, bullet_counters,
+                tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+            )
+            if md.strip():
+                lines.append(md)
+            i += 1
+            continue
+
+        if region.kind == "table_cell":
+            table_start_api = region.table_start_api
+            cells: list[Region] = []
+            j = i
+            while j < len(regions) and regions[j].kind == "table_cell" and regions[j].table_start_api == table_start_api:
+                cells.append(regions[j])
+                j += 1
+
+            if cells:
+                max_row = max(c.row for c in cells)
+                max_col = max(c.col for c in cells)
+                grid: list[list[str]] = [[""] * (max_col + 1) for _ in range(max_row + 1)]
+                for c in cells:
+                    cell_md = _render_paragraph_as_markdown(
+                        c.raw_para, {},
+                        tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+                        strip_bold=c.is_table_header,
+                    ) if c.raw_para else c.text
+                    grid[c.row][c.col] = cell_md
+
+                if grid:
+                    header = "| " + " | ".join(grid[0]) + " |"
+                    separator = "| " + " | ".join(":---" for _ in grid[0]) + " |"
+                    lines.append(header)
+                    lines.append(separator)
+                    for row in grid[1:]:
+                        lines.append("| " + " | ".join(row) + " |")
+                    lines.append("")
+
+            i = j
+            continue
+
+        i += 1
+
+    return "\n".join(lines)
+
+
+
+def cmd_extract_tab(args: argparse.Namespace) -> None:
+    doc_id = args.document
+    doc = _gws("docs", "documents", "get",
+               "--params", json.dumps({
+                   "documentId": doc_id,
+                   "includeTabsContent": "true",
+               }))
+
+    tab_id, _tab_title = find_tab_by_title_or_id(doc, args.tab)
+    tab_slug_map = (
+        load_tab_slug_map_from_files(sorted(Path(args.files_dir).glob("*.md")))
+        if getattr(args, "files_dir", None)
+        else _build_tab_slug_map(doc)
+    )
+    heading_slug_map = _build_heading_slug_map(doc, tab_id)
+    regions = extract_tab_regions(doc, tab_id)
+    print(render_tab_as_markdown(regions, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map))
+
+def cmd_diff_tab(args: argparse.Namespace) -> None:
+    """diff-tab: report structural and text differences between a live tab and local markdown.
+
+    Prints a human-readable report to stdout:
+      - Section-level structural changes (reordered, added, removed, renamed)
+      - Per-region text diffs for matched sections that have changed content
+    """
+    doc_id = args.document
+    doc = _gws("docs", "documents", "get",
+               "--params", json.dumps({
+                   "documentId": doc_id,
+                   "includeTabsContent": "true",
+               }))
+
+    tab_id, tab_title = find_tab_by_title_or_id(doc, args.tab)
+    tab_slug_map = (
+        load_tab_slug_map_from_files(sorted(Path(args.files_dir).glob("*.md")))
+        if getattr(args, "files_dir", None)
+        else _build_tab_slug_map(doc)
+    )
+    # Inverse map needed for link diffing: slug → tabId
+    slug_to_tab_id = {slug: tid for tid, slug in tab_slug_map.items()}
+    heading_slug_map = _build_heading_slug_map(doc, tab_id)
+    live_regions = extract_tab_regions(doc, tab_id)
+    local_regions = markdown_to_regions(Path(args.file), tab_id)
+
+    text_pairs, all_pairs, structural_changes = diff_tab_structure(live_regions, local_regions)
+
+    has_output = False
+
+    # --- Structural changes ---
+    if structural_changes:
+        has_output = True
+        print("Structural changes (require manual intervention):")
+        for sc in structural_changes:
+            if sc.kind == "reordered":
+                print(f"  reordered  {sc.live_heading!r}")
+                print(f"             live position {sc.live_position} → local position {sc.local_position}")
+            elif sc.kind == "renamed":
+                print(f"  renamed    {sc.live_heading!r}")
+                print(f"          →  {sc.local_heading!r}")
+            elif sc.kind == "added":
+                print(f"  added      {sc.local_heading!r} (exists in local, not in live doc)")
+            elif sc.kind == "removed":
+                print(f"  removed    {sc.live_heading!r} (exists in live doc, not in local)")
+        print()
+
+    # --- Text diffs ---
+    all_hunks: list[Hunk] = []
+    for live_r, local_r in text_pairs:
+        all_hunks.extend(merge_region_hunks(live_r, local_r, diff_region(live_r, local_r)))
+
+    if all_hunks:
+        has_output = True
+        print(f"Text changes ({len(text_pairs)} region(s), {len(all_hunks)} hunk(s)) — will be applied by update-tab:")
+        for live_r, local_r in text_pairs:
+            hunks = merge_region_hunks(live_r, local_r, diff_region(live_r, local_r))
+            if not hunks:
+                continue
+            # Show a short unified-style excerpt.
+            live_preview = live_r.text[:80].replace("\n", "¶")
+            local_preview = local_r.text[:80].replace("\n", "¶")
+            print(f"  [{live_r.start_api}:{live_r.end_api}]")
+            print(f"  - {live_preview}")
+            print(f"  + {local_preview}")
+            print()
+
+    # --- Link diffs ---
+    link_requests = link_diff_to_requests(all_pairs, slug_to_tab_id, tab_id, all_live_regions=live_regions)
+    clears = [r for r in link_requests if "link" not in r["updateTextStyle"]["textStyle"]]
+    sets = [r for r in link_requests if "link" in r["updateTextStyle"]["textStyle"]]
+    if clears:
+        has_output = True
+        print(f"Rogue links to clear ({len(clears)} span(s)):")
+        for req in clears:
+            r = req["updateTextStyle"]["range"]
+            print(f"  [{r['startIndex']}:{r['endIndex']}] clear link")
+        print()
+    if sets:
+        has_output = True
+        print(f"Missing links to apply ({len(sets)} span(s)):")
+        for req in sets:
+            r = req["updateTextStyle"]["range"]
+            tid = req["updateTextStyle"]["textStyle"]["link"]["tabId"]
+            print(f"  [{r['startIndex']}:{r['endIndex']}] apply link tabId={tid!r}")
+        print()
+
+    if not has_output:
+        print("No differences found.")
+def cmd_update_tab(args: argparse.Namespace) -> None:
+    path = Path(args.file)
+    if not path.exists():
+        print(f"File not found: {path}", file=sys.stderr)
+        sys.exit(1)
+
+    doc_id = args.document
+    doc = _gws("docs", "documents", "get",
+               "--params", json.dumps({
+                   "documentId": doc_id,
+                   "includeTabsContent": "true",
+               }))
+    revision_id = doc["revisionId"]
+    tab_id, tab_title = find_tab_by_title_or_id(doc, args.tab)
+    tab_slug_map = (
+        load_tab_slug_map_from_files(sorted(Path(args.files_dir).glob("*.md")))
+        if getattr(args, "files_dir", None)
+        else _build_tab_slug_map(doc)
+    )
+    slug_to_tab_id = {slug: tid for tid, slug in tab_slug_map.items()}
+
+    print(f"Updating tab {tab_title!r} ({tab_id}) in document {doc_id}…",
+          file=sys.stderr)
+
+    live_regions = extract_tab_regions(doc, tab_id)
+    local_regions = markdown_to_regions(path, tab_id)
+    text_pairs, all_pairs, _ = diff_tab_structure(live_regions, local_regions)
+
+    all_hunks: list[Hunk] = []
+    for live_region, local_region in text_pairs:
+        all_hunks.extend(merge_region_hunks(live_region, local_region, diff_region(live_region, local_region)))
+
+    link_requests = link_diff_to_requests(all_pairs, slug_to_tab_id, tab_id, all_live_regions=live_regions)
+
+    if not all_hunks and not link_requests:
+        print("No changes.", file=sys.stderr)
+        return
+
+    requests = hunks_to_requests(all_hunks) + link_requests
+    _gws("docs", "documents", "batchUpdate",
+         "--params", json.dumps({"documentId": doc_id}),
+         "--json", json.dumps({
+             "requests": requests,
+             "writeControl": {"requiredRevisionId": revision_id},
+         }))
+    print(f"Applied {len(all_hunks)} text hunk(s) and {len(link_requests)} link fix(es).",
+          file=sys.stderr)
+    print("Done.", file=sys.stderr)
 
 
 # ---------------------------------------------------------------------------
@@ -1580,12 +3002,96 @@ def main() -> None:
         help="Markdown file to write into the new tab.",
     )
 
+    p_extract = sub.add_parser(
+        "extract-tab",
+        help="Extract plain text from an existing Google Doc tab.",
+    )
+    p_extract.add_argument(
+        "--document",
+        required=True,
+        metavar="DOC_ID",
+        help="Target document ID.",
+    )
+    p_extract.add_argument(
+        "--tab",
+        required=True,
+        metavar="TITLE_OR_ID",
+        help="Tab title (case-insensitive) or exact tab ID.",
+    )
+    p_extract.add_argument(
+        "--files-dir",
+        metavar="DIR",
+        default=None,
+        help="Directory of local markdown files with gdoc_tab_id frontmatter for exact wikilink slug resolution.",
+    )
+
+    p_update = sub.add_parser(
+        "update-tab",
+        help="Update changed text within an existing Google Doc tab.",
+    )
+    p_update.add_argument(
+        "--document",
+        required=True,
+        metavar="DOC_ID",
+        help="Target document ID.",
+    )
+    p_update.add_argument(
+        "--tab",
+        required=True,
+        metavar="TITLE_OR_ID",
+        help="Tab title (case-insensitive) or exact tab ID.",
+    )
+    p_update.add_argument(
+        "file",
+        metavar="FILE",
+        help="Markdown file whose text should update the tab.",
+    )
+    p_update.add_argument(
+        "--files-dir",
+        metavar="DIR",
+        default=None,
+        help="Directory of local markdown files with gdoc_tab_id frontmatter for exact wikilink slug resolution.",
+    )
+    p_diff = sub.add_parser(
+        "diff-tab",
+        help="Report structural and text differences between a live tab and local markdown.",
+    )
+    p_diff.add_argument(
+        "--document",
+        required=True,
+        metavar="DOC_ID",
+        help="Target document ID.",
+    )
+    p_diff.add_argument(
+        "--tab",
+        required=True,
+        metavar="TITLE_OR_ID",
+        help="Tab title (case-insensitive) or exact tab ID.",
+    )
+    p_diff.add_argument(
+        "file",
+        metavar="FILE",
+        help="Local markdown file to diff against the tab.",
+    )
+    p_diff.add_argument(
+        "--files-dir",
+        metavar="DIR",
+        default=None,
+        help="Directory of local markdown files with gdoc_tab_id frontmatter for exact wikilink slug resolution.",
+    )
+
     args = parser.parse_args()
 
     if args.command == "create":
         cmd_create(args)
     elif args.command == "add-tab":
         cmd_add_tab(args)
+    elif args.command == "extract-tab":
+        cmd_extract_tab(args)
+    elif args.command == "update-tab":
+        cmd_update_tab(args)
+    elif args.command == "diff-tab":
+        cmd_diff_tab(args)
 
 
 if __name__ == "__main__":
