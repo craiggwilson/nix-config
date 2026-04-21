@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
-  version = "1.0.26";
+  version = "1.0.30";
 
   src = pkgs.fetchFromGitHub {
     owner = "upstash";
     repo = "context7";
     tag = "v${version}";
-    hash = "sha256-sOyZwYB9WlPfzbrQW+krf2QDoWzei+wMJvohGi+C6B0=";
+    hash = "sha256-cNm/NROFHy+3cOozzvC1WUhGb7bwccvOIiMt30lAN3E=";
   };
 
   # Step 1: Fixed-output derivation for dependencies
@@ -32,7 +32,7 @@ let
     '';
 
     # This hash represents the dependencies
-    outputHash = "sha256-En6dinY9wRnlr/+IUMQS1PaAYl/V4YvqE4ib8+hunKg=";
+    outputHash = "sha256-rSz+BVSnyTP5tE/j3mlijvIpyMF0QIIouFxYv4Y5lRU=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

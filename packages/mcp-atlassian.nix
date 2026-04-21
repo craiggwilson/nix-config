@@ -4,12 +4,12 @@ let
 
   fastmcp = python3Packages.buildPythonPackage rec {
     pname = "fastmcp";
-    version = "2.2.7";
+    version = "2.14.7";
     format = "wheel";
 
     src = pkgs.fetchurl {
-      url = "https://files.pythonhosted.org/packages/dc/65/a68d6288963d89a43a880c6e6f38caf24d26eef9149200797891f56ae02a/fastmcp-2.2.7-py3-none-any.whl";
-      sha256 = "sha256-B0dCek9RWD6Frc7q7Rh6QDKm4nxwVZDZUbRfA+2FFIs=";
+      url = "https://files.pythonhosted.org/packages/a6/f1/56310847b0bdd5b14c2af8f0a39082af078deff60d0dc43efef4e366a83e/fastmcp-2.14.7-py3-none-any.whl";
+      sha256 = "sha256-4IGlIiptMCoUiHHYn9cUsTEwzuZZT1Oj4a/XUY8AlsA=";
     };
 
     dependencies = [
@@ -79,14 +79,14 @@ let
 in
 python3Packages.buildPythonApplication rec {
   pname = "mcp-atlassian";
-  version = "0.10.3";
+  version = "0.21.1";
   pyproject = true;
 
   src = pkgs.fetchFromGitHub {
     owner = "sooperset";
     repo = "mcp-atlassian";
     rev = "v${version}";
-    sha256 = "sha256-aD2O4TSDtof7gsm0FL0ipnjz5IoOV4r3ff0Ylcz0TDo=";
+    sha256 = "sha256-KSkKiseEaDjF0ROPqLf/kO9yA7n8GV9eK96b0VMbDg4=";
   };
 
   build-system = [
@@ -101,6 +101,7 @@ python3Packages.buildPythonApplication rec {
     python3Packages.httpx
     python3Packages.mcp
     fastmcp
+    python3Packages.fakeredis
     python3Packages.python-dotenv
     python3Packages.markdownify
     python3Packages.markdown
@@ -110,10 +111,14 @@ python3Packages.buildPythonApplication rec {
     python3Packages.click
     python3Packages.uvicorn
     python3Packages.starlette
+    python3Packages.urllib3
     python3Packages.thefuzz
     python3Packages.python-dateutil
     python3Packages.types-python-dateutil
     python3Packages.keyring
+    python3Packages.cachetools
+    python3Packages.unidecode
+    python3Packages.truststore
   ];
 
   doCheck = false;

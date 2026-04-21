@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
-  version = "3.14.0";
+  version = "3.17.4";
 
   src = pkgs.fetchFromGitHub {
     owner = "code-yeongyu";
     repo = "oh-my-openagent";
     tag = "v${version}";
-    hash = "sha256-GRd3hWXQxSnx7s7r6QUvnXPMvUdheupBFMk4fz1eNfw=";
+    hash = "sha256-2z+HDMP5SeUcN3tI4uDqwoqvmA0fdXbhSCMOFYnumIA=";
   };
 
   # Fixed-output derivation for npm dependencies
@@ -24,14 +24,14 @@ let
 
       # --ignore-scripts prevents postinstall/prepare from running during the
       # FOD fetch; the actual build happens in the main derivation below.
-      bun install --frozen-lockfile --no-cache --ignore-scripts
+      bun install --no-cache --ignore-scripts
 
       mkdir -p $out
       cp -r node_modules $out/
       cp bun.lock package.json $out/
     '';
 
-    outputHash = "sha256-pcwDzMTh9h5+NdsrykKZpYIMq5YMeya/WWM7r9/GPuU=";
+    outputHash = "sha256-C+/5eehlK23Ts8HCluCWYetVQX3kbJY5OhnSLueqyFY=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

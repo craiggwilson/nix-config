@@ -153,12 +153,12 @@ let
 
   fastmcp = python3Packages.buildPythonPackage rec {
     pname = "fastmcp";
-    version = "3.1.0";
+    version = "3.2.4";
     pyproject = true;
 
     src = python3Packages.fetchPypi {
       inherit pname version;
-      sha256 = "sha256-4lJkeUxzS5l3UCpRRmlh7uz/kqDC87ScQMBwmTYo1tA=";
+      sha256 = "sha256-CD7LdbRKQWnn/A9jL5S3gb2w/4d8azW5h3y7Vm/U1NE=";
     };
 
     build-system = [

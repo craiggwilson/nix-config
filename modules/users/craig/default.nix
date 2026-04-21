@@ -38,6 +38,10 @@ in
           allowed-users = [ name ];
         };
 
+        nix.extraOptions = lib.mkIf (hasTag "programming") ''
+          !include /home/${name}/.config/hdwlinux/secrets/nixGithubAccessTokens
+        '';
+
         users.users.${name} = {
           extraGroups = [
             "inputs"
@@ -81,6 +85,18 @@ in
           security.secrets.entries.githubApiToken = lib.mkIf (hasTag "programming") {
             reference = "op://Craig/Github/api_token";
             mode = "0600";
+          };
+
+          security.secrets.templates.nixGithubAccessTokens = lib.mkIf (hasTag "programming") {
+            source = ./nix-access-tokens.conf;
+            target = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
+            mode = "0600";
+            replacements = [
+              {
+                string = "GITHUB_API_TOKEN";
+                secretPath = config.hdwlinux.security.secrets.entries.githubApiToken.path;
+              }
+            ];
           };
         };
 
