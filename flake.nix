@@ -131,6 +131,7 @@
             ./packages/evergreen-mcp-server.nix
             ./packages/falcon-sensor.nix
             ./packages/fern.nix
+            ./packages/mato.nix
             ./packages/mcp-atlassian.nix
             ./packages/mongo-orchestration.nix
             ./packages/songtool.nix
