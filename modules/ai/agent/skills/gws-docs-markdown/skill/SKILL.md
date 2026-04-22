@@ -115,6 +115,84 @@ diff \
   <(strip_frontmatter ~/Projects/kb/projects/doc-process/process/00-README.md)
 ```
 
+### Update a tab from local changes
+
+```bash
+$MD2GDOC update-tab --document DOC_ID --tab TITLE_OR_ID [--files-dir DIR] FILE
+```
+
+- Pushes local markdown changes to a live Google Doc tab.
+- Uses **segment-based diffing** to make surgical edits that preserve comments.
+- Automatically strips frontmatter before comparing.
+- Applies styled content (bold, headings, links) using the same pipeline as `create`.
+- Verifies sync by re-extracting and comparing.
+- Exit codes: 0 = success or already in sync, 1 = error.
+
+**Examples:**
+
+```bash
+# Push local changes to tab t.0
+$MD2GDOC update-tab \
+  --document 11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE \
+  --tab t.0 \
+  ~/Projects/kb/projects/doc-process/process/00-README.md
+
+# With wikilink resolution from sibling files
+$MD2GDOC update-tab \
+  --document DOC_ID \
+  --tab t.0 \
+  --files-dir ~/Projects/kb/projects/doc-process/process \
+  ~/Projects/kb/projects/doc-process/process/00-README.md
+```
+
+---
+
+### Sync local file from doc changes
+
+```bash
+$MD2GDOC sync-local --document DOC_ID --tab TITLE_OR_ID [--files-dir DIR] FILE
+```
+
+- Pulls live doc changes to the local markdown file.
+- Preserves local frontmatter (only body content is patched).
+- Uses the system `patch` utility for clean merging.
+- Exit codes: 0 = success or already in sync, 1 = error.
+
+**Examples:**
+
+```bash
+# Pull doc changes to local file
+$MD2GDOC sync-local \
+  --document 11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE \
+  --tab t.0 \
+  ~/Projects/kb/projects/doc-process/process/00-README.md
+```
+
+---
+
+## Sync Workflow
+
+The typical workflow for keeping local files and Google Docs in sync:
+
+1. **Check current state:**
+   ```bash
+   diff \
+     <($MD2GDOC extract-tab --document DOC_ID --tab t.0 2>/dev/null) \
+     <(awk 'NR==1 && /^---$/ { in_fm=1; next } in_fm && /^---$/ { in_fm=0; next } !in_fm' local.md)
+   ```
+
+2. **Push local changes to doc:**
+   ```bash
+   $MD2GDOC update-tab --document DOC_ID --tab t.0 local.md
+   ```
+
+3. **Pull doc changes to local:**
+   ```bash
+   $MD2GDOC sync-local --document DOC_ID --tab t.0 local.md
+   ```
+
+**Important:** Choose one direction per sync operation. If both local and doc have diverged, resolve conflicts manually.
+
 ---
 
 ## Markdown node coverage

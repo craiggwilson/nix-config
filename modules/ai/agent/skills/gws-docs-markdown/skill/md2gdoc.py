@@ -75,6 +75,80 @@ class Region:
     is_table_header: bool = False
     raw_markdown: str = ""
 
+@dataclass
+class DiffHunk:
+    """A single hunk from unified diff output."""
+
+    old_start: int  # 1-indexed line number in old file
+    old_count: int  # number of lines removed
+    new_start: int  # 1-indexed line number in new file
+    new_count: int  # number of lines added
+    old_lines: list[str] = field(default_factory=list)  # content being removed
+    new_lines: list[str] = field(default_factory=list)  # content being added
+
+
+@dataclass
+class ApiHunk:
+    """A hunk mapped to Google Docs API indices."""
+
+    start_api: int  # byte index in doc (insertion point)
+    end_api: int  # byte index in doc (exclusive, for deletion)
+    new_text: str  # replacement markdown text (parsed for styles)
+    tab_id: str  # target tab
+
+
+class IndexMappingError(Exception):
+    """Raised when diff line numbers cannot be mapped to API indices."""
+
+    pass
+
+
+@dataclass
+class SourceSpan:
+    """Maps a markdown byte range to a Google Docs API byte range."""
+
+    md_start: int  # byte offset in rendered markdown
+    md_end: int  # byte offset in rendered markdown (exclusive)
+    api_start: int | None  # byte index in doc (None for synthetic content)
+    api_end: int | None  # byte index in doc (None for synthetic content)
+    kind: str  # "paragraph", "cell", "list-item", "heading", "code-line"
+    path: tuple[str, ...]  # structural path, e.g., ("table", "0", "row", "1", "cell", "2")
+    region_idx: int | None = None  # index into Region list
+    synthetic: bool = False  # True for table pipes, fences, separator rows
+    raw_text: str | None = None  # API text for cells (without wikilink formatting)
+
+@dataclass
+class Segment:
+    """A structural unit of markdown content."""
+
+    kind: str  # segment type
+    path: tuple[str, ...]  # structural path for alignment
+    text: str  # markdown text content (without synthetic decorators)
+    md_start: int  # byte offset in full markdown
+    md_end: int  # byte offset in full markdown (exclusive)
+    span: SourceSpan | None = None  # source mapping (None for local-only)
+    children: list["Segment"] = field(default_factory=list)  # nested segments
+    raw_text: str | None = None  # API text for cells (without wikilink formatting)
+
+@dataclass
+class TextEdit:
+    """A minimal text edit within a segment."""
+
+    start: int  # byte offset relative to segment text
+    end: int  # byte offset relative to segment text (exclusive)
+    new_text: str  # replacement text
+
+
+@dataclass
+class SegmentMatch:
+    """Result of aligning old and new segments."""
+
+    kind: str  # "matched", "deleted", "inserted", "replaced"
+    old_segment: Segment | None = None
+    new_segment: Segment | None = None
+    edits: list[TextEdit] = field(default_factory=list)  # for "matched" kind
+    insert_after_api: int | None = None  # API index to insert after (for "inserted" kind)
+
 # ---------------------------------------------------------------------------
 # Markdown parser
 # ---------------------------------------------------------------------------
@@ -130,6 +204,77 @@ def patch_frontmatter(path: Path, updates: dict) -> None:
     path.write_text(new_text, encoding="utf-8")
 
 
+def _strip_frontmatter(text: str) -> str:
+    """Remove YAML frontmatter from text, returning just the body."""
+    fm_pattern = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+    match = fm_pattern.match(text)
+    if match:
+        return text[match.end():]
+    return text
+
+
+def _split_frontmatter(text: str) -> tuple[str, str]:
+    """Split text into (frontmatter, body).
+
+    Returns (frontmatter_block_including_delimiters, body) or ("", text) if none.
+    """
+    fm_pattern = re.compile(r"^(---\n.*?\n---\n)", re.DOTALL)
+    match = fm_pattern.match(text)
+    if match:
+        return match.group(1), text[match.end():]
+    return "", text
+
+def _normalize_for_comparison(text: str) -> str:
+    """Normalize markdown for comparison, ignoring insignificant differences.
+
+    - Collapses multiple blank lines to single blank line
+    - Strips trailing whitespace from lines
+    - Strips leading/trailing whitespace from entire text
+    - Converts wikilinks [[slug|text]] to just text (for round-trip comparison)
+    """
+    # Convert wikilinks to display text
+    # [[slug|text]] -> text, [[slug]] -> slug
+    text = re.sub(r"\[\[([^|\]]+)\|([^\]]+)\]\]", r"\2", text)
+    text = re.sub(r"\[\[([^\]]+)\]\]", r"\1", text)
+
+    lines = text.splitlines()
+    normalized: list[str] = []
+    prev_blank = False
+    for line in lines:
+        line = line.rstrip()
+        is_blank = not line.strip()
+        if is_blank:
+            if not prev_blank:
+                normalized.append("")
+            prev_blank = True
+        else:
+            normalized.append(line)
+            prev_blank = False
+    return "\n".join(normalized).strip()
+
+
+def _normalize_for_matching(text: str) -> str:
+    """Normalize segment text for alignment matching.
+
+    - Converts wikilinks [[slug|text]] to just text
+    - Converts wikilinks [[slug]] to title-cased slug (for matching display text)
+    - Converts markdown links [text](url) to just text
+    - Strips leading/trailing whitespace
+    """
+    # Convert wikilinks with display text: [[slug|text]] -> text
+    text = re.sub(r"\[\[([^|\]]+)\|([^\]]+)\]\]", r"\2", text)
+    # Convert wikilinks without display text: [[slug]] -> title-cased slug
+    # e.g., [[01-decision-chart]] -> 01 Decision Chart
+    def title_case_slug(m: re.Match) -> str:
+        slug = m.group(1)
+        # Remove leading numbers and dash, title case the rest
+        parts = slug.replace("-", " ").split()
+        return " ".join(p.title() if not p[0].isdigit() else p for p in parts)
+    text = re.sub(r"\[\[([^\]]+)\]\]", title_case_slug, text)
+    # Convert markdown links: [text](url) -> text
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    return text.strip()
+
 def load_tab_slug_map_from_files(files: list[Path]) -> dict[str, str]:
     """Build a tabId → filename-stem-slug map from local markdown frontmatter.
 
@@ -154,6 +299,48 @@ def load_tab_slug_map_from_files(files: list[Path]) -> dict[str, str]:
         tab_id = fm.get("gdoc_tab_id", "")
         if tab_id:
             result[tab_id] = _slugify(path.stem)
+    return result
+
+
+def load_url_slug_map_from_files(files: list[Path]) -> dict[str, str]:
+    """Build a URL → filename-stem-slug map from local markdown frontmatter.
+
+    Reads each file's frontmatter for 'gdoc_url'. When found, maps that
+    URL (and variations) to the file's stem slug.
+
+    This enables converting extracted markdown links back to wikilinks.
+    """
+    result: dict[str, str] = {}
+    fm_pattern = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+    for path in files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        match = fm_pattern.match(text)
+        if not match:
+            continue
+        fm: dict = yaml.safe_load(match.group(1)) or {}
+        gdoc_url = fm.get("gdoc_url", "")
+        gdoc_tab_id = fm.get("gdoc_tab_id", "")
+        slug = _slugify(path.stem)
+        if gdoc_url:
+            # Store the full URL
+            result[gdoc_url] = slug
+            # Also store variations without trailing parts
+            if "#" in gdoc_url:
+                base_url = gdoc_url.split("#")[0]
+                result[base_url] = slug
+            # Store with tab parameter if we have tab_id
+            if gdoc_tab_id:
+                # Extract doc ID from URL
+                import re as re_module
+                doc_match = re_module.search(r"/d/([a-zA-Z0-9_-]+)", gdoc_url)
+                if doc_match:
+                    doc_id = doc_match.group(1)
+                    # URL pattern with tab
+                    tab_url = f"https://docs.google.com/document/d/{doc_id}/edit?tab={gdoc_tab_id}"
+                    result[tab_url] = slug
     return result
 # ---------------------------------------------------------------------------
 # Text extraction helpers (inline spans)
@@ -1257,12 +1444,25 @@ def _process_node(state: BuildState, node: SyntaxTreeNode) -> None:
 # ---------------------------------------------------------------------------
 
 
-def build_requests(path: Path, state: BuildState) -> list[Request]:
-    """Parse *path* and populate *state* with batchUpdate requests."""
-    text = path.read_text(encoding="utf-8")
+def build_requests_from_text(text: str, state: BuildState) -> list[Request]:
+    """Parse markdown text and populate *state* with batchUpdate requests.
+
+    This is the shared core for both create/add-tab (from file) and
+    update-tab (from hunk text). The state.index determines where
+    content is inserted in the document.
+    """
     _meta, root = parse(text)
     _process_node(state, root)
     return state.requests
+
+
+def build_requests(path: Path, state: BuildState) -> list[Request]:
+    """Parse file at *path* and populate *state* with batchUpdate requests.
+
+    Thin wrapper around build_requests_from_text for file-based callers.
+    """
+    text = path.read_text(encoding="utf-8")
+    return build_requests_from_text(text, state)
 
 
 def extract_tab_regions(doc: dict, tab_id: str) -> list[Region]:
@@ -1330,35 +1530,1128 @@ def extract_tab_regions(doc: dict, tab_id: str) -> list[Region]:
     return regions
 
 
+def extract_tab_with_source_map(
+    doc: dict,
+    tab_id: str,
+    tab_slug_map: dict[str, str] | None = None,
+    heading_slug_map: dict[str, str] | None = None,
+    url_slug_map: dict[str, str] | None = None,
+) -> tuple[str, list[SourceSpan]]:
+    """Extract tab content as markdown with source map for surgical updates.
+
+    Returns (markdown_string, source_spans) where each SourceSpan maps a
+    markdown byte range to its corresponding API byte range.
+
+    For tables, each cell content maps to the cell's API range, while
+    synthetic markdown (pipes, separators) has api_start=None.
+    """
+    regions = extract_tab_regions(doc, tab_id)
+    spans: list[SourceSpan] = []
+    md_parts: list[str] = []
+    md_offset = 0  # Current byte offset in the markdown output
+
+    def emit(text: str, api_start: int | None, api_end: int | None,
+             kind: str, path: tuple[str, ...], region_idx: int | None = None,
+             synthetic: bool = False, raw_text: str | None = None) -> None:
+        """Append text to output and record its source span."""
+        nonlocal md_offset
+        # For cells, always emit a span even if text is empty (need API indices)
+        # For other kinds, skip empty text
+        if not text and kind != "cell":
+            return
+        md_start = md_offset
+        md_end = md_offset + len(text.encode("utf-8")) if text else md_offset
+        spans.append(SourceSpan(
+            md_start=md_start,
+            md_end=md_end,
+            api_start=api_start,
+            api_end=api_end,
+            kind=kind,
+            path=path,
+            region_idx=region_idx,
+            synthetic=synthetic,
+            raw_text=raw_text,
+        ))
+        if text:
+            md_parts.append(text)
+            md_offset = md_end
+
+    bullet_counters: dict = {}
+    i = 0
+    para_idx = 0  # Track paragraph index for path
+    table_idx = 0  # Track table index for path
+
+    while i < len(regions):
+        region = regions[i]
+
+        if region.kind == "paragraph":
+            if not region.raw_para.get("bullet"):
+                bullet_counters = {}
+            md = _render_paragraph_as_markdown(
+                region.raw_para, bullet_counters,
+                tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+                url_slug_map=url_slug_map,
+            )
+            if md.strip():
+                # Determine kind based on heading level
+                if region.heading_level > 0:
+                    kind = "heading"
+                elif region.raw_para.get("bullet"):
+                    kind = "list-item"
+                else:
+                    kind = "paragraph"
+
+                # Add blank line after non-list paragraphs for standard markdown spacing
+                suffix = "\n" if kind != "list-item" else ""
+                emit(
+                    md + "\n" + suffix,
+                    region.start_api,
+                    region.end_api,
+                    kind,
+                    (kind, str(para_idx)),
+                    region_idx=i,
+                )
+                para_idx += 1
+            i += 1
+            continue
+
+        if region.kind == "table_cell":
+            table_start_api = region.table_start_api
+            cells: list[Region] = []
+            cell_indices: list[int] = []
+            j = i
+            while (j < len(regions) and
+                   regions[j].kind == "table_cell" and
+                   regions[j].table_start_api == table_start_api):
+                cells.append(regions[j])
+                cell_indices.append(j)
+                j += 1
+
+            if cells:
+                max_row = max(c.row for c in cells)
+                max_col = max(c.col for c in cells)
+
+                # Build grid of (cell_md, cell_region, cell_idx)
+                grid: list[list[tuple[str, Region | None, int | None]]] = [
+                    [("|", None, None) for _ in range(max_col + 1)]
+                    for _ in range(max_row + 1)
+                ]
+                for cell, cell_idx in zip(cells, cell_indices):
+                    cell_md = _render_paragraph_as_markdown(
+                        cell.raw_para, {},
+                        tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+                        url_slug_map=url_slug_map, strip_bold=cell.is_table_header,
+                    ) if cell.raw_para else cell.text
+                    grid[cell.row][cell.col] = (cell_md, cell, cell_idx)
+
+                table_path_base = ("table", str(table_idx))
+
+                # Emit header row
+                if grid:
+                    # Leading pipe (synthetic)
+                    emit("| ", None, None, "table-syntax", table_path_base, synthetic=True)
+
+                    for col_idx, (cell_md, cell, cell_idx) in enumerate(grid[0]):
+                        cell_path = table_path_base + ("row", "0", "cell", str(col_idx))
+                        if cell:
+                            emit(cell_md, cell.start_api, cell.end_api, "cell", cell_path, region_idx=cell_idx, raw_text=cell.text)
+                        else:
+                            emit(cell_md, None, None, "cell", cell_path)
+                        if col_idx < len(grid[0]) - 1:
+                            emit(" | ", None, None, "table-syntax", table_path_base, synthetic=True)
+
+                    emit(" |\n", None, None, "table-syntax", table_path_base, synthetic=True)
+
+                    # Separator row (all synthetic)
+                    sep = "| " + " | ".join(":---" for _ in grid[0]) + " |\n"
+                    emit(sep, None, None, "table-separator", table_path_base, synthetic=True)
+
+                    # Data rows
+                    for row_idx, row in enumerate(grid[1:], start=1):
+                        emit("| ", None, None, "table-syntax", table_path_base, synthetic=True)
+                        for col_idx, (cell_md, cell, cell_idx) in enumerate(row):
+                            cell_path = table_path_base + ("row", str(row_idx), "cell", str(col_idx))
+                            if cell:
+                                emit(cell_md, cell.start_api, cell.end_api, "cell", cell_path, region_idx=cell_idx, raw_text=cell.text)
+                            else:
+                                emit(cell_md, None, None, "cell", cell_path)
+                            if col_idx < len(row) - 1:
+                                emit(" | ", None, None, "table-syntax", table_path_base, synthetic=True)
+                        emit(" |\n", None, None, "table-syntax", table_path_base, synthetic=True)
+
+                    # Blank line after table
+                    emit("\n", None, None, "blank", table_path_base, synthetic=True)
+
+                table_idx += 1
+
+            i = j
+            continue
+
+        i += 1
+
+    return "".join(md_parts), spans
+
+def parse_to_segments(
+    markdown: str,
+    spans: list[SourceSpan] | None = None,
+) -> list[Segment]:
+    """Parse markdown into a segment tree for alignment.
+
+    If spans is provided (from extract_tab_with_source_map), segments are
+    linked to their source spans. Otherwise, segments are local-only.
+    """
+    segments: list[Segment] = []
+    lines = markdown.splitlines(keepends=True)
+    byte_offset = 0
+    para_idx = 0
+    table_idx = 0
+    i = 0
+
+    def find_span_at(offset: int) -> SourceSpan | None:
+        """Find the span containing the given byte offset."""
+        if not spans:
+            return None
+        for span in spans:
+            if span.md_start <= offset < span.md_end and not span.synthetic:
+                return span
+        return None
+
+    def find_span_by_path(path: tuple[str, ...]) -> SourceSpan | None:
+        """Find the span with the matching path."""
+        if not spans:
+            return None
+        for span in spans:
+            if span.path == path:
+                return span
+        return None
+
+    def line_bytes(line: str) -> int:
+        return len(line.encode("utf-8"))
+
+    while i < len(lines):
+        line = lines[i]
+        line_start = byte_offset
+        line_len = line_bytes(line)
+
+        # Skip blank lines
+        if not line.strip():
+            byte_offset += line_len
+            i += 1
+            continue
+
+        # Heading
+        heading_match = re.match(r"^(#{1,6})\s+(.*)$", line.rstrip())
+        if heading_match:
+            level = len(heading_match.group(1))
+            text = heading_match.group(2)
+            span = find_span_at(line_start)
+            segments.append(Segment(
+                kind="heading",
+                path=("heading", str(para_idx)),
+                text=text,
+                md_start=line_start,
+                md_end=line_start + line_len,
+                span=span,
+            ))
+            para_idx += 1
+            byte_offset += line_len
+            i += 1
+            continue
+
+        # Fenced code block (``` or ~~~)
+        if line.strip().startswith("```") or line.strip().startswith("~~~"):
+            fence_char = line.strip()[:3]
+            code_lines: list[str] = [line]
+            code_start = byte_offset
+            byte_offset += line_len
+            i += 1
+            # Collect until closing fence
+            while i < len(lines):
+                code_line = lines[i]
+                code_lines.append(code_line)
+                byte_offset += line_bytes(code_line)
+                i += 1
+                if code_line.strip().startswith(fence_char):
+                    break
+            code_end = byte_offset
+            # Combine all code lines into single segment
+            code_text = "".join(code_lines)
+            span = find_span_at(code_start)
+            segments.append(Segment(
+                kind="code-block",
+                path=("code-block", str(para_idx)),
+                text=code_text,
+                md_start=code_start,
+                md_end=code_end,
+                span=span,
+            ))
+            para_idx += 1
+            continue
+
+        # Table (starts with |)
+        if line.strip().startswith("|"):
+            table_lines: list[str] = []
+            table_start = byte_offset
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                table_lines.append(lines[i])
+                byte_offset += line_bytes(lines[i])
+                i += 1
+            table_end = byte_offset
+
+            # Parse table into row/cell segments
+            table_path = ("table", str(table_idx))
+            children: list[Segment] = []
+            row_idx = 0
+            cell_offset = table_start
+
+            for tl in table_lines:
+                tl_bytes = line_bytes(tl)
+                # Skip separator row
+                if re.match(r"^\|[\s:|-]+\|\s*$", tl):
+                    cell_offset += tl_bytes
+                    continue
+
+                # Parse cells from this row
+                # Split on | but NOT inside wikilinks [[...]]
+                # First, temporarily replace wikilink pipes
+                temp_tl = tl
+                wikilink_pattern = re.compile(r"\[\[([^\]]+)\]\]")
+                wikilinks = wikilink_pattern.findall(tl)
+                for idx, wl in enumerate(wikilinks):
+                    temp_tl = temp_tl.replace(f"[[{wl}]]", f"\x00WL{idx}\x00")
+                
+                # Now split on |
+                cell_contents = re.split(r"(?<!\\)\|", temp_tl)
+                
+                # Restore wikilinks
+                restored_cells = []
+                for cell in cell_contents:
+                    for idx, wl in enumerate(wikilinks):
+                        cell = cell.replace(f"\x00WL{idx}\x00", f"[[{wl}]]")
+                    restored_cells.append(cell)
+                cell_contents = restored_cells
+                
+                # Remove first/last empty from leading/trailing |
+                if cell_contents and not cell_contents[0].strip():
+                    cell_contents = cell_contents[1:]
+                if cell_contents and not cell_contents[-1].strip():
+                    cell_contents = cell_contents[:-1]
+
+                for col_idx, cell_text in enumerate(cell_contents):
+                    cell_text = cell_text.strip()
+                    cell_path = table_path + ("row", str(row_idx), "cell", str(col_idx))
+                    span = find_span_by_path(cell_path)
+                    children.append(Segment(
+                        kind="cell",
+                        path=cell_path,
+                        text=cell_text.replace("\\|", "|"),  # Unescape pipes
+                        md_start=cell_offset,  # Approximate
+                        md_end=cell_offset + len(cell_text.encode("utf-8")),
+                        span=span,
+                        raw_text=span.raw_text if span else None,
+                    ))
+
+                cell_offset += tl_bytes
+                row_idx += 1
+
+            segments.append(Segment(
+                kind="table",
+                path=table_path,
+                text="",  # Table text is in children
+                md_start=table_start,
+                md_end=table_end,
+                span=None,  # Tables don't have a single span
+                children=children,
+            ))
+            table_idx += 1
+            # Skip trailing blank line
+            if i < len(lines) and not lines[i].strip():
+                byte_offset += line_bytes(lines[i])
+                i += 1
+            continue
+
+        # List item
+        list_match = re.match(r"^(\s*)([-*+]|\d+\.)\s+(.*)$", line.rstrip())
+        if list_match:
+            text = list_match.group(3)
+            span = find_span_at(line_start)
+            segments.append(Segment(
+                kind="list-item",
+                path=("list-item", str(para_idx)),
+                text=text,
+                md_start=line_start,
+                md_end=line_start + line_len,
+                span=span,
+            ))
+            para_idx += 1
+            byte_offset += line_len
+            i += 1
+            continue
+
+        # Blockquote / callout
+        if line.strip().startswith(">"):
+            # Collect all consecutive > lines
+            quote_start = byte_offset
+            quote_lines: list[str] = []
+            while i < len(lines) and lines[i].strip().startswith(">"):
+                quote_lines.append(lines[i])
+                byte_offset += line_bytes(lines[i])
+                i += 1
+            quote_end = byte_offset
+            text = "\n".join(line.lstrip("> ").rstrip() for line in quote_lines)
+            span = find_span_at(quote_start)
+            segments.append(Segment(
+                kind="blockquote",
+                path=("blockquote", str(para_idx)),
+                text=text,
+                md_start=quote_start,
+                md_end=quote_end,
+                span=span,
+            ))
+            para_idx += 1
+            continue
+
+        # Regular paragraph
+        span = find_span_at(line_start)
+        segments.append(Segment(
+            kind="paragraph",
+            path=("paragraph", str(para_idx)),
+            text=line.rstrip(),
+            md_start=line_start,
+            md_end=line_start + line_len,
+            span=span,
+        ))
+        para_idx += 1
+        byte_offset += line_len
+        i += 1
+
+    return segments
+
+def align_segments(
+    old_segments: list[Segment],
+    new_segments: list[Segment],
+) -> list[SegmentMatch]:
+    """Align old (extracted) and new (local) segment lists.
+
+    Uses content-based matching: segments are matched by kind and text similarity,
+    not by positional index. This handles insertions/deletions gracefully.
+    """
+    matches: list[SegmentMatch] = []
+    used_old: set[int] = set()
+    used_new: set[int] = set()
+
+    # First pass: find exact matches by (kind, normalized_text)
+    old_by_content: dict[tuple[str, str], list[int]] = {}
+    for i, seg in enumerate(old_segments):
+        key = (seg.kind, _normalize_for_matching(seg.text))
+        old_by_content.setdefault(key, []).append(i)
+
+    for j, new_seg in enumerate(new_segments):
+        key = (new_seg.kind, _normalize_for_matching(new_seg.text))
+        if key in old_by_content and old_by_content[key]:
+            i = old_by_content[key].pop(0)  # Take first available match
+            used_old.add(i)
+            used_new.add(j)
+            # Exact match (after normalization) — may still need text edits for link format
+            old_seg = old_segments[i]
+            if old_seg.text != new_seg.text:
+                edits = diff_segment_text(old_seg.text, new_seg.text)
+                if edits:
+                    matches.append(SegmentMatch(
+                        kind="matched",
+                        old_segment=old_seg,
+                        new_segment=new_seg,
+                        edits=edits,
+                    ))
+            elif new_seg.kind == "table":
+                matches.append(SegmentMatch(
+                    kind="matched",
+                    old_segment=old_seg,
+                    new_segment=new_seg,
+                ))
+
+    # Special pass for cells: match by path since table structure is fixed
+    old_cells_by_path: dict[tuple[str, ...], int] = {}
+    for i, seg in enumerate(old_segments):
+        if seg.kind == "cell" and i not in used_old:
+            old_cells_by_path[seg.path] = i
+    
+    for j, new_seg in enumerate(new_segments):
+        if new_seg.kind == "cell" and j not in used_new:
+            if new_seg.path in old_cells_by_path:
+                i = old_cells_by_path[new_seg.path]
+                used_old.add(i)
+                used_new.add(j)
+                old_seg = old_segments[i]
+                # Even if content is very different, treat as matched for cells
+                if old_seg.text != new_seg.text:
+                    edits = diff_segment_text(old_seg.text, new_seg.text)
+                    matches.append(SegmentMatch(
+                        kind="matched",
+                        old_segment=old_seg,
+                        new_segment=new_seg,
+                        edits=edits if edits else [],
+                    ))
+
+    # Second pass: find similar matches by kind (for modified content)
+    for j, new_seg in enumerate(new_segments):
+        if j in used_new:
+            continue
+        best_match: int | None = None
+        best_ratio: float = 0.0
+        for i, old_seg in enumerate(old_segments):
+            if i in used_old:
+                continue
+            if old_seg.kind != new_seg.kind:
+                continue
+            # Compute similarity ratio using normalized text
+            old_norm = _normalize_for_matching(old_seg.text)
+            new_norm = _normalize_for_matching(new_seg.text)
+            shorter = min(len(old_norm), len(new_norm))
+            longer = max(len(old_norm), len(new_norm))
+            if longer == 0:
+                ratio = 1.0
+            else:
+                # Simple prefix/suffix similarity
+                common = 0
+                for c1, c2 in zip(old_norm, new_norm):
+                    if c1 == c2:
+                        common += 1
+                    else:
+                        break
+                ratio = common / longer if longer > 0 else 0
+                # Also check if new is a superset/subset
+                if old_norm in new_norm or new_norm in old_norm:
+                    ratio = max(ratio, shorter / longer)
+
+            if ratio > best_ratio and ratio > 0.3:  # Minimum 30% similarity
+                best_ratio = ratio
+                best_match = i
+
+        if best_match is not None:
+            used_old.add(best_match)
+            used_new.add(j)
+            old_seg = old_segments[best_match]
+            edits = diff_segment_text(old_seg.text, new_seg.text)
+            if edits:
+                matches.append(SegmentMatch(
+                    kind="matched",
+                    old_segment=old_seg,
+                    new_segment=new_seg,
+                    edits=edits,
+                ))
+
+    # Remaining old segments are deletions
+    for i, old_seg in enumerate(old_segments):
+        if i not in used_old:
+            matches.append(SegmentMatch(
+                kind="deleted",
+                old_segment=old_seg,
+            ))
+
+    # Remaining new segments are insertions
+    # For each, find the insertion point based on preceding matched segment
+    # Build a map of new_segment index -> old_segment (for matched segments)
+    new_to_old_matched: dict[int, Segment] = {}
+    for m in matches:
+        if m.kind == "matched" and m.new_segment and m.old_segment:
+            # Find the new_segment's index
+            for idx, seg in enumerate(new_segments):
+                if seg is m.new_segment:
+                    new_to_old_matched[idx] = m.old_segment
+                    break
+
+    for j, new_seg in enumerate(new_segments):
+        if j not in used_new:
+            # Find the nearest preceding matched segment
+            insert_after_api = None
+            for k in range(j - 1, -1, -1):
+                if k in new_to_old_matched:
+                    old_seg = new_to_old_matched[k]
+                    if old_seg.span and old_seg.span.api_end is not None:
+                        insert_after_api = old_seg.span.api_end
+                    break
+            
+            # If no preceding match, try to find the next matched segment and insert before it
+            if insert_after_api is None:
+                for k in range(j + 1, len(new_segments)):
+                    if k in new_to_old_matched:
+                        old_seg = new_to_old_matched[k]
+                        if old_seg.span and old_seg.span.api_start is not None:
+                            insert_after_api = old_seg.span.api_start
+                        break
+            
+            # If still no match, use document start (index 1, after the initial newline)
+            if insert_after_api is None:
+                insert_after_api = 1
+            
+            matches.append(SegmentMatch(
+                kind="inserted",
+                new_segment=new_seg,
+                insert_after_api=insert_after_api,
+            ))
+
+    # Also align table children for matched tables
+    for match in list(matches):  # Copy to avoid mutation during iteration
+        if (match.kind == "matched" and
+            match.old_segment and match.new_segment and
+            match.old_segment.kind == "table" and
+            match.old_segment.children and match.new_segment.children):
+            child_matches = align_segments(
+                match.old_segment.children, match.new_segment.children
+            )
+            matches.extend(child_matches)
+
+    return matches
 
 
-    """Convert text hunks to Docs API batchUpdate requests."""
+def diff_segment_text(old_text: str, new_text: str) -> list[TextEdit]:
+    """Compute minimal text edits between old and new segment text.
+
+    Uses prefix/suffix stripping to minimize the edit range,
+    preserving as much of the original byte positions as possible.
+    """
+    # Find common prefix
+    prefix_len = 0
+    min_len = min(len(old_text), len(new_text))
+    while prefix_len < min_len and old_text[prefix_len] == new_text[prefix_len]:
+        prefix_len += 1
+
+    # Find common suffix (avoiding overlap with prefix)
+    suffix_len = 0
+    while (suffix_len < min_len - prefix_len and
+           old_text[-(suffix_len + 1)] == new_text[-(suffix_len + 1)]):
+        suffix_len += 1
+
+    # Calculate the changed region
+    old_changed_start = prefix_len
+    old_changed_end = len(old_text) - suffix_len
+    new_changed = new_text[prefix_len:len(new_text) - suffix_len if suffix_len else len(new_text)]
+
+    if old_changed_start == old_changed_end and not new_changed:
+        # No actual change
+        return []
+
+    return [TextEdit(
+        start=old_changed_start,
+        end=old_changed_end,
+        new_text=new_changed,
+    )]
+
+def edits_to_requests(
+    match: SegmentMatch,
+    tab_id: str,
+    tab_map: dict[str, str],
+    doc_id: str,
+) -> list[Request]:
+    """Convert a SegmentMatch to batchUpdate requests.
+
+    For matched segments: compute minimal deleteContentRange + insertText.
+    For deleted segments: deleteContentRange for the whole segment.
+    For inserted segments: insertText at appropriate position.
+    For replaced segments: delete old, insert new with styling.
+    """
     requests: list[Request] = []
-    for hunk in sorted(hunks, key=lambda h: h.start_api, reverse=True):
-        if hunk.end_api > hunk.start_api:
-            requests.append({
-                "deleteContentRange": {
-                    "range": {
-                        "startIndex": hunk.start_api,
-                        "endIndex": hunk.end_api,
-                        "segmentId": "",
-                        "tabId": hunk.tab_id,
+
+    if match.kind == "matched" and match.old_segment and match.edits:
+        # Minimal text edits within a matched segment
+        seg = match.old_segment
+        if not seg.span or seg.span.api_start is None:
+            # No API mapping — can't update
+            return []
+
+        # For cells, we need to handle the markdown-to-API text mismatch.
+        # The markdown has wikilinks [[slug|text]] but API has just the display text.
+        # Strategy: delete old content, insert new display text, apply link styling.
+        # Return as a grouped list so they execute in order.
+        if seg.kind == "cell":
+            api_start = seg.span.api_start
+            api_end = seg.span.api_end
+
+            if api_end is None or api_start is None:
+                return []
+
+            new_text = match.new_segment.text if match.new_segment else ""
+            cell_requests: list[Request] = []
+
+            # Delete old content (but not the trailing newline which is structural)
+            # Cell content ends with \n, we should keep one character for structure
+            delete_end = api_end - 1 if api_end > api_start else api_end
+            if delete_end > api_start:
+                cell_requests.append({
+                    "deleteContentRange": {
+                        "range": {
+                            "startIndex": api_start,
+                            "endIndex": delete_end,
+                            "segmentId": "",
+                            "tabId": tab_id,
+                        }
                     }
-                }
-            })
-        if hunk.new_text:
-            requests.append({
-                "insertText": {
-                    "location": {
-                        "index": hunk.start_api,
-                        "segmentId": "",
-                        "tabId": hunk.tab_id,
-                    },
-                    "text": hunk.new_text,
-                }
-            })
+                })
+
+            # Parse wikilinks from new text and build insert + link requests
+            if new_text:
+                # Convert wikilinks to display text and track link positions
+                wikilink_pattern = re.compile(r"\[\[([^|\]]+)\|?([^\]]*)\]\]")
+                display_text = ""
+                link_ranges: list[tuple[int, int, str]] = []  # (start, end, url)
+                last_end = 0
+
+                for m in wikilink_pattern.finditer(new_text):
+                    # Add text before wikilink
+                    display_text += new_text[last_end:m.start()]
+                    link_start = len(display_text)
+
+                    # Extract slug and display
+                    slug = m.group(1)
+                    display = m.group(2) if m.group(2) else slug
+                    display_text += display
+                    link_end = len(display_text)
+
+                    # Build URL from slug using reversed tab_map (slug -> tab_id)
+                    slug_to_tab = {v: k for k, v in tab_map.items()}
+                    if slug in slug_to_tab:
+                        tab_target = slug_to_tab[slug]
+                        url = f"https://docs.google.com/document/d/{doc_id}/edit?tab={tab_target}"
+                        link_ranges.append((link_start, link_end, url))
+
+                    last_end = m.end()
+
+                # Add remaining text after last wikilink
+                display_text += new_text[last_end:]
+
+                # Insert the display text
+                cell_requests.append({
+                    "insertText": {
+                        "location": {
+                            "index": api_start,
+                            "segmentId": "",
+                            "tabId": tab_id,
+                        },
+                        "text": display_text,
+                    }
+                })
+
+                # Apply link styling for each wikilink
+                for link_start, link_end, url in link_ranges:
+                    cell_requests.append({
+                        "updateTextStyle": {
+                            "range": {
+                                "startIndex": api_start + link_start,
+                                "endIndex": api_start + link_end,
+                                "segmentId": "",
+                                "tabId": tab_id,
+                            },
+                            "textStyle": {
+                                "link": {"url": url}
+                            },
+                            "fields": "link",
+                        }
+                    })
+
+            # Return as a "grouped" request that will be flattened but kept in order
+            # We use a special marker dict to indicate this is a group
+            return [{"__cell_group__": cell_requests, "__sort_index__": api_start}]
+        else:
+            # For non-cell segments, apply edits with wikilink handling
+            # We need to group delete/insert/style together for each edit
+            edit_requests: list[Request] = []
+            
+            for edit in match.edits:
+                # Translate segment-relative offsets to API-absolute
+                api_start = seg.span.api_start + edit.start
+                api_end = seg.span.api_start + edit.end
+
+                # Delete the old text
+                if api_end > api_start:
+                    edit_requests.append({
+                        "deleteContentRange": {
+                            "range": {
+                                "startIndex": api_start,
+                                "endIndex": api_end,
+                                "segmentId": "",
+                                "tabId": tab_id,
+                            }
+                        }
+                    })
+
+                # Parse wikilinks from new text
+                new_text = edit.new_text
+                if new_text:
+                    wikilink_pattern = re.compile(r"\[\[([^|\]]+)\|?([^\]]*)\]\]")
+                    display_text = ""
+                    link_ranges: list[tuple[int, int, str]] = []
+                    last_end = 0
+
+                    for m in wikilink_pattern.finditer(new_text):
+                        display_text += new_text[last_end:m.start()]
+                        link_start = len(display_text)
+                        slug = m.group(1)
+                        display = m.group(2) if m.group(2) else slug
+                        display_text += display
+                        link_end = len(display_text)
+
+                        slug_to_tab = {v: k for k, v in tab_map.items()}
+                        if slug in slug_to_tab:
+                            tab_target = slug_to_tab[slug]
+                            url = f"https://docs.google.com/document/d/{doc_id}/edit?tab={tab_target}"
+                            link_ranges.append((link_start, link_end, url))
+
+                        last_end = m.end()
+
+                    display_text += new_text[last_end:]
+
+                    # Insert the display text
+                    edit_requests.append({
+                        "insertText": {
+                            "location": {
+                                "index": api_start,
+                                "segmentId": "",
+                                "tabId": tab_id,
+                            },
+                            "text": display_text,
+                        }
+                    })
+
+                    # Apply link styling for each wikilink
+                    for link_start, link_end, url in link_ranges:
+                        edit_requests.append({
+                            "updateTextStyle": {
+                                "range": {
+                                    "startIndex": api_start + link_start,
+                                    "endIndex": api_start + link_end,
+                                    "segmentId": "",
+                                    "tabId": tab_id,
+                                },
+                                "textStyle": {
+                                    "link": {"url": url}
+                                },
+                                "fields": "link",
+                            }
+                        })
+
+            # Return as grouped request to maintain order
+            if edit_requests:
+                return [{"__edit_group__": edit_requests, "__sort_index__": seg.span.api_start}]
+    elif match.kind == "deleted" and match.old_segment:
+        # Delete the entire segment
+        # SKIP table cells - you can't delete a cell, only modify its content
+        seg = match.old_segment
+        if seg.kind == "cell":
+            # Table cells can't be deleted - skip
+            pass
+        elif seg.span and seg.span.api_start is not None and seg.span.api_end is not None:
+            api_start = seg.span.api_start
+            api_end = seg.span.api_end
+            if api_end > api_start:
+                requests.append({
+                    "deleteContentRange": {
+                        "range": {
+                            "startIndex": api_start,
+                            "endIndex": api_end,
+                            "segmentId": "",
+                            "tabId": tab_id,
+                        }
+                    }
+                })
+
+    elif match.kind == "inserted" and match.new_segment:
+        # TODO: Insertions need better placement logic
+        # For now, skip insertions - they corrupt the document when placed incorrectly
+        return []
+
+    elif match.kind == "replaced" and match.old_segment and match.new_segment:
+        # Delete old, insert new with styling
+        old_seg = match.old_segment
+        new_seg = match.new_segment
+
+        if old_seg.span and old_seg.span.api_start is not None and old_seg.span.api_end is not None:
+            api_start = old_seg.span.api_start
+            api_end = old_seg.span.api_end
+
+            # Delete old content
+            if api_end > api_start:
+                requests.append({
+                    "deleteContentRange": {
+                        "range": {
+                            "startIndex": api_start,
+                            "endIndex": api_end,
+                            "segmentId": "",
+                            "tabId": tab_id,
+                        }
+                    }
+                })
+
+            # Insert new content with styling
+            if new_seg.text:
+                state = BuildState(
+                    tab_id=tab_id,
+                    doc_id=doc_id,
+                    tab_map=tab_map,
+                    index=api_start,
+                )
+                # Need to add newline for paragraph/heading
+                text_to_insert = new_seg.text
+                if new_seg.kind in ("paragraph", "heading", "list-item"):
+                    text_to_insert += "\n"
+                build_requests_from_text(text_to_insert, state)
+                requests.extend(state.requests)
+
     return requests
 
+
+def collect_update_requests(
+    matches: list[SegmentMatch],
+    tab_id: str,
+    tab_map: dict[str, str],
+    doc_id: str,
+) -> list[Request]:
+    """Collect all requests from segment matches, sorted for safe application.
+
+    Cell edit groups are kept together in order (delete, insert, style).
+    Other requests are sorted by descending start index to prevent index drift.
+    """
+    # Separate grouped requests (cells, inserts) from regular requests
+    # Grouped requests are tuples: (sort_index, insertion_order, requests)
+    # insertion_order is used to reverse insertions at the same index
+    grouped_requests: list[tuple[int, int, list[Request]]] = []
+    regular_requests: list[Request] = []
+    insertion_order = 0
+
+    for match in matches:
+        requests = edits_to_requests(match, tab_id, tab_map, doc_id)
+        for req in requests:
+            if "__cell_group__" in req:
+                # Cell groups don't need reordering within same index
+                grouped_requests.append((req["__sort_index__"], 0, req["__cell_group__"]))
+            elif "__insert_group__" in req:
+                # Insert groups need reverse ordering within same index
+                grouped_requests.append((req["__sort_index__"], insertion_order, req["__insert_group__"]))
+                insertion_order += 1
+            elif "__edit_group__" in req:
+                # Edit groups (paragraph/heading edits with wikilinks)
+                grouped_requests.append((req["__sort_index__"], 0, req["__edit_group__"]))
+            else:
+                regular_requests.append(req)
+
+    # Sort regular requests by descending start index
+    def get_sort_key(req: Request) -> int:
+        if "deleteContentRange" in req:
+            return -req["deleteContentRange"]["range"]["startIndex"]
+        elif "insertText" in req:
+            loc = req["insertText"].get("location", {})
+            return -loc.get("index", 0)
+        elif "updateTextStyle" in req:
+            return -req["updateTextStyle"]["range"]["startIndex"]
+        elif "updateParagraphStyle" in req:
+            return -req["updateParagraphStyle"]["range"]["startIndex"]
+        elif "createParagraphBullets" in req:
+            return -req["createParagraphBullets"]["range"]["startIndex"]
+        return 0
+
+    regular_requests.sort(key=get_sort_key)
+
+    # Sort grouped requests by descending sort_index, then by DESCENDING insertion_order
+    # (so insertions at the same position are in reverse order)
+    grouped_requests.sort(key=lambda x: (-x[0], -x[1]))
+
+    # Interleave: process from highest index to lowest
+    # For each position, grouped requests should come before regular ones at same index
+    result: list[Request] = []
+    reg_idx = 0
+    grp_idx = 0
+
+    while reg_idx < len(regular_requests) or grp_idx < len(grouped_requests):
+        reg_key = get_sort_key(regular_requests[reg_idx]) if reg_idx < len(regular_requests) else float('inf')
+        grp_key = -grouped_requests[grp_idx][0] if grp_idx < len(grouped_requests) else float('inf')
+
+        if grp_key <= reg_key:
+            # Add grouped requests (they're already in correct order internally)
+            result.extend(grouped_requests[grp_idx][2])  # index 2 now holds the requests
+            grp_idx += 1
+        else:
+            result.append(regular_requests[reg_idx])
+            reg_idx += 1
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Diff parsing
+# ---------------------------------------------------------------------------
+
+
+_HUNK_HEADER_RE = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
+
+
+def parse_unified_diff(diff_output: str) -> list[DiffHunk]:
+    """Parse unified diff output into structured DiffHunk objects."""
+    hunks: list[DiffHunk] = []
+    lines = diff_output.splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        m = _HUNK_HEADER_RE.match(line)
+        if m:
+            old_start = int(m.group(1))
+            old_count = int(m.group(2)) if m.group(2) else 1
+            new_start = int(m.group(3))
+            new_count = int(m.group(4)) if m.group(4) else 1
+            old_lines: list[str] = []
+            new_lines: list[str] = []
+            i += 1
+            # Collect lines until next hunk or end
+            while i < len(lines) and not lines[i].startswith("@@"):
+                content_line = lines[i]
+                if content_line.startswith("-"):
+                    old_lines.append(content_line[1:])
+                elif content_line.startswith("+"):
+                    new_lines.append(content_line[1:])
+                # Context lines (space prefix) are ignored — we only care about changes
+                i += 1
+            hunks.append(DiffHunk(
+                old_start=old_start,
+                old_count=old_count,
+                new_start=new_start,
+                new_count=new_count,
+                old_lines=old_lines,
+                new_lines=new_lines,
+            ))
+        else:
+            i += 1
+    return hunks
+
+
+def filter_insignificant_hunks(hunks: list[DiffHunk]) -> list[DiffHunk]:
+    """Filter out hunks where the only difference is blank lines."""
+    result: list[DiffHunk] = []
+    for hunk in hunks:
+        # A hunk is insignificant if all removed and added lines are blank/whitespace
+        old_significant = any(line.strip() for line in hunk.old_lines)
+        new_significant = any(line.strip() for line in hunk.new_lines)
+        if old_significant or new_significant:
+            result.append(hunk)
+    return result
+
+
+def map_lines_to_indices(
+    hunks: list[DiffHunk], regions: list[Region], tab_id: str
+) -> list[ApiHunk]:
+    """Map diff line numbers to Google Docs API byte indices.
+
+    The diff operates on rendered markdown lines. Each Region corresponds to
+    one rendered line (paragraph regions end with newline, etc.).
+    """
+    api_hunks: list[ApiHunk] = []
+    # Build a line-number -> region mapping
+    # Line numbers are 1-indexed in diff output
+    # regions[i] corresponds to line i+1
+    for hunk in hunks:
+        # old_start is the first line being changed in the old file
+        # old_count is how many lines are being removed
+        start_line = hunk.old_start
+        end_line = hunk.old_start + hunk.old_count - 1 if hunk.old_count > 0 else hunk.old_start
+
+        # Map to region indices (0-indexed)
+        start_idx = start_line - 1
+        end_idx = end_line - 1 if hunk.old_count > 0 else start_idx
+
+        # Validate indices
+        if start_idx < 0:
+            raise IndexMappingError(
+                f"Line {start_line} is before start of document"
+            )
+        if hunk.old_count > 0 and end_idx >= len(regions):
+            raise IndexMappingError(
+                f"Line {end_line} beyond document end (only {len(regions)} lines)"
+            )
+
+        # Calculate API indices
+        if hunk.old_count == 0:
+            # Pure insertion — insert at the start of the next line
+            if start_idx >= len(regions):
+                # Inserting at end of document
+                if len(regions) == 0:
+                    start_api = 1  # Empty doc
+                else:
+                    start_api = regions[-1].end_api
+            else:
+                start_api = regions[start_idx].start_api
+            end_api = start_api  # No deletion
+        else:
+            # Deletion or replacement
+            start_api = regions[start_idx].start_api
+            end_api = regions[end_idx].end_api
+
+        new_text = "\n".join(hunk.new_lines)
+        if hunk.new_lines:
+            new_text += "\n"  # Each line ends with newline
+
+        api_hunks.append(ApiHunk(
+            start_api=start_api,
+            end_api=end_api,
+            new_text=new_text,
+            tab_id=tab_id,
+        ))
+
+    return api_hunks
+
+# ---------------------------------------------------------------------------
+# Styled request generation for updates
+# ---------------------------------------------------------------------------
+
+
+def build_hunk_requests(
+    hunk: ApiHunk, tab_map: dict[str, str], doc_id: str
+) -> list[Request]:
+    """Convert a single ApiHunk to batchUpdate requests with styling.
+
+    Uses the same build_requests_from_text pipeline as create/add-tab,
+    ensuring styling behavior is identical.
+    """
+    requests: list[Request] = []
+
+    # 1. Delete old content if this is a replacement or deletion
+    if hunk.end_api > hunk.start_api:
+        requests.append({
+            "deleteContentRange": {
+                "range": {
+                    "startIndex": hunk.start_api,
+                    "endIndex": hunk.end_api,
+                    "segmentId": "",
+                    "tabId": hunk.tab_id,
+                }
+            }
+        })
+
+    # 2. Insert new styled content if present
+    if hunk.new_text:
+        # Create a BuildState positioned at the insertion point
+        state = BuildState(
+            tab_id=hunk.tab_id,
+            doc_id=doc_id,
+            tab_map=tab_map,
+            index=hunk.start_api,  # Key: start at the hunk's insertion point
+        )
+        # Parse the hunk text and generate styled requests
+        build_requests_from_text(hunk.new_text, state)
+        requests.extend(state.requests)
+
+    return requests
+
+
+def collect_all_requests(
+    hunks: list[ApiHunk], tab_map: dict[str, str], doc_id: str
+) -> list[Request]:
+    """Process all hunks and combine their requests.
+
+    Hunks are processed in descending order by start_api to prevent
+    index drift from earlier modifications affecting later ones.
+    """
+    all_requests: list[Request] = []
+    for hunk in sorted(hunks, key=lambda h: h.start_api, reverse=True):
+        all_requests.extend(build_hunk_requests(hunk, tab_map, doc_id))
+    return all_requests
 
 def find_tab_by_title_or_id(doc: dict, title_or_id: str) -> tuple[str, str]:
     """Return (tab_id, tab_title) for *title_or_id* from *doc*."""
@@ -1870,6 +3163,7 @@ def _render_text_run(
     run: dict,
     tab_slug_map: dict[str, str] | None = None,
     heading_slug_map: dict[str, str] | None = None,
+    url_slug_map: dict[str, str] | None = None,
     strip_bold: bool = False,
 ) -> str:
     """Render a single textRun dict as inline markdown.
@@ -1911,7 +3205,13 @@ def _render_text_run(
             text = f"*{text}*"
 
     if link_url:
-        text = f"[{text}]({link_url})"
+        # Check if this URL maps to a local file (wikilink)
+        slug = (url_slug_map or {}).get(link_url)
+        if slug:
+            display = content
+            text = f"[[{slug}|{display}]]" if display != slug else f"[[{slug}]]"
+        else:
+            text = f"[{text}]({link_url})"
     elif "tabId" in link:
         tab_id = link["tabId"]
         slug = (tab_slug_map or {}).get(tab_id, tab_id)
@@ -1936,6 +3236,7 @@ def _render_paragraph_as_markdown(
     bullet_counters: dict,
     tab_slug_map: dict[str, str] | None = None,
     heading_slug_map: dict[str, str] | None = None,
+    url_slug_map: dict[str, str] | None = None,
     strip_bold: bool = False,
 ) -> str:
     """Render a single API paragraph dict as a markdown string (no trailing newline).
@@ -1961,7 +3262,7 @@ def _render_paragraph_as_markdown(
     for pel in para.get("elements", []):
         run = pel.get("textRun")
         if run is not None:
-            inline += _render_text_run(run, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map, strip_bold=strip_bold)
+            inline += _render_text_run(run, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map, url_slug_map=url_slug_map, strip_bold=strip_bold)
 
     # Task list checkboxes: \u2610 (unchecked) or \u2611 (checked) prefix.
     # These were written by md2gdoc from '- [ ]' / '- [x]' syntax.
@@ -2033,6 +3334,7 @@ def render_tab_as_markdown(
     regions: list[Region],
     tab_slug_map: dict[str, str] | None = None,
     heading_slug_map: dict[str, str] | None = None,
+    url_slug_map: dict[str, str] | None = None,
 ) -> str:
     """Render a list of Regions extracted from a live tab as a markdown string.
 
@@ -2053,6 +3355,7 @@ def render_tab_as_markdown(
             md = _render_paragraph_as_markdown(
                 region.raw_para, bullet_counters,
                 tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+                url_slug_map=url_slug_map,
             )
             if md.strip():
                 lines.append(md)
@@ -2075,7 +3378,7 @@ def render_tab_as_markdown(
                     cell_md = _render_paragraph_as_markdown(
                         c.raw_para, {},
                         tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
-                        strip_bold=c.is_table_header,
+                        url_slug_map=url_slug_map, strip_bold=c.is_table_header,
                     ) if c.raw_para else c.text
                     grid[c.row][c.col] = cell_md
 
@@ -2106,15 +3409,208 @@ def cmd_extract_tab(args: argparse.Namespace) -> None:
                }))
 
     tab_id, _tab_title = find_tab_by_title_or_id(doc, args.tab)
+    files_list = sorted(Path(args.files_dir).glob("*.md")) if getattr(args, "files_dir", None) else []
+    tab_slug_map = (
+        load_tab_slug_map_from_files(files_list)
+        if files_list
+        else _build_tab_slug_map(doc)
+    )
+    url_slug_map = load_url_slug_map_from_files(files_list) if files_list else None
+    heading_slug_map = _build_heading_slug_map(doc, tab_id)
+    regions = extract_tab_regions(doc, tab_id)
+    print(render_tab_as_markdown(regions, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map, url_slug_map=url_slug_map))
+
+
+def cmd_update_tab(args: argparse.Namespace) -> None:
+    """Push local markdown changes to a live Google Doc tab.
+
+    Uses segment-based diffing to make minimal, surgical edits that
+    preserve comments and other annotations in the document.
+    """
+    doc_id = args.document
+    local_path = Path(args.file)
+
+    # 1. Fetch document
+    doc = _gws("docs", "documents", "get",
+               "--params", json.dumps({
+                   "documentId": doc_id,
+                   "includeTabsContent": "true",
+               }))
+
+    tab_id, _tab_title = find_tab_by_title_or_id(doc, args.tab)
+
+    # Build maps for wikilink resolution
+    files_list = sorted(Path(args.files_dir).glob("*.md")) if getattr(args, "files_dir", None) else []
+    tab_slug_map = (
+        load_tab_slug_map_from_files(files_list)
+        if files_list
+        else _build_tab_slug_map(doc)
+    )
+    url_slug_map = load_url_slug_map_from_files(files_list) if files_list else None
+    heading_slug_map = _build_heading_slug_map(doc, tab_id)
+
+    # 2. Extract with source map
+    extracted_md, source_spans = extract_tab_with_source_map(
+        doc, tab_id, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+        url_slug_map=url_slug_map,
+    )
+
+    # 3. Strip frontmatter from local file and parse to segments
+    local_text = local_path.read_text(encoding="utf-8")
+    local_body = _strip_frontmatter(local_text)
+
+    # 4. Check if already in sync (using normalized comparison)
+    if _normalize_for_comparison(extracted_md) == _normalize_for_comparison(local_body):
+        print("Already in sync", file=sys.stderr)
+        sys.exit(0)
+
+    # 5. Parse both sides to segments
+    old_segments = parse_to_segments(extracted_md, source_spans)
+    new_segments = parse_to_segments(local_body)
+
+    # 6. Align segments and compute edits
+    matches = align_segments(old_segments, new_segments)
+
+    # Filter to only actionable matches (with edits or structural changes)
+    actionable = [m for m in matches if m.edits or m.kind in ("deleted", "inserted", "replaced")]
+
+    if not actionable:
+        print("Already in sync", file=sys.stderr)
+        sys.exit(0)
+
+    # 7. Generate requests
+    requests = collect_update_requests(actionable, tab_id, tab_slug_map, doc_id)
+
+    if not requests:
+        print("Already in sync", file=sys.stderr)
+        sys.exit(0)
+
+    # 8. Execute batchUpdate
+    try:
+        _gws("docs", "documents", "batchUpdate",
+             "--params", json.dumps({"documentId": doc_id}),
+             "--json", json.dumps({"requests": requests}))
+    except subprocess.CalledProcessError as e:
+        print(f"batchUpdate failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # 9. Verify sync
+    doc_after = _gws("docs", "documents", "get",
+                     "--params", json.dumps({
+                         "documentId": doc_id,
+                         "includeTabsContent": "true",
+                     }))
+    extracted_after, _ = extract_tab_with_source_map(
+        doc_after, tab_id, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+        url_slug_map=url_slug_map,
+    )
+
+    if _normalize_for_comparison(extracted_after) == _normalize_for_comparison(local_body):
+        print("Sync complete", file=sys.stderr)
+        sys.exit(0)
+    else:
+        # Show the diff for debugging
+        print(
+            "Sync completed but verification failed \u2014 run extract-tab to inspect",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+def cmd_sync_local(args: argparse.Namespace) -> None:
+    """Pull live doc changes to the local markdown file."""
+    import tempfile
+
+    doc_id = args.document
+    local_path = Path(args.file)
+
+    # 1. Fetch document
+    doc = _gws("docs", "documents", "get",
+               "--params", json.dumps({
+                   "documentId": doc_id,
+                   "includeTabsContent": "true",
+               }))
+
+    tab_id, _tab_title = find_tab_by_title_or_id(doc, args.tab)
+
+    # Build maps for wikilink resolution
     tab_slug_map = (
         load_tab_slug_map_from_files(sorted(Path(args.files_dir).glob("*.md")))
         if getattr(args, "files_dir", None)
         else _build_tab_slug_map(doc)
     )
     heading_slug_map = _build_heading_slug_map(doc, tab_id)
-    regions = extract_tab_regions(doc, tab_id)
-    print(render_tab_as_markdown(regions, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map))
 
+    # 2. Extract live content
+    regions = extract_tab_regions(doc, tab_id)
+    extracted_md = render_tab_as_markdown(
+        regions, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map
+    )
+
+    # 3. Read local file and separate frontmatter from body
+    local_text = local_path.read_text(encoding="utf-8")
+    frontmatter, local_body = _split_frontmatter(local_text)
+
+    # 4. Check if already in sync
+    if extracted_md.strip() == local_body.strip():
+        print("Already in sync", file=sys.stderr)
+        sys.exit(0)
+
+    # 5. Generate diff (local as old, extracted as new)
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f_loc:
+        f_loc.write(local_body)
+        local_body_path = f_loc.name
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f_ext:
+        f_ext.write(extracted_md)
+        extracted_path = f_ext.name
+
+    patch_path: str | None = None
+    try:
+        # Generate patch
+        result = subprocess.run(
+            ["diff", "-u", local_body_path, extracted_path],
+            capture_output=True,
+            text=True,
+        )
+        diff_output = result.stdout
+
+        if not diff_output.strip():
+            print("Already in sync", file=sys.stderr)
+            sys.exit(0)
+
+        # Write patch to temp file
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".patch", delete=False) as f_patch:
+            f_patch.write(diff_output)
+            patch_path = f_patch.name
+
+        # Apply patch to local body
+        patch_result = subprocess.run(
+            ["patch", "-p0", local_body_path],
+            stdin=open(patch_path),
+            capture_output=True,
+            text=True,
+        )
+
+        if patch_result.returncode != 0:
+            print(f"Patch failed: {patch_result.stderr}", file=sys.stderr)
+            sys.exit(1)
+
+        # Read patched content
+        patched_body = Path(local_body_path).read_text(encoding="utf-8")
+
+        # 6. Reconstruct file with frontmatter
+        if frontmatter:
+            new_content = frontmatter + "\n" + patched_body
+        else:
+            new_content = patched_body
+
+        local_path.write_text(new_content, encoding="utf-8")
+        print("Sync complete", file=sys.stderr)
+
+    finally:
+        Path(local_body_path).unlink(missing_ok=True)
+        Path(extracted_path).unlink(missing_ok=True)
+        if patch_path:
+            Path(patch_path).unlink(missing_ok=True)
 
 
 # ---------------------------------------------------------------------------
@@ -2190,6 +3686,62 @@ def main() -> None:
         help="Directory of local markdown files with gdoc_tab_id frontmatter for exact wikilink slug resolution.",
     )
 
+    p_update = sub.add_parser(
+        "update-tab",
+        help="Push local markdown changes to a live Google Doc tab.",
+    )
+    p_update.add_argument(
+        "--document",
+        required=True,
+        metavar="DOC_ID",
+        help="Target document ID.",
+    )
+    p_update.add_argument(
+        "--tab",
+        required=True,
+        metavar="TITLE_OR_ID",
+        help="Tab title (case-insensitive) or exact tab ID.",
+    )
+    p_update.add_argument(
+        "--files-dir",
+        metavar="DIR",
+        default=None,
+        help="Directory of local markdown files with gdoc_tab_id frontmatter for exact wikilink slug resolution.",
+    )
+    p_update.add_argument(
+        "file",
+        metavar="FILE",
+        help="Local markdown file to sync to the tab.",
+    )
+
+    p_sync = sub.add_parser(
+        "sync-local",
+        help="Pull live doc changes to the local markdown file.",
+    )
+    p_sync.add_argument(
+        "--document",
+        required=True,
+        metavar="DOC_ID",
+        help="Target document ID.",
+    )
+    p_sync.add_argument(
+        "--tab",
+        required=True,
+        metavar="TITLE_OR_ID",
+        help="Tab title (case-insensitive) or exact tab ID.",
+    )
+    p_sync.add_argument(
+        "--files-dir",
+        metavar="DIR",
+        default=None,
+        help="Directory of local markdown files with gdoc_tab_id frontmatter for exact wikilink slug resolution.",
+    )
+    p_sync.add_argument(
+        "file",
+        metavar="FILE",
+        help="Local markdown file to update.",
+    )
+
 
     args = parser.parse_args()
 
@@ -2199,6 +3751,10 @@ def main() -> None:
         cmd_add_tab(args)
     elif args.command == "extract-tab":
         cmd_extract_tab(args)
+    elif args.command == "update-tab":
+        cmd_update_tab(args)
+    elif args.command == "sync-local":
+        cmd_sync_local(args)
 
 
 if __name__ == "__main__":
