@@ -1,6 +1,6 @@
 ---
 name: gws-docs-markdown
-description: "Convert Markdown files into a Google Doc with tabs, extract tab content as markdown, and surgically update changed text. Supports Obsidian-flavored markdown: frontmatter, wikilinks, callouts, GFM tables, task lists, fenced code blocks."
+description: "Convert Markdown files into a Google Doc with tabs and extract tab content as markdown. Supports Obsidian-flavored markdown: frontmatter, wikilinks, callouts, GFM tables, task lists, fenced code blocks."
 ---
 
 # gws-docs-markdown
@@ -117,74 +117,6 @@ diff \
 
 ---
 
-### Diff a tab against a local markdown file
-
-```bash
-$MD2GDOC diff-tab --document DOC_ID --tab TITLE_OR_ID FILE
-```
-
-- Compares a live Google Doc tab against a local markdown file and reports all differences.
-- **Structural changes** (reordered, added, removed, or renamed sections) are reported and require manual intervention in the Docs UI.
-- **Text changes** (word/phrase/sentence edits within matched sections) are listed with live vs local preview and will be applied automatically by `update-tab`.
-- Hunk merging: nearby character-level changes within a region are coalesced into semantically coherent replace operations (gap threshold: 8 chars).
-- No writes are made to the document.
-
-**Output format:**
-
-```
-Structural changes (require manual intervention):
-  reordered  '02 Prfaq Process — PRFAQ'
-             live position 9 → local position 6
-  renamed    '[DRAFT] Atlas Data Service — Documentation Process'
-          →  'Atlas Data Service — Documentation Process'
-
-Text changes (8 region(s), 10 hunk(s)) — will be applied by update-tab:
-  [1:52]
-  - [DRAFT] Atlas Data Service — Documentation Process
-  + Atlas Data Service — Documentation Process
-  ...
-```
-
-**Examples:**
-
-```bash
-# Diff the README tab against its local file
-$MD2GDOC diff-tab \
-  --document 11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE \
-  --tab t.0 \
-  ~/Projects/kb/projects/doc-process/process/00-README.md
-```
-
----
-
-### Update changed text in an existing tab
-
-```bash
-$MD2GDOC update-tab --document DOC_ID --tab TITLE_OR_ID FILE
-```
-
-- Performs a **surgical, character-level update** of a live tab from a local markdown file.
-- Uses heading-anchored structural alignment: headings (H1–H3) act as section boundaries. Regions within each section are aligned with `difflib.SequenceMatcher`. Only matched regions are diffed — unmatched blocks (structural additions/removals) are skipped safely.
-- Only changed text is touched. Unchanged paragraphs, formatting, and comment anchors are preserved.
-- Processes changes from the highest document index backward to prevent index drift.
-- Uses `requiredRevisionId` for safety — fails if the document was edited concurrently.
-- Progress and hunk counts are printed to stderr.
-
-**Examples:**
-
-```bash
-# Update the README tab with a revised local file
-$MD2GDOC update-tab \
-  --document 11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE \
-  --tab t.0 \
-  ~/Projects/kb/projects/doc-process/process/00-README.md
-
-# Update by tab title
-$MD2GDOC update-tab --document DOC_ID --tab "Scope Process" scope-process.md
-```
-
----
-
 ## Markdown node coverage
 
 ### Write path (local → Google Doc)
@@ -230,70 +162,6 @@ $MD2GDOC update-tab --document DOC_ID --tab "Scope Process" scope-process.md
 
 ---
 
-## Sync workflow: diff then update
-
-Use this workflow when local markdown files have changed and you need to push the minimal set of edits to an existing Google Doc while preserving reviewer comments.
-
-### Step 1 — list tabs in the document
-
-```bash
-DOC_ID="11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE"
-
-gws docs documents get \
-  --params "{\"documentId\": \"$DOC_ID\"}" \
-  --format json | jq '.tabs[].tabProperties | {tabId, title}'
-```
-
-This gives you the `tabId` → tab title mapping. Match tabs to local files manually or by title.
-
-### Step 2 — diff each tab against its local file
-
-```bash
-PROCESS_DIR=~/Projects/kb/projects/doc-process/process
-
-strip_frontmatter() {
-  awk 'NR==1 && /^---$/ { in_fm=1; next } in_fm && /^---$/ { in_fm=0; next } !in_fm' "$1"
-}
-
-# Example: diff specific tab against its local counterpart
-diff \
-  <($MD2GDOC extract-tab --document "$DOC_ID" --tab t.0 2>/dev/null) \
-  <(strip_frontmatter "$PROCESS_DIR/00-README.md")
-```
-
-**Tab slug mismatch**: Internal tab links in the extracted markdown use slugified tab titles (e.g. `[[proposal-process|...]]`), while local files use filename-based slugs (e.g. `[[03-proposal-process]]`). These will always appear as diff noise — ignore them when assessing whether real content has changed.
-
-### Step 3 — apply updates for changed tabs
-
-Only call `update-tab` for tabs where the diff shows real content changes (not just slug or blank-line noise):
-
-```bash
-$MD2GDOC update-tab --document "$DOC_ID" --tab t.0 \
-  "$PROCESS_DIR/00-README.md"
-
-$MD2GDOC update-tab --document "$DOC_ID" --tab t.59tsvz40mdos \
-  "$PROCESS_DIR/04-scope-process.md"
-```
-
-### What `update-tab` handles
-
-| Change type | Behaviour |
-|:------------|:----------|
-| Word or phrase changed | Delete old chars, insert new chars at the same position |
-| Sentence rewritten | Character-level minimal edit within the paragraph |
-| Table cell updated | Each cell paragraph diffed and updated independently |
-| Paragraph added or removed | Skipped safely — structural changes require `add-tab` or manual edit |
-| Formatting change only | Not detected — `update-tab` is text-only |
-
-### Limitations of `update-tab`
-
-- **Structural changes** (added or removed paragraphs, new table rows) are skipped — the heading-anchored alignment fails closed rather than corrupting content.
-- **Formatting changes** (bold, italic, heading level) are not diffed — only text content.
-- **Comment anchors** that overlap deleted text will be orphaned. Anchors on unchanged text are always preserved.
-- **Concurrent edits**: the `requiredRevisionId` guard causes the command to fail if someone else edited the document between the GET and the batchUpdate. Re-run to retry.
-- **Tab slug mismatch**: wikilinks in local files use filename slugs; extracted markdown uses tab-title slugs. `update-tab` diffs text only and handles this correctly — the link display text is what matters.
-
----
 
 ## Output and follow-up
 
