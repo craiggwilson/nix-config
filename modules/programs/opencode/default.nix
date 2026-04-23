@@ -135,10 +135,10 @@
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
 
         # mestra plugin source directory — built from the mestra flake
-        mestraPluginDir = "${pkgs.mestra.opencode-plugin}/lib/opencode-mestra-plugin";
+        #mestraPluginDir = "${pkgs.mestra.opencode-plugin}/lib/opencode-mestra-plugin";
 
         # oh-my-openagent plugin directory in the nix store
-        ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";
+        #ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";
 
         # oh-my-openagent plugin configuration
         ohMyOpenagentConfig = {
@@ -229,7 +229,7 @@
           permission = config.hdwlinux.ai.agent.tools;
           small_model = resolveAlias "fast";
           plugin = [
-            "file://${ohMyOpenagentDir}"
+            #"file://${ohMyOpenagentDir}"
             #"file://${mestraPluginDir}"
           ];
           keybinds = {
@@ -238,7 +238,7 @@
         };
 
         # Wrapper that picks a random available port, exports it as OPENCODE_PORT
-        # so that oh-my-openagent tmux integration can connect, then launches opencode.
+        # so that plugins with tmux integration can connect, then launches opencode.
         # Only injects --port if the caller has not already supplied one, so that
         # tools (e.g. the SDK's createOpencodeServer) can pass their own port without
         # ending up with two conflicting --port flags.
