@@ -2033,13 +2033,14 @@ def align_segments(
             used_new.add(j)
             old_seg = old_segments[best_match]
             edits = diff_segment_text(old_seg.text, new_seg.text)
-            if edits:
-                matches.append(SegmentMatch(
-                    kind="matched",
-                    old_segment=old_seg,
-                    new_segment=new_seg,
-                    edits=edits,
-                ))
+            # Always add the match (even if no edits needed)
+            # This ensures insertion points can be calculated from matched segments
+            matches.append(SegmentMatch(
+                kind="matched",
+                old_segment=old_seg,
+                new_segment=new_seg,
+                edits=edits if edits else [],
+            ))
 
     # Remaining old segments are deletions
     for i, old_seg in enumerate(old_segments):
@@ -2356,9 +2357,77 @@ def edits_to_requests(
                 })
 
     elif match.kind == "inserted" and match.new_segment:
-        # TODO: Insertions need better placement logic
-        # For now, skip insertions - they corrupt the document when placed incorrectly
-        return []
+        # Insert new segment at the calculated insertion point
+        new_seg = match.new_segment
+        insert_at = match.insert_after_api
+
+        if insert_at is None:
+            # No insertion point found - skip
+            return []
+
+        # Use grouped requests to ensure proper ordering
+        insert_requests: list[Request] = []
+
+        # Parse wikilinks from new text
+        new_text = new_seg.text
+        wikilink_pattern = re.compile(r"\[\[([^|\]]+)\|?([^\]]*)\]\]")
+        display_text = ""
+        link_ranges: list[tuple[int, int, str]] = []
+        last_end = 0
+
+        for m in wikilink_pattern.finditer(new_text):
+            display_text += new_text[last_end:m.start()]
+            link_start = len(display_text)
+            slug = m.group(1)
+            display = m.group(2) if m.group(2) else slug
+            display_text += display
+            link_end = len(display_text)
+
+            slug_to_tab = {v: k for k, v in tab_map.items()}
+            if slug in slug_to_tab:
+                tab_target = slug_to_tab[slug]
+                url = f"https://docs.google.com/document/d/{doc_id}/edit?tab={tab_target}"
+                link_ranges.append((link_start, link_end, url))
+
+            last_end = m.end()
+
+        display_text += new_text[last_end:]
+
+        # Add newline if not present (paragraphs need trailing newline)
+        if display_text and not display_text.endswith("\n"):
+            display_text += "\n"
+
+        # Insert the text
+        insert_requests.append({
+            "insertText": {
+                "location": {
+                    "index": insert_at,
+                    "segmentId": "",
+                    "tabId": tab_id,
+                },
+                "text": display_text,
+            }
+        })
+
+        # Apply link styling
+        for link_start, link_end, url in link_ranges:
+            insert_requests.append({
+                "updateTextStyle": {
+                    "range": {
+                        "startIndex": insert_at + link_start,
+                        "endIndex": insert_at + link_end,
+                        "segmentId": "",
+                        "tabId": tab_id,
+                    },
+                    "textStyle": {
+                        "link": {"url": url}
+                    },
+                    "fields": "link",
+                }
+            })
+
+        # Return as grouped request with insertion_order for proper sequencing
+        return [{"__insert_group__": insert_requests, "__sort_index__": insert_at}]
 
     elif match.kind == "replaced" and match.old_segment and match.new_segment:
         # Delete old, insert new with styling
@@ -2452,7 +2521,8 @@ def collect_update_requests(
     regular_requests.sort(key=get_sort_key)
 
     # Sort grouped requests by descending sort_index, then by DESCENDING insertion_order
-    # (so insertions at the same position are in reverse order)
+    # For insertions at the same position: we insert in reverse document order,
+    # so earlier segments end up first in the final document after all inserts
     grouped_requests.sort(key=lambda x: (-x[0], -x[1]))
 
     # Interleave: process from highest index to lowest
@@ -3471,28 +3541,55 @@ def cmd_update_tab(args: argparse.Namespace) -> None:
     # 6. Align segments and compute edits
     matches = align_segments(old_segments, new_segments)
 
-    # Filter to only actionable matches (with edits or structural changes)
-    actionable = [m for m in matches if m.edits or m.kind in ("deleted", "inserted", "replaced")]
+    # === PASS 1: Apply edits and deletions only ===
+    # Filter to edits and deletions (skip insertions for now)
+    pass1_actionable = [m for m in matches if m.edits or m.kind == "deleted"]
 
-    if not actionable:
-        print("Already in sync", file=sys.stderr)
-        sys.exit(0)
+    if pass1_actionable:
+        requests = collect_update_requests(pass1_actionable, tab_id, tab_slug_map, doc_id)
+        if requests:
+            try:
+                _gws("docs", "documents", "batchUpdate",
+                     "--params", json.dumps({"documentId": doc_id}),
+                     "--json", json.dumps({"requests": requests}))
+            except subprocess.CalledProcessError as e:
+                print(f"Pass 1 (edits/deletions) failed: {e}", file=sys.stderr)
+                sys.exit(1)
 
-    # 7. Generate requests
-    requests = collect_update_requests(actionable, tab_id, tab_slug_map, doc_id)
-
-    if not requests:
-        print("Already in sync", file=sys.stderr)
-        sys.exit(0)
-
-    # 8. Execute batchUpdate
-    try:
-        _gws("docs", "documents", "batchUpdate",
-             "--params", json.dumps({"documentId": doc_id}),
-             "--json", json.dumps({"requests": requests}))
-    except subprocess.CalledProcessError as e:
-        print(f"batchUpdate failed: {e}", file=sys.stderr)
-        sys.exit(1)
+    # === PASS 2: Apply insertions with fresh anchor points ===
+    insertions = [m for m in matches if m.kind == "inserted"]
+    
+    if insertions:
+        # Re-fetch document to get updated indices
+        doc = _gws("docs", "documents", "get",
+                   "--params", json.dumps({
+                       "documentId": doc_id,
+                       "includeTabsContent": "true",
+                   }))
+        
+        # Re-extract with source map
+        extracted_md, source_spans = extract_tab_with_source_map(
+            doc, tab_id, tab_slug_map=tab_slug_map, heading_slug_map=heading_slug_map,
+            url_slug_map=url_slug_map,
+        )
+        
+        # Re-parse and re-align to get accurate insertion points
+        old_segments = parse_to_segments(extracted_md, source_spans)
+        matches = align_segments(old_segments, new_segments)
+        
+        # Now get insertions with correct insert_after_api values
+        pass2_actionable = [m for m in matches if m.kind == "inserted"]
+        
+        if pass2_actionable:
+            requests = collect_update_requests(pass2_actionable, tab_id, tab_slug_map, doc_id)
+            if requests:
+                try:
+                    _gws("docs", "documents", "batchUpdate",
+                         "--params", json.dumps({"documentId": doc_id}),
+                         "--json", json.dumps({"requests": requests}))
+                except subprocess.CalledProcessError as e:
+                    print(f"Pass 2 (insertions) failed: {e}", file=sys.stderr)
+                    sys.exit(1)
 
     # 9. Verify sync
     doc_after = _gws("docs", "documents", "get",
