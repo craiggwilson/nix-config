@@ -140,6 +140,9 @@
         # oh-my-openagent plugin directory in the nix store
         #ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";
 
+        # opencode-ensemble plugin directory in the nix store
+        ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
+
         # oh-my-openagent plugin configuration
         ohMyOpenagentConfig = {
           "$schema" =
@@ -229,6 +232,7 @@
           permission = config.hdwlinux.ai.agent.tools;
           small_model = resolveAlias "fast";
           plugin = [
+            "file://${ensemblePluginDir}"
             #"file://${ohMyOpenagentDir}"
             #"file://${mestraPluginDir}"
           ];
