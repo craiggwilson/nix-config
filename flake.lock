@@ -287,10 +287,10 @@
         ]
       },
       "locked": {
-        "dirtyRev": "d504b14757ebc9da36c8add1ad7021c1a328f99c-dirty",
-        "dirtyShortRev": "d504b14-dirty",
-        "lastModified": 1776720660,
-        "narHash": "sha256-IvP4X17KxwRIK3ksBoES42WazIDdETTRdfViI5UQ+6o=",
+        "lastModified": 1776790852,
+        "narHash": "sha256-EecvM14jleBAQ81RQvfs/KwXaVPXZlB/bLuvpSJ7HBY=",
+        "rev": "65357581689e75a948acaaecc6bbf7743707b610",
+        "revCount": 209,
         "type": "git",
         "url": "file:///home/craig/Projects/mestra"
       },

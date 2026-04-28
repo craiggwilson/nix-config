@@ -244,6 +244,9 @@
           };
           external_directory = {
             "*" = "ask";
+            "~/.cargo/registry/*" = "allow";
+            "~/.config/opencode/*" = "allow";
+            "~/.local/share/opencode/worktree/*" = "allow";
             "~/Projects/*" = "allow";
             "/nix/store/*" = "allow";
             "/tmp/*" = "allow";
