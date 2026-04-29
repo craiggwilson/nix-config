@@ -213,12 +213,7 @@
               model = resolveAlias "coder";
             };
           };
-          # tmux pane spawning for sub-agents
-          tmux = {
-            enabled = true;
-            layout = "main-vertical";
-            main_pane_size = 60;
-          };
+
         };
 
         # OpenCode configuration
@@ -242,15 +237,15 @@
         };
 
         # Wrapper that picks a random available port, exports it as OPENCODE_PORT
-        # so that plugins with tmux integration can connect, then launches opencode.
+        # so that plugins can connect, then launches opencode.
         # Only injects --port if the caller has not already supplied one, so that
         # tools (e.g. the SDK's createOpencodeServer) can pass their own port without
         # ending up with two conflicting --port flags.
         opencodeWrapped = pkgs.writeShellScriptBin "opencode" ''
           case " $* " in
             *" --port"*)
-              # Caller supplied --port; extract it for OPENCODE_PORT so the
-              # tmux integration can still connect, then pass args through as-is.
+              # Caller supplied --port; extract it for OPENCODE_PORT, then pass
+              # args through as-is.
               port=$(echo "$*" | grep -oP '(?<=--port[= ])\d+')
               export OPENCODE_PORT="$port"
               exec ${pkgs.opencode}/bin/opencode "$@"

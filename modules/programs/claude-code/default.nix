@@ -201,8 +201,7 @@
           autoUpdatesChannel = "latest";
           includeGitInstructions = false;
           respectGitignore = true;
-          # Use tmux panes for agent teams so each teammate gets its own terminal
-          teammateMode = "tmux";
+
         };
 
         # Wrapper script that passes --mcp-config so MCP servers are available
