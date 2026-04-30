@@ -140,7 +140,6 @@
           packages = [
             ./packages/atlas-cli.nix
             ./packages/auggie.nix
-            ./packages/agent-deck.nix
             ./packages/code42-aat.nix
             ./packages/context7-mcp.nix
             ./packages/engflow_auth.nix
@@ -148,7 +147,6 @@
             ./packages/evergreen-mcp-server.nix
             ./packages/falcon-sensor.nix
             ./packages/fern.nix
-            ./packages/mato.nix
             ./packages/mcp-atlassian.nix
             ./packages/mongo-orchestration.nix
             ./packages/songtool.nix
