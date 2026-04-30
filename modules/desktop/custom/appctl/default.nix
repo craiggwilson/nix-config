@@ -42,20 +42,15 @@
           (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
             name = "appctl";
             runtimeInputs = [
-              config.programs.rofi.package
               pkgs.procps
               pkgs.uwsm
+              pkgs.vicinae
             ];
             subcommands = {
               exec = "uwsm app -- \"$@\"";
               exec-known = known;
-              show-menu = ''
-                pkill rofi || rofi \
-                  -show drun \
-                  -theme app-menu.rasi \
-                  -drun-run-command 'appctl exec {cmd}'
-              '';
-              show-windows = "pkill rofi || rofi -show window";
+              show-menu = "vicinae vicinae://toggle";
+              show-windows = "vicinae 'vicinae://launch/windows?toggle=true'";
             };
           })
         ];

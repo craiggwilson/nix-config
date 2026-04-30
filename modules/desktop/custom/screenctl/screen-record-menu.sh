@@ -7,12 +7,9 @@ if screenctl record is-recording; then
     exit 0
 fi
 
-# Pass variables to rofi dmenu
+# Pass variables to vicinae dmenu
 show_record_menu() {
-	echo -e "$recorddesktop\n$recordwindow\n$recordregion" | rofi -dmenu \
-		-p "$(hostname)" \
-		-markup-rows \
-		-theme screen-record-menu.rasi
+	echo -e "$recorddesktop\n$recordwindow\n$recordregion" | vicinae dmenu -p "Record"
 }
 
 # Actions

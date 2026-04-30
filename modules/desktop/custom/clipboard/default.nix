@@ -3,31 +3,23 @@
     tags = [ "desktop:custom" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      { pkgs, ... }:
       {
         home.packages = [
           pkgs.wl-clipboard
           (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
             name = "clipboardctl";
             runtimeInputs = [
-              config.programs.rofi.package
-              config.services.cliphist.package
+              pkgs.vicinae
               pkgs.wl-clipboard
             ];
             subcommands = {
               copy = "wl-copy";
-              list = "cliphist list";
               paste = "wl-paste";
-              show-menu = "cliphist list | rofi -dmenu | cliphist decode | wl-copy";
+              show-menu = "vicinae 'vicinae://launch/clipboard/history?toggle=true'";
             };
           })
         ];
-
-        systemd.user.services.cliphist.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
-        systemd.user.services.cliphist-images.Unit.ConditionEnvironment = lib.mkDefault "WAYLAND_DISPLAY";
-
-        services.cliphist.enable = true;
       };
   };
 }
-

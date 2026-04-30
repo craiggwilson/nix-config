@@ -76,7 +76,7 @@ recent-windows {
 screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 
 layer-rule {
-    match namespace="rofi"
+    match namespace="vicinae"
 
     shadow {
         on
@@ -137,7 +137,7 @@ binds {
     Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "appctl" "exec-known" "terminal"; }
     Mod+V hotkey-overlay-title="Show clipboard menu" { spawn "appctl" "exec" "clipboardctl" "show-menu"; }
     Mod+W { toggle-column-tabbed-display; }
-    Mod+X hotkey-overlay-title="Open power menu" { spawn "appctl" "exec" "powermenu"; }
+    Mod+X hotkey-overlay-title="Open power menu" { spawn "vicinae" "vicinae://launch/power?toggle=true"; }
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
     Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn-sh "nscratch -id scratch.terminal -m -s \"appctl exec-known terminal --class=scratch.terminal\""; }

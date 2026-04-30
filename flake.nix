@@ -1,6 +1,11 @@
 {
   description = "HDW Linux";
 
+  nixConfig = {
+    extra-substituters = [ "https://vicinae.cachix.org" ];
+    extra-trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
+  };
+
   inputs = {
     hdwlinux-private.url = "git+file:///home/craig/Projects/hdwlinux/nix-private";
 
@@ -53,6 +58,11 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    nur = {
+      url = "github:nix-community/NUR";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     opencode = {
       url = "github:anomalyco/opencode";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -65,11 +75,6 @@
 
     opnix = {
       url = "github:craiggwilson/opnix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    nur = {
-      url = "github:nix-community/NUR";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -86,6 +91,17 @@
     substrate = {
       url = "git+file:///home/craig/Projects/hdwlinux/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    vicinae = {
+      url = "github:vicinaehq/vicinae";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    vicinae-extensions = {
+      url = "github:vicinaehq/extensions";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.vicinae.follows = "vicinae";
     };
   };
 
@@ -113,6 +129,7 @@
 
         homeManagerModules = [
           inputs.mestra.homeManagerModules.mestra
+          inputs.vicinae.homeManagerModules.default
         ];
 
         nixosModules = [
