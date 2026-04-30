@@ -21,7 +21,7 @@
         '';
       in
       {
-        hdwlinux.ai.agent.mcpServers = lib.mkIf (hasTag "ai:agent") {
+        hdwlinux.ai.clients.mcpServers = lib.mkIf (hasTag "ai:clients") {
           augment-context-engine.stdio = {
             command = lib.getExe pkgs.hdwlinux.auggie;
             args = [

@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.claude-code = {
     tags = [
-      "ai:agent"
+      "ai:clients"
       "programming"
       "users:craig:work"
     ];
@@ -20,7 +20,7 @@
         resolveModel =
           aliasName:
           let
-            alias = config.hdwlinux.ai.agent.models.aliases.${aliasName};
+            alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
           in
           if alias.provider == "anthropic" then
             alias.model
@@ -58,8 +58,8 @@
           pkgs.writeText "${name}.md" (frontmatter + body);
 
         # Partition rules into always-loaded and auto-loaded.
-        alwaysRules = lib.filterAttrs (_: r: r.loadMode == "always") config.hdwlinux.ai.agent.rules;
-        autoRules = lib.filterAttrs (_: r: r.loadMode == "auto") config.hdwlinux.ai.agent.rules;
+        alwaysRules = lib.filterAttrs (_: r: r.loadMode == "always") config.hdwlinux.ai.clients.rules;
+        autoRules = lib.filterAttrs (_: r: r.loadMode == "auto") config.hdwlinux.ai.clients.rules;
 
         # Generate CLAUDE.md content: imports each always-loaded rule from the nix store.
         claudeMdContent =
@@ -75,7 +75,7 @@
           lib.mapAttrsToList (name: agent: {
             name = "${name}.md";
             path = generateAgentMd name agent;
-          }) config.hdwlinux.ai.agent.agents
+          }) config.hdwlinux.ai.clients.agents
         );
 
         # Build a derivation containing symlinks to all auto-rule markdown files.
@@ -91,10 +91,10 @@
           lib.mapAttrsToList (name: path: {
             inherit name;
             path = path;
-          }) config.hdwlinux.ai.agent.skills
+          }) config.hdwlinux.ai.clients.skills
         );
 
-        # Translate hdwlinux.ai.agent.tools into Claude Code permission lists.
+        # Translate hdwlinux.ai.clients.tools into Claude Code permission lists.
         # Handles bash, read, write, edit, and external_directory.
         # Simple "allow" tools and catch-all "*" patterns are skipped (allow is the default),
         # except for external_directory "allow" patterns which are explicitly emitted into
@@ -159,7 +159,7 @@
             allow = allAllow;
           };
 
-        derivedPermissions = toolsToClaudePermissions config.hdwlinux.ai.agent.tools;
+        derivedPermissions = toolsToClaudePermissions config.hdwlinux.ai.clients.tools;
 
         # Transform MCP servers to Claude Code's --mcp-config JSON format.
         mcpConfig = {
@@ -179,7 +179,7 @@
               }
             else
               throw "Unknown MCP server type"
-          ) config.hdwlinux.ai.agent.mcpServers;
+          ) config.hdwlinux.ai.clients.mcpServers;
         };
 
         # Claude Code settings.json with permissions.

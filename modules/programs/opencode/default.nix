@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.opencode = {
     tags = [
-      "ai:agent"
+      "ai:clients"
     ];
 
     homeManager =
@@ -16,7 +16,7 @@
         resolveAlias =
           aliasName:
           let
-            alias = config.hdwlinux.ai.agent.models.aliases.${aliasName};
+            alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
           in
           "${alias.provider}/${alias.model}";
 
@@ -38,7 +38,7 @@
             }
           else
             throw "Unknown MCP server type for ${name}"
-        ) config.hdwlinux.ai.agent.mcpServers;
+        ) config.hdwlinux.ai.clients.mcpServers;
 
         # Transform tools attrset for OpenCode config (boolean values)
         # "allow" -> true, "ask"/"deny" -> false
@@ -57,14 +57,14 @@
             temperature = agent.temperature;
           }
           // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
-        ) config.hdwlinux.ai.agent.agents;
+        ) config.hdwlinux.ai.clients.agents;
 
         # Transform commands to OpenCode JSON config format
         # Uses {file:path} syntax for OpenCode's variable substitution
         commandConfig = lib.mapAttrs (_: command: {
           description = command.description;
           template = "{file:${builtins.unsafeDiscardStringContext (toString command.prompt)}}";
-        }) config.hdwlinux.ai.agent.commands;
+        }) config.hdwlinux.ai.clients.commands;
 
         # Build a derivation containing symlinks to all skills
         # OpenCode expects: skills/<name>/SKILL.md (must be files for discovery)
@@ -72,14 +72,14 @@
           lib.mapAttrsToList (name: path: {
             inherit name;
             path = path;
-          }) config.hdwlinux.ai.agent.skills
+          }) config.hdwlinux.ai.clients.skills
         );
 
         # Collect all rules as direct file paths for OpenCode's instructions config
         # Uses absolute paths to source files in the nix store
         ruleInstructions = lib.mapAttrsToList (
           _: rule: builtins.unsafeDiscardStringContext (toString rule.prompt)
-        ) config.hdwlinux.ai.agent.rules;
+        ) config.hdwlinux.ai.clients.rules;
 
         # Provider metadata: OpenCode-specific configuration for each provider
         providerMeta = {
@@ -111,7 +111,7 @@
           };
         };
 
-        # Build providers config from hdwlinux.ai.agent.models.providers
+        # Build providers config from hdwlinux.ai.clients.models.providers
         # Only include providers that have metadata defined
         providers = lib.mapAttrs (
           providerKey: provider:
@@ -132,7 +132,7 @@
             models = lib.mapAttrs (slug: model: transformModel slug model) provider.models;
           }
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
-        ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.agent.models.providers);
+        ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
         # mestra plugin source directory — built from the mestra flake
         #mestraPluginDir = "${pkgs.mestra.opencode-plugin}/lib/opencode-mestra-plugin";
@@ -224,7 +224,7 @@
           agent = agentConfig;
           command = commandConfig;
           instructions = ruleInstructions;
-          permission = config.hdwlinux.ai.agent.tools;
+          permission = config.hdwlinux.ai.clients.tools;
           small_model = resolveAlias "fast";
           plugin = [
             "file://${ensemblePluginDir}"

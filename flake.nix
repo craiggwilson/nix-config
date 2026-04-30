@@ -213,7 +213,7 @@
           # User-specific tags
           {
             "users:craig" = [
-              "ai:agent"
+              "ai:clients"
               "cloud:sync"
               "desktop:custom:niri"
               "dictation"
@@ -269,7 +269,7 @@
           }
 
           # Feature tags
-          "ai:agent"
+          "ai:clients"
           "ai:llm"
           "audio"
           "audio:midi"

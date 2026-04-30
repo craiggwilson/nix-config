@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.augment = {
     tags = [
-      "ai:agent"
+      "ai:clients"
       "users:craig:work"
     ];
 
@@ -38,7 +38,7 @@
         resolveModelSlug =
           aliasName:
           let
-            alias = config.hdwlinux.ai.agent.models.aliases.${aliasName};
+            alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
           in
           toAuggieSlug alias.model;
 
@@ -98,27 +98,27 @@
           lib.mapAttrsToList (name: agent: {
             name = "${name}.md";
             path = generateAgentMd name agent;
-          }) config.hdwlinux.ai.agent.agents
+          }) config.hdwlinux.ai.clients.agents
         );
 
         commandsDir = pkgs.linkFarm "augment-commands" (
           lib.mapAttrsToList (name: command: {
             name = "${name}.md";
             path = generateCommandMd name command;
-          }) config.hdwlinux.ai.agent.commands
+          }) config.hdwlinux.ai.clients.commands
         );
 
         rulesDir = pkgs.linkFarm "augment-rules" (
           lib.mapAttrsToList (name: rule: {
             name = "${name}.md";
             path = generateRuleMd name rule;
-          }) config.hdwlinux.ai.agent.rules
+          }) config.hdwlinux.ai.clients.rules
         );
 
         skillsDir = pkgs.linkFarm "augment-skills" (
           lib.mapAttrsToList (name: path: {
             inherit name path;
-          }) config.hdwlinux.ai.agent.skills
+          }) config.hdwlinux.ai.clients.skills
         );
 
         mcpServers = lib.mapAttrs (
@@ -135,7 +135,7 @@
             }
           else
             throw "Unknown MCP server type for ${name}"
-        ) (lib.filterAttrs (n: _: n != "augment-context-engine") config.hdwlinux.ai.agent.mcpServers);
+        ) (lib.filterAttrs (n: _: n != "augment-context-engine") config.hdwlinux.ai.clients.mcpServers);
 
       in
       {

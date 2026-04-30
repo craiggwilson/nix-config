@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.mestra = {
-    tags = [ "ai:agent" ];
+    tags = [ "ai:clients" ];
 
     homeManager = {
       programs.mestra = {

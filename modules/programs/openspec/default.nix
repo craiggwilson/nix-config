@@ -2,7 +2,7 @@
   config.substrate.modules.programs.openspec = {
     tags = [
       "programming"
-      "ai:agent"
+      "ai:clients"
     ];
 
     homeManager =
