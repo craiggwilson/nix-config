@@ -175,6 +175,18 @@ let
   # Look up a #-prefixed hex string; strips the # before lookup.
   hexToAnsiNameH = hex: hexToAnsiName (stripHash hex);
 
+  # Convert a bare 6-character hex string to a [ r g b ] integer list.
+  toRgb =
+    hex:
+    let
+      c = parseColor hex;
+    in
+    [
+      c.r
+      c.g
+      c.b
+    ];
+
   ansi = ansiColors;
   ansiWithHashtag = builtins.mapAttrs (_: v: "#" + v) ansiColors;
 
@@ -192,6 +204,7 @@ colors
   inherit
     ansi
     hexToAnsiName
+    toRgb
     withHashtag
     mix
     lighten
