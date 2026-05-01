@@ -137,84 +137,8 @@
         # mestra plugin source directory — built from the mestra flake
         #mestraPluginDir = "${pkgs.mestra.opencode-plugin}/lib/opencode-mestra-plugin";
 
-        # oh-my-openagent plugin directory in the nix store
-        #ohMyOpenagentDir = "${pkgs.callPackage ./plugins/_oh-my-openagent.nix { }}/lib/oh-my-openagent";
-
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
-
-        # oh-my-openagent plugin configuration
-        ohMyOpenagentConfig = {
-          "$schema" =
-            "https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/dev/assets/oh-my-opencode.schema.json";
-
-          dynamic_context_pruning = {
-            enabled = true;
-            notification = "minimal";
-          };
-
-          hashline_edit = true;
-
-          # MCP servers are managed by Nix; disable plugin-installed ones
-          disabled_mcps = [
-            "context7"
-            "grep_app"
-            "websearch"
-          ];
-          # Override each agent's model to use the augment provider exclusively.
-          # oh-my-openagent's built-in fallback chains reference providers
-          # (anthropic, openai, google) that are not configured here.
-          agents = {
-            # Primary orchestrator — balanced model for planning and delegation
-            sisyphus = {
-              model = resolveAlias "balanced";
-            };
-            # Deep strategic reasoning — most capable model
-            oracle = {
-              model = resolveAlias "analyst";
-            };
-            # Planner — delegates to sisyphus model by default; keep it there
-            prometheus = {
-              prompt_append = "Leverage deep & quick agents heavily, always in parallel.";
-            };
-            # Research and doc lookup — balanced is fine
-            librarian = {
-              model = resolveAlias "balanced";
-            };
-            # Codebase search and discovery — fast model sufficient
-            explore = {
-              model = resolveAlias "fast";
-            };
-            # Autonomous deep worker — coder model
-            hephaestus = {
-              model = resolveAlias "coder";
-            };
-            # Multimodal tasks not needed; disable to avoid fallback confusion
-            multimodal-looker = {
-              disable = true;
-            };
-          };
-          # Category overrides — control what model task() picks when delegating
-          categories = {
-            quick = {
-              model = resolveAlias "fast";
-            };
-            unspecified-low = {
-              model = resolveAlias "balanced";
-            };
-            unspecified-high = {
-              model = resolveAlias "analyst";
-            };
-            writing = {
-              model = resolveAlias "writer";
-            };
-            # visual-engineering and other GPU-heavy categories fall back to analyst
-            visual-engineering = {
-              model = resolveAlias "coder";
-            };
-          };
-
-        };
 
         # OpenCode configuration
         opencodeConfig = {
@@ -228,7 +152,6 @@
           small_model = resolveAlias "fast";
           plugin = [
             "file://${ensemblePluginDir}"
-            #"file://${ohMyOpenagentDir}"
             #"file://${mestraPluginDir}"
           ];
           keybinds = {
@@ -276,7 +199,6 @@
 
         home.file = {
           ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
-          ".config/opencode/oh-my-openagent.json".text = builtins.toJSON ohMyOpenagentConfig;
           ".config/opencode/skills".source = skillsDir;
         };
       };

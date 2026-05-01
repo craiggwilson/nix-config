@@ -230,14 +230,14 @@ let
 in
 python3Packages.buildPythonApplication rec {
   pname = "evergreen-mcp-server";
-  version = "0.4.2";
+  version = "0.3.1";
   pyproject = true;
 
   src = pkgs.fetchFromGitHub {
     owner = "evergreen-ci";
     repo = "evergreen-mcp-server";
-    rev = "06048872ae97e6bd70dd69b42e35e2dc88aa6d4e";
-    sha256 = "sha256-6WygZHdiUucvZKRx3d0Hqhz09Sb4rpY76R6j2WNC8PQ=";
+    rev = "fc4d76d4e5d7591506c3249c0954b78538d43afc";
+    sha256 = "sha256-YezK/8biPZGWKN2SDssd7kqhNxec24e4glb8GfjptRU=";
   };
 
   build-system = [

@@ -5,14 +5,14 @@ pkgs.buildGoModule {
   src = pkgs.fetchFromGitHub {
     owner = "evergreen-ci";
     repo = "evergreen";
-    rev = "c8fb1ac2d485cdf17a3d9f87be266a6d3963bdea";
-    sha256 = "sha256-mxZswcuhOSap1j/+iYPkGtoUnS+ivINxj2EpVD7K32Y=";
+    rev = "d0dc05a5ccedce4bdf510ca395ab1605703a2234";
+    sha256 = "sha256-fd0z/MTB4nHfMOnwx54WBFflegm3b/KjeC/eRO2tI6s=";
   };
 
   subPackages = [ "cmd/evergreen" ];
 
   proxyVendor = true;
-  vendorHash = "sha256-A9qtFwoewr4f0HXFk+Y5EALMJ9UIn3i+zxuY9+ZRQ9U=";
+  vendorHash = "sha256-xqvgJ5nSpITPwFZn79Y5NKwMh+fhOlQG9FPoH1b3lO8=";
 
   meta = {
     mainProgram = "evergreen";

@@ -1,15 +1,18 @@
 { lib, pkgs, ... }:
 let
-  version = "1.0.30";
+  version = "2.2.3";
+  rev = "795d5da720e16c417ae30a548a475672ae35e92f";
 
   src = pkgs.fetchFromGitHub {
     owner = "upstash";
     repo = "context7";
-    tag = "v${version}";
-    hash = "sha256-cNm/NROFHy+3cOozzvC1WUhGb7bwccvOIiMt30lAN3E=";
+    inherit rev;
+    hash = "sha256-FS4JNh9QXCicV2mRuN7jMos4nEbr7eqO/g97HLQJAyU=";
   };
 
-  # Step 1: Fixed-output derivation for dependencies
+  # Fixed-output derivation for dependencies.
+  # Installs from the monorepo root so that workspace resolution and the root
+  # tsconfig.json (extended by packages/mcp/tsconfig.json) are available.
   deps = pkgs.stdenv.mkDerivation {
     pname = "context7-mcp-deps";
     inherit version src;
@@ -22,17 +25,16 @@ let
     installPhase = ''
       export HOME=$TMPDIR
 
-      # Install dependencies
-      bun install --frozen-lockfile --no-cache
+      # Install from monorepo root so workspace packages resolve correctly
+      bun install --no-cache --frozen-lockfile
 
-      # Copy to output
       mkdir -p $out
       cp -r node_modules $out/
-      cp bun.lock package.json $out/
+      cp -r packages/mcp/node_modules $out/mcp-node_modules 2>/dev/null || true
+      cp pnpm-lock.yaml package.json $out/
     '';
 
-    # This hash represents the dependencies
-    outputHash = "sha256-rSz+BVSnyTP5tE/j3mlijvIpyMF0QIIouFxYv4Y5lRU=";
+    outputHash = "sha256-JM3RO5wtpwdqZ8gOge3kTh9DoxZMSu3hMPGBPgUlvxI=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
@@ -42,7 +44,7 @@ pkgs.stdenv.mkDerivation {
   inherit version src;
 
   nativeBuildInputs = [
-    pkgs.bun
+    pkgs.nodejs
     pkgs.makeWrapper
   ];
 
@@ -51,13 +53,20 @@ pkgs.stdenv.mkDerivation {
 
     export HOME=$TMPDIR
 
+    # Set up node_modules from the deps FOD
     cp -r ${deps}/node_modules .
-    cp ${deps}/bun.lock .
+    chmod -R u+w node_modules
 
+    # Place the mcp package's own deps where tsc can find them
+    cp -r ${deps}/mcp-node_modules packages/mcp/node_modules
+    chmod -R u+w packages/mcp/node_modules
+
+    # Patch shebangs that reference /usr/bin/env (not available in sandbox)
     substituteInPlace node_modules/.bin/tsc \
-      --replace-fail "/usr/bin/env node" "${lib.getExe pkgs.nodejs}"
+      --replace-fail "/usr/bin/env node" "${pkgs.nodejs}/bin/node"
 
-    bun run build
+    # Compile TypeScript using the tsc from node_modules
+    node_modules/.bin/tsc --project packages/mcp/tsconfig.json
 
     runHook postBuild
   '';
@@ -67,16 +76,22 @@ pkgs.stdenv.mkDerivation {
 
     mkdir -p $out/lib/context7-mcp
 
-    cp -r dist $out/lib/context7-mcp/
+    # Recreate the monorepo layout so bun's relative symlinks resolve correctly:
+    #   $out/lib/context7-mcp/node_modules/.bun/...   (root bun cache)
+    #   $out/lib/context7-mcp/packages/mcp/node_modules -> ../../../node_modules/.bun/...
+    mkdir -p $out/lib/context7-mcp/packages/mcp
 
-    cp -r node_modules $out/lib/context7-mcp/
-    cp package.json $out/lib/context7-mcp/
+    cp -r node_modules $out/lib/context7-mcp/node_modules
+    cp -r packages/mcp/node_modules $out/lib/context7-mcp/packages/mcp/node_modules
+    cp -r packages/mcp/dist $out/lib/context7-mcp/packages/mcp/dist
+    cp packages/mcp/package.json $out/lib/context7-mcp/packages/mcp/package.json
 
-    chmod +x $out/lib/context7-mcp/dist/index.js
+    chmod +x $out/lib/context7-mcp/packages/mcp/dist/index.js
 
     mkdir -p $out/bin
-    makeWrapper $out/lib/context7-mcp/dist/index.js $out/bin/context7-mcp \
-      --prefix PATH : ${lib.makeBinPath [ pkgs.nodejs ]} \
+    makeWrapper ${pkgs.nodejs}/bin/node $out/bin/context7-mcp \
+      --add-flags $out/lib/context7-mcp/packages/mcp/dist/index.js \
+      --chdir $out/lib/context7-mcp/packages/mcp
 
     runHook postInstall
   '';
