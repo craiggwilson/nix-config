@@ -22,7 +22,7 @@
 
         themeFile = pkgs.writeTextFile {
           name = "vscode-hdwlinux-theme.json";
-          text = (import ./_template.nix) themeColors.withHashtag;
+          text = (import ./_template.nix) themeColors;
         };
         themeExtension =
           pkgs.runCommandLocal "hdwlinux-vscode"

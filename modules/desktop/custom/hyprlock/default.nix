@@ -18,15 +18,14 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors or { };
-        hasColors = colors != { } && builtins.hasAttr "withHashtag" colors;
+        colors = config.hdwlinux.theme.colors.hex;
         rgb = color: "rgb(${color})";
         wallpaper = config.hdwlinux.theme.wallpaper or null;
       in
       {
         home.packages = [ pkgs.hyprlock ];
 
-        xdg.configFile."hypr/hyprlock.conf".text = lib.mkIf hasColors ''
+        xdg.configFile."hypr/hyprlock.conf".text = ''
           general {
             disable_loading_bar = true
             hide_cursor = true

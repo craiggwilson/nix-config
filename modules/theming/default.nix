@@ -5,7 +5,7 @@
       {
         options.hdwlinux.theme = {
           colors = lib.mkOption {
-            description = "The current theme colors, including ansi sub-attrset.";
+            description = "The current theme colors with hex, rgb, and ansi mode sub-attrsets.";
             type = lib.types.attrs;
             default = { };
           };
@@ -18,25 +18,25 @@
         config = lib.mkIf (config.hdwlinux.theme.colors != { }) {
           console.colors =
             let
-              c = config.hdwlinux.theme.colors.ansi;
+              s = config.hdwlinux.theme.colors.ansi;
             in
             [
-              c.black
-              c.red
-              c.green
-              c.yellow
-              c.blue
-              c.magenta
-              c.cyan
-              c.white
-              c.brightBlack
-              c.brightRed
-              c.brightGreen
-              c.brightYellow
-              c.brightBlue
-              c.brightMagenta
-              c.brightCyan
-              c.brightWhite
+              s.black.hex
+              s.red.hex
+              s.green.hex
+              s.yellow.hex
+              s.blue.hex
+              s.magenta.hex
+              s.cyan.hex
+              s.white.hex
+              s.brightBlack.hex
+              s.brightRed.hex
+              s.brightGreen.hex
+              s.brightYellow.hex
+              s.brightBlue.hex
+              s.brightMagenta.hex
+              s.brightCyan.hex
+              s.brightWhite.hex
             ];
         };
       };
@@ -46,7 +46,7 @@
       {
         options.hdwlinux.theme = {
           colors = lib.mkOption {
-            description = "The current theme colors, including ansi and withHashtag sub-attrsets.";
+            description = "The current theme colors with hex, rgb, and ansi mode sub-attrsets.";
             type = lib.types.attrs;
             default = { };
           };

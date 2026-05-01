@@ -76,10 +76,9 @@ let
   };
 
   colorLib = import ../../../lib/colors.nix colors ansiColors paletteToAnsi;
-  inherit (colorLib) withHashtag;
 
   # Generate adwaita GTK CSS
-  adwaitaGtkCss = with withHashtag; ''
+  adwaitaGtkCss = with colorLib.hexWithHashtag; ''
     @define-color accent_color ${base0A};
     @define-color accent_bg_color ${base0A};
     @define-color accent_fg_color ${base00};

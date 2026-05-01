@@ -5,7 +5,7 @@
     homeManager =
       { config, ... }:
       let
-        colors = config.hdwlinux.theme.colors.withHashtag;
+        colors = config.hdwlinux.theme.colors.hexWithHashtag;
       in
       {
         programs.micro = {

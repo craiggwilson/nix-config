@@ -49,7 +49,7 @@ in
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors;
+        colors = config.hdwlinux.theme.colors.hex;
         rgb = color: "rgb(${color})";
         rgba = color: alpha: "rgba(${color}${alpha})";
 

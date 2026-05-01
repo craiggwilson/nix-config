@@ -10,7 +10,7 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.withHashtag;
+        colors = config.hdwlinux.theme.colors.hexWithHashtag;
 
         # Wrap obsidian to include python3 in PATH for the terminal plugin
         obsidianWithPython = pkgs.symlinkJoin {

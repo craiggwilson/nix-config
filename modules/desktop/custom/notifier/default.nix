@@ -3,10 +3,14 @@
     tags = [ "desktop:custom" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
-        colors = config.hdwlinux.theme.colors or { };
-        hasColors = colors != { } && builtins.hasAttr "withHashtag" colors;
+        colors = config.hdwlinux.theme.colors.hexWithHashtag;
       in
       {
         home.packages = [
@@ -46,18 +50,18 @@
               };
             };
           }
-          (lib.mkIf hasColors {
+          {
             settings = {
-              background-color = colors.withHashtag.base00;
-              border-color = colors.withHashtag.base00;
-              progress-color = colors.withHashtag.base02;
-              text-color = colors.withHashtag.base05;
+              background-color = colors.base00;
+              border-color = colors.base00;
+              progress-color = colors.base02;
+              text-color = colors.base05;
 
               "urgency=high" = {
-                border-color = colors.withHashtag.base09;
+                border-color = colors.base09;
               };
             };
-          })
+          }
         ];
 
         services.hypridle.settings.listener = [
@@ -70,4 +74,3 @@
       };
   };
 }
-

@@ -1,10 +1,8 @@
 # Returns a programs.zellij.themes-compatible attrset for the "hdwlinux" theme.
-# Expects the colorLib attrset (as returned by lib/colors.nix), which provides
-# bare hex color attributes (base00..base0F) and toRgb.
+# Expects the colorLib attrset (as returned by lib/colors.nix). Each baseXX
+# entry is a color object; zellij themes use [r g b] integer lists.
 colors:
 let
-  rgb = colors.toRgb;
-
   mkComponent =
     {
       base,
@@ -15,23 +13,23 @@ let
       emphasis_3,
     }:
     {
-      base = rgb base;
-      background = rgb background;
-      emphasis_0 = rgb emphasis_0;
-      emphasis_1 = rgb emphasis_1;
-      emphasis_2 = rgb emphasis_2;
-      emphasis_3 = rgb emphasis_3;
+      base = base;
+      background = background;
+      emphasis_0 = emphasis_0;
+      emphasis_1 = emphasis_1;
+      emphasis_2 = emphasis_2;
+      emphasis_3 = emphasis_3;
     };
 
   # Shorthand aliases for readability
-  bg = colors.base00; # base background
-  surface = colors.base02; # mid background
-  subtle = colors.base04; # subdued text
-  text = colors.base05; # white text
-  blue = colors.base0D; # accent / tabs / ribbons
-  mauve = colors.base0E; # frame highlight
-  green = colors.base0B; # success
-  red = colors.base08; # error
+  bg = colors.base00.rgb; # base background
+  surface = colors.base02.rgb; # mid background
+  subtle = colors.base04.rgb; # subdued text
+  text = colors.base05.rgb; # white text
+  blue = colors.base0D.rgb; # accent / tabs / ribbons
+  mauve = colors.base0E.rgb; # frame highlight
+  green = colors.base0B.rgb; # success
+  red = colors.base08.rgb; # error
 in
 {
   text_unselected = mkComponent {
@@ -147,15 +145,15 @@ in
     emphasis_3 = red;
   };
   multiplayer_user_colors = {
-    player_1 = rgb colors.base0D;
-    player_2 = rgb colors.base0B;
-    player_3 = rgb colors.base0A;
-    player_4 = rgb colors.base0E;
-    player_5 = rgb colors.base0C;
-    player_6 = rgb colors.base09;
-    player_7 = rgb colors.base08;
-    player_8 = rgb colors.base0F;
-    player_9 = rgb colors.base04;
-    player_10 = rgb colors.base05;
+    player_1 = colors.base0D.rgb;
+    player_2 = colors.base0B.rgb;
+    player_3 = colors.base0A.rgb;
+    player_4 = colors.base0E.rgb;
+    player_5 = colors.base0C.rgb;
+    player_6 = colors.base09.rgb;
+    player_7 = colors.base08.rgb;
+    player_8 = colors.base0F.rgb;
+    player_9 = colors.base04.rgb;
+    player_10 = colors.base05.rgb;
   };
 }

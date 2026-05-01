@@ -30,9 +30,57 @@
             baseName = lib.concatStringsSep "" nonVersionParts;
           in
           if hasKnownProvider then baseName + (if majorVersion != null then majorVersion else "") else slug;
-        # Look up a hex color (with #) in the theme's derived ANSI name map.
-        # Returns the Augment ANSI color name, or null if no match.
-        ansiColorNameFromHex = hex: config.hdwlinux.theme.colors.withHashtag.hexToAnsiName hex;
+        # Look up a hex color (with #) and return an Augment color name, or null.
+        # Augment recognises 8 base names only, so bright variants collapse to base.
+        ansiColorNameFromHex =
+          hex:
+          let
+            slot = (config.hdwlinux.theme.colors.fromHex hex).ansi;
+            # Strip "bright" prefix: brightBlue -> "blue", brightBlack -> "black".
+            # The character after "bright" is always uppercase in our slot names.
+            collapseSlot =
+              s:
+              let
+                # e.g. "Blue" -> "blue"
+                rest = builtins.substring 6 (builtins.stringLength s - 6) s;
+                lower = {
+                  A = "a";
+                  B = "b";
+                  C = "c";
+                  D = "d";
+                  E = "e";
+                  F = "f";
+                  G = "g";
+                  H = "h";
+                  I = "i";
+                  J = "j";
+                  K = "k";
+                  L = "l";
+                  M = "m";
+                  N = "n";
+                  O = "o";
+                  P = "p";
+                  Q = "q";
+                  R = "r";
+                  S = "s";
+                  T = "t";
+                  U = "u";
+                  V = "v";
+                  W = "w";
+                  X = "x";
+                  Y = "y";
+                  Z = "z";
+                };
+                firstChar = builtins.substring 0 1 rest;
+              in
+              (lower.${firstChar} or firstChar) + builtins.substring 1 (builtins.stringLength rest - 1) rest;
+          in
+          if slot == null then
+            null
+          else if builtins.substring 0 6 slot == "bright" then
+            collapseSlot slot
+          else
+            slot;
 
         # Resolve an alias name to an Augment-compatible model slug.
         resolveModelSlug =

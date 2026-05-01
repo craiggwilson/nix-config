@@ -2,27 +2,48 @@
 #
 # Takes a raw colors attrset (bare hex strings without #), an ansiColors
 # attrset (16 named ANSI slots to bare hex strings), and a paletteToAnsi
-# attrset (bare hex -> ANSI slot name covering the full palette), and returns
-# the colors enriched with mix/lighten/darken functions, an `ansi` sub-attrset,
-# and a `hexToAnsiName` function for mapping any palette hex to an Augment
-# ANSI color name.
+# attrset (bare hex -> ANSI slot name covering the full palette).
 #
-# Both the top-level attrset and withHashtag carry these functions and the
-# `ansi` sub-attrset, operating on bare and #-prefixed strings respectively.
+# Returns a color library where each palette entry (base00..base0F etc.) is a
+# color object carrying all representations as plain attributes, plus top-level
+# constructor functions and precomputed map attrsets.
 #
 # Fractions are passed as (num, den) pairs to avoid Nix integer division
 # truncation — Nix has no float literals in pure evaluation contexts.
 #
+# Color object shape:
+#   {
+#     hex            = "89b4fa";
+#     hexWithHashtag = "#89b4fa";
+#     rgb            = [137 180 250];
+#     rgbString      = "137 180 250";
+#     ansi           = "blue";        # ANSI slot name, or null if not in palette
+#   }
+#
 # Usage:
 #   colorLib = import ./colors.nix colors ansiColors paletteToAnsi;
-#   colorLib.mix "585b70" "cdd6f4" 1 2                # => "9398b2"
-#   colorLib.withHashtag.mix "#585b70" "#cdd6f4" 1 2  # => "#9398b2"
-#   colorLib.ansi.black                               # => "1e1e2e"
-#   colorLib.withHashtag.ansi.black                   # => "#1e1e2e"
-#   colorLib.hexToAnsiName "89b4fa"                   # => "blue" or null
-#   colorLib.withHashtag.hexToAnsiName "#89b4fa"      # => "blue" or null
-#   colorLib.lighten "585b70" 1 4                     # => "9da0b3"
-#   colorLib.darken "cdd6f4" 1 4                      # => "9aa0b7"
+#   colorLib.base00.hex                                # => "1e1e2e"
+#   colorLib.base00.hexWithHashtag                     # => "#1e1e2e"
+#   colorLib.base00.rgb                                # => [30 30 46]
+#   colorLib.base00.rgbString                          # => "30 30 46"
+#   colorLib.base00.ansi                               # => "black"
+#   colorLib.base0D.ansi                               # => "blue"
+#   colorLib.fromHex "89b4fa"                          # => color object
+#   colorLib.fromHex "#89b4fa"                         # => color object (# stripped)
+#   colorLib.fromRgb [137 180 250]                     # => color object
+#   colorLib.fromRgb "137 180 250"                     # => color object
+#   colorLib.fromAnsi "blue"                           # => color object
+#   colorLib.fromAnsi "brightBlue"                     # => color object
+#   colorLib.mix colorLib.base04 colorLib.base05 1 6   # => color object
+#   colorLib.lighten colorLib.base04 1 4               # => color object
+#   colorLib.darken colorLib.base05 1 4                # => color object
+#   colorLib.hex                                       # => { base00 = "1e1e2e"; … }
+#   colorLib.hexWithHashtag                            # => { base00 = "#1e1e2e"; … }
+#   colorLib.rgb                                       # => { base00 = [30 30 46]; … }
+#   colorLib.rgbString                                 # => { base00 = "30 30 46"; … }
+#   colorLib.ansi.base00                               # => "black"  (baseXX -> slot name)
+#   colorLib.ansi.black                                # => color object for black slot
+#   colorLib.ansi.brightBlack                          # => color object for brightBlack slot
 colors: ansiColors_: paletteToAnsi_:
 let
   ansiColors = if ansiColors_ == null then { } else ansiColors_;
@@ -79,16 +100,6 @@ let
   encodeByte =
     n: builtins.elemAt intDigits (n / 16) + builtins.elemAt intDigits (builtins.bitAnd n 15);
 
-  # Parse a bare 6-character hex color string into { r, g, b } integers.
-  parseColor = hex: {
-    r = parseByte (builtins.substring 0 2 hex);
-    g = parseByte (builtins.substring 2 2 hex);
-    b = parseByte (builtins.substring 4 2 hex);
-  };
-
-  # Encode { r, g, b } integers into a bare 6-character hex string.
-  encodeColor = c: encodeByte c.r + encodeByte c.g + encodeByte c.b;
-
   # Clamp an integer to [0, 255].
   clamp =
     n:
@@ -104,110 +115,118 @@ let
     a: b: num: den:
     clamp (a + (b - a) * num / den);
 
-  # Mix two bare hex color strings. t = num/den in [0, 1].
-  # mix c1 c2 0 1 = c1, mix c1 c2 1 1 = c2.
-  mix =
-    c1: c2: num: den:
+  # Strip a leading # from a hex string if present.
+  stripHash =
+    s:
+    if builtins.substring 0 1 s == "#" then builtins.substring 1 (builtins.stringLength s - 1) s else s;
+
+  # Parse a bare 6-character hex string into an [r g b] integer list.
+  parseHexToList = hex: [
+    (parseByte (builtins.substring 0 2 hex))
+    (parseByte (builtins.substring 2 2 hex))
+    (parseByte (builtins.substring 4 2 hex))
+  ];
+
+  # Encode an [r g b] integer list into a bare 6-character hex string.
+  listToHex =
+    c:
+    encodeByte (builtins.elemAt c 0)
+    + encodeByte (builtins.elemAt c 1)
+    + encodeByte (builtins.elemAt c 2);
+
+  # Parse a "r g b" space-separated string into an [r g b] integer list.
+  parseRgbString = s: map builtins.fromJSON (builtins.filter (x: x != "") (builtins.split " " s));
+
+  # Convert an [r g b] list to a "r g b" space-separated string.
+  listToRgbString = c: builtins.concatStringsSep " " (map toString c);
+
+  # bare hex -> ANSI slot name (null if not in palette).
+  hexToAnsiSlot = hex: paletteToAnsi.${hex} or null;
+
+  # ── Color object constructor ────────────────────────────────────────────────
+
+  # Build a color object from a bare 6-character hex string.
+  mkColor =
+    hex:
     let
-      a = parseColor c1;
-      b = parseColor c2;
+      rgbList = parseHexToList hex;
     in
-    encodeColor {
-      r = lerpInt a.r b.r num den;
-      g = lerpInt a.g b.g num den;
-      b = lerpInt a.b b.b num den;
+    {
+      hex = hex;
+      hexWithHashtag = "#" + hex;
+      rgb = rgbList;
+      rgbString = listToRgbString rgbList;
+      ansi = hexToAnsiSlot hex;
     };
 
-  # Lighten a bare hex color string by mixing toward white by amount/den.
+  # ── Constructor functions ───────────────────────────────────────────────────
+
+  # Build a color object from a hex string (leading # stripped transparently).
+  fromHex = h: mkColor (stripHash h);
+
+  # Build a color object from an [r g b] list or a "r g b" space-separated string.
+  fromRgb =
+    c: if builtins.isList c then mkColor (listToHex c) else mkColor (listToHex (parseRgbString c));
+
+  # Build a color object from an ANSI slot name (e.g. "blue", "brightBlue").
+  fromAnsi = slot: mkColor ansiColors.${slot};
+
+  # ── Transformation functions ────────────────────────────────────────────────
+
+  # Mix two color objects. t = num/den in [0, 1]: 0 = c1, 1 = c2.
+  mix =
+    c1: c2: num: den:
+    mkColor (listToHex [
+      (lerpInt (builtins.elemAt c1.rgb 0) (builtins.elemAt c2.rgb 0) num den)
+      (lerpInt (builtins.elemAt c1.rgb 1) (builtins.elemAt c2.rgb 1) num den)
+      (lerpInt (builtins.elemAt c1.rgb 2) (builtins.elemAt c2.rgb 2) num den)
+    ]);
+
+  # Lighten a color object by mixing toward white by amount/den.
   lighten =
     c: amount: den:
-    mix c "ffffff" amount den;
+    mix c (mkColor "ffffff") amount den;
 
-  # Darken a bare hex color string by mixing toward black by amount/den.
+  # Darken a color object by mixing toward black by amount/den.
   darken =
     c: amount: den:
-    mix c "000000" amount den;
+    mix c (mkColor "000000") amount den;
 
-  # Strip a leading # from a color string.
-  stripHash = s: builtins.substring 1 (builtins.stringLength s - 1) s;
+  # ── Palette color objects ───────────────────────────────────────────────────
 
-  # Variants of the functions that accept and return #-prefixed strings.
-  mixH =
-    c1: c2: num: den:
-    "#" + mix (stripHash c1) (stripHash c2) num den;
-  lightenH =
-    c: amount: den:
-    "#" + lighten (stripHash c) amount den;
-  darkenH =
-    c: amount: den:
-    "#" + darken (stripHash c) amount den;
+  palette = builtins.mapAttrs (_: h: mkColor h) colors;
 
-  # Map ANSI slot names to the 8 Augment color names.
-  # Bright variants collapse to their base name.
-  slotToAugmentName = {
-    black = "black";
-    brightBlack = "black";
-    red = "red";
-    brightRed = "red";
-    green = "green";
-    brightGreen = "green";
-    yellow = "yellow";
-    brightYellow = "yellow";
-    blue = "blue";
-    brightBlue = "blue";
-    magenta = "magenta";
-    brightMagenta = "magenta";
-    cyan = "cyan";
-    brightCyan = "cyan";
-    white = "white";
-    brightWhite = "white";
-  };
+  # ── Precomputed map attrsets ────────────────────────────────────────────────
 
-  # Look up a bare hex string in paletteToAnsi, then map the slot name to an
-  # Augment color name. Returns null if the hex is not in the palette.
-  hexToAnsiName =
-    hex:
-    let
-      slot = paletteToAnsi.${hex} or null;
-    in
-    if slot == null then null else slotToAugmentName.${slot};
+  hexMap = builtins.mapAttrs (_: c: c.hex) palette;
+  hexWithHashtagMap = builtins.mapAttrs (_: c: c.hexWithHashtag) palette;
+  rgbMap = builtins.mapAttrs (_: c: c.rgb) palette;
+  rgbStringMap = builtins.mapAttrs (_: c: c.rgbString) palette;
 
-  # Look up a #-prefixed hex string; strips the # before lookup.
-  hexToAnsiNameH = hex: hexToAnsiName (stripHash hex);
+  # baseXX -> ANSI slot name string (null where not in the ANSI palette).
+  ansiNameMap = builtins.mapAttrs (_: c: c.ansi) palette;
 
-  # Convert a bare 6-character hex string to a [ r g b ] integer list.
-  toRgb =
-    hex:
-    let
-      c = parseColor hex;
-    in
-    [
-      c.r
-      c.g
-      c.b
-    ];
+  # ANSI slot name -> color object (one entry per slot: black, brightBlack, …).
+  ansiSlotToColor = builtins.mapAttrs (_: h: mkColor h) ansiColors;
 
-  ansi = ansiColors;
-  ansiWithHashtag = builtins.mapAttrs (_: v: "#" + v) ansiColors;
-
-  withHashtag = builtins.mapAttrs (_: v: "#" + v) colors // {
-    ansi = ansiWithHashtag;
-    hexToAnsiName = hexToAnsiNameH;
-    mix = mixH;
-    lighten = lightenH;
-    darken = darkenH;
-  };
+  # Bidirectional ansi attrset: baseXX -> slot name, and slot name -> color object.
+  ansiMap = ansiNameMap // ansiSlotToColor;
 
 in
-colors
+palette
 // {
   inherit
-    ansi
-    hexToAnsiName
-    toRgb
-    withHashtag
+    fromHex
+    fromRgb
+    fromAnsi
     mix
     lighten
     darken
     ;
+
+  hex = hexMap;
+  hexWithHashtag = hexWithHashtagMap;
+  rgb = rgbMap;
+  rgbString = rgbStringMap;
+  ansi = ansiMap;
 }

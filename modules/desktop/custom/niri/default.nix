@@ -66,7 +66,7 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.withHashtag;
+        colors = config.hdwlinux.theme.colors.hexWithHashtag;
         flake = config.hdwlinux.flake;
       in
       {

@@ -1,18 +1,20 @@
 # VSCode theme template.
 #
-# Receives the withHashtag color attrset (which carries mix/lighten/darken).
+# Receives the colorLib attrset (as returned by lib/colors.nix). Uses
+# hexWithHashtag for the palette and color object mix for derived neutrals.
 # Derives five intermediate neutral shades between base04 (dark foreground) and
 # base05 (default foreground) via linear interpolation. The base24 spec has no
 # slots for these mid-range neutrals, so they are computed at even 1/6 intervals
 # to fill the gap between the two foreground anchors.
-colors:
+colorLib:
 let
+  colors = colorLib.hexWithHashtag;
   # Intermediate neutrals: evenly spaced between base04 and base05.
-  neutral1 = colors.mix colors.base04 colors.base05 1 6;
-  neutral2 = colors.mix colors.base04 colors.base05 2 6;
-  neutral3 = colors.mix colors.base04 colors.base05 3 6;
-  neutral4 = colors.mix colors.base04 colors.base05 4 6;
-  neutral5 = colors.mix colors.base04 colors.base05 5 6;
+  neutral1 = (colorLib.mix colorLib.base04 colorLib.base05 1 6).hexWithHashtag;
+  neutral2 = (colorLib.mix colorLib.base04 colorLib.base05 2 6).hexWithHashtag;
+  neutral3 = (colorLib.mix colorLib.base04 colorLib.base05 3 6).hexWithHashtag;
+  neutral4 = (colorLib.mix colorLib.base04 colorLib.base05 4 6).hexWithHashtag;
+  neutral5 = (colorLib.mix colorLib.base04 colorLib.base05 5 6).hexWithHashtag;
 in
 with colors;
 ''
