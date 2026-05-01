@@ -41,7 +41,7 @@
           extraConfig = keybindsKdl;
           settings = {
             copy_on_select = true;
-            default_shell = "${pkgs.zsh}/bin/zsh";
+            default_shell = lib.getExe pkgs.zsh;
             mouse_mode = true;
             pane_frames = true;
             scroll_buffer_size = 10000;
@@ -82,7 +82,7 @@
                           _props = {
                             name = "files";
                           };
-                          command = "${lib.getExe pkgs.yazi}";
+                          command = lib.getExe pkgs.yazi;
                         };
                       }
                     ];
@@ -96,7 +96,7 @@
                           _props = {
                             name = "terminal";
                           };
-                          command = "${pkgs.zsh}/bin/zsh";
+                          command = lib.getExe pkgs.zsh;
                         };
                       }
                     ];
