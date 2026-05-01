@@ -49,10 +49,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri-scratchpad = {
-      url = "github:gvolpe/niri-scratchpad";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    niri-scratchpad.url = "github:argosnothing/niri-scratchpad-rs";
 
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 

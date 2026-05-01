@@ -112,11 +112,11 @@ window-rule {
     block-out-from "screen-capture"
 }
 
-workspace "scratch"
+workspace "stash" { }
 
 window-rule {
     match app-id=r#"^scratch*"#
-    open-on-workspace "scratch"
+    open-on-workspace "stash"
     open-floating true
 
     default-column-width { proportion 0.95; }
@@ -140,7 +140,7 @@ binds {
     Mod+X hotkey-overlay-title="Open power menu" { spawn "vicinae" "vicinae://launch/power?toggle=true"; }
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
-    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn-sh "nscratch -id scratch.terminal -m -s \"appctl exec-known terminal --class=scratch.terminal\""; }
+    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn "niri-scratchpad" "target" "--spawn" "appctl exec-known terminal --class=scratch.terminal" "appid" "scratch.terminal"; }
     Mod+Minus { set-column-width "-10%"; }
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Return { center-column; }

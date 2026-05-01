@@ -72,7 +72,7 @@
       {
         home.packages = [
           (pkgs.xwayland-satellite.override { withSystemd = false; })
-          inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.niri-scratchpad
+          inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
 
         home.sessionVariables.NIRI_DISABLE_SYSTEM_MANAGER_NOTIFY = "1";
