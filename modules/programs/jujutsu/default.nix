@@ -107,7 +107,6 @@
           };
         };
 
-        xdg.configFile."micro/syntax/jjdescription.yaml".source = ./micro-syntax.yaml;
       };
   };
 }
