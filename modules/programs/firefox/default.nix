@@ -14,6 +14,7 @@
 
         programs.firefox = {
           enable = true;
+          configPath = "${config.home.homeDirectory}/.mozilla/firefox";
           profiles."default" = {
             id = 0;
             name = "default";
