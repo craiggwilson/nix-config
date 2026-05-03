@@ -2,6 +2,7 @@
   config.substrate.modules.ai.clients.mcp-servers.evergreen-mcp-server = {
     tags = [
       "ai:clients"
+      "users:craig:work"
     ];
 
     homeManager =
