@@ -1,10 +1,12 @@
 {
   config.substrate.modules.security.sudo = {
-    tags = [ "users:craig:personal" ];
+    tags = [ "users:craig:work" ];
     nixos = {
-      security.sudo = {
+      security.sudo.enable = false;
+      security.sudo-rs = {
+        enable = true;
         execWheelOnly = true;
-        wheelNeedsPassword = false;
+        wheelNeedsPassword = true;
 
         extraConfig = ''
           Defaults timestamp_timeout=5
@@ -16,4 +18,3 @@
     };
   };
 }
-
