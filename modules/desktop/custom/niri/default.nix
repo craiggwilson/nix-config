@@ -134,8 +134,6 @@
                     color "#7d0d2d70"
                 }
 
-                opacity 0.95
-
                 focus-ring {
                     active-color "${colors.base08}"
                 }

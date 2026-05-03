@@ -78,6 +78,11 @@ screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
 layer-rule {
     match namespace="vicinae"
 
+    background-effect {
+        blur true
+        xray false
+    }
+
     shadow {
         on
 
@@ -92,6 +97,11 @@ layer-rule {
 
 layer-rule {
     match namespace="waybar"
+    background-effect {
+        blur true
+        xray false
+    }
+
     place-within-backdrop true
 }
 
@@ -103,6 +113,26 @@ window-rule {
 window-rule {
     match app-id="com.mitchellh.ghostty"
     default-column-width { proportion 0.5; }
+
+    background-effect {
+        blur true
+        xray false
+    }
+
+    opacity 0.88
+}
+
+window-rule {
+    match app-id="codium"
+
+    background-effect {
+        blur true
+        xray false
+    }
+
+    draw-border-with-background false
+
+    opacity 0.88
 }
 
 window-rule {
@@ -221,4 +251,3 @@ binds {
     Mod+WheelScrollRight                { focus-column-right; }
     Mod+WheelScrollLeft                 { focus-column-left; }
 }
-

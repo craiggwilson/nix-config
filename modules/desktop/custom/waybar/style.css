@@ -11,7 +11,7 @@
 }
 
 window {
-    background-color: alpha(@base01, .75);
+    background-color: alpha(@base01, .58);
     border: 0px solid @base07;
     border-radius: 0px 0px 15px 15px;
     color: @base07;

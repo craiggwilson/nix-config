@@ -29,6 +29,9 @@
 
           settings = {
             theme = "hdwlinux";
+            background-opacity = 0.88;
+            background-opacity-cells = true;
+            background-blur = true;
             gtk-titlebar = false;
             window-padding-x = 0;
             window-padding-y = 0;

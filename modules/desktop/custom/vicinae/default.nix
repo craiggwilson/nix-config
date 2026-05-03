@@ -44,10 +44,19 @@
               };
               colors = {
                 core = {
-                  background = colors.base00;
+                  background = {
+                    name = colors.base00;
+                    opacity = 0.64;
+                  };
                   foreground = colors.base05;
-                  secondary_background = colors.base01;
-                  border = colors.base02;
+                  secondary_background = {
+                    name = colors.base01;
+                    opacity = 0.72;
+                  };
+                  border = {
+                    name = colors.base02;
+                    opacity = 0.42;
+                  };
                   accent = colors.base0D;
                 };
                 accents = {
@@ -75,6 +84,12 @@
               };
               light = {
                 name = "hdwlinux";
+              };
+            };
+            launcher_window = {
+              opacity = 0.82;
+              blur = {
+                enabled = true;
               };
             };
           };
