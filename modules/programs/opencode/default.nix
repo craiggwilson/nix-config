@@ -143,6 +143,7 @@
         # OpenCode configuration
         opencodeConfig = {
           "$schema" = "https://opencode.ai/config.json";
+          tui.theme = "system";
           provider = providers;
           mcp = mcpConfig;
           agent = agentConfig;
