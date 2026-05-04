@@ -69,7 +69,7 @@
         kdlExtension = pkgs.stdenv.mkDerivation {
           pname = "vscode-extension-v1hz-kdl";
           version = "2.1.3";
-          
+
           src = pkgs.fetchurl {
             url = "https://open-vsx.org/api/v1hz/kdl/2.1.3/file/v1hz.kdl-2.1.3.vsix";
             sha256 = "sha256-i5J4hXU3cOnFiPS+LZ0fIwwQo7hV0dueF0cPXUv25z0=";
@@ -78,8 +78,11 @@
 
           vscodeExtUniqueId = "v1hz.kdl";
           vscodeExtPublisher = "v1hz";
-          
-          phases = [ "unpackPhase" "installPhase" ];
+
+          phases = [
+            "unpackPhase"
+            "installPhase"
+          ];
 
           unpackPhase = ''
             mkdir -p extract
@@ -309,9 +312,8 @@
       lib.mkMerge (
         [
           {
-            programs.vscode = {
+            programs.vscodium = {
               enable = true;
-              package = pkgs.vscodium;
 
               profiles =
                 lib.mapAttrs (_: p: {
