@@ -17,16 +17,23 @@
         audioFile = "/tmp/dictation-recording.wav";
         pidFile = "/tmp/dictation.pid";
         modeFile = "/tmp/dictation-mode.txt";
+        stateFile = "/tmp/dictation-state.txt";
 
         startScript = pkgs.writeShellScript "dictctl-start" ''
           set -euo pipefail
           mode="''${1:-clipboard}"
+
+          if [ -f "${stateFile}" ] && [ "$(cat "${stateFile}" 2>/dev/null || true)" = "stopping" ]; then
+            exit 0
+          fi
 
           # Check if already running
           if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
             notify-send "Dictation" "Already running" --icon=microphone-sensitivity-high
             exit 0
           fi
+
+          echo "recording" > "${stateFile}"
 
           # Store mode for stop script
           echo "$mode" > "${modeFile}"
@@ -53,6 +60,9 @@
 
         stopScript = pkgs.writeShellScript "dictctl-stop" ''
           set -euo pipefail
+          trap 'rm -f "${stateFile}"' EXIT
+
+          echo "stopping" > "${stateFile}"
 
           if [ ! -f "${pidFile}" ]; then
             notify-send "Dictation" "Not running" --icon=microphone-sensitivity-muted
@@ -129,21 +139,27 @@
               stop = "${stopScript}";
               toggle = {
                 "*" = ''
-                  if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
+                  if [ -f "${stateFile}" ] && [ "$(cat "${stateFile}" 2>/dev/null || true)" = "stopping" ]; then
+                    exit 0
+                  elif [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
                     ${stopScript}
                   else
                     ${startScript} clipboard
                   fi
                 '';
                 clipboard = ''
-                  if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
+                  if [ -f "${stateFile}" ] && [ "$(cat "${stateFile}" 2>/dev/null || true)" = "stopping" ]; then
+                    exit 0
+                  elif [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
                     ${stopScript}
                   else
                     ${startScript} clipboard
                   fi
                 '';
                 type = ''
-                  if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
+                  if [ -f "${stateFile}" ] && [ "$(cat "${stateFile}" 2>/dev/null || true)" = "stopping" ]; then
+                    exit 0
+                  elif [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
                     ${stopScript}
                   else
                     ${startScript} type
@@ -151,7 +167,9 @@
                 '';
               };
               is-running = ''
-                if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
+                if [ -f "${stateFile}" ] && [ "$(cat "${stateFile}" 2>/dev/null || true)" = "stopping" ]; then
+                  exit 0
+                elif [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
                   exit 0
                 else
                   exit 1

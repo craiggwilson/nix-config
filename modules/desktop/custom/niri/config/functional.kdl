@@ -237,8 +237,8 @@ binds {
     Alt+Print   { screenshot-window; }
     Mod+Print { spawn "appctl" "exec" "screenctl" "record" "show-menu"; }
 
-    Mod+D hotkey-overlay-title="Toggle dictation (clipboard)" { spawn "appctl" "exec" "dictctl" "toggle" "clipboard"; }
-    Mod+Shift+D hotkey-overlay-title="Toggle dictation (type)" { spawn "appctl" "exec" "dictctl" "toggle" "type"; }
+    Mod+D repeat=false hotkey-overlay-title="Toggle dictation (clipboard)" { spawn "appctl" "exec" "dictctl" "toggle" "clipboard"; }
+    Mod+Shift+D repeat=false hotkey-overlay-title="Toggle dictation (type)" { spawn "appctl" "exec" "dictctl" "toggle" "type"; }
 
     Mod+C hotkey-overlay-title="Clear Dynamic Cast Target" { clear-dynamic-cast-target; }
     Mod+Shift+C hotkey-overlay-title="Set Dynamic Cast Window" { set-dynamic-cast-window; }
