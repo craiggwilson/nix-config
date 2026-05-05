@@ -45,6 +45,7 @@
         baseLayer = {
           extensions = [
             themeExtension
+            annotativeExtension
             pkgs.vscode-extensions.visualjj.visualjj
           ];
           settings = {
@@ -64,6 +65,39 @@
             "workbench.editor.pinnedTabsOnSeparateRow" = true;
             "workbench.startupEditor" = "none";
           };
+        };
+
+        annotativeExtension = pkgs.stdenv.mkDerivation {
+          pname = "vscode-extension-bryan-shea-annotative";
+          version = "3.1.0";
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/bryan-shea/Annotative/releases/download/v3.1.0/annotative-3.1.0.vsix";
+            sha256 = "sha256-6lKvdHPJxctj+me8P62CcChuKAe9Lzi6YGjw21s9DTk=";
+            name = "bryan-shea.annotative-3.1.0.vsix";
+          };
+
+          vscodeExtUniqueId = "bryan-shea.annotative";
+          vscodeExtPublisher = "bryan-shea";
+
+          phases = [
+            "unpackPhase"
+            "installPhase"
+          ];
+
+          unpackPhase = ''
+            mkdir -p extract
+            cd extract
+            unzip -q "$src"
+            cd ..
+          '';
+
+          installPhase = ''
+            mkdir -p "$out/share/vscode/extensions/$vscodeExtUniqueId"
+            cp -r extract/extension/* "$out/share/vscode/extensions/$vscodeExtUniqueId/"
+          '';
+
+          buildInputs = [ pkgs.unzip ];
         };
 
         kdlExtension = pkgs.stdenv.mkDerivation {
