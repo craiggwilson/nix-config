@@ -73,6 +73,12 @@
             inherit name;
             path = path;
           }) config.hdwlinux.ai.clients.skills
+          ++ [
+            {
+              name = "skill-creator";
+              path = skillCreatorSkillDir;
+            }
+          ]
         );
 
         # Collect all rules as direct file paths for OpenCode's instructions config
@@ -140,8 +146,10 @@
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
-        # opencode-skill-creator plugin directory in the nix store
-        skillCreatorPluginDir = "${pkgs.callPackage ./plugins/_skill-creator.nix { }}/lib/opencode-skill-creator";
+        # opencode-skill-creator plugin and skill directories in the nix store
+        skillCreatorPkg = pkgs.callPackage ./plugins/_skill-creator.nix { };
+        skillCreatorPluginDir = "${skillCreatorPkg}/lib/opencode-skill-creator";
+        skillCreatorSkillDir = "${skillCreatorPkg}/lib/opencode-skill-creator/skill";
 
         # OpenCode configuration
         opencodeConfig = {
