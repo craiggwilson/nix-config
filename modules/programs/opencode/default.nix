@@ -140,6 +140,9 @@
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
+        # opencode-skill-creator plugin directory in the nix store
+        skillCreatorPluginDir = "${pkgs.callPackage ./plugins/_skill-creator.nix { }}/lib/opencode-skill-creator";
+
         # OpenCode configuration
         opencodeConfig = {
           "$schema" = "https://opencode.ai/config.json";
@@ -152,6 +155,7 @@
           permission = config.hdwlinux.ai.clients.tools;
           small_model = resolveAlias "fast";
           plugin = [
+            "file://${skillCreatorPluginDir}"
             "file://${ensemblePluginDir}"
             #"file://${mestraPluginDir}"
           ];
