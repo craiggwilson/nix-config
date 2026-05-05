@@ -1,0 +1,2 @@
+# Allow pnpm lockfile for Nix packaging
+!pnpm-lock.yaml

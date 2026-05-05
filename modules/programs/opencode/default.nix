@@ -165,6 +165,7 @@
           plugin = [
             "file://${skillCreatorPluginDir}"
             "file://${ensemblePluginDir}"
+            "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
             #"file://${mestraPluginDir}"
           ];
           keybinds = {

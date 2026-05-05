@@ -1,0 +1,50 @@
+--- a/frontend/src-tauri/src/summary/mod.rs
++++ b/frontend/src-tauri/src/summary/mod.rs
+@@ -38,16 +38,20 @@
+ pub mod template_commands;
+ pub mod templates;
+ 
+-// Re-export Tauri commands (with their generated __cmd__ variants)
++// Re-export Tauri commands (both __cmd__ wrappers and __tauri_command_name__ macros)
+ pub use commands::{
+     __cmd__api_cancel_summary, __cmd__api_get_summary, __cmd__api_process_transcript,
+     __cmd__api_save_meeting_summary, api_cancel_summary, api_get_summary,
+     api_process_transcript, api_save_meeting_summary,
+ };
++pub use commands::{
++    __tauri_command_name_api_cancel_summary, __tauri_command_name_api_get_summary,
++    __tauri_command_name_api_process_transcript, __tauri_command_name_api_save_meeting_summary,
++};
+ 
+ // Re-export template commands
+ pub use template_commands::{
+     __cmd__api_get_template_details, __cmd__api_list_templates, __cmd__api_validate_template,
+     api_get_template_details, api_list_templates, api_validate_template,
+ };
++pub use template_commands::{
++    __tauri_command_name_api_get_template_details, __tauri_command_name_api_list_templates,
++    __tauri_command_name_api_validate_template,
++};
+ 
+--- a/frontend/src-tauri/src/summary/summary_engine/mod.rs
++++ b/frontend/src-tauri/src/summary/summary_engine/mod.rs
+@@ -10,10 +10,15 @@
+ // Re-export commonly used types
+ pub use client::{generate_with_builtin, is_sidecar_healthy, shutdown_sidecar_gracefully, force_shutdown_sidecar};
+ pub use commands::{
+     __cmd__builtin_ai_cancel_download, __cmd__builtin_ai_delete_model,
+     __cmd__builtin_ai_download_model, __cmd__builtin_ai_get_available_summary_model,
+     __cmd__builtin_ai_get_model_info, __cmd__builtin_ai_get_recommended_model, __cmd__builtin_ai_is_model_ready,
+     __cmd__builtin_ai_list_models, builtin_ai_cancel_download, builtin_ai_delete_model, builtin_ai_download_model,
+     builtin_ai_get_available_summary_model, builtin_ai_get_model_info, builtin_ai_get_recommended_model, builtin_ai_is_model_ready,
+     builtin_ai_list_models, init_model_manager, ModelManagerState,
+ };
++pub use commands::{
++    __tauri_command_name_builtin_ai_cancel_download, __tauri_command_name_builtin_ai_delete_model,
++    __tauri_command_name_builtin_ai_download_model, __tauri_command_name_builtin_ai_get_available_summary_model,
++    __tauri_command_name_builtin_ai_get_model_info, __tauri_command_name_builtin_ai_get_recommended_model,
++    __tauri_command_name_builtin_ai_is_model_ready, __tauri_command_name_builtin_ai_list_models,
++    __tauri_command_name_builtin_ai_get_recommended_model,
++};
+ pub use model_manager::{ModelInfo, ModelStatus};
+ pub use models::{get_available_models, get_default_model, get_model_by_name, ModelDef};
