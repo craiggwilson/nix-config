@@ -83,19 +83,6 @@
             temperature = 0.4;
           };
 
-          # Primary Agents
-          team-leader = {
-            color = colors.base0A;
-            description = "Orchestrator that delegates work to specialized teams. Researches, plans, spawns teammates, and merges results.";
-            mode = "primary";
-            model = "analyst";
-            temperature = 0.4;
-            tools = {
-              edit = "deny";
-              write = "deny";
-            };
-          };
-
           # Specialized Agents
           diagram-designer = {
             color = colors.base09;
