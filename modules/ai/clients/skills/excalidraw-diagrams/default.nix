@@ -11,7 +11,7 @@
         nodejs = pkgs.nodejs;
       in
       {
-        hdwlinux.ai.clients.skills.excalidraw-diagrams = pkgs.runCommand "excalidraw-diagrams-skill" { } ''
+        hdwlinux.ai.clients.skills.excalidraw-diagrams = toString (pkgs.runCommand "excalidraw-diagrams-skill" { } ''
           mkdir -p $out/bin
           cp -r ${./skill}/* $out/
 
@@ -42,7 +42,7 @@
           exec ${nodejs}/bin/npx "\$@"
           WRAPPER
           chmod +x $out/bin/npx
-        '';
+        '');
       };
   };
 }

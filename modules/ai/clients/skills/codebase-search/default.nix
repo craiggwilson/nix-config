@@ -7,10 +7,10 @@
     homeManager =
       { pkgs, ... }:
       {
-        hdwlinux.ai.clients.skills.codebase-search = pkgs.runCommand "codebase-search-skill" { } ''
+        hdwlinux.ai.clients.skills.codebase-search = toString (pkgs.runCommand "codebase-search-skill" { } ''
           mkdir -p $out
           cp -r ${./skill}/* $out/
-        '';
+        '');
       };
   };
 }

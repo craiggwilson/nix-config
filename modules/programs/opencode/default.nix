@@ -105,6 +105,9 @@
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
+        # Opencode theme derived from the active hdwlinux theme colors
+        opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
+
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
@@ -133,8 +136,16 @@
             skill-creator = skillCreatorSkillDir;
           };
 
+          themes.hdwlinux = opencodeTheme;
+
+          tui = {
+            theme = "hdwlinux";
+            keybinds = {
+              "app_exit" = "ctrl+q";
+            };
+          };
+
           settings = {
-            tui.theme = "system";
             provider = providers;
             agent = agentConfig;
             command = commandConfig;
@@ -147,9 +158,6 @@
               "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
               #"file://${mestraPluginDir}"
             ];
-            keybinds = {
-              "app_exit" = "ctrl+q";
-            };
           };
         };
       };

@@ -14,7 +14,7 @@
         );
       in
       {
-        hdwlinux.ai.clients.skills.gws-docs-markdown = pkgs.runCommand "gws-docs-markdown-skill" { } ''
+        hdwlinux.ai.clients.skills.gws-docs-markdown = toString (pkgs.runCommand "gws-docs-markdown-skill" { } ''
           mkdir -p $out/bin
           cp -r ${./skill}/* $out/
 
@@ -27,7 +27,7 @@
           # Replace $MD2GDOC token with the absolute binary path so the agent
           # never needs md2gdoc on PATH.
           ${pkgs.gnused}/bin/sed -i "s|\$MD2GDOC|$out/bin/md2gdoc|g" $out/SKILL.md
-        '';
+        '');
       };
   };
 }

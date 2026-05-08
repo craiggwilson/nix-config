@@ -7,10 +7,10 @@
     homeManager =
       { pkgs, ... }:
       {
-        hdwlinux.ai.clients.skills.agent-development = pkgs.runCommand "agent-development-skill" { } ''
+        hdwlinux.ai.clients.skills.agent-development = toString (pkgs.runCommand "agent-development-skill" { } ''
           mkdir -p $out
           cp -r ${./skill}/* $out/
-        '';
+        '');
       };
   };
 }
