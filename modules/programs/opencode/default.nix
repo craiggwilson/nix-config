@@ -20,26 +20,6 @@
           in
           "${alias.provider}/${alias.model}";
 
-        # Transform MCP servers to OpenCode format
-        mcpConfig = lib.mapAttrs (
-          name: server:
-          if server ? stdio then
-            {
-              type = "local";
-              command = [ server.stdio.command ] ++ server.stdio.args;
-              enabled = true;
-            }
-          else if server ? http then
-            {
-              type = "remote";
-              url = server.http.url;
-              headers = server.http.headers;
-              enabled = true;
-            }
-          else
-            throw "Unknown MCP server type for ${name}"
-        ) config.hdwlinux.ai.clients.mcpServers;
-
         # Transform tools attrset for OpenCode config (boolean values)
         # "allow" -> true, "ask"/"deny" -> false
         transformTools = tools: lib.mapAttrs (_: perm: perm == "allow") tools;
@@ -65,21 +45,6 @@
           description = command.description;
           template = "{file:${builtins.unsafeDiscardStringContext (toString command.prompt)}}";
         }) config.hdwlinux.ai.clients.commands;
-
-        # Build a derivation containing symlinks to all skills
-        # OpenCode expects: skills/<name>/SKILL.md (must be files for discovery)
-        skillsDir = pkgs.linkFarm "opencode-skills" (
-          lib.mapAttrsToList (name: path: {
-            inherit name;
-            path = path;
-          }) config.hdwlinux.ai.clients.skills
-          ++ [
-            {
-              name = "skill-creator";
-              path = skillCreatorSkillDir;
-            }
-          ]
-        );
 
         # Collect all rules as direct file paths for OpenCode's instructions config
         # Uses absolute paths to source files in the nix store
@@ -140,9 +105,6 @@
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
-        # mestra plugin source directory — built from the mestra flake
-        #mestraPluginDir = "${pkgs.mestra.opencode-plugin}/lib/opencode-mestra-plugin";
-
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
@@ -151,69 +113,44 @@
         skillCreatorPluginDir = "${skillCreatorPkg}/lib/opencode-skill-creator";
         skillCreatorSkillDir = "${skillCreatorPkg}/lib/opencode-skill-creator/skill";
 
-        # OpenCode configuration
-        opencodeConfig = {
-          "$schema" = "https://opencode.ai/config.json";
-          tui.theme = "system";
-          provider = providers;
-          mcp = mcpConfig;
-          agent = agentConfig;
-          command = commandConfig;
-          instructions = ruleInstructions;
-          permission = config.hdwlinux.ai.clients.tools;
-          small_model = resolveAlias "fast";
-          plugin = [
-            "file://${skillCreatorPluginDir}"
-            "file://${ensemblePluginDir}"
-            "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
-            #"file://${mestraPluginDir}"
-          ];
-          keybinds = {
-            "app_exit" = "ctrl+q";
-          };
-        };
-
-        # Wrapper that picks a random available port, exports it as OPENCODE_PORT
-        # so that plugins can connect, then launches opencode.
-        # Only injects --port if the caller has not already supplied one, so that
-        # tools (e.g. the SDK's createOpencodeServer) can pass their own port without
-        # ending up with two conflicting --port flags.
-        opencodeWrapped = pkgs.writeShellScriptBin "opencode" ''
-          case " $* " in
-            *" --port"*)
-              # Caller supplied --port; extract it for OPENCODE_PORT, then pass
-              # args through as-is.
-              port=$(echo "$*" | grep -oP '(?<=--port[= ])\d+')
-              export OPENCODE_PORT="$port"
-              exec ${pkgs.opencode}/bin/opencode "$@"
-              ;;
-            *" attach "*)
-              # 'attach' subcommand connects to an existing server via URL — it
-              # does not accept --port.  Pass through unchanged; extract the port
-              # from the URL so OPENCODE_PORT is still available if needed.
-              port=$(echo "$*" | grep -oP '(?<=:)\d+(?=/)')
-              [ -n "$port" ] && export OPENCODE_PORT="$port"
-              exec ${pkgs.opencode}/bin/opencode "$@"
-              ;;
-            *)
-              # No --port supplied; pick a free port and inject it.
-              port=$(${pkgs.python3}/bin/python3 -c "import socket; s=socket.socket(); s.bind((\"\", 0)); print(s.getsockname()[1]); s.close()")
-              export OPENCODE_PORT="$port"
-              exec ${pkgs.opencode}/bin/opencode --port "$port" "$@"
-              ;;
-          esac
-        '';
-
       in
       {
         home.packages = [
-          opencodeWrapped
           pkgs.opencode-desktop
         ];
 
-        home.file = {
-          ".config/opencode/opencode.json".text = builtins.toJSON opencodeConfig;
-          ".config/opencode/skills".source = skillsDir;
+        programs.opencode = {
+          enable = true;
+
+          # MCP servers are picked up from programs.mcp.servers, which is
+          # populated by modules/ai/clients/default.nix from hdwlinux.ai.clients.mcpServers
+          enableMcpIntegration = true;
+
+          # Skills from hdwlinux.ai.clients.skills are store path strings pointing
+          # to directories; the HM module symlinks them as skill/<name>/ recursively.
+          # opencode discovers from both skill/ and skills/ via glob alternation.
+          skills = config.hdwlinux.ai.clients.skills // {
+            skill-creator = skillCreatorSkillDir;
+          };
+
+          settings = {
+            tui.theme = "system";
+            provider = providers;
+            agent = agentConfig;
+            command = commandConfig;
+            instructions = ruleInstructions;
+            permission = config.hdwlinux.ai.clients.tools;
+            small_model = resolveAlias "fast";
+            plugin = [
+              "file://${skillCreatorPluginDir}"
+              "file://${ensemblePluginDir}"
+              "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
+              #"file://${mestraPluginDir}"
+            ];
+            keybinds = {
+              "app_exit" = "ctrl+q";
+            };
+          };
         };
       };
   };
