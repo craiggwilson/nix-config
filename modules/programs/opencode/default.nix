@@ -55,7 +55,7 @@
         # Provider metadata: OpenCode-specific configuration for each provider
         providerMeta = {
           augment = {
-            npm = "file://${config.home.homeDirectory}/Projects/opencode/opencode-augment-provider";
+            npm = "file://${config.home.homeDirectory}/Projects/hdwlinux/opencode-augment-provider";
           };
 
           "llama.cpp" = {
@@ -155,7 +155,7 @@
             plugin = [
               "file://${skillCreatorPluginDir}"
               "file://${ensemblePluginDir}"
-              "file://${config.home.homeDirectory}/Projects/opencode/opencode-projects-plugin"
+              "file://${config.home.homeDirectory}/Projects/hdwlinux/opencode-projects-plugin"
               #"file://${mestraPluginDir}"
             ];
           };

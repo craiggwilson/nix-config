@@ -7,7 +7,24 @@
   };
 
   inputs = {
+    # Personal projects. These will ultimately be normal github references when they are good enough
+    # to not be changed so often.
     hdwlinux-private.url = "git+file:///home/craig/Projects/hdwlinux/nix-private";
+    mestra = {
+      url = "git+file:///home/craig/Projects/hdwlinux/mestra";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.substrate.follows = "substrate";
+    };
+    scribe = {
+      url = "git+file:///home/craig/Projects/hdwlinux/scribe";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    substrate = {
+      url = "git+file:///home/craig/Projects/hdwlinux/substrate";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Regular remote flakes.
 
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
@@ -15,12 +32,6 @@
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    mestra = {
-      url = "git+file:///home/craig/Projects/mestra";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.substrate.follows = "substrate";
     };
 
     flake-parts.url = "github:hercules-ci/flake-parts";
@@ -82,11 +93,6 @@
 
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    substrate = {
-      url = "git+file:///home/craig/Projects/hdwlinux/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
