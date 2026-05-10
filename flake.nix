@@ -15,9 +15,20 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.substrate.follows = "substrate";
     };
+    opencode-augment-provider = {
+      url = "git+file:///home/craig/Projects/hdwlinux/opencode-augment-provider";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.substrate.follows = "substrate";
+    };
+    opencode-projects-plugin = {
+      url = "git+file:///home/craig/Projects/hdwlinux/opencode-projects-plugin";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.substrate.follows = "substrate";
+    };
     scribe = {
       url = "git+file:///home/craig/Projects/hdwlinux/scribe";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.substrate.follows = "substrate";
     };
     substrate = {
       url = "git+file:///home/craig/Projects/hdwlinux/substrate";
@@ -131,7 +142,10 @@
         packageNamespace = "hdwlinux";
 
         homeManagerModules = [
-          inputs.mestra.homeManagerModules.mestra
+          inputs.mestra.homeManagerModules.default
+          inputs.opencode-augment-provider.homeManagerModules.default
+          inputs.opencode-projects-plugin.homeManagerModules.default
+          inputs.scribe.homeManagerModules.default
           inputs.vicinae.homeManagerModules.default
         ];
 

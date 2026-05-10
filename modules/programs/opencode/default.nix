@@ -53,11 +53,8 @@
         ) config.hdwlinux.ai.clients.rules;
 
         # Provider metadata: OpenCode-specific configuration for each provider
+        # Note: augment provider is handled by programs.opencode-augment-provider below
         providerMeta = {
-          augment = {
-            npm = "file://${config.home.homeDirectory}/Projects/hdwlinux/opencode-augment-provider";
-          };
-
           "llama.cpp" = {
             npm = "@ai-sdk/openai-compatible";
             options = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
@@ -155,11 +152,25 @@
             plugin = [
               "file://${skillCreatorPluginDir}"
               "file://${ensemblePluginDir}"
-              "file://${config.home.homeDirectory}/Projects/hdwlinux/opencode-projects-plugin"
-              #"file://${mestraPluginDir}"
             ];
           };
         };
+
+        # Augment provider: delegates provider registration to the dedicated HM module.
+        # Models are transformed from hdwlinux provider format to OpenCode format.
+        programs.opencode-augment-provider = {
+          enable = true;
+          models = lib.mapAttrs (_: model: {
+            name = model.displayName;
+            limit = {
+              context = model.limits.context;
+              output = model.limits.output;
+            };
+          }) config.hdwlinux.ai.clients.models.providers.augment.models;
+        };
+
+        # opencode-projects plugin: delegates plugin registration to the dedicated HM module.
+        programs.opencode-projects.enable = true;
       };
   };
 }
