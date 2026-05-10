@@ -13,12 +13,12 @@
 #   ctp-crust     = base11  (darkest background)
 #   ctp-surface0  = base02  (borders)
 #   ctp-surface1  = base03  (interactive normal)
-#   ctp-surface2  = base04  (interactive hover)
-#   ctp-overlay0  = base04
-#   ctp-overlay1  = base04
-#   ctp-overlay2  = base04
-#   ctp-subtext0  = base04
-#   ctp-subtext1  = base05
+#   ctp-surface2  = base04
+#   ctp-overlay0  = mix(base04, base05, 1/7)
+#   ctp-overlay1  = mix(base04, base05, 2/7)
+#   ctp-overlay2  = mix(base04, base05, 3/7)
+#   ctp-subtext0  = mix(base04, base05, 4/7)
+#   ctp-subtext1  = mix(base04, base05, 5/7)
 #   ctp-text      = base05  (normal foreground)
 #   ctp-red       = base08
 #   ctp-maroon    = base12  (bright red / maroon)
@@ -38,6 +38,32 @@
 colorLib:
 let
   c = colorLib.rgbString;
+
+  # The base16 palette only has base04 (surface2) and base05 (text) to cover the
+  # full overlay/subtext range. We interpolate evenly across that gap to produce
+  # the intermediate steps the Catppuccin theme needs for color hierarchy.
+  #
+  # mix c1 c2 num den  →  c1 + (c2 - c1) * num/den
+  #
+  #   surface2 = base04               (0/7 of the way from base04 to base05)
+  #   overlay0 = mix base04 base05 1 7
+  #   overlay1 = mix base04 base05 2 7
+  #   overlay2 = mix base04 base05 3 7
+  #   subtext0 = mix base04 base05 4 7
+  #   subtext1 = mix base04 base05 5 7
+  #   text     = base05               (7/7 = base05)
+  overlay0 = colorLib.mix colorLib.base04 colorLib.base05 1 7;
+  overlay1 = colorLib.mix colorLib.base04 colorLib.base05 2 7;
+  overlay2 = colorLib.mix colorLib.base04 colorLib.base05 3 7;
+  subtext0 = colorLib.mix colorLib.base04 colorLib.base05 4 7;
+  subtext1 = colorLib.mix colorLib.base04 colorLib.base05 5 7;
+
+  # rgba() helper: produces "rgba(R, G, B, alpha)" from a color object and alpha string.
+  # Use this where CSS variable interpolation via rgb(var(--x), opacity%) won't work
+  # correctly — e.g. --text-selection, where the result must be visually distinguishable.
+  rgba = color: alpha:
+    let rgb = color.rgb;
+    in "rgba(${toString (builtins.elemAt rgb 0)}, ${toString (builtins.elemAt rgb 1)}, ${toString (builtins.elemAt rgb 2)}, ${alpha})";
 in
 ''
   .theme-dark,
@@ -57,11 +83,11 @@ in
     --ctp-blue:      ${c.base0D};
     --ctp-lavender:  ${c.base07};
     --ctp-text:      ${c.base05};
-    --ctp-subtext1:  ${c.base05};
-    --ctp-subtext0:  ${c.base04};
-    --ctp-overlay2:  ${c.base04};
-    --ctp-overlay1:  ${c.base04};
-    --ctp-overlay0:  ${c.base04};
+    --ctp-subtext1:  ${subtext1.rgbString};
+    --ctp-subtext0:  ${subtext0.rgbString};
+    --ctp-overlay2:  ${overlay2.rgbString};
+    --ctp-overlay1:  ${overlay1.rgbString};
+    --ctp-overlay0:  ${overlay0.rgbString};
     --ctp-surface2:  ${c.base04};
     --ctp-surface1:  ${c.base03};
     --ctp-surface0:  ${c.base02};
@@ -128,7 +154,7 @@ in
     --text-error-hover:                      rgb(var(--ctp-red), 80%);
     --text-highlight-bg:                     rgb(var(--ctp-rosewater), 100%);
     --text-highlight-bg-active:              rgb(var(--ctp-rosewater), 100%);
-    --text-selection:                        rgb(var(--ctp-overlay2), 30%);
+    --text-selection:                        ${rgba colorLib.base0E "0.35"};
     --text-on-accent:                        rgb(var(--ctp-mantle));
     --text-on-accent-inverted:               rgb(var(--ctp-mantle));
     --interactive-normal:                    rgb(var(--ctp-surface0));
@@ -404,48 +430,56 @@ in
     border-color: rgb(var(--ctp-surface1));
   }
 
+  /* Nav hover: left border in accent color, no background fill */
   :not(.is-grabbing) .nav-file-title:hover,
   :not(.is-grabbing) .nav-folder-title:hover,
   .tree-item-self.is-clickable:hover {
-    --nav-item-background-hover: rgba(var(--ctp-surface1), 0.5);
+    --nav-item-background-hover: transparent;
     --nav-item-color-hover: rgb(var(--ctp-text));
-  }
-
-  .nav-file-title.is-active,
-  .nav-folder-title.is-active,
-  .tree-item-self.is-active {
-    --nav-item-background-active: rgba(var(--ctp-accent), 0.15);
-    --nav-item-color-active: rgb(var(--ctp-accent));
-  }
-
-  .theme-dark:not(.css-settings-manager) :not(.is-grabbing) .nav-file-title:hover,
-  .theme-dark:not(.css-settings-manager) :not(.is-grabbing) .nav-folder-title:hover,
-  .theme-dark:not(.css-settings-manager) .tree-item-self.is-clickable:hover,
-  .theme-light:not(.css-settings-manager) :not(.is-grabbing) .nav-file-title:hover,
-  .theme-light:not(.css-settings-manager) :not(.is-grabbing) .nav-folder-title:hover,
-  .theme-light:not(.css-settings-manager) .tree-item-self.is-clickable:hover {
-    background-color: rgba(var(--ctp-surface1), 0.5);
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px rgb(var(--ctp-accent));
     color: rgb(var(--ctp-text));
   }
 
   .nav-folder.mod-root > .nav-folder-title:hover {
     background-color: transparent;
-    color: rgb(var(--text-normal));
+    box-shadow: none;
+    color: rgb(var(--ctp-text));
   }
 
+  /* Nav active (currently open file/item): full border in accent, normal text */
+  .nav-file-title.is-active,
+  .nav-folder-title.is-active {
+    --nav-item-background-active: transparent;
+    --nav-item-color-active: rgb(var(--ctp-text));
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px rgb(var(--ctp-accent));
+    color: rgb(var(--ctp-text));
+  }
+
+  /* Selected tree item (bookmarks panel etc.): full border in mauve/purple */
   .tree-item-self.is-selected {
-    background-color: rgba(var(--ctp-accent), 0.15);
-    color: rgb(var(--ctp-accent));
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px rgb(var(--ctp-mauve));
+    color: rgb(var(--ctp-mauve));
   }
 
   .tree-item-self.is-selected .tree-item-icon {
-    color: rgb(var(--ctp-accent));
+    color: rgb(var(--ctp-mauve));
   }
 
   body:not(.is-grabbing) .tree-item-self.is-active:hover,
   .tree-item-self.is-active {
-    --nav-item-color-active: rgb(var(--ctp-accent));
-    --nav-item-background-active: rgba(var(--ctp-accent), 0.15);
+    --nav-item-color-active: rgb(var(--ctp-text));
+    --nav-item-background-active: transparent;
+    background-color: transparent;
+    box-shadow: inset 0 0 0 1px rgb(var(--ctp-accent));
+    color: rgb(var(--ctp-text));
+  }
+
+  body:not(.is-grabbing) .tree-item-self.is-active:hover .tree-item-icon,
+  .tree-item-self.is-active .tree-item-icon {
+    --icon-color: rgb(var(--ctp-accent));
   }
 
   .nav-file-tag {
@@ -456,11 +490,6 @@ in
 
   .is-active .nav-file-tag {
     box-shadow: inset 0 0 2px rgb(var(--ctp-crust)), inset 0 0 4px rgb(var(--ctp-mantle));
-  }
-
-  .suggestion-item.is-selected {
-    background-color: rgb(var(--ctp-accent));
-    color: var(--text-on-accent);
   }
 
   .search-suggest-item.is-selected {
