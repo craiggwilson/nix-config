@@ -354,10 +354,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1778437485,
-        "narHash": "sha256-gwjkiYzcA1CYVVRuvxrmf3k9uMfosc6uzWoVMZbFJtQ=",
-        "rev": "31c091d103ecaafea79ab8d5cdb8b87416d4e068",
-        "revCount": 211,
+        "lastModified": 1778865104,
+        "narHash": "sha256-EMVLleuXg3kLfEAxxEMoReKM0u8JtGHZpoiGgSPTtAg=",
+        "rev": "21b0de7fce5268ebdd7c4e2d6a696493a008e585",
+        "revCount": 220,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/mestra"
       },
@@ -628,10 +628,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1778376694,
-        "narHash": "sha256-1S8UqvsDil/IEo1sYDvEMQhbwIBD5WLN5ycHt/Uz574=",
-        "rev": "d2945e094082dbbed60e6b142dd3cb4b7aa490a8",
-        "revCount": 4,
+        "lastModified": 1778865154,
+        "narHash": "sha256-rtjiapyB4qyMxv5mSlKn27SaQmRaQ9DzQGPIEX8jFTs=",
+        "rev": "759fb2ec5eb9fae3ea485612ea24c4b0d74ad91e",
+        "revCount": 7,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/opencode-augment-provider"
       },
@@ -651,10 +651,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1778437083,
-        "narHash": "sha256-O7XxSlK2aM+j2jv9A40+3sD1AjhPpnkLK6bv4HMfAf8=",
-        "rev": "59378fcd878dafd9a67193c7eb8bec701cbbabd2",
-        "revCount": 76,
+        "lastModified": 1778865175,
+        "narHash": "sha256-Q5LOjxfcB8jRhiH3m1Qu5qi9py2amXzQj759JPql1gs=",
+        "rev": "5098d64e9dbd58071c8b4554e7a460fafb1a8c86",
+        "revCount": 78,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/opencode-projects-plugin"
       },
@@ -827,10 +827,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1778437830,
-        "narHash": "sha256-5E1f74FqED6K9UBSq4L77QcU2AefURyIziKkc3FZZSg=",
-        "rev": "1ff00571c20452db84c5ce0dad550d88525f1713",
-        "revCount": 34,
+        "lastModified": 1778865072,
+        "narHash": "sha256-EgwXrgcRBZInS1R1oh9etOr9/K27FioiTUoapCLoyH0=",
+        "rev": "4d60d0d848367d076076b8e826d932eb06d9356b",
+        "revCount": 72,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/scribe"
       },
@@ -867,10 +867,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1774807042,
-        "narHash": "sha256-0WnVPXWru2ap3nHrPNlAyIj0DAcQSdlt3MITLEP2v60=",
-        "rev": "178daeffbf6f33f49e8f88b90783fbaa0491e2cd",
-        "revCount": 3,
+        "lastModified": 1778864879,
+        "narHash": "sha256-e5xUM9MyFfp+zXK73EI4hhdiO6Z/HypIEAeaXkDcDEQ=",
+        "rev": "7b07338739d03888caf26efd1a6d8620a852a08a",
+        "revCount": 4,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/substrate"
       },

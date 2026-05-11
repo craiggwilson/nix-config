@@ -1,35 +1,64 @@
+{ inputs, ... }:
 {
   config.substrate.modules.programs.scribe = {
-    tags = [ "dictation" ];
 
-    homeManager = {
-      programs.scribe = {
-        enable = true;
+    homeManager =
+      { pkgs, ... }:
+      {
+        programs.scribe = {
+          enable = true;
+          enableCuda = true;
+          package = (inputs.scribe.packages.${pkgs.stdenv.hostPlatform.system}.scribe).override {
+            cudaCapability = "8.6";
+          };
 
-        whisperModels = [
-          {
-            name = "base.en";
-            filename = "ggml-base.en.bin";
-            url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin";
-            hash = "sha256-oDd5yG3zMjB19eeWyyzlAp8A7Ihp7uP9+4l6/jbG0AI=";
-          }
-        ];
+          whisperModels = [
+            "base.en"
+            "medium.en"
+          ];
 
-        diarizationModels = [
-          {
-            name = "wespeaker-resnet34";
-            filename = "wespeaker_resnet34.onnx";
-            url = "https://huggingface.co/Wespeaker/wespeaker-voxceleb-resnet34/resolve/ff1ac5bca8ef11e90662b879aa923979e0bd277b/voxceleb_resnet34.onnx";
-            hash = "sha256-n+plFteta/CnbHaJ9aSbZdMw+tbd6WyRu0Q1/7/gVqE=";
-          }
-          {
-            name = "silero-vad";
-            filename = "silero_vad.onnx";
-            url = "https://github.com/snakers4/silero-vad/raw/7e30209a3e901f9842f81b225f3e93d8199902b1/src/silero_vad/data/silero_vad.onnx";
-            hash = "sha256-GhU6IvRQnikqlOZ9b5uF6N6yW0mIaCt+F0xlJ52HiOM=";
-          }
-        ];
+          diarizationModels = [
+            "wespeaker-resnet34"
+            "silero-vad"
+          ];
+
+          settings.capture = {
+            defaults = {
+              model = "medium.en";
+              preview_model = "base.en";
+            };
+
+            profiles = [
+              {
+                name = "dictate";
+                sources = [
+                  {
+                    source = "default:input";
+                    label = "Me";
+                  }
+                ];
+              }
+              {
+                name = "meeting";
+                diarize = true;
+                output = "transcript";
+                save_audio = true;
+                timestamps = true;
+                preview = true;
+                sources = [
+                  {
+                    source = "default:input";
+                    label = "Me";
+                  }
+                  {
+                    source = "Firefox";
+                    label = "Others";
+                  }
+                ];
+              }
+            ];
+          };
+        };
       };
-    };
   };
 }

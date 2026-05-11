@@ -235,7 +235,6 @@
               "ai:clients"
               "cloud:sync"
               "desktop:custom:niri"
-              "dictation"
               "networking:tailscale"
               "programming"
               "security:passwordmanager"
@@ -302,7 +301,6 @@
           { "desktop:custom" = [ "gui" ]; }
           "desktop:custom:hyprland"
           "desktop:custom:niri"
-          "dictation"
           "filesystem:envfs"
           "filesystem:nfs"
           "flatpaks"

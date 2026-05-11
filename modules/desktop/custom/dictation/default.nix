@@ -1,6 +1,5 @@
 {
   config.substrate.modules.desktop.custom.dictation = {
-    tags = [ "dictation" ];
 
     homeManager =
       { config, pkgs, ... }:
@@ -22,7 +21,7 @@
           rm -f "${transcriptFile}"
 
           # Capture scribe's stdout to a temp file; SIGTERM triggers graceful shutdown.
-          ${scribe}/bin/scribe dictate > "${transcriptFile}" &
+          ${scribe}/bin/scribe capture --profile dictate > "${transcriptFile}" &
           echo $! > "${pidFile}"
 
           notify-send "Dictation" "Recording..." --icon=microphone-sensitivity-high
