@@ -628,10 +628,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1778888388,
-        "narHash": "sha256-4BhociqQctLyoXmqM10jyZjeAgbE0dFE1XKZf7W92ug=",
-        "rev": "c573cb56d73f0ce64845d9f2fda4b53fc1c81f21",
-        "revCount": 8,
+        "lastModified": 1779044409,
+        "narHash": "sha256-NcR9zC5MrtoRIs8IA6KKmgxULjpp9lQc3TpSbWkAdYE=",
+        "rev": "b4703e2ec5d5484ff92ac8bf1ef61c2b55c3693b",
+        "revCount": 4,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/opencode-augment-provider"
       },
