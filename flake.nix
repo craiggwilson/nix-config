@@ -186,6 +186,9 @@
           # mestra — exposes pkgs.mestra.{mestra,opencode-plugin,skill}
           inputs.mestra.overlays.packages
 
+          # scribe — exposes pkgs.scribe.scribe
+          inputs.scribe.overlays.packages
+
           # NUR (Nix User Repository)
           inputs.nur.overlays.default
 

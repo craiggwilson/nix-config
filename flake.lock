@@ -827,10 +827,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1778875431,
-        "narHash": "sha256-x9TmW5qkYnT4gnqtiNJFTBQhcaPRGXklqjQM9Af8Llc=",
-        "rev": "d7c28eaef2328659da54b3de189a9639319334f5",
-        "revCount": 76,
+        "lastModified": 1779055154,
+        "narHash": "sha256-kwMIFddtoPOEfpgjBvfmUhxtl/ovUY0Q+M2DXatQwTA=",
+        "rev": "e90dc671f6561d2e3758ac541d9103f60f33aa0b",
+        "revCount": 79,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/scribe"
       },

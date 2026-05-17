@@ -2,17 +2,16 @@
   config.substrate.modules.desktop.custom.dictation = {
 
     homeManager =
-      { config, pkgs, ... }:
+      { pkgs, ... }:
       let
-        scribe = config.programs.scribe.package;
-
         pidFile = "/tmp/dictation.pid";
         transcriptFile = "/tmp/dictation-out.txt";
 
-        startScript = pkgs.writeShellScript "dictctl-start" ''
-          set -euo pipefail
-
-          # Check if already running
+        # Inline start/stop logic as strings so writeShellApplication's PATH
+        # (runtimeInputs prepended) applies. scribe is intentionally NOT in
+        # runtimeInputs — the full featured binary (CUDA, etc.) lives in
+        # home.packages and is found via the user's PATH after runtimeInputs.
+        startCmd = ''
           if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
             notify-send "Dictation" "Already running" --icon=microphone-sensitivity-high
             exit 0
@@ -21,15 +20,13 @@
           rm -f "${transcriptFile}"
 
           # Capture scribe's stdout to a temp file; SIGTERM triggers graceful shutdown.
-          ${scribe}/bin/scribe capture --profile dictate > "${transcriptFile}" &
+          scribe capture --profile dictate > "${transcriptFile}" &
           echo $! > "${pidFile}"
 
           notify-send "Dictation" "Recording..." --icon=microphone-sensitivity-high
         '';
 
-        stopScript = pkgs.writeShellScript "dictctl-stop" ''
-          set -euo pipefail
-
+        stopCmd = ''
           if [ ! -f "${pidFile}" ]; then
             notify-send "Dictation" "Not running" --icon=microphone-sensitivity-muted
             exit 0
@@ -53,7 +50,7 @@
             exit 0
           fi
 
-          ${pkgs.wl-clipboard}/bin/wl-copy < "${transcriptFile}"
+          wl-copy < "${transcriptFile}"
           rm -f "${transcriptFile}"
 
           notify-send "Dictation" "Copied to clipboard" --icon=edit-paste
@@ -71,13 +68,13 @@
               pkgs.wl-clipboard
             ];
             subcommands = {
-              start = "${startScript}";
-              stop = "${stopScript}";
+              start = startCmd;
+              stop = stopCmd;
               toggle = ''
                 if [ -f "${pidFile}" ] && kill -0 "$(cat ${pidFile})" 2>/dev/null; then
-                  ${stopScript}
+                  ${stopCmd}
                 else
-                  ${startScript}
+                  ${startCmd}
                 fi
               '';
               is-running = ''

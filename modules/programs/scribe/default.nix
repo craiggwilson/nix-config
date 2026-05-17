@@ -1,4 +1,3 @@
-{ inputs, ... }:
 {
   config.substrate.modules.programs.scribe = {
 
@@ -8,7 +7,7 @@
         programs.scribe = {
           enable = true;
           enableCuda = true;
-          package = (inputs.scribe.packages.${pkgs.stdenv.hostPlatform.system}.scribe).override {
+          package = pkgs.scribe.scribe.override {
             cudaCapability = "8.6";
           };
 
