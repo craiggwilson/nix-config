@@ -5,6 +5,15 @@
 }:
 let
   javapkg = pkgs.temurin-bin-17;
+
+  # Bazel's built-in CopyFile action runs `<shell> -c 'cp ...'` with `exec env -`,
+  # stripping all environment variables. --action_env and BASH_ENV are both ignored
+  # by this built-in. The fix is to point --shell_executable at a wrapper that
+  # unconditionally sets PATH to include standard Unix tools before exec'ing real bash.
+  bazelShellWrapper = pkgs.writeShellScript "bazel-shell" ''
+    export PATH=${pkgs.coreutils}/bin:${pkgs.bash}/bin:${pkgs.findutils}/bin:${pkgs.gnutar}/bin:${pkgs.gzip}/bin:${pkgs.gnused}/bin:${pkgs.gawk}/bin:${pkgs.unzip}/bin:${pkgs.zip}/bin:${pkgs.which}/bin:${pkgs.gnugrep}/bin:${pkgs.python3}/bin''${PATH:+:$PATH}
+    exec ${pkgs.bash}/bin/bash "$@"
+  '';
 in
 pkgs.mkShell {
   buildInputs = [
@@ -26,7 +35,7 @@ pkgs.mkShell {
 
     # node
     pkgs.nodejs_22
-    pkgs.nodejs_22.pkgs.pnpm
+    pkgs.pnpm
 
     # python
     pkgs.openblas
@@ -96,6 +105,20 @@ pkgs.mkShell {
   shellHook = ''
     export MMS_HOME="$PWD"
     mkdir -p "$TMPDIR"
+
+    # Bazel's built-in CopyFile action runs `exec env -` stripping all env vars;
+    # --action_env and BASH_ENV are both ignored by it. We fix this by pointing
+    # --shell_executable at a wrapper that unconditionally sets coreutils on PATH.
+    # Rewrite .bazelrc.local with the current nix store path (changes on rebuild).
+    cat > "$MMS_HOME/.bazelrc.local" <<EOF
+build --extra_execution_platforms=//toolchains/nodejs:linux_amd64
+build --host_platform=//toolchains/nodejs:linux_amd64
+build --shell_executable=${bazelShellWrapper}
+# Repository rules run with a stripped PATH. Pass it through so that tools
+# like uname (needed by aspect_rules_js platform detection) work.
+common --repo_env=PATH
+EOF
+
     # Only exec zsh when entering the shell interactively, not via direnv
     if [ -z "$DIRENV_IN_ENVRC" ]; then
       exec zsh
