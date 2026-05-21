@@ -156,6 +156,24 @@
           };
         };
 
+        # opencode-projects plugin: delegates plugin registration to the dedicated HM module.
+        programs.opencode-projects.enable = true;
+      };
+  };
+
+  config.substrate.modules.programs.opencode.augment = {
+    tags = [
+      "ai:clients"
+      "users:craig:work"
+    ];
+
+    homeManager =
+      {
+        config,
+        lib,
+        ...
+      }:
+      {
         # Augment provider: delegates provider registration to the dedicated HM module.
         # Models are transformed from hdwlinux provider format to OpenCode format.
         programs.opencode-augment-provider = {
@@ -168,9 +186,6 @@
             };
           }) config.hdwlinux.ai.clients.models.providers.augment.models;
         };
-
-        # opencode-projects plugin: delegates plugin registration to the dedicated HM module.
-        programs.opencode-projects.enable = true;
       };
   };
 }
