@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.scribe = {
+    tags = [ "users:craig:work" ];
 
     homeManager =
       { pkgs, ... }:
