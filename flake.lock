@@ -628,10 +628,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1779044409,
-        "narHash": "sha256-NcR9zC5MrtoRIs8IA6KKmgxULjpp9lQc3TpSbWkAdYE=",
-        "rev": "b4703e2ec5d5484ff92ac8bf1ef61c2b55c3693b",
-        "revCount": 4,
+        "lastModified": 1779241568,
+        "narHash": "sha256-n3p6zLVSNKDowUnnCtXbMhAt1eIoAwvKNzFPVYpkkwM=",
+        "rev": "60e809d291e11041c9c72c9425829bf6817c4d13",
+        "revCount": 5,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/opencode-augment-provider"
       },
@@ -827,10 +827,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1779055154,
-        "narHash": "sha256-kwMIFddtoPOEfpgjBvfmUhxtl/ovUY0Q+M2DXatQwTA=",
-        "rev": "e90dc671f6561d2e3758ac541d9103f60f33aa0b",
-        "revCount": 79,
+        "lastModified": 1779222151,
+        "narHash": "sha256-w+kzbwSahcP8lSdq4vWrMezNbiS6NqPn4p/gfpPNO+8=",
+        "rev": "2fc67f0b776f1705ff7eb7fdcd8fddccc51a0926",
+        "revCount": 80,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/scribe"
       },
