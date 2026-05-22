@@ -165,6 +165,7 @@
             ./packages/falcon-sensor.nix
             ./packages/fern.nix
             ./packages/mcp-atlassian.nix
+            ./packages/monocle.nix
             ./packages/mongo-orchestration.nix
             ./packages/songtool.nix
             ./packages/writeShellApplicationWithSubcommands.nix

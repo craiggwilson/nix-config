@@ -80,9 +80,9 @@
                       {
                         pane = {
                           _props = {
-                            name = "files";
+                            name = "monocle";
                           };
-                          command = lib.getExe pkgs.yazi;
+                          command = lib.getExe pkgs.hdwlinux.monocle;
                         };
                       }
                     ];
