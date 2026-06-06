@@ -63,7 +63,7 @@
           };
           coder = {
             provider = "augment";
-            model = "claude-haiku-4-5";
+            model = "claude-sonnet-4-6";
           };
           analyst = {
             provider = "augment";
