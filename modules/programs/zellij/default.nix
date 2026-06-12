@@ -36,6 +36,7 @@
       {
         programs.zellij = {
           enable = true;
+          attachExistingSession = true;
           enableBashIntegration = config.programs.bash.enable;
           enableZshIntegration = config.programs.zsh.enable;
           extraConfig = keybindsKdl;
