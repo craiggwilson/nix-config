@@ -44,7 +44,7 @@
         home.packages = [ pkgs.shikane ];
 
         xdg.configFile."shikane/config.toml" = {
-          source = "${tomlFormat.generate "shikane" mapProfiles}";
+          text = builtins.readFile (tomlFormat.generate "shikane" mapProfiles);
         };
 
         systemd.user.services.shikane = {
