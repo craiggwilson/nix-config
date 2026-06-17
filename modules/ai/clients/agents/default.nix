@@ -28,7 +28,7 @@
           code-reviewer = {
             color = colors.base09;
             description = "Reviews code for quality, maintainability, security, and best practices. Provides constructive feedback.";
-            model = "analyst";
+            model = "code-reviewer";
             temperature = 0.2;
           };
 

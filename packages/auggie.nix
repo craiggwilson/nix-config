@@ -1,14 +1,14 @@
 { lib, pkgs, ... }:
 let
   name = "auggie";
-  version = "0.27.2";
+  version = "0.29.0";
 in
 pkgs.stdenv.mkDerivation {
   inherit name version;
 
   src = pkgs.fetchurl {
     url = "https://registry.npmjs.org/@augmentcode/${name}/-/${name}-${version}.tgz";
-    hash = "sha256-kBn0ghkevIh/yfnaymo5Gbh1JtrwWFEO7QUnNQCEKgM=";
+    hash = "sha256-BKDKCwjAIwOE7FPucFrNUZAOcBCgMuQ55bvG8vLxbCc=";
   };
 
   sourceRoot = "package";

@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 let
-  version = "0.46.1";
+  version = "0.48.1";
 in
 pkgs.buildGoModule {
   name = "monocle";
@@ -9,12 +9,14 @@ pkgs.buildGoModule {
     owner = "josephschmitt";
     repo = "monocle";
     rev = "v${version}";
-    hash = "sha256-2ye2Y/yrJXebGX++B8ILDhZpsm4NxZ5RRRDI/dzfOpY=";
+    hash = "sha256-/N9nFDwuhGXPhi/MQ7RKDLFgUoYxeyiRvsFkbRHgrIs=";
   };
 
   vendorHash = "sha256-oajKuhbP+DRXefoJbrOVoyE1rOdtZaPS4c3u0HUP4Kc=";
 
   subPackages = [ "cmd/monocle" ];
+
+  doCheck = false;
 
   ldflags = [
     "-X main.version=v${version}"

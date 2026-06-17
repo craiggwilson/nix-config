@@ -49,6 +49,14 @@
                 output = 32000;
               };
             };
+            # Augment specialized code review model
+            "code-review-gpt5-2-responses-high-200k-v1-c4-p2-agent" = {
+              displayName = "Code Review GPT-5";
+              limits = {
+                context = 200000;
+                output = 32000;
+              };
+            };
           };
         };
 
@@ -72,6 +80,10 @@
           writer = {
             provider = "augment";
             model = "claude-sonnet-4-6";
+          };
+          code-reviewer = {
+            provider = "augment";
+            model = "code-review-gpt5-2-responses-high-200k-v1-c4-p2-agent";
           };
         };
       };

@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
-  version = "0.14.1";
+  version = "0.15.0";
 
   src = pkgs.fetchFromGitHub {
     owner = "hueyexe";
     repo = "opencode-ensemble";
     tag = "v${version}";
-    hash = "sha256-3mZX17jPZieswdJFE+RR1SaTGjKfTj8c79yu5x+Xck0=";
+    hash = "sha256-eTdwru0Fw9i5/N6tz7pRZiTNeUnF8j1muuMbG4ebg/s=";
   };
 
   deps = pkgs.stdenv.mkDerivation {
@@ -29,7 +29,7 @@ let
       cp bun.lock package.json $out/
     '';
 
-    outputHash = "sha256-2oEh/6zVh1cG22YYavEdw1QPTEXwi9xhK96Dtq9q6Tc=";
+    outputHash = "sha256-28TloesVmt46x4lmf7YXV/kzeXuWyQGju8i1WqpXLJc=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

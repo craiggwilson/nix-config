@@ -11,6 +11,7 @@
           "coder"
           "analyst"
           "writer"
+          "code-reviewer"
         ];
 
         modelType = lib.types.submodule (

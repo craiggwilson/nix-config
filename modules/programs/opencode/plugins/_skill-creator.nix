@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
-  version = "0.2.10";
+  version = "0.2.20";
 
   src = pkgs.fetchFromGitHub {
     owner = "antongulin";
     repo = "opencode-skill-creator";
     tag = "v${version}";
-    hash = "sha256-N/DyGkvB96c5qdcibDB64LNIdvTWbM2fh3PHl5mU+48=";
+    hash = "sha256-fftOM9KpJch0UMdBL49jIrQLZdMk4pUS8Gog+IgIhjM=";
   };
 
   deps = pkgs.stdenv.mkDerivation {
@@ -32,7 +32,7 @@ let
       cp bun.lock package.json $out/
     '';
 
-    outputHash = "sha256-/h3Fi3SjnmBMDHmIzQWLNdGjcLbu2sdmBOcEkz8B5eA=";
+    outputHash = "sha256-2bIAmDTxPBDvQE3jD2Qyq7ztL204ZfAdoTZ5JKHXFh8=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

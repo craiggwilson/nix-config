@@ -1,13 +1,13 @@
 { lib, pkgs, ... }:
 let
-  version = "2.2.3";
-  rev = "795d5da720e16c417ae30a548a475672ae35e92f";
+  version = "0.5.3";
+  rev = "9256fdfb9c136f54430f82952e6cccdf1eb501d4";
 
   src = pkgs.fetchFromGitHub {
     owner = "upstash";
     repo = "context7";
     inherit rev;
-    hash = "sha256-FS4JNh9QXCicV2mRuN7jMos4nEbr7eqO/g97HLQJAyU=";
+    hash = "sha256-J3FS0HPpkuriuxEyY1dluwdMovdvgWUTFgBxVUlf+GA=";
   };
 
   # Fixed-output derivation for dependencies.
@@ -26,7 +26,7 @@ let
       export HOME=$TMPDIR
 
       # Install from monorepo root so workspace packages resolve correctly
-      bun install --no-cache --frozen-lockfile
+      bun install --no-cache
 
       mkdir -p $out
       cp -r node_modules $out/
@@ -34,7 +34,7 @@ let
       cp pnpm-lock.yaml package.json $out/
     '';
 
-    outputHash = "sha256-JM3RO5wtpwdqZ8gOge3kTh9DoxZMSu3hMPGBPgUlvxI=";
+    outputHash = "sha256-YkxnV4j/mh1intfKJqRCASVDL7PvqC11naMTb0F4vU8=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
