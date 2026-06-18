@@ -43,9 +43,15 @@
       {
         home.packages = [ pkgs.shikane ];
 
-        xdg.configFile."shikane/config.toml" = {
-          text = builtins.readFile (tomlFormat.generate "shikane" mapProfiles);
-        };
+        # shikane opens its config with O_RDWR|O_CREAT|O_APPEND, so the file
+        # must be writable. xdg.configFile creates a symlink into the Nix store
+        # (0444), which causes EACCES. Instead, copy the generated TOML into a
+        # real writable file via home.activation.
+        home.activation.shikaneConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          mkdir -p "${config.xdg.configHome}/shikane"
+          cp --no-preserve=mode ${tomlFormat.generate "shikane" mapProfiles} \
+            "${config.xdg.configHome}/shikane/config.toml"
+        '';
 
         systemd.user.services.shikane = {
           Unit = {
