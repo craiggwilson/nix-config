@@ -11,6 +11,10 @@ gestures {
 
 hotkey-overlay { skip-at-startup; }
 
+debug {
+    ignore-drm-device "/dev/dri/renderD129"
+}
+
 input {
     keyboard {
         xkb {

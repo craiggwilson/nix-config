@@ -13,10 +13,12 @@
           card = {
             busId = "00:02.0";
             path = "/dev/dri/card1";
+            render = "/dev/dri/renderD128";
           };
           nvidia.card = {
             busId = "01:00.0";
             path = "/dev/dri/card0";
+            render = "/dev/dri/renderD129";
           };
         };
         monitors.laptop = {

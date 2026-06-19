@@ -13,10 +13,12 @@
           card = {
             busId = "00:02.0";
             path = "/dev/dri/card1";
+            render = "/dev/dri/renderD128";
           };
           nvidia.card = {
             busId = "01:00.0";
             path = "/dev/dri/card0";
+            render = "/dev/dri/renderD129";
           };
         };
         monitors.laptop = {
@@ -119,34 +121,34 @@
               "*" = "fwupdmgr get-updates";
             };
             battery = {
-            # TLP profiles mapped to match system76-power naming
-            # Dell supports: start 50-95, stop 55-100 (hardware enforces start = stop - 5)
-            set-profile = ''
-              profile="$1"
-              case "$profile" in
-                max_lifespan)
-                  sudo tlp setcharge 55 60
-                  echo "Set profile: max_lifespan (55-60%)"
-                  ;;
-                balanced)
-                  sudo tlp setcharge 75 80
-                  echo "Set profile: balanced (75-80%)"
-                  ;;
-                full_charge)
-                  sudo tlp fullcharge
-                  echo "Set profile: full_charge (charging to 100%)"
-                  ;;
-                *)
-                  echo "Available profiles: max_lifespan, balanced, full_charge"
-                  echo ""
-                  echo "  max_lifespan  - Charge 55-60% (best for always plugged in)"
-                  echo "  balanced      - Charge 75-80% (good balance)"
-                  echo "  full_charge   - Charge to 100% (for travel)"
-                  exit 1
-                  ;;
-              esac
-            '';
-            "*" = "sudo tlp-stat -b";
+              # TLP profiles mapped to match system76-power naming
+              # Dell supports: start 50-95, stop 55-100 (hardware enforces start = stop - 5)
+              set-profile = ''
+                profile="$1"
+                case "$profile" in
+                  max_lifespan)
+                    sudo tlp setcharge 55 60
+                    echo "Set profile: max_lifespan (55-60%)"
+                    ;;
+                  balanced)
+                    sudo tlp setcharge 75 80
+                    echo "Set profile: balanced (75-80%)"
+                    ;;
+                  full_charge)
+                    sudo tlp fullcharge
+                    echo "Set profile: full_charge (charging to 100%)"
+                    ;;
+                  *)
+                    echo "Available profiles: max_lifespan, balanced, full_charge"
+                    echo ""
+                    echo "  max_lifespan  - Charge 55-60% (best for always plugged in)"
+                    echo "  balanced      - Charge 75-80% (good balance)"
+                    echo "  full_charge   - Charge to 100% (for travel)"
+                    exit 1
+                    ;;
+                esac
+              '';
+              "*" = "sudo tlp-stat -b";
             };
           };
         };

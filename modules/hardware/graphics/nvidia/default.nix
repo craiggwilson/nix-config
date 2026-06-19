@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  pcicardType = config.substrate.types.pcicard;
+  graphicsCardType = config.substrate.types.graphicsCard;
 in
 {
   config.substrate.modules.hardware.graphics.nvidia = {
@@ -12,7 +12,7 @@ in
       {
         options.hdwlinux.hardware.graphics.nvidia.card = lib.mkOption {
           description = "The nvidia graphics card information.";
-          type = pcicardType lib;
+          type = graphicsCardType lib;
         };
       };
 
