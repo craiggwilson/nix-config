@@ -49,6 +49,9 @@
           {
             model = lib.head v.paths;
           }
+          // lib.optionalAttrs (builtins.length v.paths > 1) {
+            mmproj = builtins.elemAt v.paths 1;
+          }
           // (v.settings.llama-cpp or { })
         ) config.hdwlinux.ai.llm.models;
       in

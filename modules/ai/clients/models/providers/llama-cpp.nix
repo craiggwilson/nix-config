@@ -16,8 +16,16 @@
           lib.genAttrs aliasNames (
             alias:
             let
-              matchingModel = lib.findFirst (
-                name: builtins.elem alias (llmModels.${name}.categories or [ ])
+              matchingModel = lib.foldl' (
+                best: name:
+                if builtins.elem alias (llmModels.${name}.categories or [ ]) then
+                  let
+                    candidatePriority = llmModels.${name}.priority or 0;
+                    bestPriority = if best == null then -1 else llmModels.${best}.priority or 0;
+                  in
+                  if best == null || candidatePriority > bestPriority then name else best
+                else
+                  best
               ) null modelNames;
             in
             if matchingModel != null then

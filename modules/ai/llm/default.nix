@@ -44,6 +44,11 @@
                       type = lib.types.listOf lib.types.str;
                       default = [ ];
                     };
+                    priority = lib.mkOption {
+                      description = "Relative preference when more than one model matches the same alias category.";
+                      type = lib.types.int;
+                      default = 0;
+                    };
                     settings = lib.mkOption {
                       type = lib.types.attrsOf lib.types.anything;
                       default = { };
