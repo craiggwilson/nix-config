@@ -34,7 +34,7 @@ let
       cp pnpm-lock.yaml package.json $out/
     '';
 
-    outputHash = "sha256-YkxnV4j/mh1intfKJqRCASVDL7PvqC11naMTb0F4vU8=";
+    outputHash = "sha256-43U7LYQj9xKD2vnA8/M7Dp3uHXeHBjvcq5LimF53Wog=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

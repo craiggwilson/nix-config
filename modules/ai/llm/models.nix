@@ -77,6 +77,7 @@
               "balanced"
               "coder"
               "analyst"
+              "code-reviewer"
             ];
             settings = {
               opencode = {
