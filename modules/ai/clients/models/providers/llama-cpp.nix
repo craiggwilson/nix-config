@@ -47,7 +47,7 @@
               oc = model.settings.opencode or { };
             in
             {
-              displayName = name;
+              displayName = oc.name or name;
               limits = {
                 context = oc.limit.context or 32000;
                 output = oc.limit.output or 8192;
@@ -56,7 +56,8 @@
           ) llmModels;
         };
 
-        hdwlinux.ai.clients.models.aliases = lib.mkOptionDefault aliases;
+        hdwlinux.ai.clients.models.aliases = lib.mkDefault aliases;
+
       };
   };
 }

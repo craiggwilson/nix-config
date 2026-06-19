@@ -55,6 +55,12 @@
         # Provider metadata: OpenCode-specific configuration for each provider
         # Note: augment provider is handled by programs.opencode-augment-provider below
         providerMeta = {
+          "semantic-router" = {
+            npm = "@ai-sdk/openai-compatible";
+            options = lib.optionalAttrs (config.hdwlinux ? services.semantic-router) {
+              baseURL = "http://${config.hdwlinux.services.semantic-router.host}:${toString config.hdwlinux.services.semantic-router.port}/v1";
+            };
+          };
           "llama.cpp" = {
             npm = "@ai-sdk/openai-compatible";
             options = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
@@ -68,6 +74,7 @@
                 oc = llmModel.settings.opencode or { };
               in
               {
+                id = slug;
                 name = model.displayName;
                 limit = {
                   context = model.limits.context;
@@ -87,6 +94,7 @@
             meta = providerMeta.${providerKey} or { };
             transformModel =
               meta.transformModel or (slug: model: {
+                id = slug;
                 name = model.displayName;
                 limit = {
                   context = model.limits.context;
@@ -178,7 +186,7 @@
         # Models are transformed from hdwlinux provider format to OpenCode format.
         programs.opencode-augment-provider = {
           enable = true;
-          models = lib.mapAttrs (_: model: {
+          models = lib.mapAttrs (slug: model: {
             name = model.displayName;
             limit = {
               context = model.limits.context;

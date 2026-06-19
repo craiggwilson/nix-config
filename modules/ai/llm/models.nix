@@ -3,7 +3,6 @@
     tags = [ "ai:llm" ];
 
     homeManager =
-      { lib, ... }:
       let
         hfFile =
           {
@@ -16,20 +15,6 @@
             url = "https://huggingface.co/${repo}/resolve/main/${name}?download=true";
           };
 
-        hfSingleGGUF =
-          { name, sha256 }:
-          let
-            # org/repo-GGUF:quant
-            parts = lib.split "/|-GGUF:" name;
-            org = lib.elemAt parts 0;
-            repo = lib.elemAt parts 2;
-            quant = lib.elemAt parts 4;
-          in
-          hfFile {
-            inherit sha256;
-            repo = "${org}/${repo}";
-            name = "${repo}-${quant}.gguf";
-          };
       in
       {
         config.hdwlinux.ai.llm.models = {
@@ -42,16 +27,16 @@
             priority = 0;
             settings = {
               opencode = {
-                name = "Qwen 3 4B Q4 16K";
+                name = "Qwen3 4B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 16384;
+                  context = 32768;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 16384;
+                ctx-size = 32768;
                 n-gpu-layers = 33;
                 flash-attn = false;
 
@@ -65,8 +50,9 @@
               };
             };
             files = [
-              (hfSingleGGUF {
-                name = "unsloth/Qwen3-4B-Instruct-2507-GGUF:Q4_0";
+              (hfFile {
+                repo = "unsloth/Qwen3-4B-Instruct-2507-GGUF";
+                name = "Qwen3-4B-Instruct-2507-Q4_0.gguf";
                 sha256 = "sha256-4LpnXYarJ3xhcBxnk2WbKugB2V4755FGTDIeb79hO+I=";
               })
             ];
@@ -80,7 +66,7 @@
             priority = 10;
             settings = {
               opencode = {
-                name = "Qwen 3 8B Q4 40K";
+                name = "Qwen3 8B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
@@ -103,9 +89,48 @@
               };
             };
             files = [
-              (hfSingleGGUF {
-                name = "ggml-org/Qwen3-8B-GGUF:Q4_K_M";
+              (hfFile {
+                repo = "ggml-org/Qwen3-8B-GGUF";
+                name = "Qwen3-8B-Q4_K_M.gguf";
                 sha256 = "sha256-pn2HYztfXxkaW9EebTfKsYuc49Smr2hhVh6KdnNSCAs=";
+              })
+            ];
+          };
+          "Qwen3-4B-Thinking-2507-GGUF-Q8_0" = {
+            type = "gguf";
+            categories = [
+              "analyst"
+            ];
+            priority = 5;
+            settings = {
+              opencode = {
+                name = "Qwen3 4B Thinking";
+                reasoning = true;
+                tool_call = true;
+                limit = {
+                  context = 262144;
+                  output = 8192;
+                };
+              };
+              llama-cpp = {
+                ctx-size = 262144;
+                n-gpu-layers = 33;
+                flash-attn = true;
+
+                temp = 0.6;
+                top-p = 0.95;
+                top-k = 20;
+                repeat-penalty = 1.5;
+
+                mlock = true;
+                mmap = true;
+              };
+            };
+            files = [
+              (hfFile {
+                repo = "unsloth/Qwen3-4B-Thinking-2507-GGUF";
+                name = "Qwen3-4B-Thinking-2507-Q8_0.gguf";
+                sha256 = "sha256-sVx79vRPrnVzWV/9WuLO68uybfkE/m2YuMmi+e6JZ7I=";
               })
             ];
           };
@@ -119,7 +144,7 @@
             priority = 10;
             settings = {
               opencode = {
-                name = "Qwen3 Coder 30B Q8";
+                name = "Qwen3 Coder 30B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
@@ -158,7 +183,7 @@
             priority = 0;
             settings = {
               opencode = {
-                name = "Qwen 2.5 Coder 7B Q4";
+                name = "Qwen2.5 Coder 7B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
@@ -181,8 +206,9 @@
               };
             };
             files = [
-              (hfSingleGGUF {
-                name = "Qwen/Qwen2.5-Coder-7B-Instruct-GGUF:Q4_K_M";
+              (hfFile {
+                repo = "Qwen/Qwen2.5-Coder-7B-Instruct-GGUF";
+                name = "qwen2.5-coder-7b-instruct-q4_k_m.gguf";
                 sha256 = "sha256-UJKH94y01M9rOENzRzO5FLLBWOQ+Iqf0v16WOACJTTw=";
               })
             ];
@@ -195,7 +221,7 @@
             priority = 5;
             settings = {
               opencode = {
-                name = "Qwen 3 VL 4B Q4";
+                name = "Qwen3 VL 4B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
