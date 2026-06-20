@@ -14,6 +14,7 @@
         llmModels = config.hdwlinux.ai.llm.models;
         modelNames = builtins.attrNames llmModels;
         semanticRouterPkg = builtins.getAttr "semantic-router" pkgs.hdwlinux;
+        huggingfaceHub = pkgs.python312Packages.huggingface-hub;
 
         localLlamaBaseUrl = "http://127.0.0.1:9292/v1";
 
@@ -263,8 +264,11 @@
               WantedBy = [ "default.target" ];
             };
             Service = {
+              Environment = [
+                "PATH=${lib.makeBinPath [ huggingfaceHub ]}:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin"
+              ];
               Type = "simple";
-              ExecStart = "${lib.getExe semanticRouterPkg} serve --config ${config.xdg.configHome}/semantic-router/config.yaml";
+              ExecStart = "${lib.getExe semanticRouterPkg} --config ${config.xdg.configHome}/semantic-router/config.yaml";
               Restart = "on-failure";
               RestartSec = 10;
               KillSignal = "SIGINT";

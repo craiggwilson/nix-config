@@ -27,16 +27,18 @@
             priority = 5;
             settings = {
               opencode = {
-                name = "Qwen3 4B Instruct Q32K";
+                name = "Qwen3 4B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 32768;
+                  context = 65536;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 32768;
+                # n-gpu-layers and override-tensor intentionally omitted: llama-fit-params
+                # chooses both at load time based on available VRAM and ctx-size.
+                ctx-size = 65536;
                 flash-attn = false;
                 parallel = 1;
 
@@ -66,16 +68,16 @@
             priority = 10;
             settings = {
               opencode = {
-                name = "Qwen3 8B Instruct Q32K";
+                name = "Qwen3 8B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 32768;
+                  context = 65536;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 32768;
+                ctx-size = 65536;
                 flash-attn = false;
                 parallel = 1;
 
@@ -104,7 +106,7 @@
             priority = 5;
             settings = {
               opencode = {
-                name = "Qwen3 4B Thinking Q64K";
+                name = "Qwen3 4B Thinking";
                 reasoning = true;
                 tool_call = true;
                 limit = {
@@ -134,7 +136,7 @@
               })
             ];
           };
-          "Qwen3-Coder-30B-A3B-Instruct-Q8_0" = {
+          "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M" = {
             type = "gguf";
             categories = [
               "coder"
@@ -144,16 +146,18 @@
             priority = 10;
             settings = {
               opencode = {
-                name = "Qwen3 Coder 30B Instruct Q32K";
+                name = "Qwen3 Coder 30B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 32768;
+                  context = 65536;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 32768;
+                # MoE model: fit will set ngl and override-tensor to offload expert
+                # weights to CPU, keeping attention layers on GPU, at load time.
+                ctx-size = 65536;
                 flash-attn = false;
                 parallel = 1;
 
@@ -168,9 +172,9 @@
             };
             files = [
               (hfFile {
-                repo = "ggml-org/Qwen3-Coder-30B-A3B-Instruct-Q8_0-GGUF";
-                name = "qwen3-coder-30b-a3b-instruct-q8_0.gguf";
-                sha256 = "sha256-8imT4pMYtbnsICb2tlgCpcqZs4q0hEqrg67YomzgD/Y=";
+                repo = "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF";
+                name = "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf";
+                sha256 = "sha256-+tw+X41Cv36JSnhbBQguR9ruTfJmgDiYF+IJMFbwiK0=";
               })
             ];
           };
@@ -183,16 +187,16 @@
             priority = 0;
             settings = {
               opencode = {
-                name = "Qwen2.5 Coder 7B Instruct Q32K";
+                name = "Qwen2.5 Coder 7B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 32768;
+                  context = 65536;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 32768;
+                ctx-size = 65536;
                 flash-attn = false;
                 parallel = 1;
 
@@ -221,7 +225,7 @@
             priority = 5;
             settings = {
               opencode = {
-                name = "Qwen3 VL 4B Instruct Q64K";
+                name = "Qwen3 VL 4B Instruct";
                 reasoning = false;
                 tool_call = true;
                 limit = {
