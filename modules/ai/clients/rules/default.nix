@@ -12,29 +12,9 @@
             loadMode = "auto";
           };
 
-          github = {
-            description = "GitHub access configuration";
-            loadMode = "auto";
-          };
-
-          google-workspace = {
-            description = "Google Workspace access configuration";
-            loadMode = "auto";
-          };
-
           jujutsu = {
             description = "Version control using Jujutsu (jj)";
             loadMode = "always";
-          };
-
-          markdown-formatting = {
-            description = "Markdown formatting standards for all generated documents";
-            loadMode = "auto";
-          };
-
-          mongodb-fiscal-calendar = {
-            description = "MongoDB fiscal year and quarter conventions used during planning.";
-            loadMode = "auto";
           };
 
           obsidian = {
