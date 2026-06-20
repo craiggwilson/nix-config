@@ -24,10 +24,10 @@
               "fast"
               "writer"
             ];
-            priority = 0;
+            priority = 5;
             settings = {
               opencode = {
-                name = "Qwen3 4B Instruct";
+                name = "Qwen3 4B Instruct Q32K";
                 reasoning = false;
                 tool_call = true;
                 limit = {
@@ -37,8 +37,8 @@
               };
               llama-cpp = {
                 ctx-size = 32768;
-                n-gpu-layers = 33;
                 flash-attn = false;
+                parallel = 1;
 
                 temp = 0.6;
                 top-p = 0.9;
@@ -66,18 +66,18 @@
             priority = 10;
             settings = {
               opencode = {
-                name = "Qwen3 8B Instruct";
+                name = "Qwen3 8B Instruct Q32K";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 40960;
+                  context = 32768;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 40960;
-                n-gpu-layers = 33;
-                flash-attn = true;
+                ctx-size = 32768;
+                flash-attn = false;
+                parallel = 1;
 
                 temp = 0.7;
                 top-p = 0.8;
@@ -104,18 +104,18 @@
             priority = 5;
             settings = {
               opencode = {
-                name = "Qwen3 4B Thinking";
+                name = "Qwen3 4B Thinking Q64K";
                 reasoning = true;
                 tool_call = true;
                 limit = {
-                  context = 262144;
+                  context = 65536;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 262144;
-                n-gpu-layers = 33;
-                flash-attn = true;
+                ctx-size = 65536;
+                flash-attn = false;
+                parallel = 1;
 
                 temp = 0.6;
                 top-p = 0.95;
@@ -144,18 +144,18 @@
             priority = 10;
             settings = {
               opencode = {
-                name = "Qwen3 Coder 30B Instruct";
+                name = "Qwen3 Coder 30B Instruct Q32K";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 262144;
+                  context = 32768;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 262144;
-                n-gpu-layers = 49;
-                flash-attn = true;
+                ctx-size = 32768;
+                flash-attn = false;
+                parallel = 1;
 
                 temp = 0.7;
                 top-p = 0.8;
@@ -183,7 +183,7 @@
             priority = 0;
             settings = {
               opencode = {
-                name = "Qwen2.5 Coder 7B Instruct";
+                name = "Qwen2.5 Coder 7B Instruct Q32K";
                 reasoning = false;
                 tool_call = true;
                 limit = {
@@ -193,8 +193,8 @@
               };
               llama-cpp = {
                 ctx-size = 32768;
-                n-gpu-layers = 33;
                 flash-attn = false;
+                parallel = 1;
 
                 temp = 0.7;
                 top-p = 0.8;
@@ -221,18 +221,18 @@
             priority = 5;
             settings = {
               opencode = {
-                name = "Qwen3 VL 4B Instruct";
+                name = "Qwen3 VL 4B Instruct Q64K";
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 262144;
+                  context = 65536;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 262144;
-                n-gpu-layers = 33;
-                flash-attn = true;
+                ctx-size = 65536;
+                flash-attn = false;
+                parallel = 1;
 
                 temp = 0.7;
                 top-p = 0.8;
