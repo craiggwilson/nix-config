@@ -36,9 +36,6 @@
       {
         programs.zellij = {
           enable = true;
-          attachExistingSession = true;
-          enableBashIntegration = config.programs.bash.enable;
-          enableZshIntegration = config.programs.zsh.enable;
           extraConfig = keybindsKdl;
           settings = {
             copy_on_select = true;
@@ -117,6 +114,11 @@
           };
         };
 
+        programs.zsh.initContent = lib.mkOrder 200 ''
+          if [[ "$TERM" != "dumb" ]]; then
+              ${lib.getExe pkgs.zellij} attach -c main
+          fi
+        '';
       };
   };
 }
