@@ -107,6 +107,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    stable-diffusion-webui-nix = {
+      url = "github:Janrupf/stable-diffusion-webui-nix/main";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     vicinae = {
       url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -197,6 +202,9 @@
           # Rust overlay for rust-bin
           inputs.rust-overlay.overlays.default
 
+          # Janrupf stable-diffusion-webui — exposes pkgs.stable-diffusion-webui.{forge,comfy}
+          inputs.stable-diffusion-webui-nix.overlays.default
+
           # Stable nixpkgs for packages not in unstable
           (final: prev: {
             stable = import inputs.nixpkgs-stable {
@@ -250,6 +258,7 @@
           {
             "users:craig:personal" = [
               #"audio:midi"
+              "ai:image"
               "ai:llm"
               "audio:production"
               "filesystem:nfs"
@@ -291,6 +300,7 @@
 
           # Feature tags
           "ai:clients"
+          "ai:image"
           "ai:llm"
           "audio"
           "audio:midi"

@@ -3,19 +3,19 @@ let
   fileTypeFn = config.substrate.types.file;
 in
 {
-  config.substrate.modules.ai.llm = {
-    tags = [ "ai:llm" ];
+  config.substrate.modules.ai.image = {
+    tags = [ "ai:image" ];
 
     homeManager =
       { lib, pkgs, ... }:
       let
         fileType = fileTypeFn lib;
 
-        fetchGGUF =
+        fetchModel =
           model:
           let
             filePaths = lib.map (f: {
-              name = f.name;
+              name = "${f.subdir}/${f.name}";
               path = pkgs.fetchurl {
                 name = f.name;
                 url = f.url;
@@ -23,41 +23,27 @@ in
               };
             }) model.files;
 
-            linkFarmDir = pkgs.linkFarm "gguf-${lib.replaceStrings [ ":" ] [ "-" ] model.name}" filePaths;
+            linkFarmDir = pkgs.linkFarm "image-${lib.replaceStrings [ ":" ] [ "-" ] model.name}" filePaths;
           in
           lib.map (x: "${linkFarmDir}/${x.name}") filePaths;
       in
       {
-        options.hdwlinux.ai.llm = {
+        options.hdwlinux.ai.image = {
           models = lib.mkOption {
-            description = "The gguf models that should be available locally.";
+            description = "Image generation models available locally.";
             type = lib.types.attrsOf (
               lib.types.submodule (
                 { name, config, ... }:
                 {
                   options = {
                     name = lib.mkOption {
-                      description = "The id of the model on hugging face.";
+                      description = "The id of the model.";
                       type = lib.types.str;
                       default = name;
                     };
                     type = lib.mkOption {
-                      description = "The url to download the model.";
-                      type = lib.types.enum [ "gguf" ];
-                    };
-                    categories = lib.mkOption {
-                      description = "Alias categories this model should be used for (e.g., coding, reasoning, small).";
-                      type = lib.types.listOf lib.types.str;
-                      default = [ ];
-                    };
-                    priority = lib.mkOption {
-                      description = "Relative preference when more than one model matches the same alias category.";
-                      type = lib.types.int;
-                      default = 0;
-                    };
-                    settings = lib.mkOption {
-                      type = lib.types.attrsOf lib.types.anything;
-                      default = { };
+                      description = "The model format.";
+                      type = lib.types.enum [ "safetensors" ];
                     };
                     files = lib.mkOption {
                       description = "Model files to download.";
@@ -67,13 +53,13 @@ in
                       description = "The paths of the downloaded files.";
                       readOnly = true;
                       type = lib.types.listOf lib.types.str;
-                      default = fetchGGUF config;
+                      default = fetchModel config;
                     };
                   };
                 }
               )
             );
-            default = [ ];
+            default = { };
           };
         };
       };
