@@ -170,12 +170,12 @@
             ./packages/falcon-sensor.nix
             ./packages/fern.nix
             ./packages/mcp-atlassian.nix
-          ./packages/monocle.nix
-          ./packages/mongo-orchestration.nix
-          ./packages/semantic-router.nix
-          ./packages/songtool.nix
-          ./packages/writeShellApplicationWithSubcommands.nix
-        ];
+            ./packages/monocle.nix
+            ./packages/mongo-orchestration.nix
+            ./packages/semantic-router.nix
+            ./packages/songtool.nix
+            ./packages/writeShellApplicationWithSubcommands.nix
+          ];
 
           shells = [
             ./shells/automation
