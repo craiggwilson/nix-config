@@ -116,11 +116,6 @@
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
-        # opencode-skill-creator plugin and skill directories in the nix store
-        skillCreatorPkg = pkgs.callPackage ./plugins/_skill-creator.nix { };
-        skillCreatorPluginDir = "${skillCreatorPkg}/lib/opencode-skill-creator";
-        skillCreatorSkillDir = "${skillCreatorPkg}/lib/opencode-skill-creator/skill";
-
       in
       {
         home.packages = [
@@ -133,13 +128,6 @@
           # MCP servers are picked up from programs.mcp.servers, which is
           # populated by modules/ai/clients/default.nix from hdwlinux.ai.clients.mcpServers
           enableMcpIntegration = true;
-
-          # Skills from hdwlinux.ai.clients.skills are store path strings pointing
-          # to directories; the HM module symlinks them as skill/<name>/ recursively.
-          # opencode discovers from both skill/ and skills/ via glob alternation.
-          skills = config.hdwlinux.ai.clients.skills // {
-            skill-creator = skillCreatorSkillDir;
-          };
 
           themes.hdwlinux = opencodeTheme;
 
@@ -158,7 +146,6 @@
             permission = config.hdwlinux.ai.clients.tools;
             small_model = resolveAlias "fast";
             plugin = [
-              "file://${skillCreatorPluginDir}"
               "file://${ensemblePluginDir}"
             ];
           };
