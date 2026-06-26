@@ -17,15 +17,15 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 65536;
+                  context = 262144;
                   output = 8192;
                 };
               };
               llama-cpp = {
                 # n-gpu-layers and override-tensor intentionally omitted: llama-fit-params
                 # chooses both at load time based on available VRAM and ctx-size.
-                ctx-size = 65536;
-                flash-attn = false;
+                ctx-size = 262144;
+                flash-attn = true;
                 parallel = 1;
 
                 temp = 0.6;
@@ -35,6 +35,7 @@
 
                 mlock = true;
                 mmap = true;
+                no-kv-offload = true;
               };
             };
             files = [
@@ -59,13 +60,13 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 65536;
+                  context = 131072;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 65536;
-                flash-attn = false;
+                ctx-size = 131072;
+                flash-attn = true;
                 parallel = 1;
 
                 temp = 0.7;
@@ -75,6 +76,7 @@
 
                 mlock = true;
                 mmap = true;
+                no-kv-offload = true;
               };
             };
             files = [
@@ -98,13 +100,13 @@
                 reasoning = true;
                 tool_call = true;
                 limit = {
-                  context = 65536;
+                  context = 262144;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 65536;
-                flash-attn = false;
+                ctx-size = 262144;
+                flash-attn = true;
                 parallel = 1;
 
                 temp = 0.6;
@@ -114,6 +116,7 @@
 
                 mlock = true;
                 mmap = true;
+                no-kv-offload = true;
               };
             };
             files = [
@@ -139,15 +142,15 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 65536;
+                  context = 262144;
                   output = 8192;
                 };
               };
               llama-cpp = {
                 # MoE model: fit will set ngl and override-tensor to offload expert
                 # weights to CPU, keeping attention layers on GPU, at load time.
-                ctx-size = 65536;
-                flash-attn = false;
+                ctx-size = 262144;
+                flash-attn = true;
                 parallel = 1;
 
                 temp = 0.7;
@@ -157,6 +160,7 @@
 
                 mlock = true;
                 mmap = true;
+                no-kv-offload = true;
               };
             };
             files = [
@@ -181,13 +185,13 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 65536;
+                  context = 131072;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 65536;
-                flash-attn = false;
+                ctx-size = 131072;
+                flash-attn = true;
                 parallel = 1;
 
                 temp = 0.7;
@@ -197,6 +201,7 @@
 
                 mlock = true;
                 mmap = true;
+                no-kv-offload = true;
               };
             };
             files = [
@@ -220,13 +225,13 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 65536;
+                  context = 262144;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 65536;
-                flash-attn = false;
+                ctx-size = 262144;
+                flash-attn = true;
                 parallel = 1;
 
                 temp = 0.7;
@@ -236,6 +241,7 @@
 
                 mlock = true;
                 mmap = true;
+                no-kv-offload = true;
               };
             };
             files = [
