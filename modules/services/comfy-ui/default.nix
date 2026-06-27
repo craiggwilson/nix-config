@@ -50,6 +50,13 @@
                 value.source = builtins.elemAt model.paths i;
               }) model.files
             ) (builtins.attrValues config.hdwlinux.ai.image.models)
+            ++ lib.concatMap (
+              lora:
+              lib.imap0 (i: f: {
+                name = "${modelsDir}/loras/${f.name}";
+                value.source = builtins.elemAt lora.paths i;
+              }) lora.files
+            ) (builtins.attrValues config.hdwlinux.ai.image.loras)
           );
 
           systemd.user.services.comfy-ui = {

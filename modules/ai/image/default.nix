@@ -15,7 +15,7 @@ in
           model:
           let
             filePaths = lib.map (f: {
-              name = "${f.subdir}/${f.name}";
+              name = if f.subdir != null then "${f.subdir}/${f.name}" else f.name;
               path = pkgs.fetchurl {
                 name = f.name;
                 url = f.url;
@@ -43,10 +43,39 @@ in
                     };
                     type = lib.mkOption {
                       description = "The model format.";
-                      type = lib.types.enum [ "safetensors" ];
+                      type = lib.types.enum [ "safetensors" "ckpt" "gguf" ];
                     };
                     files = lib.mkOption {
                       description = "Model files to download.";
+                      type = lib.types.listOf fileType;
+                    };
+                    paths = lib.mkOption {
+                      description = "The paths of the downloaded files.";
+                      readOnly = true;
+                      type = lib.types.listOf lib.types.str;
+                      default = fetchModel config;
+                    };
+                  };
+                }
+              )
+            );
+            default = { };
+          };
+
+          loras = lib.mkOption {
+            description = "LoRa adapters available locally for image generation.";
+            type = lib.types.attrsOf (
+              lib.types.submodule (
+                { name, config, ... }:
+                {
+                  options = {
+                    name = lib.mkOption {
+                      description = "The id of the LoRa adapter.";
+                      type = lib.types.str;
+                      default = name;
+                    };
+                    files = lib.mkOption {
+                      description = "LoRa files to download.";
                       type = lib.types.listOf fileType;
                     };
                     paths = lib.mkOption {
