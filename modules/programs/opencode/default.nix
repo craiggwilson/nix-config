@@ -138,6 +138,8 @@
             };
           };
 
+          skills = config.hdwlinux.ai.clients.skills;
+
           settings = {
             provider = providers;
             agent = agentConfig;
