@@ -163,6 +163,7 @@
             ./packages/atlas-cli.nix
             ./packages/auggie.nix
             ./packages/code42-aat.nix
+            ./packages/comfyui-mcp-server.nix
             ./packages/context7-mcp.nix
             ./packages/engflow_auth.nix
             ./packages/evergreen.nix
