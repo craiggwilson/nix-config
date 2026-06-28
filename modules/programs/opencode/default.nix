@@ -116,6 +116,14 @@
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
+        # Derive ponytail source from the skill path set by the ponytail skills module,
+        # avoiding a duplicate fetch.
+        # ponytail: null-safe guard — if the skill module isn't loaded, skip the plugin.
+        ponytailBaseDir = let
+          skillPath = config.hdwlinux.ai.clients.skills.ponytail or null;
+        in
+          if skillPath != null then builtins.dirOf (builtins.dirOf skillPath) else null;
+
       in
       {
         home.packages = [
@@ -149,6 +157,8 @@
             small_model = resolveAlias "fast";
             plugin = [
               "file://${ensemblePluginDir}"
+            ] ++ lib.optionals (ponytailBaseDir != null) [
+              "file://${ponytailBaseDir}/.opencode/plugins/ponytail.mjs"
             ];
           };
         };

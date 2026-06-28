@@ -21,6 +21,11 @@
             description = "Obsidian knowledge base location and usage for research, planning, and ideas";
             loadMode = "always";
           };
+
+          ponytail = {
+            description = "Lazy senior dev mode: YAGNI, stdlib first, shortest working diff";
+            loadMode = "always";
+          };
         };
 
         # Add prompt path to each rule based on its name
