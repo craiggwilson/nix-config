@@ -16,6 +16,7 @@
         cfg = config.hdwlinux.services.comfy-ui;
         dataDir = "${config.xdg.dataHome}/comfy-ui";
         modelsDir = lib.removePrefix "${config.home.homeDirectory}/" "${dataDir}/models";
+        customNodesDir = lib.removePrefix "${config.home.homeDirectory}/" "${dataDir}/custom_nodes";
       in
       {
         options.hdwlinux.services.comfy-ui = {
@@ -39,6 +40,31 @@
             type = lib.types.package;
             default = pkgs.stable-diffusion-webui.comfy.cuda;
           };
+          extensions = lib.mkOption {
+            description = "ComfyUI custom nodes to install into custom_nodes/.";
+            type = lib.types.attrsOf (lib.types.submodule (
+              { name, ... }: {
+                options = {
+                  name = lib.mkOption {
+                    description = "The directory name for the extension in custom_nodes/.";
+                    type = lib.types.str;
+                    default = name;
+                  };
+                  src = lib.mkOption {
+                    description = "The extension source (e.g. fetchFromGitHub).";
+                    type = lib.types.package;
+                  };
+                };
+              }
+            ));
+            default = { };
+          };
+          extensionPythonPkgs = lib.mkOption {
+            internal = true;
+            description = "Python packages required by extensions.";
+            type = lib.types.listOf lib.types.package;
+            default = [ ];
+          };
         };
 
         config = {
@@ -57,9 +83,20 @@
                 value.source = builtins.elemAt lora.paths i;
               }) lora.files
             ) (builtins.attrValues config.hdwlinux.ai.image.loras)
+            ++ lib.mapAttrsToList (_: ext: {
+              name = "${customNodesDir}/${ext.name}";
+              value.source = ext.src;
+            }) cfg.extensions
           );
 
-          systemd.user.services.comfy-ui = {
+          systemd.user.services.comfy-ui = let
+            extensionPythonPaths = lib.optionals (cfg.extensionPythonPkgs != [ ]) (
+              let
+                allDeps = lib.closePropagation cfg.extensionPythonPkgs;
+              in
+              map (pkg: "${pkg}/${pkgs.python3.sitePackages}") allDeps
+            );
+          in {
             Unit = {
               Description = "ComfyUI";
               Documentation = "https://github.com/comfyanonymous/ComfyUI";
@@ -70,7 +107,11 @@
             };
             Service = {
               Type = "simple";
-              Environment = "HF_HOME=%C/comfy-ui/huggingface";
+              Environment = [
+                "HF_HOME=%C/comfy-ui/huggingface"
+              ] ++ lib.optionals (extensionPythonPaths != [ ]) [
+                "PYTHONPATH=${lib.concatStringsSep ":" extensionPythonPaths}"
+              ];
               ExecStartPre = "${pkgs.bash}/bin/bash -c 'mkdir -p ${cfg.dataDir}/{custom_nodes,models}'";
               ExecStart = "${lib.getExe cfg.package} --base-directory ${cfg.dataDir} --listen ${cfg.host} --port ${builtins.toString cfg.port}";
               Restart = "on-failure";
