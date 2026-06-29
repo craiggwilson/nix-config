@@ -47,7 +47,7 @@
                 Type = "simple";
                 Environment = "COMFYUI_URL=http://${config.hdwlinux.services.comfy-ui.host}:${toString config.hdwlinux.services.comfy-ui.port}";
                 ExecStart = lib.getExe cfg.package;
-                Restart = "on-failure";
+                Restart = "always";
                 RestartSec = 10;
               };
             };
