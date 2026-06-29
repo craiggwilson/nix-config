@@ -4,18 +4,28 @@
 
     homeManager =
       { pkgs, ... }:
+      let
+        fanficfareSrc = pkgs.fetchFromGitHub {
+          owner = "JimmXinu";
+          repo = "FanFicFare";
+          rev = "7021f866543a968452e287362e25147ab4703f72";
+          hash = "sha256-eHDRHFiZcxwYx/AxXWYhXsspJW416t6mM0mdLJKDcVg=";
+        };
+
+        fanficfarePlugin = pkgs.runCommand "fanficfare-plugin" {
+          nativeBuildInputs = [ pkgs.python3 pkgs.python3Packages.six pkgs.unzip ];
+        } ''
+          cp -r ${fanficfareSrc}/* .
+          python makeplugin.py
+          mkdir -p $out
+          unzip FanFicFare.zip -d $out
+        '';
+      in
       {
         programs.calibre = {
           enable = true;
-          plugins = [
-            "${pkgs.fetchzip {
-              url = "https://github.com/JimmXinu/FanFicFare/releases/download/v4.56.0/FanFicFarePlugin-v4.56.0.zip";
-              hash = "sha256-mslEit5mqKi7SxSPV5QDnjp+i5vN4fvynxoCV6ypYwM=";
-              stripRoot=false;
-            }}"
-          ];
+          plugins = [ "${fanficfarePlugin}" ];
         };
       };
   };
 }
-
