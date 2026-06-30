@@ -17,16 +17,18 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 262144;
+                  context = 131072;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                # n-gpu-layers and override-tensor intentionally omitted: llama-fit-params
-                # chooses both at load time based on available VRAM and ctx-size.
-                ctx-size = 262144;
+                ctx-size = 131072;
                 flash-attn = true;
+                n-gpu-layers = 36;
                 parallel = 1;
+                rope-scaling = "yarn";
+                rope-scale = 4;
+                yarn-orig-ctx = 32768;
 
                 temp = 0.6;
                 top-p = 0.9;
@@ -47,47 +49,6 @@
               }
             ];
           };
-          "Qwen3-8B-GGUF-Q4_K_M" = {
-            type = "gguf";
-            categories = [
-              "balanced"
-              "writer"
-            ];
-            priority = 10;
-            settings = {
-              opencode = {
-                name = "Qwen3 8B Instruct";
-                reasoning = false;
-                tool_call = true;
-                limit = {
-                  context = 131072;
-                  output = 8192;
-                };
-              };
-              llama-cpp = {
-                ctx-size = 131072;
-                flash-attn = true;
-                parallel = 1;
-
-                temp = 0.7;
-                top-p = 0.8;
-                top-k = 20;
-                repeat-penalty = 1.05;
-
-                mlock = true;
-                mmap = true;
-                no-kv-offload = true;
-              };
-            };
-            files = [
-              {
-                type = "huggingface";
-                repo = "ggml-org/Qwen3-8B-GGUF";
-                name = "Qwen3-8B-Q4_K_M.gguf";
-                sha256 = "sha256-pn2HYztfXxkaW9EebTfKsYuc49Smr2hhVh6KdnNSCAs=";
-              }
-            ];
-          };
           "Qwen3-4B-Thinking-2507-GGUF-Q8_0" = {
             type = "gguf";
             categories = [
@@ -100,14 +61,18 @@
                 reasoning = true;
                 tool_call = true;
                 limit = {
-                  context = 262144;
+                  context = 131072;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 262144;
+                ctx-size = 131072;
                 flash-attn = true;
+                n-gpu-layers = 36;
                 parallel = 1;
+                rope-scaling = "yarn";
+                rope-scale = 4;
+                yarn-orig-ctx = 32768;
 
                 temp = 0.6;
                 top-p = 0.95;
@@ -147,11 +112,10 @@
                 };
               };
               llama-cpp = {
-                # MoE model: fit will set ngl and override-tensor to offload expert
-                # weights to CPU, keeping attention layers on GPU, at load time.
                 ctx-size = 262144;
                 flash-attn = true;
                 parallel = 1;
+                threads = 16;
 
                 temp = 0.7;
                 top-p = 0.8;
@@ -160,7 +124,6 @@
 
                 mlock = true;
                 mmap = true;
-                no-kv-offload = true;
               };
             };
             files = [
@@ -169,47 +132,6 @@
                 repo = "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF";
                 name = "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf";
                 sha256 = "sha256-+tw+X41Cv36JSnhbBQguR9ruTfJmgDiYF+IJMFbwiK0=";
-              }
-            ];
-          };
-          "Qwen2.5-Coder-7B-Instruct-GGUF-Q4_K_M" = {
-            type = "gguf";
-            categories = [
-              "coder"
-              "fast"
-            ];
-            priority = 0;
-            settings = {
-              opencode = {
-                name = "Qwen2.5 Coder 7B Instruct";
-                reasoning = false;
-                tool_call = true;
-                limit = {
-                  context = 131072;
-                  output = 8192;
-                };
-              };
-              llama-cpp = {
-                ctx-size = 131072;
-                flash-attn = true;
-                parallel = 1;
-
-                temp = 0.7;
-                top-p = 0.8;
-                top-k = 20;
-                repeat-penalty = 1.05;
-
-                mlock = true;
-                mmap = true;
-                no-kv-offload = true;
-              };
-            };
-            files = [
-              {
-                type = "huggingface";
-                repo = "Qwen/Qwen2.5-Coder-7B-Instruct-GGUF";
-                name = "qwen2.5-coder-7b-instruct-q4_k_m.gguf";
-                sha256 = "sha256-UJKH94y01M9rOENzRzO5FLLBWOQ+Iqf0v16WOACJTTw=";
               }
             ];
           };
@@ -225,14 +147,18 @@
                 reasoning = false;
                 tool_call = true;
                 limit = {
-                  context = 262144;
+                  context = 131072;
                   output = 8192;
                 };
               };
               llama-cpp = {
-                ctx-size = 262144;
+                ctx-size = 131072;
                 flash-attn = true;
+                n-gpu-layers = 36;
                 parallel = 1;
+                rope-scaling = "yarn";
+                rope-scale = 4;
+                yarn-orig-ctx = 32768;
 
                 temp = 0.7;
                 top-p = 0.8;
