@@ -2,6 +2,63 @@
 let
   python3Packages = pkgs.python3Packages;
 
+  jsonschema-path = python3Packages.buildPythonPackage rec {
+    pname = "jsonschema-path";
+    version = "0.5.0";
+    format = "wheel";
+
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/04/2c/9e69d73c4297508be9e3b64a970ea3971b3eb8db64ffc5802d40bd25981f/jsonschema_path-0.5.0-py3-none-any.whl";
+      sha256 = "sha256-J5CgcLx6uwjqPb5NNA7OTvrfY5IjAB8CDHUDIpugaOI=";
+    };
+
+    dependencies = [
+      python3Packages.pyyaml
+      python3Packages.attrs
+      python3Packages.pathable
+      python3Packages.referencing
+    ];
+
+    doCheck = false;
+    dontCheckRuntimeDeps = true;
+
+    meta = with lib; {
+      description = "JSONSchema spec paths";
+      homepage = "https://github.com/p1c2u/jsonschema-path";
+      license = licenses.asl20;
+      platforms = platforms.all;
+    };
+  };
+
+  openapi-pydantic = python3Packages.buildPythonPackage rec {
+    pname = "openapi-pydantic";
+    version = "0.5.1";
+    format = "wheel";
+
+    src = pkgs.fetchurl {
+      url = "https://files.pythonhosted.org/packages/12/cf/03675d8bd8ecbf4445504d8071adab19f5f993676795708e36402ab38263/openapi_pydantic-0.5.1-py3-none-any.whl";
+      sha256 = "sha256-o6Ce9FhvW9dgqN9/QwKLYMr7bZ9h3irLqVdHZiVasUY=";
+    };
+
+    dependencies = [
+      python3Packages.pydantic
+    ];
+
+    doCheck = false;
+    dontCheckRuntimeDeps = true;
+
+    meta = with lib; {
+      description = "OpenAPI pydantic models";
+      homepage = "https://github.com/mike-oakley/openapi-pydantic";
+      license = licenses.mit;
+      platforms = platforms.all;
+    };
+  };
+
+  # py-key-value-aio is not a top-level nixpkgs attribute but is a transitive dep of pydocket.
+  # Reuse it from there to avoid duplicate derivations in the closure.
+  py-key-value-aio = lib.findFirst (p: p.pname == "py-key-value-aio") null python3Packages.pydocket.propagatedBuildInputs;
+
   fastmcp = python3Packages.buildPythonPackage rec {
     pname = "fastmcp";
     version = "2.14.7";
@@ -13,17 +70,26 @@ let
     };
 
     dependencies = [
-      python3Packages.mcp
-      python3Packages.pydantic
-      python3Packages.pydantic-settings
+      python3Packages.authlib
+      python3Packages.cyclopts
+      python3Packages.exceptiongroup
+      python3Packages.fakeredis
       python3Packages.httpx
-      python3Packages.uvicorn
-      python3Packages.starlette
-      python3Packages.click
+      jsonschema-path
+      python3Packages.jsonref
+      python3Packages.mcp
+      openapi-pydantic
+      python3Packages.packaging
+      python3Packages.platformdirs
+      py-key-value-aio
+      python3Packages.pydantic
+      python3Packages.pydocket
+      python3Packages.pyperclip
       python3Packages.python-dotenv
       python3Packages.rich
+      python3Packages.starlette
+      python3Packages.uvicorn
       python3Packages.websockets
-      python3Packages.exceptiongroup
     ];
 
     doCheck = false;

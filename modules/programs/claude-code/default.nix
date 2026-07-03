@@ -187,6 +187,8 @@
           "$schema" = "https://json.schemastore.org/claude-code-settings.json";
           env = {
             CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1";
+            # Managed via Nix; prevent Claude from self-updating and shadowing the wrapper.
+            DISABLE_UPDATES = "1";
           };
           permissions = {
             allow = derivedPermissions.allow;
