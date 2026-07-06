@@ -8,8 +8,8 @@
         fanficfareSrc = pkgs.fetchFromGitHub {
           owner = "JimmXinu";
           repo = "FanFicFare";
-          rev = "7021f866543a968452e287362e25147ab4703f72";
-          hash = "sha256-eHDRHFiZcxwYx/AxXWYhXsspJW416t6mM0mdLJKDcVg=";
+          rev = "5ffc5b90074d3faa2e299465c1f544bbf0fad66b";
+          hash = "sha256-LPrZtFmyq9IzDTAP/FgZCEiZNDbAgxeP5NUFi/0W0Fg=";
         };
 
         fanficfarePlugin = pkgs.runCommand "fanficfare-plugin" {
