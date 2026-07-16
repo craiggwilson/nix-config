@@ -25,7 +25,7 @@ in
     tags = [ "users:${name}" ];
 
     generic = {
-      hdwlinux.flake = "/home/craig/Projects/hdwlinux/nix-config";
+      hdwlinux.flake = "/home/${name}/Projects/hdwlinux/nix-config";
     };
 
     nixos =
