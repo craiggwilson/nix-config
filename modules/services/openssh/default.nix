@@ -3,11 +3,12 @@
     nixos = {
       services.openssh = {
         enable = true;
-        settings.X11Forwarding = false;
-        settings.PasswordAuthentication = false;
-        settings.KbdInteractiveAuthentication = false;
+        settings = {
+          X11Forwarding = false;
+          PasswordAuthentication = false;
+          KbdInteractiveAuthentication = false;
+        };
       };
     };
   };
 }
-

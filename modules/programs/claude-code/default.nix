@@ -89,8 +89,7 @@
         # Build a derivation containing symlinks to all skills (same structure as OpenCode).
         skillsDir = pkgs.linkFarm "claude-code-skills" (
           lib.mapAttrsToList (name: path: {
-            inherit name;
-            path = path;
+            inherit name path;
           }) config.hdwlinux.ai.clients.skills
         );
 
@@ -191,9 +190,9 @@
             DISABLE_UPDATES = "1";
           };
           permissions = {
-            allow = derivedPermissions.allow;
-            deny = derivedPermissions.deny;
-            ask = derivedPermissions.ask;
+            inherit (derivedPermissions) allow;
+            inherit (derivedPermissions) deny;
+            inherit (derivedPermissions) ask;
             defaultMode = "dontAsk";
             disableBypassPermissionsMode = "disable";
           };

@@ -156,6 +156,7 @@ in
       in
       {
         hdwlinux.theme = {
+          inherit wallpaper;
           name = "catppuccin-${flavor}";
           colors = themeColors;
           cursor = {
@@ -164,7 +165,6 @@ in
             size = 24;
           };
           dark = true;
-          wallpaper = wallpaper;
         };
 
         # GTK
@@ -182,8 +182,8 @@ in
           iconTheme = lib.mkDefault {
             name = "Papirus-Dark";
             package = pkgs.catppuccin-papirus-folders.override {
-              accent = accent;
-              flavor = flavor;
+              inherit accent;
+              inherit flavor;
             };
           };
 

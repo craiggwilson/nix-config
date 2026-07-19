@@ -21,18 +21,20 @@
           enableCompletion = true;
           enableVteIntegration = true;
           autosuggestion.enable = true;
-          history.size = 10000;
-          history.ignoreAllDups = true;
-          history.path = "${config.xdg.stateHome}/zsh_history";
-          history.ignorePatterns = [
-            "cd *"
-            "cp *"
-            "exit"
-            "ls *"
-            "mv *"
-            "pkill *"
-            "rm *"
-          ];
+          history = {
+            size = 10000;
+            ignoreAllDups = true;
+            path = "${config.xdg.stateHome}/zsh_history";
+            ignorePatterns = [
+              "cd *"
+              "cp *"
+              "exit"
+              "ls *"
+              "mv *"
+              "pkill *"
+              "rm *"
+            ];
+          };
           initContent = ''
             bindkey "^[[1;5C"    forward-word
             bindkey "^[[1;5D"    backward-word

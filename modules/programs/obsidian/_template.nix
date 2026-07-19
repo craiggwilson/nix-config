@@ -62,7 +62,7 @@ let
   # Use this where CSS variable interpolation via rgb(var(--x), opacity%) won't work
   # correctly — e.g. --text-selection, where the result must be visually distinguishable.
   rgba = color: alpha:
-    let rgb = color.rgb;
+    let inherit (color) rgb;
     in "rgba(${toString (builtins.elemAt rgb 0)}, ${toString (builtins.elemAt rgb 1)}, ${toString (builtins.elemAt rgb 2)}, ${alpha})";
 in
 ''

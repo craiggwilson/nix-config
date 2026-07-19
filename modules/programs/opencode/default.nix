@@ -24,23 +24,24 @@
         # "allow" -> true, "ask"/"deny" -> false
         transformTools = tools: lib.mapAttrs (_: perm: perm == "allow") tools;
 
-        agentConfig = lib.mapAttrs (name: agent: {
-          color = agent.color;
-          description = agent.description;
-          mode = agent.mode;
-          model = resolveAlias agent.model;
-          prompt = "{file:${config.home.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
-          temperature = agent.temperature;
-        } // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
+        agentConfig = lib.mapAttrs (
+          name: agent:
+          {
+            inherit (agent) color description mode;
+            model = resolveAlias agent.model;
+            prompt = "{file:${config.home.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
+            inherit (agent) temperature;
+          }
+          // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
         ) config.hdwlinux.ai.clients.agents;
 
         commandConfig = lib.mapAttrs (name: command: {
-          description = command.description;
+          inherit (command) description;
           template = "{file:${config.home.homeDirectory}/.config/opencode/prompts/commands/${name}.md}";
         }) config.hdwlinux.ai.clients.commands;
 
-        ruleInstructions = lib.mapAttrsToList (name: _rule:
-          "${config.home.homeDirectory}/.config/opencode/prompts/rules/${name}.md"
+        ruleInstructions = lib.mapAttrsToList (
+          name: _rule: "${config.home.homeDirectory}/.config/opencode/prompts/rules/${name}.md"
         ) config.hdwlinux.ai.clients.rules;
 
         # Provider metadata: OpenCode-specific configuration for each provider
@@ -110,9 +111,10 @@
         # Derive ponytail source from the skill path set by the ponytail skills module,
         # avoiding a duplicate fetch.
         # ponytail: null-safe guard — if the skill module isn't loaded, skip the plugin.
-        ponytailBaseDir = let
-          skillPath = config.hdwlinux.ai.clients.skills.ponytail or null;
-        in
+        ponytailBaseDir =
+          let
+            skillPath = config.hdwlinux.ai.clients.skills.ponytail or null;
+          in
           if skillPath != null then builtins.dirOf (builtins.dirOf skillPath) else null;
 
       in
@@ -122,14 +124,14 @@
         ];
 
         xdg.configFile = lib.mkMerge [
-          (lib.mapAttrs' (name: command:
-            lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
+          (lib.mapAttrs' (
+            name: command: lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
           ) config.hdwlinux.ai.clients.commands)
-          (lib.mapAttrs' (name: rule:
-            lib.nameValuePair "opencode/prompts/rules/${name}.md" { source = rule.prompt; }
+          (lib.mapAttrs' (
+            name: rule: lib.nameValuePair "opencode/prompts/rules/${name}.md" { source = rule.prompt; }
           ) config.hdwlinux.ai.clients.rules)
-          (lib.mapAttrs' (name: agent:
-            lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
+          (lib.mapAttrs' (
+            name: agent: lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
           ) config.hdwlinux.ai.clients.agents)
         ];
 
@@ -160,7 +162,8 @@
             small_model = resolveAlias "fast";
             plugin = [
               "file://${ensemblePluginDir}"
-            ] ++ lib.optionals (ponytailBaseDir != null) [
+            ]
+            ++ lib.optionals (ponytailBaseDir != null) [
               "file://${ponytailBaseDir}/.opencode/plugins/ponytail.mjs"
             ];
           };

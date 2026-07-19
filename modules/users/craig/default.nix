@@ -76,27 +76,30 @@ in
               ;
           };
 
-          security.secrets.entries.personalSshKey = {
-            path = "${config.home.homeDirectory}/.ssh/id_rsa";
-            reference = "op://Craig/SSH Key - Craig/private key";
-            mode = "0600";
-          };
+          security.secrets = {
+            entries = {
+              personalSshKey = {
+                path = "${config.home.homeDirectory}/.ssh/id_rsa";
+                reference = "op://Craig/SSH Key - Craig/private key";
+                mode = "0600";
+              };
+              githubApiToken = lib.mkIf (hasTag "programming") {
+                reference = "op://Craig/Github/api_token";
+                mode = "0600";
+              };
+            };
 
-          security.secrets.entries.githubApiToken = lib.mkIf (hasTag "programming") {
-            reference = "op://Craig/Github/api_token";
-            mode = "0600";
-          };
-
-          security.secrets.templates.nixGithubAccessTokens = lib.mkIf (hasTag "programming") {
-            source = ./nix-access-tokens.conf;
-            target = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
-            mode = "0600";
-            replacements = [
-              {
-                string = "GITHUB_API_TOKEN";
-                secretPath = config.hdwlinux.security.secrets.entries.githubApiToken.path;
-              }
-            ];
+            templates.nixGithubAccessTokens = lib.mkIf (hasTag "programming") {
+              source = ./nix-access-tokens.conf;
+              target = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
+              mode = "0600";
+              replacements = [
+                {
+                  string = "GITHUB_API_TOKEN";
+                  secretPath = config.hdwlinux.security.secrets.entries.githubApiToken.path;
+                }
+              ];
+            };
           };
         };
 

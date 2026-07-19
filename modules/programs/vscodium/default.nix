@@ -320,7 +320,7 @@
           in
           {
             enableMcpIntegration = true;
-            extensions = merged.extensions;
+            inherit (merged) extensions;
             keybindings = sharedKeybindings;
             _settings = merged.settings;
           };

@@ -152,7 +152,7 @@ let
       rgbList = parseHexToList hex;
     in
     {
-      hex = hex;
+      inherit hex;
       hexWithHashtag = "#" + hex;
       rgb = rgbList;
       rgbString = listToRgbString rgbList;
@@ -194,7 +194,7 @@ let
 
   # ── Palette color objects ───────────────────────────────────────────────────
 
-  palette = builtins.mapAttrs (_: h: mkColor h) colors;
+  palette = builtins.mapAttrs (_: mkColor) colors;
 
   # ── Precomputed map attrsets ────────────────────────────────────────────────
 
@@ -207,7 +207,7 @@ let
   ansiNameMap = builtins.mapAttrs (_: c: c.ansi) palette;
 
   # ANSI slot name -> color object (one entry per slot: black, brightBlack, …).
-  ansiSlotToColor = builtins.mapAttrs (_: h: mkColor h) ansiColors;
+  ansiSlotToColor = builtins.mapAttrs (_: mkColor) ansiColors;
 
   # Bidirectional ansi attrset: baseXX -> slot name, and slot name -> color object.
   ansiMap = ansiNameMap // ansiSlotToColor;

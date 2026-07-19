@@ -100,7 +100,7 @@
             wantedBy = [ "multi-user.target" ];
           };
 
-          systemd.tmpfiles.settings."10-osquery".${dirname (cfg.flags.pidfile)}.d = {
+          systemd.tmpfiles.settings."10-osquery".${dirname cfg.flags.pidfile}.d = {
             user = "root";
             group = "root";
             mode = "0755";

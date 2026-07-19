@@ -3,13 +3,18 @@
     tags = [ "desktop:custom" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         tomlFormat = pkgs.formats.toml { };
 
         mapProfiles = {
           profile = lib.mapAttrsToList (name: profile: {
-            name = name;
+            inherit name;
             exec = profile.execs ++ [ "notify-send shikane \"$SHIKANE_PROFILE_NAME profile applied.\"" ];
             output = mapProfileOutputs profile.outputs;
           }) config.hdwlinux.hardware.outputProfiles;
@@ -23,20 +28,22 @@
               monitor = config.hdwlinux.hardware.monitors.${monitorName};
             in
             {
-              enable = output.enable;
+              inherit (output) enable;
               search = [
                 "v=${monitor.vendor}"
                 "m=${monitor.model}"
-              ] ++ (if monitor.serial != null then [ "s=${monitor.serial}" ] else [ ]);
-            } // (
-              if output.enable then {
-                exec = output.execs;
-                adaptive_sync = monitor.adaptive_sync;
-                mode = monitor.mode;
-                position = output.position;
-                scale = monitor.scale;
-                transform = output.transform;
-              } else { }
+              ]
+              ++ (if monitor.serial != null then [ "s=${monitor.serial}" ] else [ ]);
+            }
+            // (
+              if output.enable then
+                {
+                  exec = output.execs;
+                  inherit (monitor) adaptive_sync mode scale;
+                  inherit (output) position transform;
+                }
+              else
+                { }
             )
           ) outputs;
       in
@@ -74,4 +81,3 @@
       };
   };
 }
-

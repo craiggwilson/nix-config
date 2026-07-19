@@ -100,11 +100,10 @@
           in
           lib.mkIf hasOpEntries {
             services.onepassword-secrets = {
+              inherit (cfg) outputDir users;
               enable = true;
               tokenFile = "/etc/opnix-token";
-              outputDir = cfg.outputDir;
               secrets = lib.mapAttrs (_: v: builtins.removeAttrs v [ "source" ]) opEntries;
-              users = cfg.users;
             };
           };
       };

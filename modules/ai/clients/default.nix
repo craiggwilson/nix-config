@@ -27,8 +27,7 @@
             model
             // {
               provider = {
-                name = provider.name;
-                displayName = provider.displayName;
+                inherit (provider) name displayName;
               };
             };
 

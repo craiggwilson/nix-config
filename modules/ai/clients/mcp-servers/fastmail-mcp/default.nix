@@ -5,7 +5,7 @@
       "users:craig:personal"
     ];
 
-    homeManager = { ... }: {
+    homeManager = {
       hdwlinux.ai.clients.mcpServers.fastmail.http = {
         url = "https://api.fastmail.com/mcp";
       };

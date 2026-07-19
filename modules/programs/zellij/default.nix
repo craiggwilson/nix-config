@@ -46,7 +46,7 @@
             show_startup_tips = false;
             theme = "hdwlinux";
           };
-          themes.hdwlinux.themes.hdwlinux = (import ./_theme.nix config.hdwlinux.theme.colors);
+          themes.hdwlinux.themes.hdwlinux = import ./_theme.nix config.hdwlinux.theme.colors;
 
           layouts.dev = {
             layout = {

@@ -13,12 +13,14 @@ let
       emphasis_3,
     }:
     {
-      base = base;
-      background = background;
-      emphasis_0 = emphasis_0;
-      emphasis_1 = emphasis_1;
-      emphasis_2 = emphasis_2;
-      emphasis_3 = emphasis_3;
+      inherit
+        base
+        background
+        emphasis_0
+        emphasis_1
+        emphasis_2
+        emphasis_3
+        ;
     };
 
   # Shorthand aliases for readability

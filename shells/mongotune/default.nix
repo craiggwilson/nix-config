@@ -40,7 +40,7 @@
 # in
 
 let
-  overrides = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml));
+  overrides = builtins.fromTOML (builtins.readFile ./rust-toolchain.toml);
 in
 pkgs.mkShell rec {
   buildInputs = with pkgs; [

@@ -15,11 +15,9 @@ in
           model:
           let
             filePaths = lib.map (f: {
-              name = f.name;
+              inherit (f) name;
               path = pkgs.fetchurl {
-                name = f.name;
-                url = f.url;
-                sha256 = f.sha256;
+                inherit (f) name url sha256;
               };
             }) model.files;
 

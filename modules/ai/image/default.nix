@@ -17,9 +17,7 @@ in
             filePaths = lib.map (f: {
               name = if f.subdir != null then "${f.subdir}/${f.name}" else f.name;
               path = pkgs.fetchurl {
-                name = f.name;
-                url = f.url;
-                sha256 = f.sha256;
+                inherit (f) name url sha256;
               };
             }) model.files;
 
@@ -43,7 +41,11 @@ in
                     };
                     type = lib.mkOption {
                       description = "The model format.";
-                      type = lib.types.enum [ "safetensors" "ckpt" "gguf" ];
+                      type = lib.types.enum [
+                        "safetensors"
+                        "ckpt"
+                        "gguf"
+                      ];
                     };
                     files = lib.mkOption {
                       description = "Model files to download.";

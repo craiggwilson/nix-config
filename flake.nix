@@ -125,9 +125,7 @@
   };
 
   outputs =
-    inputs@{
-      ...
-    }:
+    inputs:
     inputs.substrate.build.with-flake-parts { inherit inputs; } {
       imports = [
         (inputs.import-tree ./modules)

@@ -1,8 +1,8 @@
 { lib, pkgs, ... }:
 let
-  python3Packages = pkgs.python3Packages;
+  inherit (pkgs) python3Packages;
 
-  jsonschema-path = python3Packages.buildPythonPackage rec {
+  jsonschema-path = python3Packages.buildPythonPackage {
     pname = "jsonschema-path";
     version = "0.5.0";
     format = "wheel";
@@ -57,7 +57,9 @@ let
 
   # py-key-value-aio is not a top-level nixpkgs attribute but is a transitive dep of pydocket.
   # Reuse it from there to avoid duplicate derivations in the closure.
-  py-key-value-aio = lib.findFirst (p: p.pname == "py-key-value-aio") null python3Packages.pydocket.propagatedBuildInputs;
+  py-key-value-aio = lib.findFirst (
+    p: p.pname == "py-key-value-aio"
+  ) null python3Packages.pydocket.propagatedBuildInputs;
 
   fastmcp = python3Packages.buildPythonPackage rec {
     pname = "fastmcp";

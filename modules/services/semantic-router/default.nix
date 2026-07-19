@@ -20,16 +20,21 @@
 
         defaultModelName =
           let
-            balancedModels = lib.filter (name: builtins.elem "balanced" (llmModels.${name}.categories or [ ])) modelNames;
+            balancedModels = lib.filter (
+              name: builtins.elem "balanced" (llmModels.${name}.categories or [ ])
+            ) modelNames;
           in
-          if balancedModels != [ ] then
-            builtins.head balancedModels
-          else
-            builtins.head modelNames;
+          if balancedModels != [ ] then builtins.head balancedModels else builtins.head modelNames;
 
         toModelCard = name: model: {
           inherit name;
-          capabilities = [ "chat" ] ++ lib.optionals (builtins.elem "vision" (model.categories or [ ])) [ "vision" "multimodal" ];
+          capabilities = [
+            "chat"
+          ]
+          ++ lib.optionals (builtins.elem "vision" (model.categories or [ ])) [
+            "vision"
+            "multimodal"
+          ];
           description = (model.settings.opencode or { }).name or name;
           modality = if builtins.elem "vision" (model.categories or [ ]) then "omni" else "ar";
         };
@@ -55,9 +60,9 @@
 
           listeners = [
             {
+              inherit (cfg) port;
               name = "http-${toString cfg.port}";
               address = cfg.host;
-              port = cfg.port;
               timeout = "300s";
             }
           ];
@@ -76,12 +81,27 @@
                 {
                   name = "code_keywords";
                   operator = "OR";
-                  keywords = [ "code" "function" "debug" "algorithm" "refactor" "typescript" "nix" ];
+                  keywords = [
+                    "code"
+                    "function"
+                    "debug"
+                    "algorithm"
+                    "refactor"
+                    "typescript"
+                    "nix"
+                  ];
                 }
                 {
                   name = "writing_keywords";
                   operator = "OR";
-                  keywords = [ "write" "rewrite" "draft" "summarize" "edit" "clarify" ];
+                  keywords = [
+                    "write"
+                    "rewrite"
+                    "draft"
+                    "summarize"
+                    "edit"
+                    "clarify"
+                  ];
                 }
               ];
               complexity = [
@@ -134,7 +154,9 @@
                 };
                 modelRefs = [
                   {
-                    model = lib.findFirst (name: builtins.elem "vision" (llmModels.${name}.categories or [ ])) defaultModelName modelNames;
+                    model = lib.findFirst (
+                      name: builtins.elem "vision" (llmModels.${name}.categories or [ ])
+                    ) defaultModelName modelNames;
                     use_reasoning = false;
                   }
                 ];
@@ -157,7 +179,9 @@
                 };
                 modelRefs = [
                   {
-                    model = lib.findFirst (name: builtins.elem "coder" (llmModels.${name}.categories or [ ])) defaultModelName modelNames;
+                    model = lib.findFirst (
+                      name: builtins.elem "coder" (llmModels.${name}.categories or [ ])
+                    ) defaultModelName modelNames;
                     use_reasoning = false;
                   }
                 ];
@@ -180,7 +204,9 @@
                 };
                 modelRefs = [
                   {
-                    model = lib.findFirst (name: builtins.elem "analyst" (llmModels.${name}.categories or [ ])) defaultModelName modelNames;
+                    model = lib.findFirst (
+                      name: builtins.elem "analyst" (llmModels.${name}.categories or [ ])
+                    ) defaultModelName modelNames;
                     use_reasoning = true;
                   }
                 ];
@@ -235,7 +261,9 @@
           };
         };
 
-        routerConfig = pkgs.writeText "semantic-router-config.yaml" (lib.generators.toYAML { } generatedConfig);
+        routerConfig = pkgs.writeText "semantic-router-config.yaml" (
+          lib.generators.toYAML { } generatedConfig
+        );
       in
       {
         options.hdwlinux.services."semantic-router" = {
@@ -265,7 +293,9 @@
             };
             Service = {
               Environment = [
-                "PATH=${lib.makeBinPath [ huggingfaceHub ]}:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin"
+                "PATH=${
+                  lib.makeBinPath [ huggingfaceHub ]
+                }:/run/current-system/sw/bin:/nix/var/nix/profiles/default/bin"
               ];
               Type = "simple";
               ExecStart = "${lib.getExe semanticRouterPkg} --config ${config.xdg.configHome}/semantic-router/config.yaml";

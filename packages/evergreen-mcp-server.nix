@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 let
-  python3Packages = pkgs.python3Packages;
+  inherit (pkgs) python3Packages;
 
   # Helper packages not in nixpkgs
   uncalled-for = python3Packages.buildPythonPackage rec {

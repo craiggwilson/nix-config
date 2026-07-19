@@ -83,7 +83,7 @@
           users.users.root.hashedPassword = "*";
 
           nix = {
-            package = cfg.package;
+            inherit (cfg) package;
 
             channel.enable = false;
 

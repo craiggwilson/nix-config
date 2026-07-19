@@ -1,6 +1,6 @@
 { lib, pkgs, ... }:
 let
-  python3Packages = pkgs.python3Packages;
+  inherit (pkgs) python3Packages;
 in
 python3Packages.buildPythonApplication rec {
   pname = "mongo-orchestration";
