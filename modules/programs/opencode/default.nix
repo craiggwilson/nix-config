@@ -47,12 +47,6 @@
         # Provider metadata: OpenCode-specific configuration for each provider
         # Note: augment provider is handled by programs.opencode-augment-provider below
         providerMeta = {
-          "semantic-router" = {
-            npm = "@ai-sdk/openai-compatible";
-            options = lib.optionalAttrs (config.hdwlinux ? services.semantic-router) {
-              baseURL = "http://${config.hdwlinux.services.semantic-router.host}:${toString config.hdwlinux.services.semantic-router.port}/v1";
-            };
-          };
           "llama.cpp" = {
             npm = "@ai-sdk/openai-compatible";
             options = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {

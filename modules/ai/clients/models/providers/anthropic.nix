@@ -49,29 +49,6 @@
           };
         };
 
-        # Lowest priority - augment or llama.cpp aliases take precedence
-        hdwlinux.ai.clients.models.aliases = lib.mkOptionDefault {
-          fast = {
-            provider = "anthropic";
-            model = "claude-haiku-4-5";
-          };
-          balanced = {
-            provider = "anthropic";
-            model = "claude-sonnet-4-6";
-          };
-          coder = {
-            provider = "anthropic";
-            model = "claude-sonnet-4-6";
-          };
-          analyst = {
-            provider = "anthropic";
-            model = "claude-opus-4-5";
-          };
-          writer = {
-            provider = "anthropic";
-            model = "claude-sonnet-4-6";
-          };
-        };
       };
   };
 }
