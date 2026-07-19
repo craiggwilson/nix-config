@@ -211,14 +211,13 @@
                 format-ethernet = "󰈀";
                 format-disconnected = "Disconnected";
                 tooltip-format = "{ifname} {ipaddr}/{cidr}";
-                on-click = "appctl exec networkmenu";
+                on-click = "vicinae 'vicinae://launch/wifi-commander/scan-wifi?toggle=true'";
               };
 
               "network#speed" = {
                 format = " {bandwidthUpBits}  {bandwidthDownBits}";
                 tooltip-format = " {bandwidthUpBytes}  {bandwidthDownBytes}";
                 interval = 1;
-                on-click = "appctl exec-known terminal bandwhich";
               };
 
               "custom/notifications" = {
