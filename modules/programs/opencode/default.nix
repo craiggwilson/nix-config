@@ -24,32 +24,23 @@
         # "allow" -> true, "ask"/"deny" -> false
         transformTools = tools: lib.mapAttrs (_: perm: perm == "allow") tools;
 
-        # Transform agents to OpenCode JSON config format
-        # Uses {file:path} syntax for OpenCode's variable substitution
-        agentConfig = lib.mapAttrs (
-          _: agent:
-          {
-            color = agent.color;
-            description = agent.description;
-            mode = agent.mode;
-            model = resolveAlias agent.model;
-            prompt = "{file:${builtins.unsafeDiscardStringContext (toString agent.prompt)}}";
-            temperature = agent.temperature;
-          }
-          // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
+        agentConfig = lib.mapAttrs (name: agent: {
+          color = agent.color;
+          description = agent.description;
+          mode = agent.mode;
+          model = resolveAlias agent.model;
+          prompt = "{file:${config.home.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
+          temperature = agent.temperature;
+        } // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
         ) config.hdwlinux.ai.clients.agents;
 
-        # Transform commands to OpenCode JSON config format
-        # Uses {file:path} syntax for OpenCode's variable substitution
-        commandConfig = lib.mapAttrs (_: command: {
+        commandConfig = lib.mapAttrs (name: command: {
           description = command.description;
-          template = "{file:${builtins.unsafeDiscardStringContext (toString command.prompt)}}";
+          template = "{file:${config.home.homeDirectory}/.config/opencode/prompts/commands/${name}.md}";
         }) config.hdwlinux.ai.clients.commands;
 
-        # Collect all rules as direct file paths for OpenCode's instructions config
-        # Uses absolute paths to source files in the nix store
-        ruleInstructions = lib.mapAttrsToList (
-          _: rule: builtins.unsafeDiscardStringContext (toString rule.prompt)
+        ruleInstructions = lib.mapAttrsToList (name: _rule:
+          "${config.home.homeDirectory}/.config/opencode/prompts/rules/${name}.md"
         ) config.hdwlinux.ai.clients.rules;
 
         # Provider metadata: OpenCode-specific configuration for each provider
@@ -128,6 +119,18 @@
       {
         home.packages = [
           pkgs.opencode-desktop
+        ];
+
+        xdg.configFile = lib.mkMerge [
+          (lib.mapAttrs' (name: command:
+            lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
+          ) config.hdwlinux.ai.clients.commands)
+          (lib.mapAttrs' (name: rule:
+            lib.nameValuePair "opencode/prompts/rules/${name}.md" { source = rule.prompt; }
+          ) config.hdwlinux.ai.clients.rules)
+          (lib.mapAttrs' (name: agent:
+            lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
+          ) config.hdwlinux.ai.clients.agents)
         ];
 
         programs.opencode = {
