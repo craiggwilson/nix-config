@@ -27,7 +27,6 @@
           };
 
           extensions = [
-            extensions.bluetooth
             extensions.nerdfont-search
             extensions.niri
             extensions.nix
