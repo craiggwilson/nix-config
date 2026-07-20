@@ -92,6 +92,7 @@
 
         config = lib.mkIf (config.hdwlinux.theme.cursor != null) {
           home.pointerCursor = {
+            enable = true;
             package = config.hdwlinux.theme.cursor.package;
             name = config.hdwlinux.theme.cursor.name;
             gtk.enable = true;

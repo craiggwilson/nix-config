@@ -6,9 +6,8 @@
       domain = config.hdwlinux.networking.domain;
     in
     {
-      hdwlinux.security.ssh.matchBlocks.raeford-hosts = {
-        host = "*.${domain} *.tailc675f.ts.net";
-        forwardX11 = true;
+      hdwlinux.security.ssh.settings."*.${domain} *.tailc675f.ts.net" = {
+        ForwardX11 = true;
       };
     };
   };

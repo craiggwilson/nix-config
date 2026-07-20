@@ -12,10 +12,10 @@
             default = [ ];
             description = "Known hosts to include in the known hosts file.";
           };
-          matchBlocks = lib.mkOption {
+          settings = lib.mkOption {
             type = lib.types.attrs;
             default = { };
-            description = "SSH host configurations that get applied to programs.ssh.matchBlocks.";
+            description = "SSH host configurations in OpenSSH directive format. Attr names become Host patterns.";
           };
         };
 
@@ -25,22 +25,22 @@
           programs.ssh = {
             enable = true;
             enableDefaultConfig = false;
-            matchBlocks = lib.mkMerge [
+            settings = lib.mkMerge [
               {
                 "*" = {
-                  addKeysToAgent = "yes";
-                  compression = true;
-                  forwardAgent = false;
-                  serverAliveInterval = 0;
-                  serverAliveCountMax = 3;
-                  hashKnownHosts = false;
-                  controlMaster = "no";
-                  controlPath = "~/.ssh/master-%r@%n:%p";
-                  controlPersist = "no";
-                  userKnownHostsFile = "~/.ssh/known_hosts " + (lib.concatStringsSep " " cfg.knownHosts);
+                  AddKeysToAgent = "yes";
+                  Compression = true;
+                  ForwardAgent = false;
+                  ServerAliveInterval = 0;
+                  ServerAliveCountMax = 3;
+                  HashKnownHosts = false;
+                  ControlMaster = "no";
+                  ControlPath = "~/.ssh/master-%r@%n:%p";
+                  ControlPersist = "no";
+                  UserKnownHostsFile = "~/.ssh/known_hosts " + (lib.concatStringsSep " " cfg.knownHosts);
                 };
               }
-              cfg.matchBlocks
+              cfg.settings
             ];
           };
         };
