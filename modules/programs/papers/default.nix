@@ -3,9 +3,9 @@
     tags = [ "gui" ];
 
     homeManager =
-      { pkgs, ... }:
+      { lib, pkgs, ... }:
       {
-        hdwlinux.apps.documentViewer = {
+        hdwlinux.app.documentViewer = lib.mkDefault {
           package = pkgs.papers;
           desktopName = "org.gnome.Papers.desktop";
         };

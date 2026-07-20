@@ -3,9 +3,9 @@
     tags = [ "gui" ];
 
     homeManager =
-      { pkgs, ... }:
+      { lib, pkgs, ... }:
       {
-        hdwlinux.apps.imageViewer = {
+        hdwlinux.app.imageViewer = lib.mkDefault {
           package = pkgs.qimgv;
           desktopName = "qimgv.desktop";
         };

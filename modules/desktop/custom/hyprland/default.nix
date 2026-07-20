@@ -89,7 +89,7 @@ in
             })
             {
               workspace = [
-                "special:dropdown,gapsin:5,gapsout:30,on-created-empty:appctl exec-known terminal,border:0,rounding:false,persistent:false"
+                "special:dropdown,gapsin:5,gapsout:30,on-created-empty:app-terminal,border:0,rounding:false,persistent:false"
               ];
 
               misc = {
@@ -203,27 +203,27 @@ in
               ];
 
               bind = [
-                "SUPER, B, exec, appctl exec-known webBrowser"
-                "SUPER, E, exec, appctl exec-known fileManager"
+                  "SUPER, B, exec, app-webBrowser"
+                  "SUPER, E, exec, app-fileManager"
                 "SUPER, G, togglefloating,"
-                "SUPER, L, exec, appctl exec-known passwordManager toggle"
-                "SUPER SHIFT, L, exec, appctl exec-known passwordManager lock"
+                  "SUPER, L, exec, app-passwordManager-toggle"
+                  "SUPER SHIFT, L, exec, app-passwordManager-lock"
                 "SUPER, M, fullscreen, 1"
                 "SUPER SHIFT, M, fullscreen, 0"
                 "SUPER, O, togglesplit,"
                 "SUPER, Q, killactive"
                 "SUPER, S, togglegroup,"
-                "SUPER, T, exec, appctl exec-known terminal"
+                  "SUPER, T, exec, app-terminal"
                 "SUPER SHIFT, T, movetoworkspace, special:dropdown"
                 "SUPER, X, exec, vicinae 'vicinae://launch/power?toggle=true'"
-                "SUPER, SPACE, exec, appctl exec appctl show-menu"
-                "SUPER, TAB, exec, appctl exec appctl show-windows"
+                "SUPER, SPACE, exec, uwsm app -- vicinae vicinae://toggle"
+                "SUPER, TAB, exec, uwsm app -- vicinae 'vicinae://launch/windows?toggle=true'"
                 "SUPER, GRAVE, togglespecialworkspace, dropdown"
-                "SUPER, V, exec, appctl exec clipboardctl show-menu"
-                "SUPER, ESCAPE, exec, appctl exec missioncenter"
-                "SUPER, EQUAL, exec, appctl exec woomer"
-                ", PRINT, exec, appctl exec screenctl capture show-menu"
-                "ALT, PRINT, exec, appctl exec screenctl record show-menu"
+                "SUPER, V, exec, uwsm app -- clipboardctl show-menu"
+                "SUPER, ESCAPE, exec, uwsm app -- missioncenter"
+                "SUPER, EQUAL, exec, uwsm app -- woomer"
+                ", PRINT, exec, uwsm app -- screenctl capture show-menu"
+                "ALT, PRINT, exec, uwsm app -- screenctl record show-menu"
 
                 "SUPER CTRL, left, workspace, -1"
                 "SUPER CTRL, right, workspace, +1"

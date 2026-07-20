@@ -59,13 +59,13 @@
             type = lib.types.str;
             default =
               let
-                app = config.hdwlinux.apps.webBrowser or null;
+                app = config.hdwlinux.app.webBrowser;
               in
               if app != null then
                 if app.desktopName != null then
                   app.desktopName
                 else
-                  (app.package.meta.mainProgram or (lib.getName app.package)) + ".desktop"
+                  (lib.getName app.package) + ".desktop"
               else
                 throw "hdwlinux.programs.browserctl.defaultBrowser: no webBrowser app configured and no explicit default set";
             description = "Desktop file name of the default browser, used by 'restore' to revert to the Nix-configured default.";

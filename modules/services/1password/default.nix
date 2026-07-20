@@ -26,14 +26,17 @@
         ...
       }:
       {
-        hdwlinux.apps.passwordManager = lib.mkIf (hasTag "gui") {
+        hdwlinux.app.passwordManager = lib.mkIf (hasTag "gui") (lib.mkDefault {
           package = pkgs._1password-gui;
-          argGroups = {
-            toggle = [ "--toggle" ];
-            lock = [ "--lock" ];
-            quickaccess = [ "--quick-access" ];
-          };
-        };
+        });
+        hdwlinux.app.passwordManager-toggle = lib.mkIf (hasTag "gui") (lib.mkDefault {
+          package = pkgs._1password-gui;
+          args = [ "--toggle" ];
+        });
+        hdwlinux.app.passwordManager-lock = lib.mkIf (hasTag "gui") (lib.mkDefault {
+          package = pkgs._1password-gui;
+          args = [ "--lock" ];
+        });
 
         systemd.user.services."1password" = lib.mkIf (hasTag "gui") {
           Unit = {

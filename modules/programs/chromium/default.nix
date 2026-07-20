@@ -5,11 +5,6 @@
     homeManager =
       { pkgs, ... }:
       {
-        # hdwlinux.apps.webBrowser = {
-        #   package = config.programs.chromium.package;
-        #   desktopName = "chromium.desktop";
-        # };
-
         hdwlinux.programs.browserctl.browsers.chromium = "chromium.desktop";
 
         programs.chromium = {

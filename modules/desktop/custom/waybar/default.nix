@@ -284,8 +284,8 @@
                 format = "{icon} {volume}%";
                 format-muted = " Muted";
                 on-click = "audioctl output mute toggle";
-                on-click-middle = "appctl exec easyeffects";
-                on-click-right = "appctl exec audioctl output show-menu";
+                on-click-middle = "uwsm app -- easyeffects";
+                on-click-right = "uwsm app -- audioctl output show-menu";
                 on-scroll-up = "audioctl output volume raise";
                 on-scroll-down = "audioctl output volume lower";
                 reverse-scrolling = true;
@@ -303,8 +303,8 @@
                 format = " {volume}%";
                 format-muted = " Muted";
                 on-click = "audioctl input mute toggle";
-                on-click-middle = "appctl exec easyeffects";
-                on-click-right = "appctl exec audioctl input show-menu";
+                on-click-middle = "uwsm app -- easyeffects";
+                on-click-right = "uwsm app -- audioctl input show-menu";
                 on-scroll-up = "audioctl input volume raise";
                 on-scroll-down = "audioctl input volume lower";
                 reverse-scrolling = true;

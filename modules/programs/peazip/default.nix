@@ -3,9 +3,9 @@
     tags = [ "gui" ];
 
     homeManager =
-      { pkgs, ... }:
+      { lib, pkgs, ... }:
       {
-        hdwlinux.apps.archiver = {
+        hdwlinux.app.archiver = lib.mkDefault {
           package = pkgs.peazip;
           desktopName = "peazip.desktop";
         };

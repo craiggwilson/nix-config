@@ -8,14 +8,13 @@
         ...
       }:
       let
-        hasApp = name: builtins.hasAttr name config.hdwlinux.apps;
+        hasApp = name: config.hdwlinux.app.${name} != null;
         getDesktopName =
           name:
           let
-            app = config.hdwlinux.apps.${name};
-            dn = app.desktopName;
+            app = config.hdwlinux.app.${name};
           in
-          if dn != null then dn else (app.package.meta.mainProgram or (lib.getName app.package)) + ".desktop";
+          if app.desktopName != null then app.desktopName else (lib.getName app.package) + ".desktop";
       in
       {
         home.packages = [ pkgs.xdg-utils ];

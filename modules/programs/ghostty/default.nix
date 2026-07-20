@@ -13,12 +13,9 @@
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
       in
       {
-        hdwlinux.apps.terminal = {
+        hdwlinux.app.terminal = lib.mkDefault {
           package = config.programs.ghostty.package;
           desktopName = "ghostty.desktop";
-          argGroups = {
-            launch = [ "-e" ];
-          };
         };
 
         programs.ghostty = {

@@ -3,9 +3,9 @@
     tags = [ "gui" ];
 
     homeManager =
-      { config, pkgs, ... }:
+      { config, lib, pkgs, ... }:
       {
-        hdwlinux.apps.webBrowser = {
+        hdwlinux.app.webBrowser = lib.mkDefault {
           package = config.programs.firefox.package;
           desktopName = "firefox.desktop";
         };

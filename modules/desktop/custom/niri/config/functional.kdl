@@ -162,29 +162,29 @@ window-rule {
     default-column-display "tabbed"
 }
 
-spawn-at-startup "appctl" "exec-known" "terminal" "--class=scratch.terminal"
+spawn-at-startup "app-terminal" "--class=scratch.terminal"
 
 binds { 
-    Mod+E hotkey-overlay-title="Launch file manager" { spawn "appctl" "exec-known" "fileManager"; }
+    Mod+E hotkey-overlay-title="Launch file manager" { spawn "app-fileManager"; }
     Mod+F { fullscreen-window; }
     Mod+Shift+F { toggle-window-floating; }
-    Mod+L hotkey-overlay-title="Toggle password manager" { spawn "appctl" "exec-known" "passwordManager" "toggle"; }
-    Mod+Shift+L hotkey-overlay-title="Lock password manager" { spawn "appctl" "exec-known" "passwordManager" "lock"; }
+    Mod+L hotkey-overlay-title="Toggle password manager" { spawn "app-passwordManager-toggle"; }
+    Mod+Shift+L hotkey-overlay-title="Lock password manager" { spawn "app-passwordManager-lock"; }
     Mod+Q hotkey-overlay-title="Close window" { close-window; }
     Mod+R { switch-preset-column-width; }
-    Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "appctl" "exec-known" "terminal"; }
-    Mod+V hotkey-overlay-title="Show clipboard menu" { spawn "appctl" "exec" "clipboardctl" "show-menu"; }
+    Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "app-terminal"; }
+    Mod+V hotkey-overlay-title="Show clipboard menu" { spawn "uwsm" "app" "--" "clipboardctl" "show-menu"; }
     Mod+W { toggle-column-tabbed-display; }
     Mod+X hotkey-overlay-title="Open power menu" { spawn "vicinae" "vicinae://launch/power?toggle=true"; }
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
-    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn "niri-scratchpad" "target" "--spawn" "appctl exec-known terminal --class=scratch.terminal" "appid" "scratch.terminal"; }
+    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn "niri-scratchpad" "target" "--spawn" "app-terminal --class=scratch.terminal" "appid" "scratch.terminal"; }
     Mod+Minus { set-column-width "-10%"; }
     Mod+Shift+Minus { set-window-height "-10%"; }
     Mod+Return { center-column; }
     Mod+Shift+Return { maximize-window-to-edges; }
     Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+Space hotkey-overlay-title="Show application menu" { spawn "appctl" "exec" "appctl" "show-menu"; }
+    Mod+Space hotkey-overlay-title="Show application menu" { spawn "uwsm" "app" "--" "vicinae" "vicinae://toggle"; }
     Mod+Tab repeat=false { toggle-overview; }
 
     XF86AudioRaiseVolume  { spawn "audioctl" "output" "volume" "raise"; }
@@ -243,9 +243,9 @@ binds {
     Print       { screenshot; }
     Ctrl+Print  { screenshot-screen; }
     Alt+Print   { screenshot-window; }
-    Mod+Print { spawn "appctl" "exec" "screenctl" "record" "show-menu"; }
+    Mod+Print { spawn "uwsm" "app" "--" "screenctl" "record" "show-menu"; }
 
-    Mod+D repeat=false hotkey-overlay-title="Toggle dictation" { spawn "appctl" "exec" "dictctl" "toggle"; }
+    Mod+D repeat=false hotkey-overlay-title="Toggle dictation" { spawn "uwsm" "app" "--" "dictctl" "toggle"; }
 
     Mod+C hotkey-overlay-title="Clear Dynamic Cast Target" { clear-dynamic-cast-target; }
     Mod+Shift+C hotkey-overlay-title="Set Dynamic Cast Window" { set-dynamic-cast-window; }
