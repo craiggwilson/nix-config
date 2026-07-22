@@ -97,8 +97,9 @@
         # Handles bash, read, write, edit, and external_directory.
         # Simple "allow" tools and catch-all "*" patterns are skipped (allow is the default),
         # except for external_directory "allow" patterns which are explicitly emitted into
-        # the allow list for Read, Write, and Edit so those paths are accessible outside
+        # the allow list for Read and Edit so those paths are accessible outside
         # the working directory. Deny rules still take priority over these allow entries.
+        # write rules are merged into Edit entries (Claude Code has no separate Write tool).
         toolsToClaudePermissions =
           tools:
           let
@@ -106,7 +107,7 @@
               bash = "Bash";
               edit = "Edit";
               read = "Read";
-              write = "Write";
+              write = "Edit";
             };
 
             collectEntries =
@@ -126,7 +127,7 @@
                 );
 
             # external_directory allow patterns are expanded into explicit allow entries
-            # for Read, Write, and Edit so Claude Code permits access to those paths.
+            # for Read and Edit so Claude Code permits access to those paths.
             externalDirAllows =
               let
                 extDir = tools.external_directory or { };
@@ -141,15 +142,14 @@
               lib.concatLists (
                 map (pattern: [
                   "Read(${pattern})"
-                  "Write(${pattern})"
                   "Edit(${pattern})"
                 ]) allowPatterns
               );
 
-            allDeny = lib.concatLists (
+            allDeny = lib.unique (lib.concatLists (
               lib.mapAttrsToList (name: value: collectEntries "deny" name value) tools
-            );
-            allAsk = lib.concatLists (lib.mapAttrsToList (name: value: collectEntries "ask" name value) tools);
+            ));
+            allAsk = lib.unique (lib.concatLists (lib.mapAttrsToList (name: value: collectEntries "ask" name value) tools));
             allAllow = externalDirAllows;
           in
           {
