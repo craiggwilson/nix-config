@@ -195,4 +195,24 @@
         };
       };
   };
+
+  config.substrate.modules.programs.opencode.grove-gateway = {
+    tags = [
+      "ai:clients"
+      "users:craig:work"
+    ];
+
+    homeManager =
+      { pkgs, ... }:
+      let
+        # grove-gateway-opencode-plugin directory in the nix store
+        grovePluginDir =
+          "${pkgs.callPackage ./plugins/_grove_gateway.nix { }}/lib/grove-gateway-opencode-plugin";
+      in
+      {
+        programs.opencode.settings.plugin = [
+          "file://${grovePluginDir}"
+        ];
+      };
+  };
 }
