@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
-  version = "0.15.0";
+  version = "0.15.0-jujutsu-support";
 
   src = pkgs.fetchFromGitHub {
-    owner = "hueyexe";
+    owner = "craiggwilson";
     repo = "opencode-ensemble";
-    tag = "v${version}";
-    hash = "sha256-eTdwru0Fw9i5/N6tz7pRZiTNeUnF8j1muuMbG4ebg/s=";
+    rev = "075f2d6b5450dc68509ffebd614b9da24c07ba5d";
+    hash = "sha256-F3BJCMPlDlTwXR9z7HcF9VcT8fGO16mMWVuG2sFtbmU=";
   };
 
   deps = pkgs.stdenv.mkDerivation {
@@ -29,7 +29,7 @@ let
       cp bun.lock package.json $out/
     '';
 
-    outputHash = "sha256-28TloesVmt46x4lmf7YXV/kzeXuWyQGju8i1WqpXLJc=";
+    outputHash = "sha256-TLI6x6QOIm/Dcq0I/stcZxSpBwJcx6M3FK4iwVHomeg=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
