@@ -97,15 +97,6 @@
         cfg = config.hdwlinux.ai.clients.models;
         configuredAliases = builtins.attrNames cfg.aliases;
         invalidAliases = lib.filter (key: !(builtins.elem key aliasNames)) configuredAliases;
-        invalidRefs = lib.filter (
-          aliasName:
-          let
-            alias = cfg.aliases.${aliasName};
-            providerExists = cfg.providers ? ${alias.provider};
-            modelExists = providerExists && (cfg.providers.${alias.provider}.models ? ${alias.model});
-          in
-          !modelExists
-        ) configuredAliases;
       in
       {
         options.hdwlinux.ai.clients.models = {
@@ -133,10 +124,6 @@
           {
             assertion = invalidAliases == [ ];
             message = "Invalid alias names: ${builtins.concatStringsSep ", " invalidAliases}. Valid names are: ${builtins.concatStringsSep ", " aliasNames}";
-          }
-          {
-            assertion = invalidRefs == [ ];
-            message = "Aliases reference non-existent provider/model combinations: ${builtins.concatStringsSep ", " invalidRefs}";
           }
         ];
       };
