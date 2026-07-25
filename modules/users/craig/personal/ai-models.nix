@@ -9,33 +9,37 @@
       { lib, ... }:
       {
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
-          fast = {
+          analysis = {
             provider = "opencode-go";
-            model = "deepseek-v4-flash";
+            model = "qwen3.7-max";
           };
           balanced = {
             provider = "opencode-go";
             model = "deepseek-v4-pro";
           };
-          coder = {
+          code-review = {
             provider = "opencode-go";
             model = "kimi-k2.7-code";
           };
-          analyst = {
+          coding = {
             provider = "opencode-go";
-            model = "qwen3.7-max";
+            model = "kimi-k2.7-code";
           };
-          writer = {
+          fast = {
+            provider = "opencode-go";
+            model = "deepseek-v4-flash";
+          };
+          orchestration = {
+            provider = "opencode-go";
+            model = "deepseek-v4-pro";
+          };
+          research = {
+            provider = "opencode-go";
+            model = "deepseek-v4-flash";
+          };
+          writing = {
             provider = "opencode-go";
             model = "qwen3.7-plus";
-          };
-          code-reviewer = {
-            provider = "opencode-go";
-            model = "kimi-k2.7-code";
-          };
-          vision = {
-            provider = "opencode-go";
-            model = "qwen3.7-max";
           };
         };
       };

@@ -9,29 +9,37 @@
       { lib, ... }:
       {
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
-          fast = {
-            provider = "augment";
-            model = "claude-haiku-4-5";
+          analysis = {
+            provider = "grove-misc";
+            model = "fw-glm-5.2";
           };
           balanced = {
-            provider = "augment";
-            model = "claude-sonnet-4-6";
+            provider = "grove-anthropic";
+            model = "claude-sonnet-5";
           };
-          coder = {
-            provider = "augment";
-            model = "claude-sonnet-4-6";
+          code-review = {
+            provider = "grove-misc";
+            model = "fw-glm-5.2";
           };
-          analyst = {
-            provider = "augment";
+          coding = {
+            provider = "grove-misc";
+            model = "fw-deepseek-v4-pro";
+          };
+          fast = {
+            provider = "grove-anthropic";
+            model = "claude-haiku-4-5";
+          };
+          orchestration = {
+            provider = "grove-anthropic";
             model = "claude-opus-4-8";
           };
-          writer = {
-            provider = "augment";
-            model = "claude-sonnet-4-6";
+          research = {
+            provider = "grove-openai";
+            model = "gpt-5.6-luna";
           };
-          code-reviewer = {
-            provider = "augment";
-            model = "code-review-gpt5-2-responses-high-200k-v1-c4-p2-agent";
+          writing = {
+            provider = "grove-openai";
+            model = "gpt-5.6-luna";
           };
         };
       };

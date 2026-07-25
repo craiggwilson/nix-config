@@ -6,13 +6,14 @@
       { config, lib, ... }:
       let
         aliasNames = [
-          "fast"
+          "analysis"
           "balanced"
-          "coder"
-          "analyst"
-          "writer"
-          "code-reviewer"
-          "vision"
+          "code-review"
+          "coding"
+          "fast"
+          "orchestration"
+          "research"
+          "writing"
         ];
 
         modelType = lib.types.submodule (
