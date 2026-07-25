@@ -1,12 +1,12 @@
 { lib, pkgs, ... }:
 let
-  version = "0.15.0-jujutsu-support";
+  version = "0.16.0";
 
   src = pkgs.fetchFromGitHub {
     owner = "craiggwilson";
     repo = "opencode-ensemble";
-    rev = "075f2d6b5450dc68509ffebd614b9da24c07ba5d";
-    hash = "sha256-F3BJCMPlDlTwXR9z7HcF9VcT8fGO16mMWVuG2sFtbmU=";
+    rev = "9dd1beceec7c595dad9fe3b932b2992181c085a1";
+    hash = "sha256-w8A199CiOiZvoFQWjmBmRrc1ugFeJHPhe9HClNp8s00=";
   };
 
   deps = pkgs.stdenv.mkDerivation {
