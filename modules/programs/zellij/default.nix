@@ -113,12 +113,6 @@
             };
           };
         };
-
-        programs.zsh.initContent = lib.mkOrder 200 ''
-          if [[ "$TERM" != "dumb" ]]; then
-              ${lib.getExe pkgs.zellij} attach -c main
-          fi
-        '';
       };
   };
 }
