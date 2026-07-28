@@ -169,6 +169,7 @@
             ./packages/falcon-sensor.nix
             ./packages/fern.nix
             ./packages/mcp-atlassian.nix
+            ./packages/mcp-musescore.nix
             ./packages/monocle.nix
             ./packages/mongo-orchestration.nix
             ./packages/orca-ide.nix
