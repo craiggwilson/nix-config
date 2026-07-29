@@ -15,7 +15,21 @@ editing MusicXML scores. **Always use `debussy` instead of reading or editing
 `.musicxml` files directly** - MusicXML is extremely verbose and easy to corrupt
 with text edits.
 
-The installed CLI lives at `$DEBUSSY`.
+The `debussy` CLI is installed system-wide.
+
+## Working with MuseScore files
+
+MuseScore files (`.mscz` / `.mscx`) must be converted to MusicXML before `debussy`
+can work with them, then converted back when done.
+
+```text
+musescore -o score.musicxml score.mscz    # import
+# ... debussy commands on score.musicxml ...
+musescore -o score.mscz score.musicxml    # export back
+```
+
+Always emit the output filename as the argument after `-o`. The format is
+inferred from the extension.
 
 ## Golden rules
 
