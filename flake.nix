@@ -173,7 +173,6 @@
             ./packages/mcp-musescore.nix
             ./packages/monocle.nix
             ./packages/mongo-orchestration.nix
-            ./packages/orca-ide.nix
             ./packages/semantic-router.nix
             ./packages/songtool.nix
             ./packages/writeShellApplicationWithSubcommands.nix

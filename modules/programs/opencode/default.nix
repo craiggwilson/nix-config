@@ -102,6 +102,19 @@
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
+        # opencode-mem config: auto-capture uses the "fast" model alias
+        memFastAlias = config.hdwlinux.ai.clients.models.aliases."fast" or { };
+        memConfig = builtins.toJSON {
+          opencodeProvider = memFastAlias.provider or null;
+          opencodeModel = memFastAlias.model or null;
+          storagePath = "~/.local/share/opencode-mem/data";
+          autoCaptureEnabled = true;
+          webServerEnabled = true;
+          webServerPort = 4848;
+          showAutoCaptureToasts = true;
+          showUserProfileToasts = true;
+        };
+
         # Derive ponytail source from the skill path set by the ponytail skills module,
         # avoiding a duplicate fetch.
         # ponytail: null-safe guard — if the skill module isn't loaded, skip the plugin.
@@ -127,6 +140,9 @@
           (lib.mapAttrs' (
             name: agent: lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
           ) config.hdwlinux.ai.clients.agents)
+          {
+            "opencode/opencode-mem.jsonc".text = memConfig;
+          }
         ];
 
         programs.opencode = {
@@ -156,6 +172,7 @@
             small_model = resolveAlias "fast";
             plugin = [
               "file://${ensemblePluginDir}"
+              "opencode-mem"
             ]
             ++ lib.optionals (ponytailBaseDir != null) [
               "file://${ponytailBaseDir}/.opencode/plugins/ponytail.mjs"
@@ -206,8 +223,9 @@
       { pkgs, ... }:
       let
         # grove-gateway-opencode-plugin directory in the nix store
-        grovePluginDir =
-          "${pkgs.callPackage ./plugins/_grove_gateway.nix { }}/lib/grove-gateway-opencode-plugin";
+        grovePluginDir = "${
+          pkgs.callPackage ./plugins/_grove_gateway.nix { }
+        }/lib/grove-gateway-opencode-plugin";
       in
       {
         programs.opencode.settings.plugin = [

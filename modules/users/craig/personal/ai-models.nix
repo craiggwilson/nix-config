@@ -27,7 +27,7 @@
           };
           fast = {
             provider = "opencode-go";
-            model = "deepseek-v4-flash";
+            model = "mimo-v2.5";
           };
           orchestration = {
             provider = "opencode-go";
@@ -35,7 +35,7 @@
           };
           research = {
             provider = "opencode-go";
-            model = "deepseek-v4-flash";
+            model = "qwen3.7-plus";
           };
           writing = {
             provider = "opencode-go";
