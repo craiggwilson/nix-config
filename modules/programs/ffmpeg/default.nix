@@ -5,7 +5,7 @@
     homeManager =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.ffmpeg-full ];
+        home.packages = [ pkgs.stable.ffmpeg-full ];
       };
   };
 }
