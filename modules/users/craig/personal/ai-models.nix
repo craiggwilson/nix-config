@@ -27,7 +27,7 @@
           };
           fast = {
             provider = "opencode-go";
-            model = "mimo-v2.5";
+            model = "deepseek-v4-pro";
           };
           orchestration = {
             provider = "opencode-go";
