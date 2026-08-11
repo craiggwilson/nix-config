@@ -147,14 +147,14 @@ let
 in
 python3Packages.buildPythonApplication rec {
   pname = "mcp-atlassian";
-  version = "0.21.1";
+  version = "0.23.0";
   pyproject = true;
 
   src = pkgs.fetchFromGitHub {
     owner = "sooperset";
     repo = "mcp-atlassian";
     rev = "v${version}";
-    sha256 = "sha256-KSkKiseEaDjF0ROPqLf/kO9yA7n8GV9eK96b0VMbDg4=";
+    sha256 = "sha256-aTiPYMhZwWCjS/S9pZgdb4oFbXyNO7Q/aMUt0bKfSjM=";
   };
 
   build-system = [

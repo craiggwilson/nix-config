@@ -1,13 +1,13 @@
 { lib, pkgs, ... }:
 let
-  version = "0.5.3";
-  rev = "9256fdfb9c136f54430f82952e6cccdf1eb501d4";
+  version = "4.0.0";
+  rev = "8276a7c35f3d169917c3c2595fdf148673a0f6ec";
 
   src = pkgs.fetchFromGitHub {
     owner = "upstash";
     repo = "context7";
     inherit rev;
-    hash = "sha256-J3FS0HPpkuriuxEyY1dluwdMovdvgWUTFgBxVUlf+GA=";
+    hash = "sha256-NXRaL/GpTxnju7P1MIc+6AxQIe2I8LexRxwB/+lUw6g=";
   };
 
   # Fixed-output derivation for dependencies.
@@ -34,7 +34,7 @@ let
       cp pnpm-lock.yaml package.json $out/
     '';
 
-    outputHash = "sha256-YkxnV4j/mh1intfKJqRCASVDL7PvqC11naMTb0F4vU8=";
+    outputHash = "sha256-4ALlfLv8exutUX3XH5tzil40hkLQSJ4AVeLKRx+qfUA=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };

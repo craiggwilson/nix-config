@@ -5,11 +5,11 @@ let
 
   music21 = pythonPkgs.buildPythonPackage rec {
     pname = "music21";
-    version = "10.3.0";
+    version = "10.5.0";
 
     src = pkgs.fetchurl {
-      url = "https://files.pythonhosted.org/packages/fa/32/3790478438b1fdd0b9b5154e2ac6f91dce105743a26bf0bd20c04b1922ec/music21-10.3.0-py3-none-any.whl";
-      hash = "sha256-97EhABQlN++WofPqVnylnfm1oMcyO5iOmwXFbFJUfuE=";
+      url = "https://files.pythonhosted.org/packages/81/4c/4f307e5ab6fbf59233813e58e07128a599c810dd974673449e132ce1432d/music21-10.5.0-py3-none-any.whl";
+      hash = "sha256-mSTv9fv1hJDmfL87eKWLpTBA53woGTDTVK8yp0fpRgY=";
     };
 
     format = "wheel";
