@@ -102,6 +102,9 @@
         # opencode-ensemble plugin directory in the nix store
         ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
 
+        # opencode-mem plugin directory in the nix store
+        openCodeMemPluginDir = "${pkgs.callPackage ./plugins/_opencode-mem.nix { }}/lib/opencode-mem";
+
         # opencode-mem config: auto-capture uses the "fast" model alias
         memFastAlias = config.hdwlinux.ai.clients.models.aliases."fast" or { };
         memConfig = builtins.toJSON {
@@ -172,7 +175,7 @@
             small_model = resolveAlias "fast";
             plugin = [
               "file://${ensemblePluginDir}"
-              "opencode-mem"
+              "file://${openCodeMemPluginDir}"
             ]
             ++ lib.optionals (ponytailBaseDir != null) [
               "file://${ponytailBaseDir}/.opencode/plugins/ponytail.mjs"
