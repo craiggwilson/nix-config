@@ -8,11 +8,11 @@ pkgs.buildGoModule {
 
   src = builtins.fetchGit {
     url = "ssh://git@github.com/10gen/fern";
-    ref = "v2.24.0";
-    rev = "37225cc9146b55dfc7d001e414a111f857d356f5";
+    ref = "v2.38.1";
+    rev = "ff51c489440f6e4e4767a02de31a3ee19dbac370";
   };
 
-  vendorHash = "sha256-9UhIUpr/D7gHSQ7uaeLP5AsineVM4CX4ydwzcISpH9w=";
+  vendorHash = "sha256-B9kRQMR6X5NbykYZokJhtI/hOXi04OfQI2IOIbJp+mw=";
 
   subPackages = [ "." ];
 
