@@ -9,7 +9,7 @@
         wantedBy = [ "default.target" ];
         serviceConfig = {
           Type = "simple";
-          ExecStart = "${pkgs.system76-power}/bin/system76-power charge-thresholds --profile max_lifespan";
+          ExecStart = "${pkgs.system76-power}/bin/system76-power charge-thresholds --profile balanced";
         };
       };
 
@@ -20,4 +20,3 @@
     };
   };
 }
-
