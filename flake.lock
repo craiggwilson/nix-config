@@ -261,10 +261,10 @@
         "import-tree": "import-tree"
       },
       "locked": {
-        "lastModified": 1784516563,
-        "narHash": "sha256-BEWFnD39WNHR2j8snlozZG33FURcBF0QnbpQ4EQYjQU=",
-        "rev": "91a04f749b5f41e90cb939367dee98c184d150a5",
-        "revCount": 96,
+        "lastModified": 1787360863,
+        "narHash": "sha256-rMTCAvse+7IIvd/SOMrJ1Ne9dOztq1JblAQniD2Mpu8=",
+        "rev": "e28a502e8c2590409742debfef0819b3f6e21821",
+        "revCount": 97,
         "type": "git",
         "url": "file:///home/craig/Projects/hdwlinux/nix-private"
       },

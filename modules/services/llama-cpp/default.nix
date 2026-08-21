@@ -79,14 +79,13 @@
               After = [ "network.target" ];
             };
             Install = {
-              WantedBy = [ "default.target" ];
             };
             Service = {
               Type = "idle";
               # --models-max 1 evicts the current model before loading the next, ensuring
               # the GPU is fully available to whichever model is active. Without this,
               # all requested models accumulate in VRAM and new ones load onto CPU.
-              ExecStart = "${lib.getExe' package "llama-server"} --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 1";
+              ExecStart = "nvidia-offload ${lib.getExe' package "llama-server"} --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 1";
               Restart = "on-failure";
               RestartSec = 300;
               TimeoutStopSec = 60;

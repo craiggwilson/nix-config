@@ -103,7 +103,6 @@
               After = [ "network.target" ];
             };
             Install = {
-              WantedBy = [ "default.target" ];
             };
             Service = {
               Type = "simple";
@@ -113,7 +112,7 @@
                 "PYTHONPATH=${lib.concatStringsSep ":" extensionPythonPaths}"
               ];
               ExecStartPre = "${pkgs.bash}/bin/bash -c 'mkdir -p ${cfg.dataDir}/{custom_nodes,models}'";
-              ExecStart = "${lib.getExe cfg.package} --base-directory ${cfg.dataDir} --listen ${cfg.host} --port ${builtins.toString cfg.port}";
+              ExecStart = "nvidia-offload ${lib.getExe cfg.package} --base-directory ${cfg.dataDir} --listen ${cfg.host} --port ${builtins.toString cfg.port}";
               Restart = "on-failure";
               RestartSec = 10;
             };
