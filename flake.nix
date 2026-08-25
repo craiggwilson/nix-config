@@ -174,6 +174,7 @@
             ./packages/mongo-orchestration.nix
             ./packages/semantic-router.nix
             ./packages/songtool.nix
+            ./packages/terminal-code.nix
             ./packages/writeShellApplicationWithSubcommands.nix
           ];
 
