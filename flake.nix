@@ -158,6 +158,7 @@
 
         publish = {
           packages = [
+            ./packages/49agents.nix
             ./packages/atlas-cli.nix
             ./packages/auggie.nix
             ./packages/code42-aat.nix
