@@ -273,6 +273,29 @@
         "url": "file:///home/craig/Projects/hdwlinux/nix-private"
       }
     },
+    "herdr": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-overlay": [
+          "rust-overlay"
+        ]
+      },
+      "locked": {
+        "lastModified": 1787690696,
+        "narHash": "sha256-ljbHQ3i8lkkC4sK3kZ+qOejCANVW7PpQmV6eWTxdMM8=",
+        "owner": "herdrdev",
+        "repo": "herdr",
+        "rev": "d79fd746a96ddb5642939c9727baefce642d78e6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "herdrdev",
+        "repo": "herdr",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -801,6 +824,7 @@
         "flake-parts": "flake-parts",
         "googleworkspace-cli": "googleworkspace-cli",
         "hdwlinux-private": "hdwlinux-private",
+        "herdr": "herdr",
         "home-manager": "home-manager",
         "import-tree": "import-tree_2",
         "jail-nix": "jail-nix",
