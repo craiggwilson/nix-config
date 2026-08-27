@@ -72,24 +72,6 @@
     },
     "flake-parts_2": {
       "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_2"
-      },
-      "locked": {
-        "lastModified": 1775087534,
-        "narHash": "sha256-91qqW8lhL7TLwgQWijoGBbiD4t7/q75KTi8NxjVmSmA=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "3107b77cd68437b9a76194f0f7f9c55f2329ca5b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_3": {
-      "inputs": {
         "nixpkgs-lib": [
           "nur",
           "nixpkgs"
@@ -109,45 +91,9 @@
         "type": "github"
       }
     },
-    "flake-parts_4": {
+    "flake-parts_3": {
       "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_3"
-      },
-      "locked": {
-        "lastModified": 1777988971,
-        "narHash": "sha256-qIoWPDs+0/8JecyYgE3gpKQxW/4bLW/gp45vow9ioCQ=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "0678d8986be1661af6bb555f3489f2fdfc31f6ff",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_5": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_4"
-      },
-      "locked": {
-        "lastModified": 1777988971,
-        "narHash": "sha256-qIoWPDs+0/8JecyYgE3gpKQxW/4bLW/gp45vow9ioCQ=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "0678d8986be1661af6bb555f3489f2fdfc31f6ff",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_6": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_5"
+        "nixpkgs-lib": "nixpkgs-lib_2"
       },
       "locked": {
         "lastModified": 1777988971,
@@ -383,30 +329,6 @@
         "type": "github"
       }
     },
-    "mestra": {
-      "inputs": {
-        "flake-parts": "flake-parts_2",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "rust-overlay": "rust-overlay",
-        "substrate": [
-          "substrate"
-        ]
-      },
-      "locked": {
-        "lastModified": 1778865104,
-        "narHash": "sha256-EMVLleuXg3kLfEAxxEMoReKM0u8JtGHZpoiGgSPTtAg=",
-        "rev": "21b0de7fce5268ebdd7c4e2d6a696493a008e585",
-        "revCount": 220,
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/mestra"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/mestra"
-      }
-    },
     "musnix": {
       "inputs": {
         "nixpkgs": [
@@ -431,7 +353,7 @@
       "inputs": {
         "flake-utils": "flake-utils_2",
         "nixpkgs": "nixpkgs",
-        "rust-overlay": "rust-overlay_2"
+        "rust-overlay": "rust-overlay"
       },
       "locked": {
         "lastModified": 1774283661,
@@ -513,51 +435,6 @@
       }
     },
     "nixpkgs-lib_2": {
-      "locked": {
-        "lastModified": 1774748309,
-        "narHash": "sha256-+U7gF3qxzwD5TZuANzZPeJTZRHS29OFQgkQ2kiTJBIQ=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "333c4e0545a6da976206c74db8773a1645b5870a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
-    "nixpkgs-lib_3": {
-      "locked": {
-        "lastModified": 1777168982,
-        "narHash": "sha256-GOkGPcboWE9BmGCRMLX3worL4EMnsnG8MyKmXNeYuhQ=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "f5901329dade4a6ea039af1433fb087bd9c1fe14",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
-    "nixpkgs-lib_4": {
-      "locked": {
-        "lastModified": 1777168982,
-        "narHash": "sha256-GOkGPcboWE9BmGCRMLX3worL4EMnsnG8MyKmXNeYuhQ=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "f5901329dade4a6ea039af1433fb087bd9c1fe14",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
-    "nixpkgs-lib_5": {
       "locked": {
         "lastModified": 1777168982,
         "narHash": "sha256-GOkGPcboWE9BmGCRMLX3worL4EMnsnG8MyKmXNeYuhQ=",
@@ -667,7 +544,7 @@
     },
     "nur": {
       "inputs": {
-        "flake-parts": "flake-parts_3",
+        "flake-parts": "flake-parts_2",
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -704,52 +581,6 @@
         "owner": "anomalyco",
         "repo": "opencode",
         "type": "github"
-      }
-    },
-    "opencode-augment-provider": {
-      "inputs": {
-        "flake-parts": "flake-parts_4",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "substrate": [
-          "substrate"
-        ]
-      },
-      "locked": {
-        "lastModified": 1779241568,
-        "narHash": "sha256-n3p6zLVSNKDowUnnCtXbMhAt1eIoAwvKNzFPVYpkkwM=",
-        "rev": "60e809d291e11041c9c72c9425829bf6817c4d13",
-        "revCount": 5,
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/opencode-augment-provider"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/opencode-augment-provider"
-      }
-    },
-    "opencode-projects-plugin": {
-      "inputs": {
-        "flake-parts": "flake-parts_5",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "substrate": [
-          "substrate"
-        ]
-      },
-      "locked": {
-        "lastModified": 1778865175,
-        "narHash": "sha256-Q5LOjxfcB8jRhiH3m1Qu5qi9py2amXzQj759JPql1gs=",
-        "rev": "5098d64e9dbd58071c8b4554e7a460fafb1a8c86",
-        "revCount": 78,
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/opencode-projects-plugin"
-      },
-      "original": {
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/opencode-projects-plugin"
       }
     },
     "openspec": {
@@ -829,7 +660,6 @@
         "import-tree": "import-tree_2",
         "jail-nix": "jail-nix",
         "kolide-launcher": "kolide-launcher",
-        "mestra": "mestra",
         "musnix": "musnix",
         "niri-scratchpad": "niri-scratchpad",
         "nix-flatpak": "nix-flatpak",
@@ -838,11 +668,9 @@
         "nixpkgs-stable": "nixpkgs-stable",
         "nur": "nur",
         "opencode": "opencode",
-        "opencode-augment-provider": "opencode-augment-provider",
-        "opencode-projects-plugin": "opencode-projects-plugin",
         "openspec": "openspec",
         "opnix": "opnix",
-        "rust-overlay": "rust-overlay_3",
+        "rust-overlay": "rust-overlay_2",
         "scribe": "scribe",
         "spicetify-nix": "spicetify-nix",
         "stable-diffusion-webui-nix": "stable-diffusion-webui-nix",
@@ -852,27 +680,6 @@
       }
     },
     "rust-overlay": {
-      "inputs": {
-        "nixpkgs": [
-          "mestra",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775185947,
-        "narHash": "sha256-8ctPmj6RME4q4ELeg+BuY9lV/34M4AG1CNc0Im9PDDk=",
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "rev": "199eeb6748116f7da4fbd3a680bc854e99d9132b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "oxalica",
-        "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": "nixpkgs_2"
       },
@@ -890,7 +697,7 @@
         "type": "github"
       }
     },
-    "rust-overlay_3": {
+    "rust-overlay_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -910,7 +717,7 @@
         "type": "github"
       }
     },
-    "rust-overlay_4": {
+    "rust-overlay_3": {
       "inputs": {
         "nixpkgs": [
           "scribe",
@@ -933,11 +740,11 @@
     },
     "scribe": {
       "inputs": {
-        "flake-parts": "flake-parts_6",
+        "flake-parts": "flake-parts_3",
         "nixpkgs": [
           "nixpkgs"
         ],
-        "rust-overlay": "rust-overlay_4",
+        "rust-overlay": "rust-overlay_3",
         "substrate": [
           "substrate"
         ]

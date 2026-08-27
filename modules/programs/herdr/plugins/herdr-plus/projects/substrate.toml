@@ -1,0 +1,11 @@
+name = "substrate"
+description = "Tag-based NixOS / Home Manager framework"
+group = "hdwlinux"
+working_dir = "~/Projects/hdwlinux/substrate"
+
+[[tabs]]
+name = "terminal"
+
+[[tabs]]
+name = "opencode"
+command = "opencode"

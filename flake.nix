@@ -10,21 +10,6 @@
     # Personal projects. These will ultimately be normal github references when they are good enough
     # to not be changed so often.
     hdwlinux-private.url = "git+file:///home/craig/Projects/hdwlinux/nix-private";
-    mestra = {
-      url = "git+file:///home/craig/Projects/hdwlinux/mestra";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.substrate.follows = "substrate";
-    };
-    opencode-augment-provider = {
-      url = "git+file:///home/craig/Projects/hdwlinux/opencode-augment-provider";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.substrate.follows = "substrate";
-    };
-    opencode-projects-plugin = {
-      url = "git+file:///home/craig/Projects/hdwlinux/opencode-projects-plugin";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.substrate.follows = "substrate";
-    };
     scribe = {
       url = "git+file:///home/craig/Projects/hdwlinux/scribe";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -151,9 +136,6 @@
         packageNamespace = "hdwlinux";
 
         homeManagerModules = [
-          inputs.mestra.homeManagerModules.default
-          inputs.opencode-augment-provider.homeManagerModules.default
-          inputs.opencode-projects-plugin.homeManagerModules.default
           inputs.scribe.homeManagerModules.default
           inputs.vicinae.homeManagerModules.default
         ];
@@ -176,7 +158,6 @@
             ./packages/fern.nix
             ./packages/mcp-atlassian.nix
             ./packages/mcp-musescore.nix
-            ./packages/monocle.nix
             ./packages/mongo-orchestration.nix
             ./packages/semantic-router.nix
             ./packages/songtool.nix
@@ -196,9 +177,6 @@
         };
 
         overlays = [
-          # mestra — exposes pkgs.mestra.{mestra,opencode-plugin,skill}
-          inputs.mestra.overlays.packages
-
           # scribe — exposes pkgs.scribe.scribe
           inputs.scribe.overlays.packages
 

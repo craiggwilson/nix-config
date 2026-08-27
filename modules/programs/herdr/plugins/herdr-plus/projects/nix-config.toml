@@ -1,0 +1,11 @@
+name = "nix-config"
+description = "NixOS / Home Manager config"
+group = "hdwlinux"
+working_dir = "~/Projects/hdwlinux/nix-config"
+
+[[tabs]]
+name = "terminal"
+
+[[tabs]]
+name = "opencode"
+command = "opencode"

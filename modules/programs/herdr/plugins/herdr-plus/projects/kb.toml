@@ -1,0 +1,11 @@
+name = "kb"
+description = "Obsidian knowledge base"
+group = "personal"
+working_dir = "~/Projects/kb"
+
+[[tabs]]
+name = "terminal"
+
+[[tabs]]
+name = "opencode"
+command = "opencode"

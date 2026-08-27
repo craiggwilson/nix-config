@@ -12,13 +12,17 @@
         ...
       }:
       let
-        # Resolve an alias to "provider/model" format for OpenCode
-        resolveAlias =
+        # Resolve an alias to its ordered "provider/model" fallback chain.
+        # First entry is the primary model.
+        resolveAliases =
           aliasName:
           let
             alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
           in
-          "${alias.provider}/${alias.model}";
+          map (m: "${m.provider}/${m.model}") alias.models;
+
+        # Primary "provider/model" for single-model consumers (agent definitions, small_model)
+        resolveAlias = aliasName: lib.head (resolveAliases aliasName);
 
         # Transform tools attrset for OpenCode config (boolean values)
         # "allow" -> true, "ask"/"deny" -> false
@@ -45,7 +49,6 @@
         ) config.hdwlinux.ai.clients.rules;
 
         # Provider metadata: OpenCode-specific configuration for each provider
-        # Note: augment provider is handled by programs.opencode-augment-provider below
         providerMeta = {
           "llama.cpp" = {
             npm = "@ai-sdk/openai-compatible";
@@ -99,34 +102,6 @@
         # Opencode theme derived from the active hdwlinux theme colors
         opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
 
-        # opencode-ensemble plugin directory in the nix store
-        ensemblePluginDir = "${pkgs.callPackage ./plugins/_ensemble.nix { }}/lib/opencode-ensemble";
-
-        # opencode-mem plugin directory in the nix store
-        openCodeMemPluginDir = "${pkgs.callPackage ./plugins/_opencode-mem.nix { }}/lib/opencode-mem";
-
-        # opencode-mem config: auto-capture uses the "fast" model alias
-        memFastAlias = config.hdwlinux.ai.clients.models.aliases."fast" or { };
-        memConfig = builtins.toJSON {
-          opencodeProvider = memFastAlias.provider or null;
-          opencodeModel = memFastAlias.model or null;
-          storagePath = "~/.local/share/opencode-mem/data";
-          autoCaptureEnabled = true;
-          webServerEnabled = true;
-          webServerPort = 4848;
-          showAutoCaptureToasts = true;
-          showUserProfileToasts = true;
-        };
-
-        # Derive ponytail source from the skill path set by the ponytail skills module,
-        # avoiding a duplicate fetch.
-        # ponytail: null-safe guard — if the skill module isn't loaded, skip the plugin.
-        ponytailBaseDir =
-          let
-            skillPath = config.hdwlinux.ai.clients.skills.ponytail or null;
-          in
-          if skillPath != null then builtins.dirOf (builtins.dirOf skillPath) else null;
-
       in
       {
         home.packages = [
@@ -143,9 +118,6 @@
           (lib.mapAttrs' (
             name: agent: lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
           ) config.hdwlinux.ai.clients.agents)
-          {
-            "opencode/opencode-mem.jsonc".text = memConfig;
-          }
         ];
 
         programs.opencode = {
@@ -173,45 +145,8 @@
             instructions = ruleInstructions;
             permission = config.hdwlinux.ai.clients.tools;
             small_model = resolveAlias "fast";
-            plugin = [
-              "file://${ensemblePluginDir}"
-              "file://${openCodeMemPluginDir}"
-            ]
-            ++ lib.optionals (ponytailBaseDir != null) [
-              "file://${ponytailBaseDir}/.opencode/plugins/ponytail.mjs"
-            ];
+            lsp = true;
           };
-        };
-
-        # opencode-projects plugin: delegates plugin registration to the dedicated HM module.
-        programs.opencode-projects.enable = true;
-      };
-  };
-
-  config.substrate.modules.programs.opencode.augment = {
-    tags = [
-      "ai:clients"
-      "users:craig:work"
-    ];
-
-    homeManager =
-      {
-        config,
-        lib,
-        ...
-      }:
-      {
-        # Augment provider: delegates provider registration to the dedicated HM module.
-        # Models are transformed from hdwlinux provider format to OpenCode format.
-        programs.opencode-augment-provider = {
-          enable = true;
-          models = lib.mapAttrs (slug: model: {
-            name = model.displayName;
-            limit = {
-              context = model.limits.context;
-              output = model.limits.output;
-            };
-          }) config.hdwlinux.ai.clients.models.providers.augment.models;
         };
       };
   };
@@ -234,6 +169,88 @@
         programs.opencode.settings.plugin = [
           "file://${grovePluginDir}"
         ];
+      };
+  };
+
+  config.substrate.modules.programs.opencode.oh-my-opencode-slim = {
+    tags = [
+      "ai:clients"
+    ];
+
+    homeManager =
+      {
+        config,
+        pkgs,
+        lib,
+        ...
+      }:
+      let
+        # Resolve an alias to its ordered "provider/model" fallback chain consumed by
+        # oh-my-opencode-slim. First entry is the primary model.
+        resolveAliases =
+          aliasName:
+          let
+            alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
+          in
+          map (m: "${m.provider}/${m.model}") alias.models;
+
+        # A single host-aware preset: aliases resolve to opencode-go models on personal
+        # hosts and grove models on the work host, so no per-host preset switching is needed
+        hdwlinux = {
+          orchestrator = {
+            model = resolveAliases "orchestration";
+          };
+          oracle = {
+            model = resolveAliases "analysis";
+          };
+          librarian = {
+            model = resolveAliases "research";
+            mcps = [
+              "context7"
+              "gh_grep"
+            ];
+          };
+          explorer = {
+            model = resolveAliases "fast";
+          };
+          designer = {
+            model = resolveAliases "balanced";
+          };
+          fixer = {
+            model = resolveAliases "coding";
+          };
+          observer = {
+            model = resolveAliases "writing";
+          };
+        };
+      in
+      {
+        home.packages = [
+          (pkgs.writeShellApplication {
+            name = "omos";
+            runtimeInputs = [ pkgs.python3 ];
+            text = builtins.readFile ./omos.sh;
+          })
+        ];
+
+        programs.opencode.settings.plugin = [
+          "oh-my-opencode-slim@beta"
+        ];
+
+        xdg.configFile."opencode/oh-my-opencode-slim.json" = {
+          text = builtins.toJSON {
+            multiplexer = {
+              type = "auto";
+              layout = "main-vertical";
+              main_pane_size = 60;
+            };
+            preset = "hdwlinux";
+            disabled_agents = [ ];
+            presets = {
+              hdwlinux = hdwlinux;
+            };
+          };
+        };
       };
   };
 }

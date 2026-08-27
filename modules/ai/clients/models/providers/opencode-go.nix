@@ -34,11 +34,32 @@
               output = 32000;
             };
           };
-          "grok-4.5" = {
-            displayName = "Grok 4.5";
+          "glm-5.3" = {
+            displayName = "GLM-5.3";
+            limits = {
+              context = 200000;
+              output = 32000;
+            };
+          };
+          "glm-5.3-flash" = {
+            displayName = "GLM-5.3 Flash";
             limits = {
               context = 200000;
               output = 16000;
+            };
+          };
+          "gpt-5.6-luna" = {
+            displayName = "GPT 5.6 Luna";
+            limits = {
+              context = 200000;
+              output = 16000;
+            };
+          };
+          "grok-4.6" = {
+            displayName = "Grok 4.6";
+            limits = {
+              context = 200000;
+              output = 32000;
             };
           };
           "kimi-k2.6" = {
@@ -109,6 +130,13 @@
             limits = {
               context = 200000;
               output = 16000;
+            };
+          };
+          "qwen3.8-max" = {
+            displayName = "Qwen3.8 Max";
+            limits = {
+              context = 200000;
+              output = 32000;
             };
           };
         };

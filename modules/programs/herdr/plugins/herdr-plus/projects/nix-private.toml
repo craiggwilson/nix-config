@@ -1,0 +1,11 @@
+name = "nix-private"
+description = "Private host secrets and data"
+group = "hdwlinux"
+working_dir = "~/Projects/hdwlinux/nix-private"
+
+[[tabs]]
+name = "terminal"
+
+[[tabs]]
+name = "opencode"
+command = "opencode"
