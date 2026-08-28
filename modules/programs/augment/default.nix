@@ -86,7 +86,7 @@
         resolveModelSlug =
           aliasName:
           let
-            alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
+            alias = lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
           in
           toAuggieSlug alias.model;
 

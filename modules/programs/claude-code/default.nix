@@ -14,13 +14,14 @@
         ...
       }:
       let
-        # Resolve an alias name to a Claude Code model string.
-        # If the alias points to the anthropic provider, use the model name directly.
-        # Otherwise, infer the Claude Code alias from the model name pattern.
+        # Resolve an alias name to a Claude Code model string from its primary
+        # (first fallback-chain) entry. If the alias points to the anthropic
+        # provider, use the model name directly. Otherwise, infer the Claude
+        # Code alias from the model name pattern.
         resolveModel =
           aliasName:
           let
-            alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
+            alias = lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
           in
           if alias.provider == "anthropic" then
             alias.model
