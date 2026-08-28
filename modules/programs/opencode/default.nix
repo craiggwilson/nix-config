@@ -172,6 +172,87 @@
       };
   };
 
+  config.substrate.modules.programs.opencode.opencode-mem = {
+    tags = [
+      "ai:clients"
+    ];
+
+    homeManager =
+      {
+        config,
+        lib,
+        ...
+      }:
+      let
+        # Use the primary model from the analysis alias so the memory plugin follows
+        # the same host-specific provider routing as the rest of OpenCode.
+        resolvePrimaryAlias = aliasName: lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
+
+        analysisModel = resolvePrimaryAlias "analysis";
+
+        opencodeMemConfig = {
+          storagePath = "~/.opencode-mem/data";
+
+          opencodeProvider = analysisModel.provider;
+          opencodeModel = analysisModel.model;
+
+          embeddingModel = "Xenova/nomic-embed-text-v1";
+
+          memory = {
+            defaultScope = "project";
+          };
+
+          webServerEnabled = false;
+          webServerPort = 4747;
+          webServerHost = "127.0.0.1";
+
+          autoCaptureEnabled = true;
+          autoCaptureLanguage = "auto";
+
+          showAutoCaptureToasts = true;
+          showUserProfileToasts = true;
+          showErrorToasts = true;
+
+          userProfileAnalysisInterval = 10;
+          userProfileMaxContextBytes = 32768;
+          maxMemories = 25;
+
+          compaction = {
+            enabled = true;
+            memoryLimit = 10;
+          };
+
+          chatMessage = {
+            enabled = true;
+            maxMemories = 3;
+            excludeCurrentSession = true;
+            injectOn = "first";
+          };
+        };
+      in
+      {
+        programs.opencode.settings.plugin = [
+          "opencode-mem"
+        ];
+
+        xdg.configFile."opencode/opencode-mem.jsonc" = {
+          text = builtins.toJSON opencodeMemConfig;
+        };
+      };
+  };
+
+  config.substrate.modules.programs.opencode.ponytail = {
+    tags = [
+      "ai:clients"
+    ];
+
+    homeManager = {
+      programs.opencode.settings.plugin = [
+        "@dietrichgebert/ponytail"
+      ];
+    };
+  };
+
   config.substrate.modules.programs.opencode.oh-my-opencode-slim = {
     tags = [
       "ai:clients"
