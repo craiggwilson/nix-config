@@ -200,6 +200,7 @@
         tags = [
           # Host-specific tags
           "host:minimal"
+          "host:adblocker"
 
           {
             "host:blackflame" = [
