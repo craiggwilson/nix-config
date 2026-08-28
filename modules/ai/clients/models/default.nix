@@ -161,32 +161,33 @@
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
           analysis = {
             models = [
-              (go "kimi-k3")
-              (go "qwen3.8-max")
+              (go "gpt-5.6-luna")
+              (go "qwen3.7-plus")
             ];
           };
           balanced = {
             models = [
-              (go "deepseek-v4-pro")
-              (go "glm-5.3")
+              (go "mimo-v2.5-pro")
+              (go "mimo-v2.5")
             ];
           };
           code-review = {
             models = [
               (go "kimi-k2.7-code")
-              (go "gpt-5.6-luna")
+              (go "mimo-v2.5-pro")
             ];
           };
           coding = {
             models = [
               (go "kimi-k2.7-code")
-              (go "glm-5.3")
+              (go "mimo-v2.5")
             ];
           };
           fast = {
             models = [
-              (go "deepseek-v4-flash")
+              (go "qwen3.8-flash")
               (go "glm-5.3-flash")
+              (go "mimo-v2.5")
             ];
           };
           orchestration = {
@@ -198,13 +199,13 @@
           research = {
             models = [
               (go "gpt-5.6-luna")
-              (go "qwen3.7-plus")
+              (go "qwen3.6-plus")
             ];
           };
           writing = {
             models = [
               (go "gpt-5.6-luna")
-              (go "qwen3.7-plus")
+              (go "qwen3.6-plus")
             ];
           };
         };

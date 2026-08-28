@@ -9,134 +9,190 @@
           "deepseek-v4-flash" = {
             displayName = "DeepSeek V4 Flash";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 384000;
+            };
+          };
+          "deepseek-v4-flash-vision-exp" = {
+            displayName = "DeepSeek V4 Flash Vision Exp";
+            limits = {
+              context = 1000000;
+              output = 384000;
             };
           };
           "deepseek-v4-pro" = {
-            displayName = "DeepSeek V4 Pro";
+            displayName = "DeepSeek V4 Pro (New)";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 384000;
+            };
+          };
+          "glm-5" = {
+            displayName = "GLM-5";
+            limits = {
+              context = 202752;
+              output = 32768;
             };
           };
           "glm-5.1" = {
             displayName = "GLM-5.1";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 202752;
+              output = 32768;
             };
           };
           "glm-5.2" = {
             displayName = "GLM-5.2";
             limits = {
-              context = 200000;
-              output = 32000;
+              context = 1000000;
+              output = 131072;
             };
           };
           "glm-5.3" = {
             displayName = "GLM-5.3";
             limits = {
-              context = 200000;
-              output = 32000;
+              context = 1000000;
+              output = 131072;
             };
           };
           "glm-5.3-flash" = {
             displayName = "GLM-5.3 Flash";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 131072;
             };
           };
           "gpt-5.6-luna" = {
             displayName = "GPT 5.6 Luna";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1050000;
+              output = 128000;
             };
           };
           "grok-4.6" = {
             displayName = "Grok 4.6";
             limits = {
-              context = 200000;
-              output = 32000;
+              context = 500000;
+              output = 500000;
+            };
+          };
+          "hy3" = {
+            displayName = "Hy3";
+            limits = {
+              context = 256000;
+              output = 64000;
+            };
+          };
+          "hy4-preview" = {
+            displayName = "Hy4 Preview";
+            limits = {
+              context = 1024000;
+              output = 64000;
             };
           };
           "kimi-k2.6" = {
             displayName = "Kimi K2.6";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 262144;
+              output = 65536;
             };
           };
           "kimi-k2.7-code" = {
             displayName = "Kimi K2.7 Code";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 262144;
+              output = 262144;
             };
           };
           "kimi-k3" = {
             displayName = "Kimi K3";
             limits = {
-              context = 200000;
-              output = 32000;
+              context = 1048576;
+              output = 131072;
+            };
+          };
+          "longcat-2.0" = {
+            displayName = "LongCat-2.0";
+            limits = {
+              context = 1000000;
+              output = 131072;
             };
           };
           "mimo-v2.5" = {
             displayName = "MiMo-V2.5";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 128000;
             };
           };
           "mimo-v2.5-pro" = {
             displayName = "MiMo-V2.5-Pro";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1048576;
+              output = 128000;
+            };
+          };
+          "minimax-m2.5" = {
+            displayName = "MiniMax M2.5";
+            limits = {
+              context = 204800;
+              output = 65536;
             };
           };
           "minimax-m2.7" = {
             displayName = "MiniMax M2.7";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 204800;
+              output = 131072;
             };
           };
           "minimax-m3" = {
             displayName = "MiniMax M3";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 131072;
+            };
+          };
+          "muse-spark-1.2-contributor" = {
+            displayName = "Muse Spark 1.2 Contributor";
+            limits = {
+              context = 1048576;
+              output = 131072;
             };
           };
           "qwen3.6-plus" = {
             displayName = "Qwen3.6 Plus";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 65536;
             };
           };
           "qwen3.7-max" = {
             displayName = "Qwen3.7 Max";
             limits = {
-              context = 200000;
-              output = 32000;
+              context = 1000000;
+              output = 65536;
             };
           };
           "qwen3.7-plus" = {
             displayName = "Qwen3.7 Plus";
             limits = {
-              context = 200000;
-              output = 16000;
+              context = 1000000;
+              output = 65536;
+            };
+          };
+          "qwen3.8-flash" = {
+            displayName = "Qwen3.8 Flash";
+            limits = {
+              context = 1000000;
+              output = 131072;
             };
           };
           "qwen3.8-max" = {
             displayName = "Qwen3.8 Max";
             limits = {
-              context = 200000;
-              output = 32000;
+              context = 1000000;
+              output = 131072;
             };
           };
         };
