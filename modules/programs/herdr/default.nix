@@ -287,36 +287,100 @@
     ];
 
     homeManager =
-      { config, lib, ... }:
       {
-        hdwlinux.programs.herdr.plugins = [
-          {
-            id = "mirror";
-            source = "nikok6/herdr-mirror";
-            keybindings = [
-              {
-                key = "prefix+alt+m";
-                command = "mirror.start";
-                description = "mirror: start";
-              }
-              {
-                key = "prefix+alt+shift+p";
-                command = "mirror.pause";
-                description = "mirror: pause";
-              }
-              {
-                key = "prefix+alt+s";
-                command = "mirror.status";
-                description = "mirror: status";
-              }
-              {
-                key = "prefix+alt+shift+t";
-                command = "mirror.teardown";
-                description = "mirror: teardown";
-              }
-            ];
-          }
-        ];
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
+      let
+        # Raw mirror hosts.toml content (host/option reference:
+        # https://github.com/nikok6/herdr-mirror). Keys are the raw TOML keys,
+        # so use snake_case and drop unset fields yourself.
+        mirrorTomlFormat = pkgs.formats.toml { };
+        mirrorToml = mirrorTomlFormat.generate "mirror-hosts.toml" config.hdwlinux.programs.herdr.mirror.hosts;
+      in
+      {
+        options.hdwlinux.programs.herdr.mirror.hosts = lib.mkOption {
+          description = ''
+            Raw `hosts.toml` for the herdr-mirror plugin, written to
+            `~/.config/herdr-mirror/hosts.toml`. e.g.
+            `{ hosts.work.target = "work"; }`.
+          '';
+          type = lib.types.attrsOf lib.types.anything;
+          default = { };
+        };
+
+        config = {
+          hdwlinux.programs.herdr.plugins = [
+            {
+              id = "mirror";
+              source = "nikok6/herdr-mirror";
+              keybindings = [
+                {
+                  key = "prefix+alt+m";
+                  command = "mirror.start";
+                  description = "mirror: start";
+                }
+                {
+                  key = "prefix+alt+shift+p";
+                  command = "mirror.pause";
+                  description = "mirror: pause";
+                }
+                {
+                  key = "prefix+alt+s";
+                  command = "mirror.status";
+                  description = "mirror: status";
+                }
+                {
+                  key = "prefix+alt+shift+t";
+                  command = "mirror.teardown";
+                  description = "mirror: teardown";
+                }
+              ];
+            }
+          ];
+
+          # Canonical config path, reachable from both plugin actions and the
+          # `herdr-mirror` CLI.
+          xdg.configFile."herdr-mirror/hosts.toml".source = mirrorToml;
+        };
+      };
+  };
+
+  config.substrate.modules.programs.herdr.mirror-unsouled = {
+    tags = [
+      "ai:clients"
+      "programming"
+      "host:blackflame"
+      "raeford"
+    ];
+
+    homeManager =
+      { config, ... }:
+      {
+        # On this (work) computer, mirror the personal machine over ssh.
+        hdwlinux.programs.herdr.mirror.hosts = {
+          hosts.unsouled.target = "unsouled.${config.hdwlinux.networking.domain}";
+        };
+      };
+  };
+
+  config.substrate.modules.programs.herdr.mirror-blackflame = {
+    tags = [
+      "ai:clients"
+      "programming"
+      "host:unsouled"
+      "raeford"
+    ];
+
+    homeManager =
+      { config, ... }:
+      {
+        # On this machine, mirror the work computer over ssh.
+        hdwlinux.programs.herdr.mirror.hosts = {
+          hosts.blackflame.target = "blackflame.${config.hdwlinux.networking.domain}";
+        };
       };
   };
 
@@ -429,7 +493,12 @@
     ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         hdwlinux.programs.herdr.plugins = [
           {
@@ -459,7 +528,12 @@
     ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         home.packages = [
           pkgs.dtach
