@@ -43,7 +43,10 @@ in
           open = false;
           prime = lib.mkIf hasBusIds {
             sync.enable = false;
-            offload.enable = true;
+            offload = {
+              enable = true;
+              enableOffloadCmd = true;
+            };
             intelBusId = convertBusId intelBusId;
             nvidiaBusId = convertBusId nvidiaBusId;
           };
