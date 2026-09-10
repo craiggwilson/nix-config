@@ -221,13 +221,16 @@
     homeManager =
       { lib, ... }:
       let
-        # Work host routes aliases through the grove gateway (plugin pinned at v1.3.0).
+        # Work host routes aliases through the grove gateway (plugin pinned at v1.3.0)
+        # and directly to fireworks.ai for open-source models.
         mk = provider: model: { inherit provider model; };
+        fw = model: mk "fireworks-ai" "accounts/fireworks/models/${model}";
       in
       {
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
           analysis = {
             models = [
+              (fw "glm-5p2")
               (mk "grove-misc" "fw-glm-5.2")
               (mk "grove-openai" "gpt-5.6-terra")
               (mk "grove-anthropic" "claude-opus-4-7")
@@ -235,25 +238,31 @@
           };
           balanced = {
             models = [
+              (fw "kimi-k3")
               (mk "grove-anthropic" "claude-sonnet-5")
             ];
           };
           code-review = {
             models = [
+              (fw "glm-5p2")
               (mk "grove-misc" "fw-glm-5.2")
               (mk "grove-openai" "gpt-5.4")
               (mk "grove-misc" "fw-kimi-k2.7-code")
+              (fw "kimi-k2p7-code")
             ];
           };
           coding = {
             models = [
+              (fw "deepseek-v4-pro-0813")
               (mk "grove-misc" "fw-deepseek-v4-pro")
               (mk "grove-misc" "fw-kimi-k2.7-code")
+              (fw "kimi-k2p7-code")
               (mk "grove-openai" "gpt-5.3-codex")
             ];
           };
           fast = {
             models = [
+              (fw "deepseek-v4-flash-0731")
               (mk "grove-anthropic" "claude-haiku-4-5")
               (mk "grove-openai" "gpt-5.4-mini")
               (mk "grove-misc" "deepseek-v4-flash")
@@ -263,6 +272,7 @@
             models = [
               (mk "grove-anthropic" "claude-opus-4-8")
               (mk "grove-openai" "gpt-5.6-sol")
+              (fw "qwen3p8-max")
             ];
           };
           research = {
@@ -270,12 +280,14 @@
               (mk "grove-openai" "gpt-5.6-luna")
               (mk "grove-openai" "gpt-5.4")
               (mk "grove-misc" "fw-glm-5.2")
+              (fw "glm-5p2")
             ];
           };
           writing = {
             models = [
               (mk "grove-openai" "gpt-5.6-luna")
               (mk "grove-openai" "gpt-5.5")
+              (fw "kimi-k3")
             ];
           };
         };

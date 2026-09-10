@@ -73,6 +73,13 @@
               // lib.optionalAttrs (oc ? reasoning) { inherit (oc) reasoning; }
               // lib.optionalAttrs (oc ? tool_call) { inherit (oc) tool_call; };
           };
+          "fireworks-ai" = {
+            npm = "@ai-sdk/openai-compatible";
+            env = [ "FIREWORKS_API_KEY" ];
+            options = {
+              baseURL = "https://api.fireworks.ai/inference/v1";
+            };
+          };
         };
 
         # Build providers config from hdwlinux.ai.clients.models.providers
@@ -97,6 +104,7 @@
             models = lib.mapAttrs (slug: model: transformModel slug model) provider.models;
           }
           // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
+          // lib.optionalAttrs (meta ? env && meta.env != [ ]) { inherit (meta) env; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
         # Opencode theme derived from the active hdwlinux theme colors
@@ -169,6 +177,13 @@
         programs.opencode.settings.plugin = [
           "file://${grovePluginDir}"
         ];
+
+        # Allow non-Grove providers (e.g. fireworks) to coexist with Grove providers.
+        # Without this, the grove gateway plugin defaults to filtering out all non-Grove
+        # providers except github-copilot.
+        xdg.configFile."opencode/grove.jsonc".text = builtins.toJSON {
+          allowProviders = "*";
+        };
       };
   };
 
