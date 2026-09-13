@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mihakrumpestar/panix/main/gen/panix-schema.yaml
+# Deploy with: panix deploy            (all machines)
+#              panix deploy -t unsouled (single machine; names are auto-registered as tags)
+fleet:
+  flakes:
+    nix-config: # url defaults to "." (this flake)
+      installables:
+        nixosConfigurations:
+          blackflame:
+            machines:
+              blackflame: # matched against ~/.ssh/config; add ssh.hostname here if it doesn't resolve
+          unsouled:
+            machines:
+              unsouled:

@@ -2,8 +2,14 @@
   description = "HDW Linux";
 
   nixConfig = {
-    extra-substituters = [ "https://vicinae.cachix.org" ];
-    extra-trusted-public-keys = [ "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc=" ];
+    extra-substituters = [
+      "https://vicinae.cachix.org"
+      "https://mihakrumpestar.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
+      "mihakrumpestar.cachix.org-1:7mKgpsk+9+iJcaT5DwvUtMxlJS+1GH/dlYhzoFkefJg="
+    ];
   };
 
   inputs = {
@@ -85,6 +91,11 @@
 
     opnix = {
       url = "github:craiggwilson/opnix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    panix = {
+      url = "github:mihakrumpestar/panix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -165,7 +165,25 @@
     },
     "flake-utils_4": {
       "inputs": {
-        "systems": "systems_5"
+        "systems": "systems_4"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_5": {
+      "inputs": {
+        "systems": "systems_6"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -624,6 +642,27 @@
         "type": "github"
       }
     },
+    "panix": {
+      "inputs": {
+        "flake-utils": "flake-utils_4",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788781958,
+        "narHash": "sha256-46rZR/NP9A24IsROIRdcvyueUimS0ZF5/9fA2ZU3bPo=",
+        "owner": "mihakrumpestar",
+        "repo": "panix",
+        "rev": "7f8d2c94c6084031a8b78ece4f2f5bbe2d14fe12",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mihakrumpestar",
+        "repo": "panix",
+        "type": "github"
+      }
+    },
     "python-flexseal": {
       "inputs": {
         "flake-utils": [
@@ -670,6 +709,7 @@
         "opencode": "opencode",
         "openspec": "openspec",
         "opnix": "opnix",
+        "panix": "panix",
         "rust-overlay": "rust-overlay_2",
         "scribe": "scribe",
         "spicetify-nix": "spicetify-nix",
@@ -786,7 +826,7 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems_4"
+        "systems": "systems_5"
       },
       "locked": {
         "lastModified": 1786252193,
@@ -804,7 +844,7 @@
     },
     "stable-diffusion-webui-nix": {
       "inputs": {
-        "flake-utils": "flake-utils_4",
+        "flake-utils": "flake-utils_5",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -949,13 +989,28 @@
         "type": "github"
       }
     },
+    "systems_8": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
     "vicinae": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
         ],
         "soulver-cpp": "soulver-cpp",
-        "systems": "systems_6"
+        "systems": "systems_7"
       },
       "locked": {
         "lastModified": 1786353281,
@@ -977,7 +1032,7 @@
         "nixpkgs": [
           "nixpkgs"
         ],
-        "systems": "systems_7",
+        "systems": "systems_8",
         "vicinae": [
           "vicinae"
         ]
