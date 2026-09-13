@@ -1,0 +1,275 @@
+// Standalone niri config for the Noctalia desktop (modules/desktop/noctalia).
+// Ported from desktop/custom/niri; shell-related rules and binds route through
+// the noctalia IPC instead of waybar/vicinae/audioctl/screenctl.
+
+cursor {
+    hide-when-typing
+}
+
+gestures {
+    hot-corners {
+        off
+    }
+}
+
+hotkey-overlay { skip-at-startup; }
+
+debug {
+    ignore-drm-device "/dev/dri/renderD129"
+
+    // Lets Noctalia activate windows and run notification actions.
+    honor-xdg-activation-with-invalid-serial
+}
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+            options "compose:ralt,ctrl:nocaps"
+        }
+    }
+
+    touchpad {
+        dwt
+        tap
+        natural-scroll
+    }
+
+    mouse { }
+
+    tablet {
+        map-to-output "eDP-1"
+    }
+
+    touch {
+        map-to-output "eDP-1"
+    }
+}
+
+layout {
+    focus-ring {
+        on
+        width 3
+    }
+
+    tab-indicator {
+        width 6
+        corner-radius 3
+        gaps-between-tabs 6
+        gap 8
+        place-within-column
+        hide-when-single-tab
+        position "top"
+    }
+
+    always-center-single-column
+
+    center-focused-column "never"
+
+    default-column-display "normal"
+
+    default-column-width { proportion 0.33333; }
+
+    gaps 10
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.95
+    }
+
+    // Noctalia's wallpaper layer sits in the backdrop and provides the background.
+    background-color "transparent"
+}
+
+prefer-no-csd
+
+recent-windows {
+    off
+}
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+// ── Noctalia surfaces ────────────────────────────────────────────────
+
+// Stationary wallpaper behind all workspaces (replaces hyprpaper).
+layer-rule {
+    match namespace="^noctalia-wallpaper"
+    place-within-backdrop true
+}
+
+// Blur content behind the bar, panels, notifications, dock, and OSD.
+layer-rule {
+    match namespace="^noctalia-(bar-[^\"]+|notification|dock|panel|attached-panel|osd)$"
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="noctalia-window-switcher"
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+// Floating Noctalia settings window.
+window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
+}
+
+// ── Window rules ─────────────────────────────────────────────────────
+
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+window-rule {
+    match app-id="com.mitchellh.ghostty"
+    default-column-width { proportion 0.5; }
+
+    background-effect {
+        blur true
+        xray false
+    }
+
+    opacity 0.88
+}
+
+window-rule {
+    match app-id="codium"
+    match app-id="Slack"
+    match app-id="obsidian"
+
+    background-effect {
+        blur true
+        xray false
+    }
+
+    draw-border-with-background false
+
+    opacity 0.88
+}
+
+window-rule {
+    match app-id="1password"
+    match app-id="slack"
+
+    block-out-from "screen-capture"
+}
+
+workspace "stash" { }
+
+window-rule {
+    match app-id=r#"^scratch*"#
+    open-on-workspace "stash"
+    open-floating true
+
+    default-column-width { proportion 0.95; }
+    default-window-height { proportion 0.95; }
+    default-column-display "tabbed"
+}
+
+spawn-at-startup "app-terminal" "--class=scratch.terminal"
+
+binds {
+    Mod+E hotkey-overlay-title="Launch file manager" { spawn "app-fileManager"; }
+    Mod+F { fullscreen-window; }
+    Mod+Shift+F { toggle-window-floating; }
+    Mod+L hotkey-overlay-title="Toggle password manager" { spawn "app-passwordManager-toggle"; }
+    Mod+Shift+L hotkey-overlay-title="Lock password manager" { spawn "app-passwordManager-lock"; }
+    Mod+Q hotkey-overlay-title="Close window" { close-window; }
+    Mod+R { switch-preset-column-width; }
+    Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "app-terminal"; }
+    Mod+V hotkey-overlay-title="Show clipboard menu" { spawn-sh "noctalia msg panel-toggle clipboard"; }
+    Mod+W { toggle-column-tabbed-display; }
+    Mod+X hotkey-overlay-title="Open power menu" { spawn-sh "noctalia msg panel-toggle session"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+Shift+Equal { set-window-height "+10%"; }
+    Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn "niri-scratchpad" "target" "--spawn" "app-terminal --class=scratch.terminal" "appid" "scratch.terminal"; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Shift+Minus { set-window-height "-10%"; }
+    Mod+Return { center-column; }
+    Mod+Shift+Return { maximize-window-to-edges; }
+    Mod+Shift+Slash { show-hotkey-overlay; }
+    Mod+Space hotkey-overlay-title="Show application menu" { spawn-sh "noctalia msg panel-toggle launcher"; }
+    Mod+Tab repeat=false { toggle-overview; }
+
+    Mod+S hotkey-overlay-title="Toggle control center" { spawn-sh "noctalia msg panel-toggle control-center"; }
+    Mod+Comma hotkey-overlay-title="Toggle shell settings" { spawn-sh "noctalia msg settings-toggle"; }
+    Alt+Tab repeat=false hotkey-overlay-title="Window switcher" { spawn-sh "noctalia msg window-switcher"; }
+
+    // Volume/brightness go through Noctalia so its OSD is used (replaces syshud).
+    XF86AudioRaiseVolume { spawn-sh "noctalia msg volume-up"; }
+    XF86AudioLowerVolume { spawn-sh "noctalia msg volume-down"; }
+    XF86AudioMute         allow-when-locked=true { spawn-sh "noctalia msg volume-mute"; }
+    XF86MonBrightnessUp   { spawn-sh "noctalia msg brightness-up"; }
+    XF86MonBrightnessDown { spawn-sh "noctalia msg brightness-down"; }
+
+    Mod+Left  { focus-column-or-monitor-left; }
+    Mod+Down  { focus-window-or-monitor-down; }
+    Mod+Up    { focus-window-or-monitor-up; }
+    Mod+Right { focus-column-or-monitor-right; }
+
+    Mod+Shift+Left  { move-column-left-or-to-monitor-left; }
+    Mod+Shift+Down  { move-window-down; }
+    Mod+Shift+Up    { move-window-up; }
+    Mod+Shift+Right { move-column-right-or-to-monitor-right; }
+
+    Mod+Home { focus-column-first; }
+    Mod+End  { focus-column-last; }
+    Mod+Shift+Home { move-column-to-first; }
+    Mod+Shift+End  { move-column-to-last; }
+
+    Mod+Page_Down      { focus-workspace-down; }
+    Mod+Page_Up        { focus-workspace-up; }
+    Mod+Shift+Page_Down { move-column-to-workspace-down; }
+    Mod+Shift+Page_Up   { move-column-to-workspace-up; }
+
+    Mod+Shift+Ctrl+Page_Down { move-workspace-down; }
+    Mod+Shift+Ctrl+Page_Up   { move-workspace-up; }
+
+    Mod+1 { focus-workspace 1; }
+    Mod+2 { focus-workspace 2; }
+    Mod+3 { focus-workspace 3; }
+    Mod+4 { focus-workspace 4; }
+    Mod+5 { focus-workspace 5; }
+    Mod+6 { focus-workspace 6; }
+    Mod+7 { focus-workspace 7; }
+    Mod+8 { focus-workspace 8; }
+    Mod+9 { focus-workspace 9; }
+    Mod+0 { focus-workspace 10; }
+    Mod+Shift+1 { move-column-to-workspace 1; }
+    Mod+Shift+2 { move-column-to-workspace 2; }
+    Mod+Shift+3 { move-column-to-workspace 3; }
+    Mod+Shift+4 { move-column-to-workspace 4; }
+    Mod+Shift+5 { move-column-to-workspace 5; }
+    Mod+Shift+6 { move-column-to-workspace 6; }
+    Mod+Shift+7 { move-column-to-workspace 7; }
+    Mod+Shift+8 { move-column-to-workspace 8; }
+    Mod+Shift+9 { move-column-to-workspace 9; }
+    Mod+Shift+0 { move-column-to-workspace 10; }
+
+    Mod+Shift+BracketLeft  { consume-or-expel-window-left; }
+    Mod+Shift+BracketRight { consume-or-expel-window-right; }
+
+    Print       { screenshot; }
+    Ctrl+Print  { screenshot-screen; }
+    Alt+Print   { screenshot-window; }
+    Mod+Print { spawn-sh "noctalia msg plugin noctalia/screen_recorder:service all toggle"; }
+
+    Mod+C hotkey-overlay-title="Clear Dynamic Cast Target" { clear-dynamic-cast-target; }
+    Mod+Shift+C hotkey-overlay-title="Set Dynamic Cast Window" { set-dynamic-cast-window; }
+    Mod+Ctrl+C hotkey-overlay-title="Set Dynamic Cast Monitor" { set-dynamic-cast-monitor; }
+
+    Mod+Shift+Ctrl+E { quit; }
+
+    Mod+WheelScrollDown                 { focus-workspace-down; }
+    Mod+WheelScrollUp                   { focus-workspace-up; }
+    Mod+WheelScrollRight                { focus-column-right; }
+    Mod+WheelScrollLeft                 { focus-column-left; }
+}

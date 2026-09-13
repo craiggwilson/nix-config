@@ -24,6 +24,19 @@
         };
       };
     };
+
+    homeManager = {
+      # The package ships an XDG autostart entry (Exec=systemctl --user start
+      # warp-taskbar) that launches the GUI tray at login. Override it with
+      # Hidden=true so warp-taskbar does not start; warp-cli and the noctalia
+      # warp widget still work, and the GUI remains launchable on demand.
+      xdg.configFile."autostart/com.cloudflare.WarpTaskbar.desktop".text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=Cloudflare Zero Trust
+        Hidden=true
+      '';
+    };
   };
 }
 

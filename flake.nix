@@ -5,10 +5,12 @@
     extra-substituters = [
       "https://vicinae.cachix.org"
       "https://mihakrumpestar.cachix.org"
+      "https://noctalia.cachix.org"
     ];
     extra-trusted-public-keys = [
       "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
       "mihakrumpestar.cachix.org-1:7mKgpsk+9+iJcaT5DwvUtMxlJS+1GH/dlYhzoFkefJg="
+      "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
     ];
   };
 
@@ -69,6 +71,10 @@
     };
 
     niri-scratchpad.url = "github:argosnothing/niri-scratchpad-rs";
+
+    # Pinned to the cachix branch: always the latest cached build. Do not follow
+    # nixpkgs here, or the derivation hash stops matching the binary cache.
+    noctalia.url = "github:noctalia-dev/noctalia/cachix";
 
     nix-flatpak.url = "github:gmodena/nix-flatpak/?ref=latest";
 
@@ -147,6 +153,7 @@
         packageNamespace = "hdwlinux";
 
         homeManagerModules = [
+          inputs.noctalia.homeModules.default
           inputs.scribe.homeManagerModules.default
           inputs.vicinae.homeManagerModules.default
         ];
@@ -240,7 +247,7 @@
             "users:craig" = [
               "ai:clients"
               "cloud:sync"
-              "desktop:custom:niri"
+              "desktop:noctalia:niri"
               "networking:tailscale"
               "programming"
               "security:passwordmanager"
@@ -309,6 +316,8 @@
           { "desktop:custom" = [ "gui" ]; }
           "desktop:custom:hyprland"
           "desktop:custom:niri"
+          { "desktop:noctalia" = [ "gui" ]; }
+          "desktop:noctalia:niri"
           "filesystem:envfs"
           "filesystem:nfs"
           "flatpaks"
