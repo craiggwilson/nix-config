@@ -29,6 +29,11 @@ in
       {
         options.hdwlinux.networking.domain = domainOption;
 
+        config.home.packages = [
+          pkgs.dnsutils
+          pkgs.inetutils
+        ];
+
         config.hdwlinux.programs.hdwlinux = {
           runtimeInputs = [ pkgs.ripgrep ];
           subcommands.wifi = {
