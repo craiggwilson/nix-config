@@ -5,13 +5,23 @@ let
     type = lib.types.str;
     default = "";
   };
+
+  lanCidrsOption = lib.mkOption {
+    description = "Source CIDRs treated as the local LAN when scoping host services (e.g., KDE Connect).";
+    type = lib.types.listOf lib.types.str;
+    default = [ ];
+  };
 in
 {
   config.substrate.modules.networking = {
     tags = [ "networking" ];
-    nixos = {
-      options.hdwlinux.networking.domain = domainOption;
 
+    generic = {
+      options.hdwlinux.networking.domain = domainOption;
+      options.hdwlinux.networking.lanCidrs = lanCidrsOption;
+    };
+
+    nixos = {
       config.networking = {
         networkmanager = {
           enable = true;
@@ -27,8 +37,6 @@ in
     homeManager =
       { pkgs, ... }:
       {
-        options.hdwlinux.networking.domain = domainOption;
-
         config.home.packages = [
           pkgs.dnsutils
           pkgs.inetutils
