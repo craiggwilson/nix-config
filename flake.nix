@@ -248,7 +248,6 @@
               "ai:clients"
               "cloud:sync"
               "desktop:noctalia:niri"
-              "networking:tailscale"
               "programming"
               "security:passwordmanager"
               "security:secrets"
@@ -266,6 +265,7 @@
               "filesystem:nfs"
               "flatpaks"
               "gaming"
+              "networking:tailscale"
               "virtualization:podman"
             ];
           }

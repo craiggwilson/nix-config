@@ -2,7 +2,6 @@
   config.substrate.modules.networking.tailscale = {
     tags = [
       "networking:tailscale"
-      "users:craig:personal"
     ];
 
     nixos = {
