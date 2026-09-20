@@ -20,7 +20,6 @@
       {
         config,
         hasTag,
-        host,
         lib,
         pkgs,
         ...
@@ -32,14 +31,35 @@
         # The opencode-companion plugin only exists where ai:clients is tagged;
         # its default model follows the primary ("fast") alias.
         hasAiClients = hasTag "ai:clients";
+        hasProgramming = hasTag "programming";
+        hasTailscale = hasTag "networking:tailscale";
+        isWork = hasTag "users:craig:work";
         fastModel = lib.head (
           map (m: "${m.provider}/${m.model}") config.hdwlinux.ai.clients.models.aliases.fast.models
         );
+
+        mkCapsule = id: members: {
+          inherit id members;
+
+          enabled = true;
+          accordion = true;
+          accordion_direction = "start";
+          opacity = 0.10;
+          padding = 8;
+          fill = "primary";
+        };
+        mkCapsuleEnd =
+          id: members:
+          (mkCapsule id members)
+          // {
+            accordion_direction = "end";
+          };
       in
       {
         home.packages = [
           pkgs.brightnessctl
           pkgs.gpu-screen-recorder
+          pkgs.python3
           pkgs.udiskie
         ];
 
@@ -54,28 +74,6 @@
               mode = "dark";
               source = "custom";
               custom_palette = "hdwlinux";
-            };
-
-            plugin_settings = {
-              "davemhammer/obsidian" = {
-                vault_path = "/home/craig/Projects/kb";
-                daily_folder = "daily";
-              };
-              "mindnbytes/nix-status" = {
-                flake_dir = config.hdwlinux.flake;
-                nixos_configuration = host;
-              };
-            }
-            // lib.optionalAttrs hasAiClients {
-              "weinguyen/opencode-companion" = {
-                default_model = fastModel;
-                # Use the systemd-managed opencode-web service
-                # (programs.opencode.web) instead of the plugin's own server.
-                server_mode = "external";
-                server_url = "http://127.0.0.1:4096";
-                "panel-fill_position" = "top_right";
-                auto_start = false;
-              };
             };
 
             wallpaper = {
@@ -96,7 +94,11 @@
               longitude = -96.7655;
             };
             nightlight.enabled = true;
-            weather.unit = "imperial";
+
+            weather = {
+              enabled = true;
+              unit = "imperial";
+            };
 
             idle.behavior = {
               dim = {
@@ -125,13 +127,58 @@
 
             plugins.enabled = [
               "noctalia/screen_recorder"
-              "mindnbytes/nix-status"
               "davemhammer/obsidian"
               "aristides/udiskie"
+              "kenn/keybind-cheatsheet"
+              "samuelskovbakke/calculator-plus"
+              "weinguyen/procmon"
+              "icefish/phone-connect"
             ]
             ++ lib.optionals hasAiClients [ "weinguyen/opencode-companion" ]
-            ++ lib.optionals (hasTag "users:craig:work") [ "levi/warp" ]
-            ++ lib.optionals (hasTag "users:craig:personal") [ "rylos/tailnet" ];
+            ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
+            ++ lib.optionals isWork [ "levi/warp" ]
+            ++ lib.optionals hasTailscale [ "rylos/tailnet" ];
+
+            plugin_settings = {
+              "aristides/udiskie".manager_placement = "attached";
+
+              "davemhammer/obsidian" = {
+                vault_path = "/home/craig/Projects/kb";
+                daily_folder = "daily";
+                manager_open_near_click = false;
+                manager_placement = "attached";
+              };
+
+              "icefish/phone-connect".panel_open_near_click = false;
+
+              "samuelskovbakke/calculator-plus".panel_open_near_click = false;
+
+              "weinguyen/procmon" = {
+                panel_open_near_click = false;
+                panel_placement = "attached";
+              };
+            }
+            // lib.optionalAttrs hasProgramming {
+              "raycursive/github-prs".panel_open_near_click = false;
+            }
+            // lib.optionalAttrs hasTailscale {
+              "rylos/tailnet".panel_open_near_click = false;
+            }
+            // lib.optionalAttrs isWork {
+              "levi/warp".panel_open_near_click = false;
+            }
+            // lib.optionalAttrs hasAiClients {
+              "weinguyen/opencode-companion" = {
+                default_model = fastModel;
+                server_mode = "auto";
+                auto_start = false;
+                "panel-fill_placement" = "attached";
+                "panel-fill_position" = "top_center";
+                panel_open_near_click = false;
+                panel_placement = "attached";
+                panel_position = "center";
+              };
+            };
 
             bar.main = {
               position = "top";
@@ -145,6 +192,37 @@
               color = "primary";
               contact_shadow = true;
               icon_color = "primary";
+              hover_highlight = true;
+
+              capsule_group = [
+                (mkCapsule "network" (
+                  [
+                    "network"
+                  ]
+                  ++ lib.optionals hasTailscale [ "tailnet" ]
+                  ++ lib.optionals isWork [ "warp" ]
+                  ++ [
+                    "kdeconnect"
+                    "bluetooth"
+                  ]
+                ))
+                (mkCapsule "power" [
+                  "battery"
+                  "procmon"
+                ])
+                (mkCapsuleEnd "utils" (
+                  [
+                    "calculator"
+                    "obsidian"
+                  ]
+                  ++ lib.optionals hasAiClients [ "opencode" ]
+                  ++ lib.optionals hasProgramming [ "github" ]
+                ))
+                (mkCapsule "volume" [
+                  "output"
+                  "input"
+                ])
+              ];
 
               start = [
                 "caffeine"
@@ -152,113 +230,69 @@
               ];
 
               center = [
-                "obsidian"
-                "clock"
-              ]
-              ++ lib.optionals hasAiClients [ "opencode" ]
-              ++ [
-                "privacy"
                 "visualizer"
+                "privacy"
+                "clock"
+                "group:utils"
               ];
 
               end = [
                 "tray"
                 "udiskie"
-                "bluetooth"
-              ]
-              ++ lib.optionals (hasTag "users:craig:work") [ "warp" ]
-              ++ lib.optionals (hasTag "users:craig:personal") [ "tailnet" ]
-              ++ [
-                "network"
-                "battery"
+                "group:network"
+                "group:power"
+                "group:volume"
                 "brightness"
-                "volume"
-                "mic"
                 "notifications"
-                "session"
               ];
             };
 
             widget = {
-              clock.format = "{:%I:%M  %m/%d}";
-
-              # Show every workspace, not just occupied ones (old ext/workspaces behavior).
-              workspaces.hide_when_empty = false;
-
-              network.show_label = false;
-
               battery = {
                 display_mode = "graphic";
                 show_label = false;
               };
-
-              cpu = {
-                type = "sysmon";
-                stat = "cpu_usage";
-                visualization = "gauge";
-                show_value = true;
+              calculator.type = "samuelskovbakke/calculator-plus:widget";
+              clock = {
+                anchor = true;
+                format = "{:%I:%M  %m/%d}";
               };
-
-              mem = {
-                type = "sysmon";
-                stat = "ram_pct";
-                visualization = "gauge";
-                show_value = true;
-              };
-
-              temp = {
-                type = "sysmon";
-                stat = "cpu_temp";
-                visualization = "gauge";
-                show_value = true;
-              };
-
-              net_tx = {
-                type = "sysmon";
-                stat = "net_tx";
-                visualization = "none";
-                show_value = true;
-              };
-
-              net_rx = {
-                type = "sysmon";
-                stat = "net_rx";
-                visualization = "none";
-                show_value = true;
-              };
-
-              visualizer.type = "audio_visualizer";
-
-              mic = {
+              input = {
                 type = "volume";
                 device = "input";
               };
+              kdeconnect.type = "icefish/phone-connect:bar";
+              network.show_label = false;
+              obsidian.type = "davemhammer/obsidian:status";
 
-              # Hide warp-taskbar's StatusNotifierItem (Cloudflare WARP); the
-              # levi/warp bar widget covers its state. udiskie's tray icon is
-              # disabled at the source via services.udiskie.tray.
-              tray = {
-                drawer = true;
-                match_adjacent_spacing = true;
+              output = {
+                type = "volume";
+                device = "output";
               };
-
               privacy = {
                 active_color = "error";
                 hide_inactive = true;
               };
-
-              # Plugin bar widgets (community source).
-              nix-status.type = "mindnbytes/nix-status:status";
-              obsidian.type = "davemhammer/obsidian:status";
+              procmon.type = "weinguyen/procmon:widget";
+              tray = {
+                drawer = true;
+                match_adjacent_spacing = true;
+                pinned = [ "1Password" ];
+              };
               udiskie.type = "aristides/udiskie:status";
+              visualizer.type = "audio_visualizer";
+              workspaces.hide_when_empty = false;
             }
             // lib.optionalAttrs hasAiClients {
               opencode.type = "weinguyen/opencode-companion:widget";
             }
-            // lib.optionalAttrs (hasTag "users:craig:work") {
+            // lib.optionalAttrs hasProgramming {
+              github.type = "raycursive/github-prs:bar";
+            }
+            // lib.optionalAttrs isWork {
               warp.type = "levi/warp:warp";
             }
-            // lib.optionalAttrs (hasTag "users:craig:personal") {
+            // lib.optionalAttrs hasTailscale {
               tailnet.type = "rylos/tailnet:bar";
             };
           };
