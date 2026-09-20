@@ -61,9 +61,12 @@ let
   # rgba() helper: produces "rgba(R, G, B, alpha)" from a color object and alpha string.
   # Use this where CSS variable interpolation via rgb(var(--x), opacity%) won't work
   # correctly — e.g. --text-selection, where the result must be visually distinguishable.
-  rgba = color: alpha:
-    let inherit (color) rgb;
-    in "rgba(${toString (builtins.elemAt rgb 0)}, ${toString (builtins.elemAt rgb 1)}, ${toString (builtins.elemAt rgb 2)}, ${alpha})";
+  rgba =
+    color: alpha:
+    let
+      inherit (color) rgb;
+    in
+    "rgba(${toString (builtins.elemAt rgb 0)}, ${toString (builtins.elemAt rgb 1)}, ${toString (builtins.elemAt rgb 2)}, ${alpha})";
 in
 ''
   .theme-dark,
@@ -578,5 +581,16 @@ in
 
   .theme-dark .mermaid .mindmap-node text {
     fill: var(--text-on-accent) !important;
+  }
+
+  /* PDF export: force all text black. The theme sets heading colors via
+     custom properties on the heading elements themselves and inline colors
+     on strong/em/del/mark, so overriding variables on a container loses.
+     Overriding computed color at the element level beats both. */
+  @media print {
+    .print,
+    .print * {
+      color: #000 !important;
+    }
   }
 ''
