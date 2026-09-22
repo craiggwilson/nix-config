@@ -225,6 +225,7 @@
 
               "boot:systemd"
               "cuda"
+              "networking:dns"
               "printing"
               "raeford"
               "scanning"
@@ -334,6 +335,7 @@
           }
           "laptop"
           "networking"
+          "networking:dns"
           "networking:tailscale"
           "printing"
           "programming"
