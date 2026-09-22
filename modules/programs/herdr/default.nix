@@ -109,9 +109,11 @@
               if ${pathPrefix}run ${herdrPkg}/bin/herdr plugin install "${plugin.source}" --yes${refFlags}; then
                 echo "herdr: installed plugin '${plugin.id}' from ${plugin.source}" >&2
               else
-                errorEcho "Failed to install herdr plugin '${plugin.id}' from ${plugin.source}"
-                errorEcho "Inspect 'journalctl -u home-manager-$USER.service' for the herdr output above."
-                exit 1
+                # A running herdr server older than this client rejects plugin
+                # calls with `protocol_mismatch`. Don't fail the whole activation
+                # over it: the plugin installs on a later activation once the
+                # user restarts the server (`herdr server stop && herdr`).
+                errorEcho "herdr: could not install plugin '${plugin.id}' from ${plugin.source}; if a herdr server is running, restart it (herdr server stop && herdr) and re-activate"
               fi
             fi
           ''

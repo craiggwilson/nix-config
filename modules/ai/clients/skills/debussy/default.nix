@@ -6,7 +6,7 @@
     ];
 
     homeManager = {
-      hdwlinux.ai.clients.skills.debussy = toString ./skill;
+      hdwlinux.ai.clients.skills.debussy = ./skill;
     };
   };
 }

@@ -98,7 +98,11 @@
             };
 
             settings = {
-              experimental-features = "nix-command flakes pipe-operators";
+              experimental-features = [
+                "nix-command"
+                "flakes"
+                "pipe-operators"
+              ];
               http-connections = 50;
               warn-dirty = false;
               log-lines = 50;

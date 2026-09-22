@@ -12,7 +12,6 @@
           pkgs.reaper
           pkgs.qpwgraph
           pkgs.calf
-          pkgs.eq10q
           pkgs.helm
           pkgs.lsp-plugins
           pkgs.x42-plugins
