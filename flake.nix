@@ -18,13 +18,8 @@
     # Personal projects. These will ultimately be normal github references when they are good enough
     # to not be changed so often.
     hdwlinux-private.url = "git+file:///home/craig/Projects/hdwlinux/nix-private";
-    scribe = {
-      url = "git+file:///home/craig/Projects/hdwlinux/scribe";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.substrate.follows = "substrate";
-    };
     substrate = {
-      url = "git+file:///home/craig/Projects/hdwlinux/substrate";
+      url = "github:craiggwilson/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -154,7 +149,6 @@
 
         homeManagerModules = [
           inputs.noctalia.homeModules.default
-          inputs.scribe.homeManagerModules.default
           inputs.vicinae.homeManagerModules.default
         ];
 
@@ -195,9 +189,6 @@
         };
 
         overlays = [
-          # scribe — exposes pkgs.scribe.scribe
-          inputs.scribe.overlays.packages
-
           # NUR (Nix User Repository)
           inputs.nur.overlays.default
 
