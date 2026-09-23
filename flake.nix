@@ -168,6 +168,8 @@
             ./packages/evergreen.nix
             ./packages/falcon-sensor.nix
             ./packages/fern.nix
+            ./packages/laya.nix
+            ./packages/laya-mcp.nix
             ./packages/mcp-atlassian.nix
             ./packages/mcp-musescore.nix
             ./packages/mongo-orchestration.nix
