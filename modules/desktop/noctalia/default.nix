@@ -28,15 +28,9 @@
         colors = config.hdwlinux.theme.colors;
         wallpaper = config.hdwlinux.theme.wallpaper;
 
-        # The opencode-companion plugin only exists where ai:clients is tagged;
-        # its default model follows the primary ("fast") alias.
-        hasAiClients = hasTag "ai:clients";
         hasProgramming = hasTag "programming";
         hasTailscale = hasTag "networking:tailscale";
         isWork = hasTag "users:craig:work";
-        fastModel = lib.head (
-          map (m: "${m.provider}/${m.model}") config.hdwlinux.ai.clients.models.aliases.fast.models
-        );
 
         mkCapsule = id: members: {
           inherit id members;
@@ -134,7 +128,6 @@
               "weinguyen/procmon"
               "icefish/phone-connect"
             ]
-            ++ lib.optionals hasAiClients [ "weinguyen/opencode-companion" ]
             ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
             ++ lib.optionals isWork [ "levi/warp" ]
             ++ lib.optionals hasTailscale [ "rylos/tailnet" ];
@@ -166,18 +159,6 @@
             }
             // lib.optionalAttrs isWork {
               "levi/warp".panel_open_near_click = false;
-            }
-            // lib.optionalAttrs hasAiClients {
-              "weinguyen/opencode-companion" = {
-                default_model = fastModel;
-                server_mode = "auto";
-                auto_start = false;
-                "panel-fill_placement" = "attached";
-                "panel-fill_position" = "top_center";
-                panel_open_near_click = false;
-                panel_placement = "attached";
-                panel_position = "center";
-              };
             };
 
             bar.main = {
@@ -215,7 +196,6 @@
                     "calculator"
                     "obsidian"
                   ]
-                  ++ lib.optionals hasAiClients [ "opencode" ]
                   ++ lib.optionals hasProgramming [ "github" ]
                 ))
                 (mkCapsule "volume" [
@@ -282,9 +262,6 @@
               udiskie.type = "aristides/udiskie:status";
               visualizer.type = "audio_visualizer";
               workspaces.hide_when_empty = false;
-            }
-            // lib.optionalAttrs hasAiClients {
-              opencode.type = "weinguyen/opencode-companion:widget";
             }
             // lib.optionalAttrs hasProgramming {
               github.type = "raycursive/github-prs:bar";

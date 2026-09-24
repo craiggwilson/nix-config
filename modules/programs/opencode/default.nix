@@ -155,18 +155,6 @@
             small_model = resolveAlias "fast";
             lsp = true;
           };
-
-          # Background HTTP server for the noctalia opencode-companion plugin.
-          # Kept in sync with plugin_settings."weinguyen/opencode-companion".
-          web = {
-            enable = true;
-            extraArgs = [
-              "--hostname"
-              "127.0.0.1"
-              "--port"
-              "4096"
-            ];
-          };
         };
       };
   };
