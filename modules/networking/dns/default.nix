@@ -64,11 +64,12 @@
         '';
         description = ''
           Ordered DNS providers. The first entry is the default; later
-          entries are fallbacks (systemd-resolved fails over between the
-          servers of the active provider). With more than one provider, the
-          network-advertised (DHCP) DNS is appended as a final unencrypted
-          fallback and TLS becomes opportunistic. An empty list disables
-          this module entirely.
+          entries are selectable with `hdwlinux dns <name>`. Selecting a
+          provider replaces the link's DNS servers outright — network
+          (DHCP) DNS is never mixed in, since systemd-resolved has no
+          per-server fallback ordering on a link. Use `hdwlinux dns off`
+          to return to network DNS. An empty list disables this module
+          entirely.
         '';
       };
     };
@@ -127,7 +128,6 @@
           RESOLVECTL=${lib.getExe' pkgs.systemd "resolvectl"}
           NMCLI=${lib.getExe' pkgs.networkmanager "nmcli"}
           DEFAULT_PROVIDER=${lib.escapeShellArg (providerName (lib.head cfg.providers))}
-          APPEND_DHCP=${if (lib.length cfg.providers) > 1 then "1" else "0"}
           PROVIDER_NAMES=${lib.escapeShellArg (lib.concatStringsSep " " (map providerName cfg.providers))}
 
           SERVERS=""
@@ -142,9 +142,22 @@
             SERVERS=""
             case "$provider" in
               off)
-                "$RESOLVECTL" revert "$dev"
-                # Prompt NetworkManager to re-push its DHCP-provided servers.
-                "$NMCLI" device reapply "$dev" >/dev/null 2>&1 || true
+                # `resolvectl revert` wipes the link's servers and NM's
+                # `reapply` is a no-op when the connection is unchanged, so
+                # set NetworkManager's DHCP-provided servers back explicitly.
+                local servers="" raw
+                for fam in IP4 IP6; do
+                  raw="$("$NMCLI" -g "$fam.DNS" device show "$dev" 2>/dev/null || true)"
+                  raw="''${raw// \| / }"
+                  [[ -n "$raw" ]] && servers="$servers $raw"
+                done
+                if [[ -z "$servers" ]]; then
+                  "$RESOLVECTL" revert "$dev"
+                else
+                  "$RESOLVECTL" domain "$dev" '~.'
+                  "$RESOLVECTL" dns "$dev" $servers
+                  "$RESOLVECTL" dnsovertls "$dev" no
+                fi
                 return 0
                 ;;
               ${lib.concatMapStringsSep "\n" providerCase cfg.providers}
@@ -153,16 +166,6 @@
                 return 1
                 ;;
             esac
-
-            if [[ "$APPEND_DHCP" == "1" ]]; then
-              local raw
-              for fam in IP4 IP6; do
-                raw="$("$NMCLI" -g "$fam.DNS" device show "$dev" 2>/dev/null || true)"
-                raw="''${raw// \| / }"
-                [[ -n "$raw" ]] && SERVERS="$SERVERS $raw"
-              done
-              [[ "$tls" == "yes" ]] && tls=opportunistic
-            fi
 
             "$RESOLVECTL" domain "$dev" '~.'
             "$RESOLVECTL" dns "$dev" $SERVERS
