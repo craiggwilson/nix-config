@@ -225,12 +225,13 @@
         # and directly to fireworks.ai for open-source models.
         mk = provider: model: { inherit provider model; };
         fw = model: mk "fireworks-ai" "accounts/fireworks/models/${model}";
+        router = model: mk "fireworks-ai" "accounts/fireworks/routers/${model}";
       in
       {
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
           analysis = {
             models = [
-              (fw "glm-5p2")
+              (router "glm-latest")
               (mk "grove-misc" "fw-glm-5.2")
               (mk "grove-openai" "gpt-5.6-terra")
               (mk "grove-anthropic" "claude-opus-4-7")
@@ -244,25 +245,23 @@
           };
           code-review = {
             models = [
-              (fw "glm-5p2")
+              (router "glm-latest")
               (mk "grove-misc" "fw-glm-5.2")
               (mk "grove-openai" "gpt-5.4")
-              (mk "grove-misc" "fw-kimi-k2.7-code")
-              (fw "kimi-k2p7-code")
+              (fw "kimi-k3")
             ];
           };
           coding = {
             models = [
-              (fw "deepseek-v4-pro-0813")
+              (router "deepseek-pro-latest")
               (mk "grove-misc" "fw-deepseek-v4-pro")
-              (mk "grove-misc" "fw-kimi-k2.7-code")
-              (fw "kimi-k2p7-code")
+              (fw "kimi-k3")
               (mk "grove-openai" "gpt-5.3-codex")
             ];
           };
           fast = {
             models = [
-              (fw "deepseek-v4-flash-0731")
+              (router "deepseek-flash-latest")
               (mk "grove-anthropic" "claude-haiku-4-5")
               (mk "grove-openai" "gpt-5.4-mini")
               (mk "grove-misc" "deepseek-v4-flash")
@@ -280,7 +279,7 @@
               (mk "grove-openai" "gpt-5.6-luna")
               (mk "grove-openai" "gpt-5.4")
               (mk "grove-misc" "fw-glm-5.2")
-              (fw "glm-5p2")
+              (router "glm-latest")
             ];
           };
           writing = {
