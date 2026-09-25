@@ -40,7 +40,7 @@ in
           nvidiaSettings = true;
           powerManagement.enable = true;
           powerManagement.finegrained = true;
-          open = false;
+          open = true;
           prime = lib.mkIf hasBusIds {
             sync.enable = false;
             offload = {
