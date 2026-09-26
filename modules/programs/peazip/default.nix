@@ -2,7 +2,7 @@
   config.substrate.modules.programs.peazip = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { lib, pkgs, ... }:
       {
         hdwlinux.app.archiver = lib.mkDefault {
@@ -10,8 +10,7 @@
           desktopName = "peazip.desktop";
         };
 
-        home.packages = [ pkgs.peazip ];
+        packages = [ pkgs.peazip ];
       };
   };
 }
-

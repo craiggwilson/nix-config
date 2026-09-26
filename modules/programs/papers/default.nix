@@ -2,7 +2,7 @@
   config.substrate.modules.programs.papers = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { lib, pkgs, ... }:
       {
         hdwlinux.app.documentViewer = lib.mkDefault {
@@ -10,8 +10,7 @@
           desktopName = "org.gnome.Papers.desktop";
         };
 
-        home.packages = [ pkgs.papers ];
+        packages = [ pkgs.papers ];
       };
   };
 }
-

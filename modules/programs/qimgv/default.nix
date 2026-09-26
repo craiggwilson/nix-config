@@ -2,7 +2,7 @@
   config.substrate.modules.programs.qimgv = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { lib, pkgs, ... }:
       {
         hdwlinux.app.imageViewer = lib.mkDefault {
@@ -10,8 +10,7 @@
           desktopName = "qimgv.desktop";
         };
 
-        home.packages = [ pkgs.qimgv ];
+        packages = [ pkgs.qimgv ];
       };
   };
 }
-

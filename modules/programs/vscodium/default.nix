@@ -5,6 +5,12 @@
       "programming"
     ];
 
+    # Mime association only for now; profiles/extensions move with the
+    # vscodium wave.
+    perUser = {
+      hdwlinux.xdg.defaultApplications."text/plain" = "code.desktop";
+    };
+
     homeManager =
       {
         config,

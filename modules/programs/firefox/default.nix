@@ -2,6 +2,21 @@
   config.substrate.modules.programs.firefox = {
     tags = [ "gui" ];
 
+    # Provider mirrors for the perUser scope (app launcher + default-browser
+    # resolution); the browser itself stays home-manager-side until its wave.
+    # package duplicates the home-manager default on purpose:
+    # config.programs.firefox.package is not visible here.
+    perUser =
+      { lib, pkgs, ... }:
+      {
+        hdwlinux.app.webBrowser = lib.mkDefault {
+          package = pkgs.firefox;
+          desktopName = "firefox.desktop";
+        };
+
+        hdwlinux.programs.browserctl.browsers.firefox = "firefox.desktop";
+      };
+
     homeManager =
       { config, lib, pkgs, ... }:
       {

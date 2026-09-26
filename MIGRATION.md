@@ -113,6 +113,21 @@ llama-cpp, shikane, waybar, niri units, hyprland units.
   wave files too) so output is byte-identical to home-manager's
 - parity: all 12 cluster files byte-MATCH vs live HM generation
 
+## Wave 4 — desktop plumbing (apps, xdg, browserctl, providers, 1password, kdeconnect) — DONE
+
+- apps: app-X uwsm launcher generators run in both scopes from the
+  hdwlinux.app registry (identical content once all providers migrated)
+- xdg: user-dirs.dirs, mimeapps.list (config + data copies) hand-rendered;
+  new hdwlinux.xdg.defaultApplications registry (vscodium contributes
+  text/plain until its wave); user-dirs-init oneshot for createDirectories
+- browserctl: full perUser move; option decls shared, hm-side providers
+  (firefox/chromium perUser mirrors) keep contributing browser names
+- peazip/qimgv/papers/chromium fully migrated; firefox gets a webBrowser +
+  browserctl mirror only (browser wave pending); 1password service+app
+  providers migrated; kdeconnect daemon migrated (kdePackages.kdeconnect-kde)
+- parity: user-dirs + both mimeapps files byte-equal; all 8 app-X scripts and
+  browserctl byte-equal vs live
+
 ## Wave 6 — hand-rolled replacements (hard)
 
 - [ ] zsh/bash/starship/fzf/zoxide/direnv — ZDOTDIR/linkfarm rc generation
