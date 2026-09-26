@@ -133,6 +133,7 @@
       imports = [
         (inputs.import-tree ./modules)
         inputs.hdwlinux-private.substrateModules.nix-private
+        ./extensions/per-user
         inputs.substrate.substrateModules.home-manager
         inputs.substrate.substrateModules.jail
         inputs.substrate.substrateModules.nixos
