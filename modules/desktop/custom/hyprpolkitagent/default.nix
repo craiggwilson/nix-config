@@ -2,20 +2,18 @@
   config.substrate.modules.desktop.custom.hyprpolkitagent = {
     tags = [ "desktop:custom" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        systemd.user.services.hyprpolkitagent = {
-          Unit = {
+        services.hyprpolkitagent = {
+          description = "hypr-polkit-agent";
+          wantedBy = [ "graphical-session.target" ];
+          after = [ "graphical-session-pre.target" ];
+          unitConfig = {
             ConditionEnvironment = "WAYLAND_DISPLAY";
-            Description = "hypr-polkit-agent";
-            After = [ "graphical-session-pre.target" ];
             PartOf = [ "graphical-session.target" ];
           };
-          Install = {
-            WantedBy = [ "graphical-session.target" ];
-          };
-          Service = {
+          serviceConfig = {
             Type = "simple";
             ExecStart = "${pkgs.hyprpolkitagent}/libexec/hyprpolkitagent";
             Restart = "on-failure";
@@ -26,4 +24,3 @@
       };
   };
 }
-
