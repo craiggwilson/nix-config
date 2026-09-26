@@ -2,11 +2,14 @@
   config.substrate.modules.programs.direnv = {
     tags = [ "programming" ];
 
-    # direnvrc + nix-direnv install stay home-manager-side until the direnv
-    # config wave; only the hook lines move here.
     perUser =
       { pkgs, ... }:
       {
+        packages = [
+          pkgs.direnv
+          pkgs.nix-direnv
+        ];
+
         hdwlinux.shell.zsh.initLines = [
           {
             prio = 450;
@@ -19,19 +22,8 @@
             text = "eval \"$(${pkgs.direnv}/bin/direnv hook bash)\"";
           }
         ];
-      };
 
-    homeManager =
-      { config, ... }:
-      {
-        programs.direnv = {
-          enable = true;
-          enableBashIntegration = config.programs.bash.enable;
-          enableZshIntegration = config.programs.zsh.enable;
-          nix-direnv.enable = true;
-        };
-
-        xdg.configFile."direnv/direnvrc".text = ''
+        files.".config/direnv/direnvrc".text = ''
           export_alias() {
             local name=$1
             shift
@@ -63,7 +55,10 @@
             fi
           }
         '';
+
+        # nix-direnv loads from direnv's config lib dir (HM called it
+        # hm-nix-direnv.sh; name is free).
+        files.".config/direnv/lib/nix-direnv.sh".source = "${pkgs.nix-direnv}/share/nix-direnv/direnvrc";
       };
   };
 }
-

@@ -5,8 +5,12 @@
     # Ghostty config stays home-manager-side until the ghostty wave; only
     # the shell-integration blocks move here.
     perUser =
-      { ... }:
+      { config, pkgs, ... }:
       {
+        # bat syntax highlighting for ghostty configs (HM's programs.ghostty
+        # integration; the --map-syntax line lives in the bat module).
+        files.".config/bat/syntaxes/ghostty.sublime-syntax".source = "${pkgs.ghostty}/share/bat/syntaxes/ghostty.sublime-syntax";
+
         hdwlinux.shell.zsh.initLines = [
           {
             prio = 440;

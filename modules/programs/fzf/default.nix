@@ -5,6 +5,8 @@
     perUser =
       { pkgs, ... }:
       {
+        packages = [ pkgs.fzf ];
+
         hdwlinux.shell.zsh.initLines = [
           {
             prio = 300;
@@ -25,18 +27,6 @@
             '';
           }
         ];
-      };
-
-    homeManager =
-      { config, ... }:
-      {
-        programs.fzf = {
-          enable = true;
-          # Integration flags go inert with HM's zsh/bash modules off;
-          # shell lines live in the perUser blocks above.
-          enableBashIntegration = config.programs.bash.enable;
-          enableZshIntegration = config.programs.zsh.enable;
-        };
       };
   };
 }
