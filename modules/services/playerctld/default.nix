@@ -2,12 +2,21 @@
   config.substrate.modules.services.playerctld = {
     tags = [ "gui" "audio" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.playerctl ];
-        services.playerctld.enable = true;
+        packages = [ pkgs.playerctl ];
+
+        services.playerctld = {
+          description = "playerctld";
+          wantedBy = [ "graphical-session.target" ];
+          after = [ "graphical-session.target" ];
+          unitConfig.PartOf = [ "graphical-session.target" ];
+          serviceConfig = {
+            ExecStart = "${pkgs.playerctl}/bin/playerctld";
+            Restart = "on-failure";
+          };
+        };
       };
   };
 }
-
