@@ -131,7 +131,8 @@
         # Opencode theme derived from the active hdwlinux theme colors
         opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
 
-        json = v: builtins.toJSON v + "\n";
+        jsonFormat = pkgs.formats.json { };
+        json = name: v: jsonFormat.generate name v;
 
         settings = {
           "$schema" = "https://opencode.ai/config.json";
@@ -157,9 +158,9 @@
           packages = [ pkgs.opencode-desktop ];
 
           files = {
-            ".config/opencode/opencode.json".text = json settings;
+            ".config/opencode/opencode.json".source = json "opencode.json" settings;
 
-            ".config/opencode/tui.json".text = json {
+            ".config/opencode/tui.json".source = json "tui.json" {
               "$schema" = "https://opencode.ai/tui.json";
               theme = "hdwlinux";
               keybinds = {
@@ -167,7 +168,7 @@
               };
             };
 
-            ".config/opencode/themes/hdwlinux.json".text = json (
+            ".config/opencode/themes/hdwlinux.json".source = json "hdwlinux-theme.json" (
               { "$schema" = "https://opencode.ai/theme.json"; } // opencodeTheme
             );
           }

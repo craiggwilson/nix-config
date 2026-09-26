@@ -16,7 +16,7 @@
           !(config.services.tlp.enable or false) && !(config.services.auto-cpufreq.enable or false);
       };
 
-    homeManager =
+    perUser =
       {
         config,
         hasTag,
@@ -48,20 +48,7 @@
           // {
             accordion_direction = "end";
           };
-      in
-      {
-        home.packages = [
-          pkgs.brightnessctl
-          pkgs.gpu-screen-recorder
-          pkgs.python3
-          pkgs.udiskie
-        ];
-
-        programs.noctalia = {
-          enable = true;
-          systemd.enable = true;
-
-          customPalettes.hdwlinux = import ./_palette.nix colors;
+          noctaliaPackage = pkgs.noctalia;
 
           settings = {
             theme = {
@@ -272,6 +259,51 @@
             // lib.optionalAttrs hasTailscale {
               tailnet.type = "rylos/tailnet:bar";
             };
+        };
+
+        tomlFormat = pkgs.formats.toml { };
+        jsonFormat = pkgs.formats.json { };
+
+        # Reproduces upstream's home-module: build-time validation of the
+        # generated TOML via the noctalia CLI.
+        configToml =
+          let
+            raw = tomlFormat.generate "noctalia-config.toml" settings;
+          in
+          pkgs.runCommand "noctalia-config-validated.toml" { } ''
+            ${lib.getExe noctaliaPackage} config validate ${raw}
+            cp ${raw} $out
+          '';
+      in
+      {
+        packages = [
+          noctaliaPackage
+          pkgs.brightnessctl
+          pkgs.gpu-screen-recorder
+          pkgs.python3
+          pkgs.udiskie
+        ];
+
+        files = {
+          ".config/noctalia/config.toml".source = configToml;
+          ".config/noctalia/palettes/hdwlinux.json".source =
+            jsonFormat.generate "hdwlinux-palette.json" (import ./_palette.nix colors);
+        };
+
+        services.noctalia = {
+          description = "Noctalia - A lightweight Wayland shell and bar";
+          wantedBy = [ "graphical-session.target" ];
+          after = [ "graphical-session.target" ];
+          unitConfig = {
+            PartOf = [ "graphical-session.target" ];
+            X-Restart-Triggers = [
+              configToml
+              config.files.".config/noctalia/palettes/hdwlinux.json".source
+            ];
+          };
+          serviceConfig = {
+            ExecStart = lib.getExe noctaliaPackage;
+            Restart = "on-failure";
           };
         };
       };

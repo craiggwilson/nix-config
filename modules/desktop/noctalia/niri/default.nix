@@ -51,7 +51,7 @@
         };
       };
 
-    homeManager =
+    perUser =
       {
         config,
         inputs,
@@ -62,22 +62,20 @@
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
       in
       {
-        home.packages = [
+        packages = [
           (pkgs.xwayland-satellite.override { withSystemd = false; })
           inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
 
-        home.sessionVariables.NIRI_DISABLE_SYSTEM_MANAGER_NOTIFY = "1";
+        env.NIRI_DISABLE_SYSTEM_MANAGER_NOTIFY = "1";
 
-        systemd.user.startServices = true;
-
-        xdg.configFile = {
-          "niri/config.kdl".text = ''
+        files = {
+          ".config/niri/config.kdl".text = ''
             include "colors.kdl"
             include "functional.kdl"
           '';
 
-          "niri/colors.kdl".text = ''
+          ".config/niri/colors.kdl".text = ''
             layout {
                 focus-ring {
                     active-color "${colors.base0E}"
@@ -130,7 +128,7 @@
             }
           '';
 
-          "niri/functional.kdl".source = ./config/functional.kdl;
+          ".config/niri/functional.kdl".source = ./config/functional.kdl;
         };
       };
   };

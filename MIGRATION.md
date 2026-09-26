@@ -98,6 +98,21 @@ llama-cpp, shikane, waybar, niri units, hyprland units.
 - llama-cpp: host/port option mirror only; server stays home-manager-side.
 - musescore: plugin file + mcpServer mirrored; package stays.
 
+## Wave 3.9 — noctalia desktop cluster (noctalia shell, niri, nautilus) — DONE
+
+- programs.noctalia (upstream home-module) replaced in perUser: config.toml
+  via pkgs.formats.toml + upstream's build-time `noctalia config validate`,
+  palette via pkgs.formats.json, noctalia.service unit (PartOf/WantedBy
+  graphical-session, X-Restart-Triggers on config+palette sources)
+- noctalia/niri: files -> .config/niri/{config,colors,functional}.kdl,
+  xwayland-satellite + scratchpad packages, env var; systemd.user.
+  startServices dropped (schema services are WantedBy-enabled)
+- nautilus: packages mirrored (app-fileManager option still consumed
+  home-manager-side by apps until the apps wave)
+- switched generated-JSON emission to pkgs.formats.json repo-wide (opencode
+  wave files too) so output is byte-identical to home-manager's
+- parity: all 12 cluster files byte-MATCH vs live HM generation
+
 ## Wave 6 — hand-rolled replacements (hard)
 
 - [ ] zsh/bash/starship/fzf/zoxide/direnv — ZDOTDIR/linkfarm rc generation
