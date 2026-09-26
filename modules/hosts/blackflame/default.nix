@@ -23,13 +23,21 @@ in
           diskoConfig
         ];
 
-        hdwlinux.security.secrets.entries.dnsNextdnsProfile.reference =
-          "op://Craig/NextDNS/blocked-profile";
+        hdwlinux.security.secrets.entries = {
+          nextDnsBlockedProfile.reference = "op://Craig/NextDNS/blocked-profile";
+          nextDnsUnblockedProfile.reference = "op://Craig/NextDNS/unblocked-profile";
+        };
         hdwlinux.networking.dns.providers = [
           {
             nextdns = {
-              name = "nextdns";
-              secretPath = config.hdwlinux.security.secrets.entries.dnsNextdnsProfile.path;
+              name = "nextdns-blocked";
+              secretPath = config.hdwlinux.security.secrets.entries.nextDnsBlockedProfile.path;
+            };
+          }
+          {
+            nextdns = {
+              name = "nextdns-unblocked";
+              secretPath = config.hdwlinux.security.secrets.entries.nextDnsUnblockedProfile.path;
             };
           }
           { cloudflare.name = "cloudflare"; }

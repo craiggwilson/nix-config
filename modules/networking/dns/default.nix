@@ -64,10 +64,11 @@
         '';
         description = ''
           Ordered DNS providers. The first entry is the default; later
-          entries are selectable with `hdwlinux dns <name>`. Selecting a
-          provider replaces the link's DNS servers outright — network
-          (DHCP) DNS is never mixed in, since systemd-resolved has no
-          per-server fallback ordering on a link. Use `hdwlinux dns off`
+          entries are selectable with `hdwlinux dns <name>`, and
+          `hdwlinux dns` with no argument lists the configured providers.
+          Selecting a provider replaces the link's DNS servers outright —
+          network (DHCP) DNS is never mixed in, since systemd-resolved has
+          no per-server fallback ordering on a link. Use `hdwlinux dns off`
           to return to network DNS. An empty list disables this module
           entirely.
         '';
@@ -90,6 +91,36 @@
           "2606:4700:4700::1001#security.cloudflare-dns.com"
         ];
 
+        nextdnsServers = [
+          "45.90.28.0"
+          "45.90.30.0"
+          "2a07:a8c0::"
+          "2a07:a8c1::"
+        ];
+
+        # Table columns for `hdwlinux dns` with no argument.
+        providerEncryption = p: if providerTag p == "plain" then "None" else "DNS-over-TLS";
+
+        providerServersDisplay =
+          p:
+          let
+            tag = providerTag p;
+            b = builtins.head (builtins.attrValues p);
+          in
+          if tag == "nextdns" then
+            lib.concatStringsSep ", " nextdnsServers
+          else if tag == "cloudflare" then
+            lib.concatStringsSep ", " (map (s: lib.head (lib.splitString "#" s)) cloudflareServers)
+          else
+            lib.concatStringsSep ", " b.servers;
+
+        providerRow =
+          p:
+          let
+            name = lib.escapeShellArg (providerName p);
+          in
+          "printf '%s %-20s %-12s %s\\n' \"$(mark_provider ${name})\" ${name} ${lib.escapeShellArg (providerEncryption p)} ${lib.escapeShellArg (providerServersDisplay p)}";
+
         providerCase =
           p:
           let
@@ -106,7 +137,7 @@
                 local raw profile
                 raw="$(<"$profile_file")"
                 profile="''${raw//[$'\n\r\t ']/}"
-                SERVERS="45.90.28.0#$profile.dns.nextdns.io 45.90.30.0#$profile.dns.nextdns.io 2a07:a8c0::#$profile.dns.nextdns.io 2a07:a8c1::#$profile.dns.nextdns.io"
+                SERVERS="${lib.concatStringsSep " " (map (ip: "${ip}#$profile.dns.nextdns.io") nextdnsServers)}"
                 tls=yes
                 ;;'';
             cloudflare = ''
@@ -131,13 +162,23 @@
           PROVIDER_NAMES=${lib.escapeShellArg (lib.concatStringsSep " " (map providerName cfg.providers))}
 
           SERVERS=""
+          ACTIVE=""
+
+          active_info() {
+            ACTIVE="$DEFAULT_PROVIDER"
+            local saved=""
+            if [[ -r "$STATE_FILE" ]]; then
+              read -r saved < "$STATE_FILE" || true
+            fi
+            [[ -n "$saved" ]] && ACTIVE="$saved"
+          }
+
+          mark_provider() { [[ "$1" == "$ACTIVE" ]] && printf '*' || printf ' '; }
 
           apply_link() {
             local dev="$1" provider="" tls=""
-            if [[ -r "$STATE_FILE" ]]; then
-              read -r provider < "$STATE_FILE"
-            fi
-            [[ -z "$provider" ]] && provider="$DEFAULT_PROVIDER"
+            active_info
+            provider="$ACTIVE"
 
             SERVERS=""
             case "$provider" in
@@ -175,8 +216,22 @@
           case "''${1:-}" in
             apply-all)
               ${lib.getExe' pkgs.coreutils "mkdir"} -p /var/lib/hdwlinux
-              if [[ -n "''${2:-}" ]]; then
-                printf '%s\n' "$2" > "$STATE_FILE"
+              provider="''${2:-}"
+              # Heal a state file left by an older, unguarded version; bad state
+              # otherwise makes every apply_link call fail and strands the host
+              # on whatever DNS resolvectl last had.
+              if [[ -z "$provider" && -r "$STATE_FILE" ]]; then
+                read -r saved < "$STATE_FILE"
+                if [[ -n "$saved" && "$saved" != "off" && ! " $PROVIDER_NAMES " =~ " $saved " ]]; then
+                  ${lib.getExe' pkgs.coreutils "rm"} -f "$STATE_FILE"
+                fi
+              fi
+              if [[ -n "$provider" && "$provider" != "off" && ! " $PROVIDER_NAMES " =~ " $provider " ]]; then
+                echo "hdwlinux-dns: unknown provider '$provider' (known: $PROVIDER_NAMES off)" >&2
+                exit 1
+              fi
+              if [[ -n "$provider" ]]; then
+                printf '%s\n' "$provider" > "$STATE_FILE"
               fi
               rc=0
               while IFS=: read -r dev type state; do
@@ -185,6 +240,17 @@
                 fi
               done < <("$NMCLI" -t -f DEVICE,TYPE,STATE device)
               exit "$rc"
+              ;;
+            list)
+              active_info
+              printf 'Current: %s\n\n' "$ACTIVE"
+              printf '%s %-20s %-12s %s\n' " " "PROVIDER" "ENCRYPTION" "SERVERS"
+              ${lib.concatMapStringsSep "\n" providerRow cfg.providers}
+              printf '%s %-20s %-12s %s\n' "$(mark_provider off)" off None "Network (DHCP) DNS"
+              ;;
+            provider)
+              active_info
+              printf '%s\n' "$ACTIVE"
               ;;
             *)
               # NetworkManager dispatcher invocation: $1=device $2=action.
@@ -239,8 +305,18 @@
     homeManager = {
       config.hdwlinux.programs.hdwlinux.subcommands.dns = {
         off = "sudo /etc/NetworkManager/dispatcher.d/20-hdwlinux-dns apply-all off";
-        status = "resolvectl status";
-        "*" = "sudo /etc/NetworkManager/dispatcher.d/20-hdwlinux-dns apply-all \"$1\"";
+        status = ''
+          echo "Provider: $(/etc/NetworkManager/dispatcher.d/20-hdwlinux-dns provider)"
+          echo ""
+          resolvectl status
+        '';
+        "*" = ''
+          if [[ $# -eq 0 ]]; then
+            /etc/NetworkManager/dispatcher.d/20-hdwlinux-dns list
+          else
+            sudo /etc/NetworkManager/dispatcher.d/20-hdwlinux-dns apply-all "$1"
+          fi
+        '';
       };
     };
   };
