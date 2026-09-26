@@ -2,10 +2,10 @@
   config.substrate.modules.programs.libreoffice = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.libreoffice ];
+        packages = [ pkgs.libreoffice ];
       };
   };
 }

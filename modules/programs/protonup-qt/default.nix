@@ -2,10 +2,10 @@
   config.substrate.modules.programs.protonup-qt = {
     tags = [ "gui" "gaming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.protonup-qt ];
+        packages = [ pkgs.protonup-qt ];
       };
   };
 }

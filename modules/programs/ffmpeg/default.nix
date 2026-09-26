@@ -2,10 +2,10 @@
   config.substrate.modules.programs.ffmpeg = {
     tags = [ "video:production" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.stable.ffmpeg-full ];
+        packages = [ pkgs.stable.ffmpeg-full ];
       };
   };
 }

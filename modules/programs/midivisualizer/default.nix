@@ -2,10 +2,10 @@
   config.substrate.modules.programs.midivisualizer = {
     tags = [ "audio:midi" "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.midivisualizer ];
+        packages = [ pkgs.midivisualizer ];
       };
   };
 }

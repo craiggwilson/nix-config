@@ -2,10 +2,10 @@
   config.substrate.modules.programs.lldb = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.lldb ];
+        packages = [ pkgs.lldb ];
       };
   };
 }

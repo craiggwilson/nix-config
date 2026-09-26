@@ -2,10 +2,10 @@
   config.substrate.modules.programs.pre-commit = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.pre-commit ];
+        packages = [ pkgs.pre-commit ];
       };
   };
 }

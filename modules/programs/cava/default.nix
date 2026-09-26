@@ -2,10 +2,10 @@
   config.substrate.modules.programs.cava = {
     tags = [ "audio" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.cava ];
+        packages = [ pkgs.cava ];
       };
   };
 }

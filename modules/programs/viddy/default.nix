@@ -2,10 +2,10 @@
   config.substrate.modules.programs.viddy = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.viddy ];
+        packages = [ pkgs.viddy ];
       };
   };
 }

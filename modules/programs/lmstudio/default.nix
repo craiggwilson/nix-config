@@ -2,10 +2,10 @@
   config.substrate.modules.programs.lmstudio = {
     tags = [ "ai:llm" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [
+        packages = [
           pkgs.lmstudio
         ];
       };

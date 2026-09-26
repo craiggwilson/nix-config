@@ -1,9 +1,9 @@
 {
   config.substrate.modules.programs.minder = {
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.minder ];
+        packages = [ pkgs.minder ];
       };
   };
 }

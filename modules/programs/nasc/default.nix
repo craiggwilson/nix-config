@@ -2,10 +2,10 @@
   config.substrate.modules.programs.nasc = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.stable.nasc ];
+        packages = [ pkgs.stable.nasc ];
       };
   };
 }

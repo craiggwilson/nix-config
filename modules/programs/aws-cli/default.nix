@@ -2,10 +2,10 @@
   config.substrate.modules.programs.aws-cli = {
     tags = [ "users:craig:work" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.awscli2 ];
+        packages = [ pkgs.awscli2 ];
       };
   };
 }

@@ -5,10 +5,10 @@
       "users:craig:work"
     ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [
+        packages = [
           pkgs.mongosh
           pkgs.mongodb-tools
         ];

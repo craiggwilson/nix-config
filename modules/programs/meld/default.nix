@@ -2,10 +2,10 @@
   config.substrate.modules.programs.meld = {
     tags = [ "gui" "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.meld ];
+        packages = [ pkgs.meld ];
       };
   };
 }

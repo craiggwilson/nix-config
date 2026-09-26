@@ -2,10 +2,10 @@
   config.substrate.modules.programs.watchman = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.watchman ];
+        packages = [ pkgs.watchman ];
       };
   };
 }

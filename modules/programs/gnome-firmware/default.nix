@@ -2,10 +2,10 @@
   config.substrate.modules.programs.gnome-firmware = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.gnome-firmware ];
+        packages = [ pkgs.gnome-firmware ];
       };
   };
 }

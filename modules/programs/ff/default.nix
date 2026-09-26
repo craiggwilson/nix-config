@@ -2,10 +2,10 @@
   config.substrate.modules.programs.ff = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [
+        packages = [
           (pkgs.writeShellScriptBin "ff" ''
             result=`${pkgs.ripgrep}/bin/rg --ignore-case --color=always --line-number --no-heading "$@" |
               ${pkgs.fzf}/bin/fzf --ansi \

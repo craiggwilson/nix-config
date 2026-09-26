@@ -6,10 +6,10 @@
       "users:craig:work"
     ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [
+        packages = [
           pkgs.jetbrains.idea
         ];
       };

@@ -2,10 +2,10 @@
   config.substrate.modules.programs.manix = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.manix ];
+        packages = [ pkgs.manix ];
       };
   };
 }

@@ -2,10 +2,10 @@
   config.substrate.modules.programs.gamescope = {
     tags = [ "gui" "gaming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.gamescope ];
+        packages = [ pkgs.gamescope ];
       };
   };
 }

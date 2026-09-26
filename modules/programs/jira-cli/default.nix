@@ -2,10 +2,10 @@
   config.substrate.modules.programs.jira-cli = {
     tags = [ "users:craig:work" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.jira-cli-go ];
+        packages = [ pkgs.jira-cli-go ];
       };
   };
 }

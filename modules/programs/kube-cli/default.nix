@@ -2,10 +2,10 @@
   config.substrate.modules.programs.kube-cli = {
     tags = [ "users:craig:work" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = with pkgs; [
+        packages = with pkgs; [
           kubectl
           kubectx
           kubernetes-helm

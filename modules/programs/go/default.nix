@@ -2,10 +2,10 @@
   config.substrate.modules.programs.go = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = with pkgs; [
+        packages = with pkgs; [
           go
           golangci-lint
           gopls

@@ -12,12 +12,21 @@
   hostcfg,
   usercfg,
   allOverlays,
+  hostPkgs ? null,
 }:
 let
-  pkgs = import inputs.nixpkgs {
-    localSystem = usercfg.system;
-    overlays = allOverlays;
-  };
+  # Reuse the host's configured package set (nixpkgs.config such as
+  # allowUnfree, already-applied overlays) whenever the user runs on the
+  # host's system. The standalone import is a cross-system fallback and
+  # deliberately minimal -- extend it if a cross-system user ever appears.
+  pkgs =
+    if hostPkgs != null && usercfg.system == hostcfg.system then
+      hostPkgs
+    else
+      import inputs.nixpkgs {
+        localSystem = usercfg.system;
+        overlays = allOverlays;
+      };
 
   extraArgs = slib.extraArgsGenerator {
     inherit

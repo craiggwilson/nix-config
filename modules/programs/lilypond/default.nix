@@ -2,10 +2,10 @@
   config.substrate.modules.programs.lilypond = {
     tags = [ "users:craig:personal" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.lilypond ];
+        packages = [ pkgs.lilypond ];
       };
   };
 }

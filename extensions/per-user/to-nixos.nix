@@ -40,6 +40,7 @@ let
           usercfg
           allOverlays
           ;
+        hostPkgs = pkgs;
       };
 
       username = usercfg.name;

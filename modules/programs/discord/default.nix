@@ -2,10 +2,10 @@
   config.substrate.modules.programs.discord = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.discord ];
+        packages = [ pkgs.discord ];
       };
   };
 }

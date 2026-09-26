@@ -16,7 +16,7 @@ Status legend: [x] migrated · [ ] pending · (~) blocked/needs decision
 - [x] modules/desktop/custom/wlsunset — service
 - [x] helper injection (merged `lib`) verified end-to-end
 
-## Wave 2 — rename-only (custom `hdwlinux.*` option contributions)
+## Wave 2 — rename-only (custom `hdwlinux.*` option contributions) — 78 files left
 
 Blocks that only contribute `hdwlinux.ai.*`, `hdwlinux.app`, `hdwlinux.theme`
 option values or read them. They keep working under HM scope, but must gain
@@ -29,12 +29,17 @@ option values or read them. They keep working under HM scope, but must gain
   itself is a later, nati-shaped feature)
 - modules/users/craig/default.nix (hdwlinux.user, secrets decls)
 
-## Wave 3 — packages-only (~58 files)
+## Wave 3 — packages-only (37 files) — DONE
 
-`home.packages` -> `packages`. Trivial. Includes most of
-modules/programs/* (jq, ripgrep, vlc, ...).
+`home.packages` -> `packages` (homeManager -> perUser class key). Files with
+ANY other hm content (services.hypridle, programs.git.settings, hdwlinux.*
+contributions) correctly held back: ripgrep, reaper, audioctl, clipboard,
+nautilus, screenctl, noctalia*, hyprland-adjacent, apps, networking, flake.
+`scripts/per-user-audit.py` guards against silent-loss leftovers (run after
+each wave). eval.nix now reuses the host's configured pkgs when
+usercfg.system == hostcfg.system (fixes unfree packages like lmstudio).
 
-## Wave 4 — config files (~25 files)
+## Wave 4 — config files (mixed files still carrying home.packages ~40 + cfg)
 
 `xdg.configFile` / `home.file` -> `files`. Check per program whether
 XDG default suffices (prefer) or `wrap`/`wrap` is needed:

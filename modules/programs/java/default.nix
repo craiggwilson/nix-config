@@ -2,10 +2,10 @@
   config.substrate.modules.programs.java = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = with pkgs; [
+        packages = with pkgs; [
           temurin-bin-21
           maven
         ];

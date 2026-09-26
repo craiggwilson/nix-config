@@ -2,10 +2,10 @@
   config.substrate.modules.programs.sqlite = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.sqlite ];
+        packages = [ pkgs.sqlite ];
       };
   };
 }

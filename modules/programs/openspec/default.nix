@@ -5,10 +5,10 @@
       "ai:clients"
     ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.openspec ];
+        packages = [ pkgs.openspec ];
       };
   };
 }

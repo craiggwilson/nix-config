@@ -2,10 +2,10 @@
   config.substrate.modules.programs.woomer = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.woomer ];
+        packages = [ pkgs.woomer ];
       };
   };
 }

@@ -2,10 +2,10 @@
   config.substrate.modules.programs.vlc = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.vlc ];
+        packages = [ pkgs.vlc ];
       };
   };
 }

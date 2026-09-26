@@ -2,10 +2,10 @@
   config.substrate.modules.programs.freetube = {
     tags = [ "gui" "users:craig:personal" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.freetube ];
+        packages = [ pkgs.freetube ];
       };
   };
 }

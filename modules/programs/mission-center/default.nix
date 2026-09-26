@@ -2,10 +2,10 @@
   config.substrate.modules.programs.mission-center = {
     tags = [ "gui" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.mission-center ];
+        packages = [ pkgs.mission-center ];
       };
   };
 }
