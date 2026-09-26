@@ -31,6 +31,17 @@ let
 in
 {
   config.substrate.modules.users = {
+    perUser =
+      { config, ... }:
+      {
+        options.hdwlinux.user = lib.mkOption {
+          description = "User information for per-user configuration.";
+          type = userOption;
+        };
+
+        config.files.".ssh/id_rsa.pub".text = config.hdwlinux.user.publicKey;
+      };
+
     homeManager =
       { config, lib, ... }:
       {

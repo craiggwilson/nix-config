@@ -2,19 +2,20 @@
   config.substrate.modules.programs.difftastic = {
     tags = [ "programming" ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.difftastic ];
+        packages = [ pkgs.difftastic ];
 
-        programs.git.settings = {
-          diff.tool = "difft";
-          difftool = {
-            prompt = false;
-            difft.cmd = ''difft "$LOCAL" "$REMOTE"'';
-          };
-        };
+        hdwlinux.programs.git.configFragments = [
+          {
+            diff.tool = "difft";
+            difftool = {
+              prompt = false;
+              difft.cmd = ''difft "$LOCAL" "$REMOTE"'';
+            };
+          }
+        ];
       };
   };
 }
-

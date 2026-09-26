@@ -63,6 +63,17 @@ in
         ) [ name ];
       };
 
+    perUser = {
+      hdwlinux.user = {
+        inherit
+          name
+          fullName
+          email
+          publicKey
+          ;
+      };
+    };
+
     homeManager =
       { config, hasTag, ... }:
       {

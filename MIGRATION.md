@@ -39,6 +39,20 @@ nautilus, screenctl, noctalia*, hyprland-adjacent, apps, networking, flake.
 each wave). eval.nix now reuses the host's configured pkgs when
 usercfg.system == hostcfg.system (fixes unfree packages like lmstudio).
 
+## Wave 3.5 — git cluster (git, delta, difftastic, mergiraf, gh, gh-dash) — DONE
+
+Multi-module option pattern proven: hdwlinux.programs.git.configFragments
+(listOf attrs, folded recursiveUpdate -> generators.toGitINI) as ONE
+perUser-owned option in the git module, appended by delta/difftastic/mergiraf/gh.
+users/default.nix gained a perUser block declaring hdwlinux.user + id_rsa.pub;
+users/craig sets hdwlinux.user in BOTH scopes during coexistence.
+Parity vs live HM-rendered files verified (git config/ignore/attributes/
+allowed_signers, gh config.yml, gh-dash config.yml, gh extensions linkFarm).
+Intentional fix: aliases were nested under settings (rendered [aliases]) ->
+now [alias], which is what git actually reads.
+gh account-migration activation step (hm) intentionally not ported; re-add
+as a oneshot only if a hosts.yml v1->v2 migration is ever needed.
+
 ## Wave 4 — config files (mixed files still carrying home.packages ~40 + cfg)
 
 `xdg.configFile` / `home.file` -> `files`. Check per program whether

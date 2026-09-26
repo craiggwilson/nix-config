@@ -12,8 +12,8 @@
 # inert for other users thanks to ConditionUser.
 #
 # Note: takes pkgs as a plain argument (not a module lambda) because the
-# result is spliced directly into mkMerge. Per-user derivations use the host
-# pkgs; usercfg.system is cross-checkable if we ever build cross-system.
+# result is spliced into imports. Per-user derivations use the host pkgs;
+# usercfg.system is cross-checkable if we ever build cross-system.
 {
   lib,
   inputs,
@@ -25,8 +25,6 @@
 }:
 let
   renderUser = userKey: {
-    # users/systemd appear only as option path prefixes; no module args needed
-    # beyond the closure's pkgs.
     ...
   }:
     let
@@ -108,34 +106,34 @@ let
         };
     in
     {
-      assertions = [
-        {
-          assertion = !(cfg.files ? ".config/environment.d/${envFileName}");
-          message = "perUser file '.config/environment.d/${envFileName}' collides with the environment.d link";
-        }
-        {
-          assertion = !(cfg.services ? ${unitName});
-          message = "perUser service name '${unitName}' collides with the activation unit";
-        }
-      ];
+      config = {
+        assertions = [
+          {
+            assertion = !(cfg.files ? ".config/environment.d/${envFileName}");
+            message = "perUser file '.config/environment.d/${envFileName}' collides with the environment.d link";
+          }
+          {
+            assertion = !(cfg.services ? ${unitName});
+            message = "perUser service name '${unitName}' collides with the activation unit";
+          }
+        ];
 
-      users.users.${username}.packages = cfg.packages;
+        users.users.${username}.packages = cfg.packages;
 
-      systemd.user.services = ({
-        ${unitName} = {
-          description = "hdwlinux per-user config activation for ${userKey}";
-          wantedBy = [ "basic.target" ];
-          unitConfig.ConditionUser = username;
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
+        systemd.user.services = ({
+          ${unitName} = {
+            description = "hdwlinux per-user config activation for ${userKey}";
+            wantedBy = [ "basic.target" ];
+            unitConfig.ConditionUser = username;
+            serviceConfig = {
+              Type = "oneshot";
+              RemainAfterExit = true;
+            };
+            script = activationScript;
           };
-          script = activationScript;
-        };
-      }
-      // mapAttrs renderService (filterAttrs (_: svc: svc.enable) cfg.services));
+        }
+        // mapAttrs renderService (filterAttrs (_: svc: svc.enable) cfg.services));
+      };
     };
 in
-# Functions inside mkMerge are rejected by the module system; nested modules
-# ride in imports instead.
 { imports = map renderUser hostcfg.users; }
