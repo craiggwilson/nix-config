@@ -2,6 +2,33 @@
   config.substrate.modules.programs.ghostty = {
     tags = [ "gui" ];
 
+    # Ghostty config stays home-manager-side until the ghostty wave; only
+    # the shell-integration blocks move here.
+    perUser =
+      { ... }:
+      {
+        hdwlinux.shell.zsh.initLines = [
+          {
+            prio = 440;
+            text = ''
+              if [[ -r "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration ]]; then
+                source "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration
+              fi
+            '';
+          }
+        ];
+        hdwlinux.shell.bash.initLines = [
+          {
+            prio = 480;
+            text = ''
+              if [[ -r "''${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash" ]]; then
+                builtin source "''${GHOSTTY_RESOURCES_DIR}/shell-integration/bash/ghostty.bash"
+              fi
+            '';
+          }
+        ];
+      };
+
     homeManager =
       {
         config,

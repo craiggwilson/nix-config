@@ -2,6 +2,33 @@
   config.substrate.modules.programs.starship = {
     tags = [ "programming" ];
 
+    # Config file + STARSHIP_CONFIG stay home-manager-side until the
+    # starship config wave; only the shell init lines move here.
+    perUser =
+      { pkgs, ... }:
+      {
+        hdwlinux.shell.zsh.initLines = [
+          {
+            prio = 430;
+            text = ''
+              if [[ $TERM != "dumb" ]]; then
+                eval "$(${pkgs.starship}/bin/starship init zsh)"
+              fi
+            '';
+          }
+        ];
+        hdwlinux.shell.bash.initLines = [
+          {
+            prio = 560;
+            text = ''
+              if [[ $TERM != "dumb" ]]; then
+                eval "$(${pkgs.starship}/bin/starship init bash --print-full-init)"
+              fi
+            '';
+          }
+        ];
+      };
+
     homeManager =
       { config, ... }:
       let

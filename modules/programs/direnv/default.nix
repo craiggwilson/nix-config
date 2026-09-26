@@ -2,6 +2,25 @@
   config.substrate.modules.programs.direnv = {
     tags = [ "programming" ];
 
+    # direnvrc + nix-direnv install stay home-manager-side until the direnv
+    # config wave; only the hook lines move here.
+    perUser =
+      { pkgs, ... }:
+      {
+        hdwlinux.shell.zsh.initLines = [
+          {
+            prio = 450;
+            text = "eval \"$(${pkgs.direnv}/bin/direnv hook zsh)\"";
+          }
+        ];
+        hdwlinux.shell.bash.initLines = [
+          {
+            prio = 540;
+            text = "eval \"$(${pkgs.direnv}/bin/direnv hook bash)\"";
+          }
+        ];
+      };
+
     homeManager =
       { config, ... }:
       {
