@@ -5,5 +5,9 @@
     homeManager = {
       hdwlinux.ai.clients.skills.jujutsu = ./skill;
     };
+
+    perUser = {
+      hdwlinux.ai.clients.skills.jujutsu = ./skill;
+    };
   };
 }

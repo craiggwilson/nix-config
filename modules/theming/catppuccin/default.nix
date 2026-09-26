@@ -136,6 +136,17 @@ in
         };
       };
 
+    # Theme *values* for the per-user scope (application of GTK/QT/cursor
+    # stays home-manager-side until the theming wave).
+    perUser = {
+      hdwlinux.theme = {
+        inherit wallpaper;
+        name = "catppuccin-${flavor}";
+        colors = themeColors;
+        dark = true;
+      };
+    };
+
     homeManager =
       {
         lib,

@@ -8,5 +8,9 @@
     homeManager = {
       hdwlinux.ai.clients.skills.debussy = ./skill;
     };
+
+    perUser = {
+      hdwlinux.ai.clients.skills.debussy = ./skill;
+    };
   };
 }

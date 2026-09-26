@@ -4,12 +4,12 @@
       "ai:clients"
     ];
 
-    homeManager =
+    perUser =
       {
-        config,
-        lib,
-        pkgs,
-        ...
+        config
+        , lib
+        , pkgs
+        , ...
       }:
       let
         # Resolve an alias to its ordered "provider/model" fallback chain.
@@ -33,7 +33,7 @@
           {
             inherit (agent) color description mode;
             model = resolveAlias agent.model;
-            prompt = "{file:${config.home.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
+            prompt = "{file:${config.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
             inherit (agent) temperature;
           }
           // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
@@ -41,11 +41,11 @@
 
         commandConfig = lib.mapAttrs (name: command: {
           inherit (command) description;
-          template = "{file:${config.home.homeDirectory}/.config/opencode/prompts/commands/${name}.md}";
+          template = "{file:${config.homeDirectory}/.config/opencode/prompts/commands/${name}.md}";
         }) config.hdwlinux.ai.clients.commands;
 
         ruleInstructions = lib.mapAttrsToList (
-          name: _rule: "${config.home.homeDirectory}/.config/opencode/prompts/rules/${name}.md"
+          name: _rule: "${config.homeDirectory}/.config/opencode/prompts/rules/${name}.md"
         ) config.hdwlinux.ai.clients.rules;
 
         # Provider metadata: OpenCode-specific configuration for each provider
@@ -107,54 +107,82 @@
           // lib.optionalAttrs (meta ? env && meta.env != [ ]) { inherit (meta) env; }
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
+        # MCP servers in opencode's shape (was home-manager's enableMcpIntegration
+        # via programs.mcp; now derived from the same source options directly).
+        mcpServers = lib.mapAttrs (
+          _: server:
+          if server ? stdio then
+            {
+              type = "local";
+              command = [ server.stdio.command ] ++ server.stdio.args;
+            }
+          else if server ? http then
+            {
+              type = "remote";
+              url = server.http.url;
+            }
+            // lib.optionalAttrs (server.http.headers != { }) {
+              headers = server.http.headers;
+            }
+          else
+            throw "Unknown MCP server type"
+        ) config.hdwlinux.ai.clients.mcpServers;
+
         # Opencode theme derived from the active hdwlinux theme colors
         opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
 
+        json = v: builtins.toJSON v + "\n";
+
+        settings = {
+          "$schema" = "https://opencode.ai/config.json";
+          provider = providers;
+          agent = agentConfig;
+          command = commandConfig;
+          instructions = ruleInstructions;
+          permission = config.hdwlinux.ai.clients.tools;
+          small_model = resolveAlias "fast";
+          lsp = true;
+          mcp = mcpServers;
+          plugin = config.hdwlinux.programs.opencode.plugins;
+        };
       in
       {
-        home.packages = [
-          pkgs.opencode-desktop
-        ];
+        options.hdwlinux.programs.opencode.plugins = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = "Plugin entries merged into opencode.json's plugin list.";
+        };
 
-        xdg.configFile = lib.mkMerge [
-          (lib.mapAttrs' (
-            name: command: lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
-          ) config.hdwlinux.ai.clients.commands)
-          (lib.mapAttrs' (
-            name: rule: lib.nameValuePair "opencode/prompts/rules/${name}.md" { source = rule.prompt; }
-          ) config.hdwlinux.ai.clients.rules)
-          (lib.mapAttrs' (
-            name: agent: lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
-          ) config.hdwlinux.ai.clients.agents)
-        ];
+        config = {
+          packages = [ pkgs.opencode-desktop ];
 
-        programs.opencode = {
-          enable = true;
+          files = {
+            ".config/opencode/opencode.json".text = json settings;
 
-          # MCP servers are picked up from programs.mcp.servers, which is
-          # populated by modules/ai/clients/default.nix from hdwlinux.ai.clients.mcpServers
-          enableMcpIntegration = true;
-
-          themes.hdwlinux = opencodeTheme;
-
-          tui = {
-            theme = "hdwlinux";
-            keybinds = {
-              "app_exit" = "ctrl+q";
+            ".config/opencode/tui.json".text = json {
+              "$schema" = "https://opencode.ai/tui.json";
+              theme = "hdwlinux";
+              keybinds = {
+                app_exit = "ctrl+q";
+              };
             };
-          };
 
-          skills = config.hdwlinux.ai.clients.skills;
-
-          settings = {
-            provider = providers;
-            agent = agentConfig;
-            command = commandConfig;
-            instructions = ruleInstructions;
-            permission = config.hdwlinux.ai.clients.tools;
-            small_model = resolveAlias "fast";
-            lsp = true;
-          };
+            ".config/opencode/themes/hdwlinux.json".text = json (
+              { "$schema" = "https://opencode.ai/theme.json"; } // opencodeTheme
+            );
+          }
+          // lib.mapAttrs' (
+            name: command: lib.nameValuePair ".config/opencode/prompts/commands/${name}.md" { source = command.prompt; }
+          ) config.hdwlinux.ai.clients.commands
+          // lib.mapAttrs' (
+            name: rule: lib.nameValuePair ".config/opencode/prompts/rules/${name}.md" { source = rule.prompt; }
+          ) config.hdwlinux.ai.clients.rules
+          // lib.mapAttrs' (
+            name: agent: lib.nameValuePair ".config/opencode/prompts/agents/${name}.md" { source = agent.prompt; }
+          ) config.hdwlinux.ai.clients.agents
+          // lib.mapAttrs' (
+            name: skill: lib.nameValuePair ".config/opencode/skills/${name}" { source = skill; }
+          ) config.hdwlinux.ai.clients.skills;
         };
       };
   };
@@ -165,7 +193,7 @@
       "users:craig:work"
     ];
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       let
         # grove-gateway-opencode-plugin directory in the nix store
@@ -174,14 +202,14 @@
         }/lib/grove-gateway-opencode-plugin";
       in
       {
-        programs.opencode.settings.plugin = [
+        hdwlinux.programs.opencode.plugins = [
           "file://${grovePluginDir}"
         ];
 
         # Allow non-Grove providers (e.g. fireworks) to coexist with Grove providers.
         # Without this, the grove gateway plugin defaults to filtering out all non-Grove
         # providers except github-copilot.
-        xdg.configFile."opencode/grove.jsonc".text = builtins.toJSON {
+        files.".config/opencode/grove.jsonc".text = builtins.toJSON {
           allowProviders = "*";
         };
       };
@@ -192,12 +220,8 @@
       "ai:clients"
     ];
 
-    homeManager =
-      {
-        config,
-        lib,
-        ...
-      }:
+    perUser =
+      { config, lib, ... }:
       let
         # Use the primary model from the analysis alias so the memory plugin follows
         # the same host-specific provider routing as the rest of OpenCode.
@@ -246,13 +270,11 @@
         };
       in
       {
-        programs.opencode.settings.plugin = [
+        hdwlinux.programs.opencode.plugins = [
           "opencode-mem"
         ];
 
-        xdg.configFile."opencode/opencode-mem.jsonc" = {
-          text = builtins.toJSON opencodeMemConfig;
-        };
+        files.".config/opencode/opencode-mem.jsonc".text = builtins.toJSON opencodeMemConfig;
       };
   };
 
@@ -261,8 +283,8 @@
       "ai:clients"
     ];
 
-    homeManager = {
-      programs.opencode.settings.plugin = [
+    perUser = {
+      hdwlinux.programs.opencode.plugins = [
         "@dietrichgebert/ponytail"
       ];
     };
@@ -273,13 +295,8 @@
       "ai:clients"
     ];
 
-    homeManager =
-      {
-        config,
-        pkgs,
-        lib,
-        ...
-      }:
+    perUser =
+      { config, pkgs, lib, ... }:
       let
         # Resolve an alias to its ordered "provider/model" fallback chain consumed by
         # oh-my-opencode-slim. First entry is the primary model.
@@ -321,7 +338,7 @@
         };
       in
       {
-        home.packages = [
+        packages = [
           (pkgs.writeShellApplication {
             name = "omos";
             runtimeInputs = [ pkgs.python3 ];
@@ -329,22 +346,20 @@
           })
         ];
 
-        programs.opencode.settings.plugin = [
+        hdwlinux.programs.opencode.plugins = [
           "oh-my-opencode-slim@beta"
         ];
 
-        xdg.configFile."opencode/oh-my-opencode-slim.json" = {
-          text = builtins.toJSON {
-            multiplexer = {
-              type = "auto";
-              layout = "main-vertical";
-              main_pane_size = 60;
-            };
-            preset = "hdwlinux";
-            disabled_agents = [ ];
-            presets = {
-              hdwlinux = hdwlinux;
-            };
+        files.".config/opencode/oh-my-opencode-slim.json".text = builtins.toJSON {
+          multiplexer = {
+            type = "auto";
+            layout = "main-vertical";
+            main_pane_size = 60;
+          };
+          preset = "hdwlinux";
+          disabled_agents = [ ];
+          presets = {
+            hdwlinux = hdwlinux;
           };
         };
       };

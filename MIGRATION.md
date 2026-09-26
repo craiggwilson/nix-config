@@ -74,6 +74,30 @@ llama-cpp, shikane, waybar, niri units, hyprland units.
 `home.activation` DAG -> ordered oneshots or folded into the unit's ExecStart.
 `home.sessionVariables` -> `environment`.
 
+## Wave 3.75 — ai/clients -> opencode cluster — DONE
+
+- All hdwlinux.ai.* option contributors mirrored into perUser (same module
+  function in both scopes; text-duplicate or shared-let). Consumers that
+  remain home-manager-side (claude-code, herdr, augment) read the hm-scope
+  copy; opencode reads the perUser copy. One source expression, two scopes.
+- programs/opencode hm-module replaced hand-rolled in perUser: opencode.json
+  (incl. mcp transform + plugin list via new hdwlinux.programs.opencode.plugins
+  contribution option), tui.json, themes/hdwlinux.json, prompts/*, skills/*.
+  Submodules (grove-gateway, opencode-mem, ponytail, oh-my-opencode-slim) moved
+  fully (their hm consumer is gone). Parity verified byte-equal against live
+  HM output (opencode.json, tui, themes, mem, omos, 22/22 prompts, 19/19
+  declarative skills; the 9 other live skills are runtime-installed regular
+  files, untouched).
+- laya: sidecar unit ported to schema services (device via graphics:nvidia
+  tag instead of osConfig sniff); mcpServer + rule mirrored.
+- secrets: untyped perUser option mirror (entries/outputDir) + users/craig
+  entry mirror for github-mcp's build-time path interpolation. Retrieval
+  machinery untouched (secrets wave).
+- theming: colors/name/dark/wallpaper option mirror + catppuccin perUser value
+  set. GTK/QT/cursor application stays home-manager-side (theming wave).
+- llama-cpp: host/port option mirror only; server stays home-manager-side.
+- musescore: plugin file + mcpServer mirrored; package stays.
+
 ## Wave 6 — hand-rolled replacements (hard)
 
 - [ ] zsh/bash/starship/fzf/zoxide/direnv — ZDOTDIR/linkfarm rc generation

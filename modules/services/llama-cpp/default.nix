@@ -2,6 +2,26 @@
   config.substrate.modules.services.llama-cpp = {
     tags = [ "ai:llm" ];
 
+    # Option surface only: per-user config generators (opencode's llama.cpp
+    # provider baseURL) read host/port; the server itself stays in the
+    # homeManager block until the services wave retires it.
+    perUser =
+      { lib, ... }:
+      {
+        options.hdwlinux.services.llama-cpp = {
+          host = lib.mkOption {
+            description = "The host for llama-server.";
+            type = lib.types.str;
+            default = "127.0.0.1";
+          };
+          port = lib.mkOption {
+            description = "The port for llama-server.";
+            type = lib.types.int;
+            default = 9292;
+          };
+        };
+      };
+
     homeManager =
       {
         config,

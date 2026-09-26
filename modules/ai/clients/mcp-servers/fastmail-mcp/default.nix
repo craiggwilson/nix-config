@@ -10,5 +10,11 @@
         url = "https://api.fastmail.com/mcp";
       };
     };
+
+    perUser = {
+      hdwlinux.ai.clients.mcpServers.fastmail.http = {
+        url = "https://api.fastmail.com/mcp";
+      };
+    };
   };
 }

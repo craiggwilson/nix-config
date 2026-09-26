@@ -41,6 +41,36 @@
         };
       };
 
+    # Declared here so per-user config generators can read theme colors while
+    # home-manager is retired (GTK/cursor/pointer application stays in the
+    # homeManager block; perUser only consumes colors/name/dark/wallpaper).
+    perUser =
+      { lib, ... }:
+      {
+        options.hdwlinux.theme = {
+          colors = lib.mkOption {
+            description = "The current theme colors with hex, rgb, and ansi mode sub-attrsets.";
+            type = lib.types.attrs;
+            default = { };
+          };
+          dark = lib.mkOption {
+            description = "Whether the theme is dark.";
+            type = lib.types.bool;
+            default = true;
+          };
+          name = lib.mkOption {
+            description = "The name of the theme.";
+            type = lib.types.str;
+            default = "";
+          };
+          wallpaper = lib.mkOption {
+            description = "The wallpaper for the system.";
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+          };
+        };
+      };
+
     homeManager =
       { config, lib, ... }:
       {

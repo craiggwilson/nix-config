@@ -2,6 +2,28 @@
 {
   config.substrate.modules.security.secrets = {
     tags = [ "security:secrets" ];
+
+    # Read-only option mirror: per-user config generators (github-mcp wrapper
+    # script) resolve entry paths at build time. Retrieval machinery stays in
+    # the nixos/homeManager scopes until the secrets wave; paths coincide
+    # because outputDir defaults to the same location.
+    perUser =
+      { config, lib, ... }:
+      {
+        options.hdwlinux.security.secrets = {
+          entries = lib.mkOption {
+            type = lib.types.attrsOf lib.types.anything;
+            default = { };
+            description = "Secret entries (mirror of the home-manager declaration, untyped).";
+          };
+          outputDir = lib.mkOption {
+            type = lib.types.str;
+            default = "${config.homeDirectory}/.config/hdwlinux/secrets";
+            description = "Directory to store secrets.";
+          };
+        };
+      };
+
     nixos =
       {
         config,

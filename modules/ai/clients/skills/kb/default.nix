@@ -5,5 +5,9 @@
     homeManager = {
       hdwlinux.ai.clients.skills.kb = ./skill;
     };
+
+    perUser = {
+      hdwlinux.ai.clients.skills.kb = ./skill;
+    };
   };
 }

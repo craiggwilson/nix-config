@@ -22,7 +22,7 @@ CLASS_RE = re.compile(r"^(\s*)(homeManager|nixos|generic|tags|perUser)\s*=")
 FORBIDDEN = [
     (re.compile(r"^\s*(programs|xdg|wayland|fonts|qt|gtk|targets|manual|news|nix)\.", re.M), "hm option namespace"),
     (re.compile(r"^\s*home\.(?!packages)", re.M), "home.* (not packages)"),
-    (re.compile(r"^\s*imports\s*=", re.M), "imports (hm module pull)"),
+    (re.compile(r"imports\s*=\s*[^\n]*homeManagerModules|inputs\.[\w-]+\.homeModules", re.M), "hm module pull via imports"),
     (re.compile(r"inputs\.home-manager|\blib\.hm\.|hm\.dag|homeManager"), "hm references"),
     (re.compile(r"config\.(home|xdg|programs|services|wayland)\b"), "read of hm-only option"),
 ]

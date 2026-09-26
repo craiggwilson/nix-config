@@ -36,5 +36,17 @@
           args = [ ];
         };
       };
+
+    perUser =
+      { lib, pkgs, ... }:
+      {
+        files."Documents/MuseScore4/Plugins/musescore-mcp-websocket.qml".source =
+          "${pkgs.hdwlinux.mcp-musescore}/share/musescore-plugins/musescore-mcp-websocket.qml";
+
+        hdwlinux.ai.clients.mcpServers.musescore.stdio = {
+          command = lib.getExe pkgs.hdwlinux.mcp-musescore;
+          args = [ ];
+        };
+      };
   };
 }

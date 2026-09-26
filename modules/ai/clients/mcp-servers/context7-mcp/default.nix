@@ -12,5 +12,14 @@
           args = [ ];
         };
       };
+
+    perUser =
+      { lib, pkgs, ... }:
+      {
+        hdwlinux.ai.clients.mcpServers.context7-mcp.stdio = {
+          command = lib.getExe pkgs.hdwlinux.context7-mcp;
+          args = [ ];
+        };
+      };
   };
 }

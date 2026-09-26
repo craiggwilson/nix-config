@@ -66,5 +66,44 @@
           prompt = ./rule.md;
         };
       };
+
+    # perUser form: the same sidecar as a schema service (device from tags --
+    # host hardware is not visible as osConfig here, and graphics:nvidia is
+    # exactly the tag the hosts set for it anyway).
+    perUser =
+      { lib, pkgs, hasTag, ... }:
+      let
+        port = 8787;
+        layaMcp = pkgs.hdwlinux.laya-mcp;
+        hasNvidia = hasTag "graphics:nvidia";
+        device = if hasNvidia then "cuda" else "cpu";
+      in
+      {
+        services.laya-serve = {
+          description = "Laya System 1 decision model sidecar";
+          wantedBy = [ "default.target" ];
+          serviceConfig = {
+            ExecStart = "${lib.getExe layaMcp} serve --model english --device ${device} --max-len 1024 --head-max-len 1024 --port ${toString port}";
+            Environment = lib.optional hasNvidia "PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True";
+            Restart = "on-failure";
+            RestartSec = 10;
+          };
+        };
+
+        hdwlinux.ai.clients.mcpServers.laya.stdio = {
+          command = lib.getExe layaMcp;
+          args = [
+            "mcp"
+            "--sidecar"
+            "http://127.0.0.1:${toString port}"
+          ];
+        };
+
+        hdwlinux.ai.clients.rules.laya = {
+          description = "When and how to use the laya_* System-1 decision tools (triage, routing, gating)";
+          loadMode = "auto";
+          prompt = ./rule.md;
+        };
+      };
   };
 }

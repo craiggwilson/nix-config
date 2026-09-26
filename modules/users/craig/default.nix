@@ -63,16 +63,33 @@ in
         ) [ name ];
       };
 
-    perUser = {
-      hdwlinux.user = {
-        inherit
-          name
-          fullName
-          email
-          publicKey
-          ;
+    perUser =
+      { config, hasTag, lib, ... }:
+      {
+        hdwlinux.user = {
+          inherit
+            name
+            fullName
+            email
+            publicKey
+            ;
+        };
+
+        hdwlinux.security.secrets.entries = {
+          personalSshKey = {
+            path = "${config.homeDirectory}/.ssh/id_rsa";
+            reference = "op://Craig/SSH Key - Craig/private key";
+            mode = "0600";
+          };
+          # path default comes from the typed submodule home-manager-side;
+          # spelled out here since this mirror is untyped.
+          githubApiToken = lib.mkIf (hasTag "programming") {
+            path = "${config.hdwlinux.security.secrets.outputDir}/githubApiToken";
+            reference = "op://Craig/Github/api_token";
+            mode = "0600";
+          };
+        };
       };
-    };
 
     homeManager =
       { config, hasTag, ... }:

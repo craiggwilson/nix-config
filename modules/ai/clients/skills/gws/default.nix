@@ -1,3 +1,22 @@
+let
+  gwsSkills =
+    { inputs, ... }:
+    let
+      gwsSrc = inputs.googleworkspace-cli;
+    in
+    {
+      hdwlinux.ai.clients.skills = {
+        gws-shared = "${gwsSrc}/skills/gws-shared";
+        gws-drive = "${gwsSrc}/skills/gws-drive";
+        gws-drive-upload = "${gwsSrc}/skills/gws-drive-upload";
+        gws-docs = "${gwsSrc}/skills/gws-docs";
+        gws-docs-write = "${gwsSrc}/skills/gws-docs-write";
+        gws-sheets = "${gwsSrc}/skills/gws-sheets";
+        gws-sheets-read = "${gwsSrc}/skills/gws-sheets-read";
+        gws-sheets-append = "${gwsSrc}/skills/gws-sheets-append";
+      };
+    };
+in
 {
   config.substrate.modules.ai.clients.skills.gws = {
     tags = [
@@ -5,28 +24,19 @@
     ];
 
     homeManager =
+      { pkgs, inputs, ... }:
       {
-        pkgs,
-        inputs,
-        ...
-      }:
-      let
-        gwsSrc = inputs.googleworkspace-cli;
-      in
-      {
+        imports = [ gwsSkills ];
+
         home.packages = [ inputs.googleworkspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.gws ];
+      };
 
-        hdwlinux.ai.clients.skills = {
-          gws-shared = "${gwsSrc}/skills/gws-shared";
-          gws-drive = "${gwsSrc}/skills/gws-drive";
-          gws-drive-upload = "${gwsSrc}/skills/gws-drive-upload";
-          gws-docs = "${gwsSrc}/skills/gws-docs";
-          gws-docs-write = "${gwsSrc}/skills/gws-docs-write";
-          gws-sheets = "${gwsSrc}/skills/gws-sheets";
-          gws-sheets-read = "${gwsSrc}/skills/gws-sheets-read";
-          gws-sheets-append = "${gwsSrc}/skills/gws-sheets-append";
-        };
+    perUser =
+      { pkgs, inputs, ... }:
+      {
+        imports = [ gwsSkills ];
 
+        packages = [ inputs.googleworkspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.gws ];
       };
   };
 

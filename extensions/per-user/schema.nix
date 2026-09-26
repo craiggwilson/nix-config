@@ -5,7 +5,7 @@
 { lib, pkgs, usercfg, ... }:
 let
   inherit (lib) mkOption types;
-  inherit (types) attrsOf bool either lines listOf package path str submodule;
+  inherit (types) anything attrsOf bool either lines listOf package path str submodule;
 
   # A file to link into the user's home, from either literal text or a path.
   fileType = submodule (
@@ -73,12 +73,15 @@ let
           default = [ ];
         };
         unitConfig = mkOption {
-          type = attrsOf (either str (listOf str));
+          # Raw [Unit] settings; values pass through to NixOS unit options
+          # (string, int, bool, or list thereof).
+          type = attrsOf anything;
           default = { };
           description = "Raw [Unit] settings (ConditionUser is set automatically).";
         };
         serviceConfig = mkOption {
-          type = attrsOf (either str (listOf str));
+          # Raw [Service] settings; values pass through to NixOS unit options.
+          type = attrsOf anything;
           default = { };
           description = "Raw [Service] settings.";
         };

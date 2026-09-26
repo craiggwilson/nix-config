@@ -5,5 +5,9 @@
     homeManager = {
       hdwlinux.ai.clients.skills.obsidian-bases = ./skill;
     };
+
+    perUser = {
+      hdwlinux.ai.clients.skills.obsidian-bases = ./skill;
+    };
   };
 }

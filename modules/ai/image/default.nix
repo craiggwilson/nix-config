@@ -94,5 +94,94 @@ in
           };
         };
       };
+
+    perUser =
+      { lib, pkgs, ... }:
+      let
+        fileType = fileTypeFn lib;
+
+        fetchModel =
+          model:
+          let
+            filePaths = lib.map (f: {
+              name = if f.subdir != null then "${f.subdir}/${f.name}" else f.name;
+              path = pkgs.fetchurl {
+                inherit (f) name url sha256;
+              };
+            }) model.files;
+
+            linkFarmDir = pkgs.linkFarm "image-${lib.replaceStrings [ ":" ] [ "-" ] model.name}" filePaths;
+          in
+          lib.map (x: "${linkFarmDir}/${x.name}") filePaths;
+      in
+      {
+        options.hdwlinux.ai.image = {
+          models = lib.mkOption {
+            description = "Image generation models available locally.";
+            type = lib.types.attrsOf (
+              lib.types.submodule (
+                { name, config, ... }:
+                {
+                  options = {
+                    name = lib.mkOption {
+                      description = "The id of the model.";
+                      type = lib.types.str;
+                      default = name;
+                    };
+                    type = lib.mkOption {
+                      description = "The model format.";
+                      type = lib.types.enum [
+                        "safetensors"
+                        "ckpt"
+                        "gguf"
+                      ];
+                    };
+                    files = lib.mkOption {
+                      description = "Model files to download.";
+                      type = lib.types.listOf fileType;
+                    };
+                    paths = lib.mkOption {
+                      description = "The paths of the downloaded files.";
+                      readOnly = true;
+                      type = lib.types.listOf lib.types.str;
+                      default = fetchModel config;
+                    };
+                  };
+                }
+              )
+            );
+            default = { };
+          };
+
+          loras = lib.mkOption {
+            description = "LoRa adapters available locally for image generation.";
+            type = lib.types.attrsOf (
+              lib.types.submodule (
+                { name, config, ... }:
+                {
+                  options = {
+                    name = lib.mkOption {
+                      description = "The id of the LoRa adapter.";
+                      type = lib.types.str;
+                      default = name;
+                    };
+                    files = lib.mkOption {
+                      description = "LoRa files to download.";
+                      type = lib.types.listOf fileType;
+                    };
+                    paths = lib.mkOption {
+                      description = "The paths of the downloaded files.";
+                      readOnly = true;
+                      type = lib.types.listOf lib.types.str;
+                      default = fetchModel config;
+                    };
+                  };
+                }
+              )
+            );
+            default = { };
+          };
+        };
+      };
   };
 }
