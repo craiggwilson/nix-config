@@ -7,6 +7,74 @@ both active on the same paths).
 
 Status legend: [x] migrated · [ ] pending · (~) blocked/needs decision
 
+## Current status (handoff snapshot, 2026-09-26)
+
+Six waves committed on `main` (see `jj log`): pilot+scaffold, wave 3
+(packages-only), services, git cluster, ai/clients→opencode, noctalia
+cluster, desktop plumbing (apps/xdg/browserctl/1password/kdeconnect).
+100 of 159 files still carry a `homeManager` block. Both desktop hosts
+(blackflame, unsouled) build toplevels cleanly; audit script is green;
+generated files verified byte-identical vs the live HM generation
+(opencode/oh-my/noctalia/niri/git/gh/mimeapps/user-dirs/app-X/browserctl).
+
+NOT yet done: nothing has actually been *switched to* — no host has run
+the perUser activation unit for real. First switch should be
+blackflame, and after it check: `systemctl --user status
+hdwlinux-craig-personal` (oneshot ran, zero exit), the links under
+~/.config (git, opencode, noctalia), `systemctl --user show-environment
+| grep NIRI_DISABLE` (env delivery), and that session services
+(udiskie/noctalia/kdeconnect) came up once with ConditionUser and only
+for craig.
+
+## Next up: shell cluster (research done, design pending)
+
+The live `~/.config/zsh/.zshrc` (135 lines) is composed by HM's zsh
+module + shell-integration lines from *other* hm modules. Everything
+below must be reproduced by a perUser-generated `~/.config/zsh/.zshrc`
+plus `~/.zshenv` (currently a one-line source bootstrap) and bash
+counterparts (`~/.bashrc`, `~/.profile`, `~/.bash_profile`):
+
+- zsh module body: fpath/NIX_PROFILES + HELPDIR boilerplate, compinit,
+  autosuggestion source+strategy, history block (HISTSIZE/SAVEHIST/
+  HISTORY_IGNORE/HISTFILE in ~/.local/state), setopts, bindkey/initContent
+  (word-move keys + transient-prompt.zsh source), syntax-highlighting
+  sourced LAST with the full ZSH_HIGHLIGHT_STYLES map (theme-colored via
+  hdwlinux.theme.colors)
+- integration lines contributed by other modules, to keep ordering right
+  use a snippet-aggregation option (pattern of git's configFragments):
+  `hdwlinux.shell.zsh.initLines` (prio-sorted list), contributors:
+  zoxide init, fzf --zsh (guarded on $options[zle]), starship init
+  (guarded on $TERM != dumb), direnv hook zsh, yazi cwd function,
+  lsd aliases (regression already: hm's programs.lsd emitted la/ll/ls/lt
+  aliases into shell init — the perUser lsd module must contribute them
+  via the shell option when it lands), ghostty integration block, vte
+  profile source
+- home.shellAliases (users/craig) must flow into both zsh and bash init
+- home.sessionPath ($HOME/.local/bin) + hm sessionVars currently ride
+  ~/.zshenv / session scripts — inventory ~/.config/zsh/.zshenv and
+  ~/.bashrc contents (blocked in the last session by a permission
+  denial; do that first)
+- bash: programs.bash module equivalent (bashrc generation + the same
+  snippet registry)
+- verify: `zsh -n` on generated files, then `zsh -i -c exit` smoke in a
+  clean env (compdump writes land in the real ~/.config/zsh dir — same
+  as hm), plus starship/direnv/zoxide actually functioning after the
+  next login
+
+## Known gaps / caveats
+
+- pre-existing: `nixosConfigurations.minimal` fails eval (`hdwlinux.flake`
+  unset on userless hosts) — unrelated to migration, fix when touching
+  modules/flake
+- jj+dirty-tree: `nix eval` right after creating a new module file can
+  read a stale flake copy; run twice before trusting a miss
+- env delivery for services: units started *before* the activation unit
+  won't see set-environment vars; schema services are auto-ordered
+  after it; anything WantedBy'd by upstream (nixos modules) is not
+- per-unit `Environment=` is the deterministic path for services that
+  need store paths; `env` is for interactive/login state
+
+
 ## Done (pilot wave)
 
 - [x] Extension scaffold: schema / eval / to-nixos / wrap helpers
