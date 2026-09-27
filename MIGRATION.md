@@ -7,15 +7,43 @@ both active on the same paths).
 
 Status legend: [x] migrated · [ ] pending · (~) blocked/needs decision
 
-## Current status (handoff snapshot, 2026-09-26)
+## Current status (handoff snapshot, 2026-09-26, evening)
 
-Seven waves committed on `main` (see `jj log`): pilot+scaffold, wave 3
+Ten waves committed on `main` (see `jj log`): pilot+scaffold, wave 3
 (packages-only), services, git cluster, ai/clients→opencode, noctalia
-cluster, desktop plumbing, shell cluster. 98 of 159 files still carry a
-`homeManager` block. Both desktop hosts (blackflame, unsouled) build
-toplevels cleanly; audit script is green; generated files verified
-byte-identical vs the live HM generation (opencode/oh-my/noctalia/niri/git/
-gh/mimeapps/user-dirs/app-X/browserctl/.zshrc/.zshenv/.bashrc/.bash_profile).
+cluster, desktop plumbing, shell cluster, browser wave (firefox), config pt1
+(starship/jj/helix/ripgrep/direnv/fzf/zoxide/yazi) + bat/lsd regression
+fixes, config pt2 (ghostty via vendored pkgs.formats.keyValue, zellij via
+vendored lib/kdl.nix), hdwlinux CLI registry (option + all contributors in
+perUser; hm-scope option mirror kept for secrets' subcommands until the
+secrets wave). 82 files still carry a `homeManager` block.
+
+Ledger tool: `scripts/per-user-parity.sh [host] [user-key]` diffs EVERY
+file in the live HM generation against the perUser activation targets
+(directory targets matched by longest prefix; GC'd flake-source files
+compared against the checkout). Current: MATCH=125, DIFF=9 (all accepted:
+transitional session-vars files x3, [alias] fix, YAML-header x2, helix
+trailing newline, user.js header, gh empty-keys), TODO ~120 (of which ~25
+are systemd/environment.d entries that vanish structurally with HM).
+
+Real remaining TODOs by subsystem:
+- ssh cluster: .ssh/config + services.ssh-agent unit + set-SSH_AUTH_SOCK
+- mcp.json (ai/clients default.nix hm option) + its consumers claude-code/
+  herdr/vscodium — these three must migrate together, then drop the ~60
+  ai/clients hm mirrors + the hm programs.hdwlinux option mirror
+- VSCodium profiles (25 files; also has home.activation)
+- obsidian: vault files under ~/Projects/kb/.obsidian (15)
+- theming: gtk2/3/4 css+ini, Kvantum, icon themes (.icons +
+  .local/share/icons), fontconfig confs, Xresources, dconf, user-dirs.conf,
+  ghostty dbus service — the genuinely hard wave (hand-roll HM's gtk/qt
+  integration; nati-shaped live theming is the eventual answer)
+- services still hm: notifier/mako, hypridle, hyprpaper, shikane, waybar,
+  llama-cpp (+models.ini), cloudflare-warp, flatpak sync (+timer), kdeconnect
+  (done), spotify/yabridgectl/spicetify
+- secrets wave: templates + retrieval activation + `hdwlinux secrets`
+  subcommand + nix-private/opnix wiring
+- users: craig hm (stateVersion, secrets templates), users/default hm
+  (sessionPath/sessionVars), then wave 7 deletions
 
 NOT yet done: nothing has actually been *switched to* — no host has run
 the perUser activation unit for real. First switch should be
@@ -36,12 +64,11 @@ lines already migrated), then zellij/ssh/helix.
 ## Verification loop that works
 
 `nix build .#nixosConfigurations.<host>.config.system.build.toplevel`
-realizes every perUser `files.*.source` (they land in the closure via the
-activation unit). Extract paths from
-`nix eval --raw '.#nixosConfigurations.<host>.config.systemd.user.services."hdwlinux-<user>-<profile>".script'`
-(`grep -F -A3 'target=/home/<user>/<rel>'`), diff against the live
-home-manager-files generation. `zsh -n` / `bash -n` on the generated rcs,
-plus `python3 scripts/per-user-audit.py`.
+realizes every perUser file (they land in the activation unit's closure),
+then `scripts/per-user-parity.sh` diffs the whole tree vs the live HM
+generation. Add `python3 scripts/per-user-audit.py` (silent-loss guard) and
+`zsh -n`/`bash -n` on generated rcs. jj+dirty-tree: re-run the build after
+creating NEW module files before trusting a MISS.
 
 ## Known gaps / caveats
 
