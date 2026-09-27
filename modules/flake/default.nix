@@ -9,7 +9,7 @@
         };
       };
 
-    homeManager =
+    perUser =
       { config, lib, ... }:
       let
         flake = config.hdwlinux.flake;

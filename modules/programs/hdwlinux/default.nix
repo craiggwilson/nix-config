@@ -2,7 +2,7 @@
   config.substrate.modules.programs.hdwlinux = {
     tags = [ ]; # Always included
 
-    homeManager =
+    perUser =
       {
         config,
         lib,
@@ -29,7 +29,7 @@
         };
 
         config = lib.mkIf (flake != null) {
-          home.packages = [
+          packages = [
             (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
               name = "hdwlinux";
               runtimeInputs = [
@@ -58,6 +58,27 @@
               // cfg.subcommands;
             })
           ];
+        };
+      };
+
+    # Transitional: security/secrets (and any not-yet-migrated contributor)
+    # still contribute subcommands from the home-manager scope, so keep the
+    # option declared there without generating a second CLI. Delete with the
+    # secrets wave.
+    homeManager =
+      { lib, ... }:
+      {
+        options.hdwlinux.programs.hdwlinux = {
+          subcommands = lib.mkOption {
+            type = lib.types.lazyAttrsOf lib.types.anything;
+            default = { };
+            description = "Deprecated home-manager mirror of the perUser option.";
+          };
+          runtimeInputs = lib.mkOption {
+            type = lib.types.listOf lib.types.package;
+            default = [ ];
+            description = "Deprecated home-manager mirror of the perUser option.";
+          };
         };
       };
   };

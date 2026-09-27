@@ -174,7 +174,7 @@
         '';
       };
 
-    homeManager =
+    perUser =
       { pkgs, ... }:
       {
         hdwlinux.programs.hdwlinux = {

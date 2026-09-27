@@ -302,7 +302,7 @@
 
     # The dispatcher script only exists on hosts tagged networking:dns with
     # providers configured, so the commands simply fail elsewhere.
-    homeManager = {
+    perUser = {
       config.hdwlinux.programs.hdwlinux.subcommands.dns = {
         off = "sudo /etc/NetworkManager/dispatcher.d/20-hdwlinux-dns apply-all off";
         status = ''
