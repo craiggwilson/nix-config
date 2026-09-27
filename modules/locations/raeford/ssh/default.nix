@@ -4,7 +4,7 @@
       "users:craig"
       "raeford"
     ];
-    homeManager =
+    perUser =
       {
         config,
         hasTag,
@@ -23,7 +23,7 @@
       {
         hdwlinux.security.ssh.settings = lib.genAttrs (lib.filter (m: !(hasTag "host:${m}")) machines) (m: {
           HostName = "${m}.${domain}";
-          User = config.home.username;
+          User = config.hdwlinux.user.name;
         });
       };
   };

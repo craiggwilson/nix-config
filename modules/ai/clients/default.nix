@@ -331,7 +331,7 @@
       };
 
     perUser =
-      { config, lib, ... }:
+      { config, lib, pkgs, ... }:
       let
         # Resolve one provider/model entry to its full model info including provider.
         # Returns the model with provider info attached.
@@ -537,8 +537,34 @@
           };
         };
 
-        # Map hdwlinux MCP server definitions to programs.mcp.servers so that
-        # any program with enableMcpIntegration can pick them up automatically.
+        # Generic MCP server registry for any tool that reads
+        # ~/.config/mcp/mcp.json (replaces the home-manager programs.mcp
+        # mapping in the mirrored block above).
+        config.files.".config/mcp/mcp.json".source =
+          (pkgs.formats.json { }).generate "mcp.json"
+            {
+              mcpServers = lib.mapAttrs (
+                _: server:
+                if server ? stdio then
+                  {
+                    type = "stdio";
+                    command = server.stdio.command;
+                  }
+                  // lib.optionalAttrs (server.stdio.args != [ ]) {
+                    args = server.stdio.args;
+                  }
+                else if server ? http then
+                  {
+                    type = "http";
+                    url = server.http.url;
+                  }
+                  // lib.optionalAttrs (server.http.headers != { }) {
+                    headers = server.http.headers;
+                  }
+                else
+                  throw "Unknown MCP server type"
+              ) config.hdwlinux.ai.clients.mcpServers;
+            };
 
         config.hdwlinux.ai.clients.tools = {
           bash = {
