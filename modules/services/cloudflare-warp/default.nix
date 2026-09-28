@@ -4,6 +4,18 @@
     nixos = { pkgs, ... }: {
       environment.systemPackages = with pkgs; [ cloudflare-warp ];
 
+      # Cloudflare WARP 2026.7.1343.0 hardcodes the absolute path /usr/sbin/nft
+      # when applying its nftables ruleset. Older clients resolved `nft` via
+      # PATH, so the package's PATH wrapper used to be enough; NixOS has no
+      # /usr/sbin, so the firewall step fails with ENOENT and every
+      # `warp-cli connect` aborts, leaving the daemon "Disconnected (Manual)".
+      # Expose nft at the hardcoded path until upstream resolves it via PATH.
+      # See https://github.com/NixOS/nixpkgs/issues/560833
+      systemd.tmpfiles.rules = [
+        "d /usr/sbin 0755 root root -"
+        "L+ /usr/sbin/nft - - - - ${pkgs.nftables}/bin/nft"
+      ];
+
       systemd.services.cloudflare-warp = {
         description = "Cloudflare Zero Trust Client Daemon";
         documentation = [
