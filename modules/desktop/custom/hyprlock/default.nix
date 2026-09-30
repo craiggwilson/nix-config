@@ -18,9 +18,9 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.hex;
+        colors = config.theming.palette.colors.hex;
         rgb = color: "rgb(${color})";
-        wallpaper = config.hdwlinux.theme.wallpaper or null;
+        wallpaper = config.theming.palette.wallpaper or null;
       in
       {
         home.packages = [ pkgs.hyprlock ];

@@ -10,7 +10,7 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        colors = config.theming.palette.colors.hexWithHashtag;
       in
       {
         hdwlinux.app.terminal = lib.mkDefault {

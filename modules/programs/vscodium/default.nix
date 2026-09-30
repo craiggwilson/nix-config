@@ -18,7 +18,7 @@
       }:
       let
         flake = config.hdwlinux.flake;
-        themeColors = config.hdwlinux.theme.colors;
+        themeColors = config.theming.palette.colors;
         jsonFormat = pkgs.formats.json { };
         userDir = "${config.xdg.configHome}/VSCodium/User";
 

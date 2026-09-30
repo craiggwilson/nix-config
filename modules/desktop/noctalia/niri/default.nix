@@ -59,7 +59,7 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        colors = config.theming.palette.colors.hexWithHashtag;
       in
       {
         home.packages = [

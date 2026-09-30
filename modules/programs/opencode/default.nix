@@ -108,7 +108,7 @@
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
         # Opencode theme derived from the active hdwlinux theme colors
-        opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
+        opencodeTheme = import ./_theme.nix config.theming.palette.colors;
 
       in
       {
@@ -201,7 +201,8 @@
       let
         # Use the primary model from the analysis alias so the memory plugin follows
         # the same host-specific provider routing as the rest of OpenCode.
-        resolvePrimaryAlias = aliasName: lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
+        resolvePrimaryAlias =
+          aliasName: lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
 
         analysisModel = resolvePrimaryAlias "analysis";
 

@@ -5,7 +5,7 @@
     homeManager =
       { config, ... }:
       let
-        wallpaper = config.hdwlinux.theme.wallpaper;
+        wallpaper = config.theming.palette.wallpaper;
       in
       {
         services.hyprpaper = {

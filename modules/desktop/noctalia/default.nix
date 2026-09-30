@@ -25,8 +25,8 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors;
-        wallpaper = config.hdwlinux.theme.wallpaper;
+        colors = config.theming.palette.colors;
+        wallpaper = config.theming.palette.wallpaper;
 
         hasProgramming = hasTag "programming";
         hasTailscale = hasTag "networking:tailscale";

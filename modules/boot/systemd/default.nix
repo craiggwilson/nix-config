@@ -51,17 +51,6 @@
               logo = ./nixos.png;
             };
           }
-
-          (lib.mkIf (config.theming.active == "catppuccin-mocha") {
-            plymouth = {
-              theme = "catppuccin-mocha";
-              themePackages = [
-                (pkgs.catppuccin-plymouth.override {
-                  variant = "mocha";
-                })
-              ];
-            };
-          })
         ];
       };
   };

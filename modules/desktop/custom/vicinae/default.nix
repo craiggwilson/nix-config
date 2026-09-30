@@ -11,7 +11,7 @@
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        colors = config.theming.palette.colors.hexWithHashtag;
         extensions = inputs.vicinae-extensions.packages.${pkgs.stdenv.hostPlatform.system};
       in
       {

@@ -251,7 +251,6 @@
               "programming"
               "security:passwordmanager"
               "security:secrets"
-              "theming:catppuccin"
               "video:production"
               "yubikey"
             ];
@@ -343,8 +342,6 @@
           "security"
           "security:passwordmanager"
           "security:secrets"
-          "theming"
-          "theming:catppuccin"
           "thunderbolt"
           "v4l2loopback"
           "video"

@@ -5,7 +5,7 @@
     homeManager =
       { config, ... }:
       let
-        colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        colors = config.theming.palette.colors.hexWithHashtag;
       in
       {
         programs.helix = {
@@ -24,9 +24,18 @@
               true-color = true;
 
               statusline = {
-                left = [ "mode" "spinner" "file-name" "file-modification-indicator" ];
+                left = [
+                  "mode"
+                  "spinner"
+                  "file-name"
+                  "file-modification-indicator"
+                ];
                 center = [ "diagnostics" ];
-                right = [ "selections" "position" "file-type" ];
+                right = [
+                  "selections"
+                  "position"
+                  "file-type"
+                ];
               };
             };
 

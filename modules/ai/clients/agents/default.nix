@@ -5,7 +5,7 @@
     homeManager =
       { config, lib, ... }:
       let
-        colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        colors = config.theming.palette.colors.hexWithHashtag;
 
         # Agent definitions without content paths (computed automatically)
         # Consolidated from 26 agents to 12 role-based agents

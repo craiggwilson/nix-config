@@ -35,7 +35,7 @@
         ansiColorNameFromHex =
           hex:
           let
-            slot = (config.hdwlinux.theme.colors.fromHex hex).ansi;
+            slot = (config.theming.palette.colors.fromHex hex).ansi;
             # Strip "bright" prefix: brightBlue -> "blue", brightBlack -> "black".
             # The character after "bright" is always uppercase in our slot names.
             collapseSlot =

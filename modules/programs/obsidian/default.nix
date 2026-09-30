@@ -10,7 +10,7 @@
         ...
       }:
       let
-        themeColors = config.hdwlinux.theme.colors;
+        themeColors = config.theming.palette.colors;
 
         # Wrap obsidian to include python3 in PATH for the terminal plugin
         obsidianWithPython = pkgs.symlinkJoin {
@@ -25,12 +25,16 @@
 
         themePackage = pkgs.runCommandLocal "hdwlinux-obsidian-theme" { } ''
           mkdir -p "$out"
-          cp ${pkgs.writeText "manifest.json" (builtins.toJSON {
-            name = "hdwlinux";
-            version = "0.0.0";
-            minAppVersion = "1.0.0";
-            author = "hdwlinux";
-          })} "$out/manifest.json"
+          cp ${
+            pkgs.writeText "manifest.json" (
+              builtins.toJSON {
+                name = "hdwlinux";
+                version = "0.0.0";
+                minAppVersion = "1.0.0";
+                author = "hdwlinux";
+              }
+            )
+          } "$out/manifest.json"
           cp ${pkgs.writeText "theme.css" ((import ./_template.nix) themeColors)} "$out/theme.css"
         '';
       in
@@ -49,7 +53,7 @@
 
             appearance = {
               # "obsidian" = dark mode, "moonstone" = light mode
-              theme = if config.hdwlinux.theme.dark then "obsidian" else "moonstone";
+              theme = if config.theming.palette.dark then "obsidian" else "moonstone";
             };
 
             communityPlugins = [

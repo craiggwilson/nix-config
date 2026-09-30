@@ -49,7 +49,7 @@ in
         ...
       }:
       let
-        colors = config.hdwlinux.theme.colors.hex;
+        colors = config.theming.palette.colors.hex;
         rgb = color: "rgb(${color})";
         rgba = color: alpha: "rgba(${color}${alpha})";
 
@@ -74,7 +74,7 @@ in
           systemd.enable = true;
 
           settings = lib.mkMerge [
-            (lib.mkIf (config.hdwlinux.theme.colors != { }) {
+            (lib.mkIf (config.theming.palette.colors != { }) {
               misc.background_color = rgb colors.base00;
               general = {
                 "col.active_border" = rgb colors.base0E;
