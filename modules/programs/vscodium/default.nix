@@ -10,6 +10,8 @@
         config,
         hasTag,
         host,
+        hostcfg,
+        userName,
         pkgs,
         lib,
         ...
@@ -161,12 +163,16 @@
                 "--"
               ];
               "nixpkgs"."expr" = ''import (builtins.getFlake "${flake}").inputs.nixpkgs { }'';
+            }
+            // lib.optionalAttrs (hostcfg.usersOnly) {
               "options" = {
                 "enable" = true;
                 "home-manager"."expr" =
-                  ''(builtins.getFlake "${flake}").homeConfigurations."${config.hdwlinux.user.name}@${host}".options'';
-                "nixos"."expr" = ''(builtins.getFlake "${flake}").nixosConfigurations.${host}.options'';
+                  ''(builtins.getFlake "${flake}").homeConfigurations."${userName}@${host}".options'';
               };
+            }
+            // lib.optionalAttrs (!hostcfg.usersOnly) {
+              "options"."nixos"."expr" = ''(builtins.getFlake "${flake}").nixosConfigurations.${host}.options'';
             };
           };
         };

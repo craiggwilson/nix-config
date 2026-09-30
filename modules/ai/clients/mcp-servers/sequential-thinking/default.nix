@@ -5,16 +5,24 @@
     ];
 
     homeManager =
-      { lib, pkgs, ... }:
+      {
+        lib,
+        pkgs,
+        wrap,
+        ...
+      }:
       let
-        mcpPackage = pkgs.writeShellScriptBin "sequential-thinking" ''
-          export PATH="${pkgs.nodejs}/bin:$PATH"
-          exec ${pkgs.nodejs}/bin/npx -y @modelcontextprotocol/server-sequential-thinking@2025.12.18 "$@"
-        '';
+        mcpPackage = wrap.withShell {
+          package = pkgs.nodejs;
+          exe = "npx";
+          args = [
+            "-y"
+            "@modelcontextprotocol/server-sequential-thinking@2025.12.18"
+          ];
+          runtimeInputs = [ pkgs.nodejs ];
+        };
       in
       {
-        home.packages = [ ];
-
         hdwlinux.ai.clients.mcpServers.sequential-thinking.stdio = {
           command = lib.getExe mcpPackage;
           args = [ ];

@@ -8,17 +8,23 @@
         pkgs,
         lib,
         hasTag,
+        wrap,
         ...
       }:
       let
-        mcpPackage = pkgs.writeShellScriptBin "mcp-atlassian" ''
-          ${pkgs.hdwlinux.mcp-atlassian}/bin/mcp-atlassian \
-          --jira-url "https://jira.mongodb.org" \
-          --jira-personal-token $(cat ${config.hdwlinux.security.secrets.entries.jiraAccessToken.path}) \
-          --confluence-url "https://wiki.corp.mongodb.com" \
-          --confluence-personal-token $(cat ${config.hdwlinux.security.secrets.entries.confluenceAccessToken.path}) \
-          "$@"
-        '';
+        mcpPackage = wrap.withShell {
+          package = pkgs.hdwlinux.mcp-atlassian;
+          args = [
+            "--jira-url"
+            "https://jira.mongodb.org"
+            "--confluence-url"
+            "https://wiki.corp.mongodb.com"
+          ];
+          preHook = ''
+            export JIRA_PERSONAL_TOKEN="$(cat ${config.hdwlinux.security.secrets.entries.jiraAccessToken.path})"
+            export CONFLUENCE_PERSONAL_TOKEN="$(cat ${config.hdwlinux.security.secrets.entries.confluenceAccessToken.path})"
+          '';
+        };
       in
       {
         hdwlinux.ai.clients.mcpServers = lib.mkIf (hasTag "ai:clients") {

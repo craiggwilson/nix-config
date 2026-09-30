@@ -307,6 +307,21 @@
         "type": "sourcehut"
       }
     },
+    "jail-nix_2": {
+      "locked": {
+        "lastModified": 1788928033,
+        "narHash": "sha256-UQRytK4SsshV1CeX6aKF+P855Sbcqg9aA731eYTakNg=",
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "rev": "7cd53acef3ad51b9c775be759f5643f8d3bcf6eb",
+        "type": "sourcehut"
+      },
+      "original": {
+        "owner": "~alexdavid",
+        "repo": "jail.nix",
+        "type": "sourcehut"
+      }
+    },
     "kolide-launcher": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -830,16 +845,17 @@
     },
     "substrate": {
       "inputs": {
+        "jail-nix": "jail-nix_2",
         "nixpkgs": [
           "nixpkgs"
         ]
       },
       "locked": {
-        "lastModified": 1778864879,
-        "narHash": "sha256-e5xUM9MyFfp+zXK73EI4hhdiO6Z/HypIEAeaXkDcDEQ=",
+        "lastModified": 1790803684,
+        "narHash": "sha256-Sj+3vaQ6M7fTFjtHgXLXEHB/wY/CajV0nJVH55pVbmo=",
         "owner": "craiggwilson",
         "repo": "substrate",
-        "rev": "7b07338739d03888caf26efd1a6d8620a852a08a",
+        "rev": "b66986515bd474025db41870d9b60c681071cfcf",
         "type": "github"
       },
       "original": {

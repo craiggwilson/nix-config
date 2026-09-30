@@ -139,13 +139,20 @@
         inputs.substrate.substrateModules.overlays
         inputs.substrate.substrateModules.packages
         inputs.substrate.substrateModules.published-modules
+        inputs.substrate.substrateModules.secrets
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
+        inputs.substrate.substrateModules.theming
         inputs.substrate.substrateModules.types
+        inputs.substrate.substrateModules.wrappers
       ];
 
       substrate.settings = {
         packageNamespace = "hdwlinux";
+
+        nixpkgsConfig = {
+          allowUnfree = true;
+        };
 
         homeManagerModules = [
           inputs.noctalia.homeModules.default

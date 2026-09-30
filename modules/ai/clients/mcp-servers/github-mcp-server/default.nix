@@ -9,15 +9,17 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
         secrets = config.hdwlinux.security.secrets.entries;
         hasSecrets = secrets ? githubApiToken;
 
-        mcpPackage = pkgs.writeShellScriptBin "github-mcp-server" ''
-          GITHUB_PERSONAL_ACCESS_TOKEN=$(cat ${secrets.githubApiToken.path}) ${pkgs.github-mcp-server}/bin/github-mcp-server "$@"
-        '';
+        mcpPackage = wrap.withShell {
+          package = pkgs.github-mcp-server;
+          preHook = ''export GITHUB_PERSONAL_ACCESS_TOKEN="$(cat ${secrets.githubApiToken.path})"'';
+        };
       in
       {
         config = lib.mkIf hasSecrets {

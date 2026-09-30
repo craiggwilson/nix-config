@@ -40,10 +40,6 @@
           };
 
           nixpkgs = {
-            config = {
-              allowUnfree = true;
-              cudaSupport = hasTag "cuda";
-            };
             flake = {
               setNixPath = true;
               setFlakeRegistry = true;
@@ -91,6 +87,8 @@
               nixpkgs.flake = inputs.nixpkgs;
               stable.flake = inputs.nixpkgs-stable;
               unstable.flake = inputs.nixpkgs;
+            }
+            // lib.optionalAttrs (config.hdwlinux.flake != null) {
               hdwlinux.to = {
                 type = "path";
                 path = config.hdwlinux.flake;
