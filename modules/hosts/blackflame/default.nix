@@ -46,7 +46,7 @@ in
           { cloudflare.name = "cloudflare"; }
         ];
 
-        hdwlinux.theme.system = "catppuccin";
+        theming.active = "catppuccin-mocha";
         system.stateVersion = "23.05";
       };
   };

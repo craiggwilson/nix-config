@@ -74,7 +74,7 @@ in
           systemd.enable = true;
 
           settings = lib.mkMerge [
-            (lib.mkIf config.hdwlinux.theme.enable {
+            (lib.mkIf (config.hdwlinux.theme.colors != { }) {
               misc.background_color = rgb colors.base00;
               general = {
                 "col.active_border" = rgb colors.base0E;
@@ -203,17 +203,17 @@ in
               ];
 
               bind = [
-                  "SUPER, B, exec, app-webBrowser"
-                  "SUPER, E, exec, app-fileManager"
+                "SUPER, B, exec, app-webBrowser"
+                "SUPER, E, exec, app-fileManager"
                 "SUPER, G, togglefloating,"
-                  "SUPER, L, exec, app-passwordManager-toggle"
-                  "SUPER SHIFT, L, exec, app-passwordManager-lock"
+                "SUPER, L, exec, app-passwordManager-toggle"
+                "SUPER SHIFT, L, exec, app-passwordManager-lock"
                 "SUPER, M, fullscreen, 1"
                 "SUPER SHIFT, M, fullscreen, 0"
                 "SUPER, O, togglesplit,"
                 "SUPER, Q, killactive"
                 "SUPER, S, togglegroup,"
-                  "SUPER, T, exec, app-terminal"
+                "SUPER, T, exec, app-terminal"
                 "SUPER SHIFT, T, movetoworkspace, special:dropdown"
                 "SUPER, X, exec, vicinae 'vicinae://launch/power?toggle=true'"
                 "SUPER, SPACE, exec, uwsm app -- vicinae vicinae://toggle"

@@ -52,7 +52,7 @@
             };
           }
 
-          (lib.mkIf (config.hdwlinux.theme.system == "catppuccin") {
+          (lib.mkIf (config.theming.active == "catppuccin-mocha") {
             plymouth = {
               theme = "catppuccin-mocha";
               themePackages = [

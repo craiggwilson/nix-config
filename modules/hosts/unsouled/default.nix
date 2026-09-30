@@ -27,7 +27,7 @@ in
 
         boot.kernelPackages = pkgs.linuxPackages_6_18;
 
-        hdwlinux.theme.system = "catppuccin";
+        theming.active = "catppuccin-mocha";
         system.stateVersion = "23.05";
       };
   };

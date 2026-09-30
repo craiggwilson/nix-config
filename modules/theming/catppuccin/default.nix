@@ -1,5 +1,8 @@
+# Catppuccin Mocha: pushes its palette into the substrate theming registry
+# and applies the surfaces that go beyond raw colors (GTK/Kvantum/theme
+# files, wallpaper). Application is gated on `theming.active` selecting this
+# palette; color consumers read the derived hdwlinux.theme.colors view.
 let
-  # Catppuccin Mocha color palette
   flavor = "mocha";
   accent = "lavender";
   wallpaper = ./assets/fishing_stars.jpg;
@@ -75,135 +78,142 @@ let
     ${colors.base17} = "brightMagenta";
   };
 
-  colorLib = import ../../../lib/colors.nix colors ansiColors paletteToAnsi;
-
-  # Generate adwaita GTK CSS
-  adwaitaGtkCss = with colorLib.hexWithHashtag; ''
-    @define-color accent_color ${base0A};
-    @define-color accent_bg_color ${base0A};
-    @define-color accent_fg_color ${base00};
-    @define-color destructive_color ${base08};
-    @define-color destructive_bg_color ${base08};
-    @define-color destructive_fg_color ${base00};
-    @define-color success_color ${base0B};
-    @define-color success_bg_color ${base0B};
-    @define-color success_fg_color ${base00};
-    @define-color warning_color ${base0E};
-    @define-color warning_bg_color ${base0E};
-    @define-color warning_fg_color ${base00};
-    @define-color error_color ${base08};
-    @define-color error_bg_color ${base08};
-    @define-color error_fg_color ${base00};
-    @define-color window_bg_color ${base00};
-    @define-color window_fg_color ${base05};
-    @define-color view_bg_color ${base00};
-    @define-color view_fg_color ${base05};
-    @define-color headerbar_bg_color ${base01};
-    @define-color headerbar_fg_color ${base05};
-    @define-color headerbar_border_color ${base01};
-    @define-color headerbar_backdrop_color @window_bg_color;
-    @define-color headerbar_shade_color rgba(0, 0, 0, 0.07);
-    @define-color headerbar_darker_shade_color rgba(0, 0, 0, 0.07);
-    @define-color sidebar_bg_color ${base01};
-    @define-color sidebar_fg_color ${base05};
-    @define-color sidebar_backdrop_color @window_bg_color;
-    @define-color sidebar_shade_color rgba(0, 0, 0, 0.07);
-    @define-color card_bg_color ${base01};
-    @define-color card_fg_color ${base05};
-    @define-color card_shade_color rgba(0, 0, 0, 0.07);
-    @define-color dialog_bg_color ${base01};
-    @define-color dialog_fg_color ${base05};
-    @define-color popover_bg_color ${base01};
-    @define-color popover_fg_color ${base05};
-    @define-color popover_shade_color rgba(0, 0, 0, 0.07);
-    @define-color shade_color rgba(0, 0, 0, 0.07);
-    @define-color scrollbar_outline_color ${base02};
-  '';
-
-  themeColors = colorLib // {
-    inherit adwaitaGtkCss;
-  };
+  gtkName = "catppuccin-${flavor}-${accent}-standard";
+  kvantumName = "catppuccin-${flavor}-${accent}";
 in
 {
-  config.substrate.modules.theming.catppuccin = {
-    tags = [ "theming:catppuccin" ];
-
-    nixos =
-      { config, lib, ... }:
-      {
-        config = lib.mkIf (config.hdwlinux.theme.system == "catppuccin") {
-          hdwlinux.theme.colors = colorLib;
-        };
-      };
-
-    homeManager =
-      {
-        lib,
-        pkgs,
-        ...
-      }:
-      let
-        gtkName = "catppuccin-${flavor}-${accent}-standard";
-        gtkPkg = pkgs.catppuccin-gtk.override {
+  config.substrate.settings.theming.palettes."catppuccin-mocha" = {
+    inherit colors;
+    ansi = ansiColors;
+    ansiMap = paletteToAnsi;
+    dark = true;
+    gtk = {
+      name = gtkName;
+      package =
+        pkgs:
+        pkgs.catppuccin-gtk.override {
           accents = [ accent ];
           variant = flavor;
         };
-        kvantumName = "catppuccin-${flavor}-${accent}";
+    };
+    icon = {
+      name = "Papirus-Dark";
+      package =
+        pkgs:
+        pkgs.catppuccin-papirus-folders.override {
+          inherit accent flavor;
+        };
+    };
+    cursor = {
+      name = "Nordzy-cursors";
+      package = pkgs: pkgs.nordzy-cursor-theme;
+      size = 24;
+    };
+  };
+
+  config.substrate.modules.theming.catppuccin = {
+    tags = [ "theming:catppuccin" ];
+
+    homeManager =
+      {
+        config,
+        lib,
+        pkgs,
+        theme,
+        ...
+      }:
+      let
+        palette = theme.palettes."catppuccin-mocha";
+
+        # Generate adwaita GTK CSS
+        adwaitaGtkCss = with palette.colors.hexWithHashtag; ''
+          @define-color accent_color ${base0A};
+          @define-color accent_bg_color ${base0A};
+          @define-color accent_fg_color ${base00};
+          @define-color destructive_color ${base08};
+          @define-color destructive_bg_color ${base08};
+          @define-color destructive_fg_color ${base00};
+          @define-color success_color ${base0B};
+          @define-color success_bg_color ${base0B};
+          @define-color success_fg_color ${base00};
+          @define-color warning_color ${base0E};
+          @define-color warning_bg_color ${base0E};
+          @define-color warning_fg_color ${base00};
+          @define-color error_color ${base08};
+          @define-color error_bg_color ${base08};
+          @define-color error_fg_color ${base00};
+          @define-color window_bg_color ${base00};
+          @define-color window_fg_color ${base05};
+          @define-color view_bg_color ${base00};
+          @define-color view_fg_color ${base05};
+          @define-color headerbar_bg_color ${base01};
+          @define-color headerbar_fg_color ${base05};
+          @define-color headerbar_border_color ${base01};
+          @define-color headerbar_backdrop_color @window_bg_color;
+          @define-color headerbar_shade_color rgba(0, 0, 0, 0.07);
+          @define-color headerbar_darker_shade_color rgba(0, 0, 0, 0.07);
+          @define-color sidebar_bg_color ${base01};
+          @define-color sidebar_fg_color ${base05};
+          @define-color sidebar_backdrop_color @window_bg_color;
+          @define-color sidebar_shade_color rgba(0, 0, 0, 0.07);
+          @define-color card_bg_color ${base01};
+          @define-color card_fg_color ${base05};
+          @define-color card_shade_color rgba(0, 0, 0, 0.07);
+          @define-color dialog_bg_color ${base01};
+          @define-color dialog_fg_color ${base05};
+          @define-color popover_bg_color ${base01};
+          @define-color popover_fg_color ${base05};
+          @define-color popover_shade_color rgba(0, 0, 0, 0.07);
+          @define-color shade_color rgba(0, 0, 0, 0.07);
+          @define-color scrollbar_outline_color ${base02};
+        '';
+
+        gtkPkg = palette.gtk.package pkgs;
+        iconPkg = palette.icon.package pkgs;
         kvantumPkg = pkgs.catppuccin-kvantum.override {
           inherit accent;
           variant = flavor;
         };
       in
       {
-        hdwlinux.theme = {
-          inherit wallpaper;
-          name = "catppuccin-${flavor}";
-          colors = themeColors;
-          cursor = {
-            package = pkgs.nordzy-cursor-theme;
-            name = "Nordzy-cursors";
-            size = 24;
-          };
-          dark = true;
-        };
+        config = lib.mkIf (config.theming.active == "catppuccin-mocha") {
+          hdwlinux.theme.wallpaper = wallpaper;
 
-        # GTK
-        gtk = {
-          enable = true;
-          theme = {
-            name = gtkName;
-            package = gtkPkg;
-          };
-          gtk4.theme = {
-            name = gtkName;
-            package = gtkPkg;
-          };
-
-          iconTheme = lib.mkDefault {
-            name = "Papirus-Dark";
-            package = pkgs.catppuccin-papirus-folders.override {
-              inherit accent;
-              inherit flavor;
+          # GTK
+          gtk = {
+            enable = true;
+            theme = {
+              name = gtkName;
+              package = gtkPkg;
             };
+            gtk4.theme = {
+              name = gtkName;
+              package = gtkPkg;
+            };
+
+            iconTheme = lib.mkDefault {
+              name = "Papirus-Dark";
+              package = iconPkg;
+            };
+
+            gtk3.extraCss = adwaitaGtkCss;
+            gtk4.extraCss = adwaitaGtkCss;
           };
 
-          gtk3.extraCss = themeColors.adwaitaGtkCss;
-          gtk4.extraCss = themeColors.adwaitaGtkCss;
-        };
+          home.sessionVariables.GTK_THEME = gtkName;
 
-        home.sessionVariables.GTK_THEME = gtkName;
+          # QT
+          qt = {
+            enable = true;
+            platformTheme.name = "qtct";
+            style.name = "kvantum";
+          };
 
-        # QT
-        qt = {
-          enable = true;
-          platformTheme.name = "qtct";
-          style.name = "kvantum";
-        };
-
-        xdg.configFile = {
-          "Kvantum/${kvantumName}".source = "${kvantumPkg}/share/Kvantum/${kvantumName}";
-          "Kvantum/kvantum.kvconfig".source = (pkgs.formats.ini { }).generate "kvantum.kvconfig" {
-            General.theme = kvantumName;
+          xdg.configFile = {
+            "Kvantum/${kvantumName}".source = "${kvantumPkg}/share/Kvantum/${kvantumName}";
+            "Kvantum/kvantum.kvconfig".source = (pkgs.formats.ini { }).generate "kvantum.kvconfig" {
+              General.theme = kvantumName;
+            };
           };
         };
       };

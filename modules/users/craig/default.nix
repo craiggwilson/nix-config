@@ -118,6 +118,7 @@ in
         };
 
         home.stateVersion = "23.05";
+        theming.active = "catppuccin-mocha";
       };
   };
 }
