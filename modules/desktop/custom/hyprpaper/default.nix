@@ -5,7 +5,9 @@
     homeManager =
       { config, ... }:
       let
-        wallpaper = config.theming.palette.wallpaper;
+        # Every palette wallpaper is loaded and hyprpaper rotates them on the
+        # `rand` interval.
+        wallpapers = config.theming.palette.wallpapers;
       in
       {
         services.hyprpaper = {
@@ -14,11 +16,13 @@
             splash = false;
             ipc = "off";
 
-            wallpaper = {
+            wallpaper = map (w: {
               monitor = "";
-              path = "${wallpaper}";
+              path = "${w}";
               fit_mode = "cover";
-            };
+            }) wallpapers;
+
+            rand = 900;
           };
         };
       };

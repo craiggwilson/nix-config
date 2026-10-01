@@ -9,9 +9,6 @@
         pkgs,
         ...
       }:
-      let
-        colors = config.theming.palette.colors.hexWithHashtag;
-      in
       {
         home.packages = [
           pkgs.libnotify
@@ -32,37 +29,23 @@
           })
         ];
 
-        services.mako = lib.mkMerge [
-          {
-            enable = true;
-            settings = {
-              border-radius = 5;
-              border-size = 1;
-              default-timeout = 5000;
-              ignore-timeout = false;
+        services.mako = {
+          enable = true;
+          settings = {
+            border-radius = 5;
+            border-size = 1;
+            default-timeout = 5000;
+            ignore-timeout = false;
 
-              "mode=idle" = {
-                default-timeout = 0;
-                ignore-timeout = 1;
-              };
-              "mode=do-not-disturb" = {
-                invisible = 1;
-              };
+            "mode=idle" = {
+              default-timeout = 0;
+              ignore-timeout = 1;
             };
-          }
-          {
-            settings = {
-              background-color = colors.base00;
-              border-color = colors.base00;
-              progress-color = colors.base02;
-              text-color = colors.base05;
-
-              "urgency=high" = {
-                border-color = colors.base09;
-              };
+            "mode=do-not-disturb" = {
+              invisible = 1;
             };
-          }
-        ];
+          };
+        };
 
         services.hypridle.settings.listener = [
           {

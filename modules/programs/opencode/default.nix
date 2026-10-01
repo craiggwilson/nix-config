@@ -108,7 +108,6 @@
         ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
 
         # Opencode theme derived from the active hdwlinux theme colors
-        opencodeTheme = import ./_theme.nix config.theming.palette.colors;
 
       in
       {
@@ -134,8 +133,6 @@
           # MCP servers are picked up from programs.mcp.servers, which is
           # populated by modules/ai/clients/default.nix from hdwlinux.ai.clients.mcpServers
           enableMcpIntegration = true;
-
-          themes.hdwlinux = opencodeTheme;
 
           tui = {
             theme = "hdwlinux";

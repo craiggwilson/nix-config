@@ -132,6 +132,7 @@
     inputs.substrate.build.with-flake-parts { inherit inputs; } {
       imports = [
         (inputs.import-tree ./modules)
+        (inputs.import-tree ./app-themes)
         inputs.hdwlinux-private.substrateModules.nix-private
         inputs.substrate.substrateModules.home-manager
         inputs.substrate.substrateModules.jail

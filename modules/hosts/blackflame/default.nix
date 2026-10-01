@@ -47,6 +47,10 @@ in
         ];
 
         theming.active = "catppuccin-mocha";
+        # Runtime theme switching: render every adapter template per palette
+        # and install the `theming` switcher + session-start service.
+        theming.runtimeSwitching = true;
+
         system.stateVersion = "23.05";
       };
   };

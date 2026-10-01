@@ -26,7 +26,7 @@
       }:
       let
         colors = config.theming.palette.colors;
-        wallpaper = config.theming.palette.wallpaper;
+        wallpaper = lib.head config.theming.palette.wallpapers;
 
         hasProgramming = hasTag "programming";
         hasTailscale = hasTag "networking:tailscale";

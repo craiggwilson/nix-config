@@ -49,9 +49,6 @@ in
         ...
       }:
       let
-        colors = config.theming.palette.colors.hex;
-        rgb = color: "rgb(${color})";
-        rgba = color: alpha: "rgba(${color}${alpha})";
 
         laptopMonitor = config.hdwlinux.hardware.monitors.laptop or null;
 
@@ -74,19 +71,10 @@ in
           systemd.enable = true;
 
           settings = lib.mkMerge [
-            (lib.mkIf (config.theming.palette.colors != { }) {
-              misc.background_color = rgb colors.base00;
-              general = {
-                "col.active_border" = rgb colors.base0E;
-                "col.inactive_border" = rgb colors.base03;
-              };
-              decoration.shadow.color = rgba colors.base00 "99";
-              group = {
-                "col.border_inactive" = rgb colors.base0D;
-                "col.border_active" = rgb colors.base06;
-                "col.border_locked_active" = rgb colors.base06;
-              };
-            })
+            # The palette half lives in the theming adapter's sourced
+            # fragment (~/.config/hypr/hdwlinux-theme.conf).
+            "source = $HOME/.config/hypr/hdwlinux-theme.conf"
+
             {
               workspace = [
                 "special:dropdown,gapsin:5,gapsout:30,on-created-empty:app-terminal,border:0,rounding:false,persistent:false"

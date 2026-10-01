@@ -125,6 +125,6 @@ in
           variant = flavor;
         };
     };
-    wallpaper = ./assets/fishing_stars.jpg;
+    wallpapers = [ ./assets/fishing_stars.jpg ];
   };
 }

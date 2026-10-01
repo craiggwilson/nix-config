@@ -20,7 +20,7 @@
       let
         colors = config.theming.palette.colors.hex;
         rgb = color: "rgb(${color})";
-        wallpaper = config.theming.palette.wallpaper or null;
+        wallpaper = lib.head (config.theming.palette.wallpapers ++ [ null ]);
       in
       {
         home.packages = [ pkgs.hyprlock ];

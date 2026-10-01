@@ -851,11 +851,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1790803684,
-        "narHash": "sha256-Sj+3vaQ6M7fTFjtHgXLXEHB/wY/CajV0nJVH55pVbmo=",
+        "lastModified": 1790902291,
+        "narHash": "sha256-ivph9mAAHAVZ8oL7xmE2+JUeGorWoQR11sls+K8Na4w=",
         "owner": "craiggwilson",
         "repo": "substrate",
-        "rev": "b66986515bd474025db41870d9b60c681071cfcf",
+        "rev": "477333825ba78af2f3f1baa5e8f430c97a58d7e4",
         "type": "github"
       },
       "original": {

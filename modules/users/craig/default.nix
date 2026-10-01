@@ -24,6 +24,10 @@ in
 
     generic = {
       hdwlinux.flake = "/home/${name}/Projects/hdwlinux/nix-config";
+      theming = {
+        active = "catppuccin-mocha";
+        runtimeSwitching = true;
+      };
     };
 
     nixos =
@@ -118,7 +122,6 @@ in
         };
 
         home.stateVersion = "23.05";
-        theming.active = "catppuccin-mocha";
       };
   };
 }
