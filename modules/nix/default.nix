@@ -39,15 +39,9 @@
             NIXPKGS_ALLOW_UNFREE = "1";
           };
 
-          nixpkgs = {
-            config = {
-              allowUnfree = true;
-              cudaSupport = hasTag "cuda";
-            };
-            flake = {
-              setNixPath = true;
-              setFlakeRegistry = true;
-            };
+          nixpkgs.flake = {
+            setNixPath = true;
+            setFlakeRegistry = true;
           };
 
           programs.nix-ld.enable = true;

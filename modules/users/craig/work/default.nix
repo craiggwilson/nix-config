@@ -7,18 +7,27 @@
         config,
         pkgs,
         lib,
+        wrap,
         hasTag,
         ...
       }:
       let
-        mcpPackage = pkgs.writeShellScriptBin "mcp-atlassian" ''
-          ${pkgs.hdwlinux.mcp-atlassian}/bin/mcp-atlassian \
-          --jira-url "https://jira.mongodb.org" \
-          --jira-personal-token $(cat ${config.hdwlinux.security.secrets.entries.jiraAccessToken.path}) \
-          --confluence-url "https://wiki.corp.mongodb.com" \
-          --confluence-personal-token $(cat ${config.hdwlinux.security.secrets.entries.confluenceAccessToken.path}) \
-          "$@"
-        '';
+        # secretspec resolves work_mcp at exec time; the arguments carrying the
+        # tokens sit on the core, inside that chain, so they expand afterwards.
+        mcp = wrap.package {
+          package = pkgs.hdwlinux.mcp-atlassian;
+          secrets.scope = "work_mcp";
+          args = [
+            "--jira-url"
+            "https://jira.mongodb.org"
+            "--confluence-url"
+            "https://wiki.corp.mongodb.com"
+            "--jira-personal-token"
+            "\"\$JIRA_ACCESS_TOKEN\""
+            "--confluence-personal-token"
+            "\"\$CONFLUENCE_ACCESS_TOKEN\""
+          ];
+        };
       in
       {
         hdwlinux.ai.clients.mcpServers = lib.mkIf (hasTag "ai:clients") {
@@ -30,24 +39,44 @@
             ];
           };
           mcp-atlassian.stdio = {
-            command = lib.getExe mcpPackage;
+            command = lib.getExe mcp;
             args = [ ];
           };
           glean.http.url = "https://mongodb-be.glean.com/mcp/default";
         };
 
-        hdwlinux.security.secrets.entries = {
-          jiraAccessToken = {
-            reference = "op://Work/Jira/personal-access-token";
+        secretspec = {
+          entries = {
+            JIRA_ACCESS_TOKEN = {
+              description = "Personal access token for the MongoDB Jira instance.";
+              ref = {
+                vault = "Work";
+                item = "Jira";
+                field = "personal-access-token";
+              };
+            };
+            jiraConfig = {
+              description = "Jira CLI configuration for the MongoDB instance.";
+              ref = {
+                vault = "Work";
+                item = "Jira";
+                field = ".mongodb-jira.yaml";
+              };
+              file.path = "${config.home.homeDirectory}/.mongodb-jira.yaml";
+            };
+            CONFLUENCE_ACCESS_TOKEN = {
+              description = "Personal access token for the MongoDB Confluence instance.";
+              ref = {
+                vault = "Work";
+                item = "Confluence";
+                field = "personal-access-token";
+              };
+            };
           };
-          jiraConfig = {
-            path = "${config.home.homeDirectory}/.mongodb-jira.yaml";
-            reference = "op://Work/Jira/.mongodb-jira.yaml";
-            mode = "0600";
-          };
-          confluenceAccessToken = {
-            reference = "op://Work/Confluence/personal-access-token";
-          };
+          scopes.work_mcp.secrets = [
+            "JIRA_ACCESS_TOKEN"
+            "CONFLUENCE_ACCESS_TOKEN"
+          ];
         };
       };
   };

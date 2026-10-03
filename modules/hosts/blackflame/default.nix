@@ -6,6 +6,7 @@ in
 {
   substrate.hosts.${hostname} = {
     system = "x86_64-linux";
+    nixpkgsConfig.cudaSupport = true;
     users = [ "craig@personal" ];
     tags = [
       "host:${hostname}"
@@ -23,21 +24,37 @@ in
           diskoConfig
         ];
 
-        hdwlinux.security.secrets.entries = {
-          nextDnsBlockedProfile.reference = "op://Craig/NextDNS/blocked-profile";
-          nextDnsUnblockedProfile.reference = "op://Craig/NextDNS/unblocked-profile";
+        secretspec.entries = {
+          nextDnsBlockedProfile = {
+            description = "NextDNS profile id for the malware-blocking configuration.";
+            ref = {
+              vault = "Craig";
+              item = "NextDNS";
+              field = "blocked-profile";
+            };
+            file = { };
+          };
+          nextDnsUnblockedProfile = {
+            description = "NextDNS profile id for the unblocked configuration.";
+            ref = {
+              vault = "Craig";
+              item = "NextDNS";
+              field = "unblocked-profile";
+            };
+            file = { };
+          };
         };
         hdwlinux.networking.dns.providers = [
           {
             nextdns = {
               name = "nextdns-blocked";
-              secretPath = config.hdwlinux.security.secrets.entries.nextDnsBlockedProfile.path;
+              secretPath = config.secretspec.entries.nextDnsBlockedProfile.file.path;
             };
           }
           {
             nextdns = {
               name = "nextdns-unblocked";
-              secretPath = config.hdwlinux.security.secrets.entries.nextDnsUnblockedProfile.path;
+              secretPath = config.secretspec.entries.nextDnsUnblockedProfile.file.path;
             };
           }
           { cloudflare.name = "cloudflare"; }

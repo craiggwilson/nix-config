@@ -11,6 +11,7 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
@@ -206,13 +207,14 @@
 
         };
 
-        # Wrapper script that passes --mcp-config so MCP servers are available
-        # without touching ~/.claude.json (which Claude manages itself for session state).
-        claudeWrapper = pkgs.writeShellScriptBin "claude" ''
-          exec ${pkgs.claude-code}/bin/claude \
-            --mcp-config "${config.home.homeDirectory}/.claude/mcp-servers.json" \
-            "$@"
-        '';
+        # Keep Claude's managed state in place and only inject the MCP config path.
+        claudeWrapper = wrap.package {
+          package = pkgs.claude-code;
+          args = [
+            "--mcp-config"
+            "${config.home.homeDirectory}/.claude/mcp-servers.json"
+          ];
+        };
 
       in
       {

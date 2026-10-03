@@ -1,5 +1,5 @@
 user: "craig.wilson"
-api_key: "@@API_KEY@@"
+api_key: "${EVERGREEN_API_KEY}"
 api_server_host: "https://evergreen.mongodb.com/api"
 ui_server_host: "https://evergreen.mongodb.com"
 oauth:

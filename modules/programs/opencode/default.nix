@@ -201,7 +201,8 @@
       let
         # Use the primary model from the analysis alias so the memory plugin follows
         # the same host-specific provider routing as the rest of OpenCode.
-        resolvePrimaryAlias = aliasName: lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
+        resolvePrimaryAlias =
+          aliasName: lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
 
         analysisModel = resolvePrimaryAlias "analysis";
 
@@ -278,6 +279,7 @@
         config,
         pkgs,
         lib,
+        wrap,
         ...
       }:
       let
@@ -319,15 +321,23 @@
             model = resolveAliases "writing";
           };
         };
-      in
-      {
-        home.packages = [
-          (pkgs.writeShellApplication {
+
+        # `opencode` on PATH is omos.sh, so every launch -- typed, from a
+        # keybind, from a script -- picks a port. Home Manager still owns the
+        # configuration; it just installs nothing, because the command it would
+        # install is the wrapper.
+        opencodeCommand = wrap.package {
+          package = pkgs.writeShellApplication {
             name = "omos";
             runtimeInputs = [ pkgs.python3 ];
             text = builtins.readFile ./omos.sh;
-          })
-        ];
+          };
+          name = "opencode";
+          env.OPENCODE_BIN = lib.getExe pkgs.opencode;
+        };
+      in
+      {
+        programs.opencode.package = opencodeCommand;
 
         programs.opencode.settings.plugin = [
           "oh-my-opencode-slim@beta"

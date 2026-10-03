@@ -12,34 +12,34 @@
                 type = "onedrive";
                 drive_type = "personal";
               };
-              secrets = {
-                drive_id = config.hdwlinux.security.secrets.entries.onedriveDriveId.path;
+              secrets = [ "RCLONE_CONFIG_ONEDRIVE_DRIVE_ID" ];
+            };
+          };
+
+          programs.hdwlinux.subcommands.cloud = {
+            onedrive =
+              let
+                local = "${config.home.homeDirectory}/OneDrive";
+                remote = "onedrive:";
+                include = ''--include "/{Backups,Documents,Games,MongoDB,Songs}/**"'';
+                mkCommand =
+                  cmd: src: dst:
+                  ''rclone ${cmd} "${src}" "${dst}" ${include} "$@"'';
+              in
+              {
+                check = mkCommand "check" local remote;
+                push = mkCommand "sync" local remote;
+                pull = mkCommand "sync" remote local;
               };
-            };
           };
+        };
 
-          security.secrets.entries.onedriveDriveId = {
-            reference = "op://Craig/onedrive/drive_id";
-            mode = "0600";
-          };
-
-          programs.hdwlinux.subcommands = {
-            cloud = {
-              onedrive =
-                let
-                  local = "${config.home.homeDirectory}/OneDrive";
-                  remote = "onedrive:";
-                  include = ''--include "/{Backups,Documents,Games,MongoDB,Songs}/**"'';
-                  mkCommand =
-                    cmd: src: dst:
-                    ''rclone ${cmd} "${src}" "${dst}" ${include} "$@"'';
-                in
-                {
-                  check = mkCommand "check" local remote;
-                  push = mkCommand "sync" local remote;
-                  pull = mkCommand "sync" remote local;
-                };
-            };
+        secretspec.entries.RCLONE_CONFIG_ONEDRIVE_DRIVE_ID = {
+          description = "OneDrive drive id rclone needs to address the remote.";
+          ref = {
+            vault = "Craig";
+            item = "onedrive";
+            field = "drive_id";
           };
         };
       };

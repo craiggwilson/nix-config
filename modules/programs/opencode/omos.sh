@@ -1,7 +1,10 @@
 # Starts opencode with an explicit loopback port so oh-my-opencode-slim can
 # attach subagent panes from the multiplexer. opencode's default (port 0)
 # exposes no TCP listener for `opencode attach`.
-set -eu
+#
+# Installed as `opencode` itself, so it must call the real binary by path:
+# OPENCODE_BIN is set by the wrapper, and the `opencode` fallback only applies
+# when this runs unwrapped.
 
 port=""
 
@@ -27,9 +30,9 @@ if [ -z "$port" ]; then
 fi
 
 if [ -n "$port" ]; then
-  OPENCODE_PORT="$port" exec opencode "$@"
+  OPENCODE_PORT="$port" exec "${OPENCODE_BIN:-opencode}" "$@"
 fi
 
 # Explicit ports collide across multiple instances; ask the OS for a free one
 port="$(python3 -c 'import socket; s = socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')" || exit 1
-OPENCODE_PORT="$port" exec opencode --port "$port" "$@"
+OPENCODE_PORT="$port" exec "${OPENCODE_BIN:-opencode}" --port "$port" "$@"

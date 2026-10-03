@@ -3,7 +3,12 @@
     tags = [ "programming" ];
 
     homeManager =
-      { config, pkgs, ... }:
+      {
+        config,
+        pkgs,
+        wrap,
+        ...
+      }:
       {
         programs.git = {
           enable = true;
@@ -90,19 +95,28 @@
         '';
 
         home.packages = [
-          (pkgs.writeShellScriptBin "git-find" ''
-            result=`${pkgs.git}/bin/git log -G"$1" --oneline | \
-                ${pkgs.fzf}/bin/fzf --ansi \
+          (pkgs.writeShellApplication {
+            name = "git-find";
+            runtimeInputs = [
+              pkgs.git
+              pkgs.fzf
+              pkgs.ripgrep
+              pkgs.coreutils
+            ];
+            text = ''
+              result=$(git log -G"$1" --oneline |
+                fzf --ansi \
                   --exit-0 \
                   --delimiter " " \
-                  --preview "${pkgs.git}/bin/git show {1} | ${pkgs.ripgrep}/bin/rg --ignore-case --color=always --line-number --context 1 $1" \
-                    --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' | \
-                cut -d' ' -f1`
+                  --preview "git show {1} | rg --ignore-case --color=always --line-number --context 1 $1" \
+                  --preview-window 'up,60%,border-bottom,+{2}+3/3,~3' |
+                cut -d' ' -f1)
 
-            if [ ! -z $result ]; then
-              ${pkgs.git}/bin/git show $result
-            fi
-          '')
+              if [ ! -z "$result" ]; then
+                git show "$result"
+              fi
+            '';
+          })
         ];
 
         hdwlinux.security.ssh.knownHosts = [

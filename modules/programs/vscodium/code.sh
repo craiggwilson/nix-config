@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Launch VSCodium with optional profile support.
 #
 # With arguments: passes them directly to codium.
@@ -8,7 +7,8 @@
 # If VSCODE_PROFILE is set, always passes --profile <name> to codium.
 
 args=()
-[[ -n "$VSCODE_PROFILE" ]] && args+=("--profile" "$VSCODE_PROFILE")
+# ${VAR:-} not $VAR: writeShellApplication sets -o nounset, and the profile is optional.
+[[ -n "${VSCODE_PROFILE:-}" ]] && args+=("--profile" "$VSCODE_PROFILE")
 
 if [[ $# -gt 0 ]]; then
   exec codium "${args[@]}" "$@"

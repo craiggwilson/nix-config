@@ -6,6 +6,7 @@ in
 {
   substrate.hosts.${hostname} = {
     system = "x86_64-linux";
+    nixpkgsConfig.cudaSupport = true;
     users = [ "craig@work" ];
     tags = [
       "host:${hostname}"

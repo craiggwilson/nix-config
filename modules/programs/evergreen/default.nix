@@ -6,33 +6,45 @@
     ];
 
     homeManager =
-      { config, pkgs, ... }:
+      { config, lib, pkgs, wrap, ... }:
       let
-        configFile = "${config.home.homeDirectory}/.evergreen.yml";
+        # Inner wrapper injects --config. args are interpolated verbatim into the
+        # exec line, so $EVERGREEN_CONFIG expands at exec time.
+        # Outer wrapper resolves the scope, putting EVERGREEN_CONFIG into the
+        # environment before the inner wrapper runs.
+        evergreenScript = wrap.package {
+          package = wrap.package {
+            package = pkgs.hdwlinux.evergreen;
+            args = [
+              "--config"
+              "\$EVERGREEN_CONFIG"
+            ];
+          };
+          secrets.scope = "evergreen";
+        };
       in
       {
         home.packages = [
-          (pkgs.writeScriptBin "evergreen" ''
-            ${pkgs.hdwlinux.evergreen}/bin/evergreen --config "${configFile}" "$@"
-          '')
+          evergreenScript
         ];
 
-        hdwlinux.security.secrets = {
-          entries.evergreenApiKey = {
-            reference = "op://Work/evergreen/api-key";
-            mode = "0600";
+        secretspec = {
+          entries = {
+            EVERGREEN_API_KEY = {
+              description = "Evergreen API key substituted into the composed CLI config.";
+              ref = {
+                vault = "Work";
+                item = "evergreen";
+                field = "api-key";
+              };
+            };
+            EVERGREEN_CONFIG = {
+              description = "Materialized Evergreen CLI config.";
+              composed = builtins.readFile ./evergreen.yml;
+              asPath = true;
+            };
           };
-
-          templates.evergreenConfig = {
-            source = ./evergreen.yml;
-            target = configFile;
-            replacements = [
-              {
-                secretPath = config.hdwlinux.security.secrets.entries.evergreenApiKey.path;
-                string = "@@API_KEY@@";
-              }
-            ];
-          };
+          scopes.evergreen.secrets = [ "EVERGREEN_CONFIG" ];
         };
       };
   };

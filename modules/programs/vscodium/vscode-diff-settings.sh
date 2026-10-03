@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Compare settings.json against settings.canonical.json for VSCodium profiles.
 #
 # Lines present in settings.json but absent from canonical are manually-added
@@ -70,7 +69,8 @@ check_profile() {
   fi
 
   local diff
-  diff=$(rg -xvFf "$canonical" "$target")
+  # rg exits 1 when nothing survives -v, i.e. exactly the clean case.
+  diff=$(rg -xvFf "$canonical" "$target" || true)
 
   if [[ -z "$diff" ]]; then
     echo "[$profile] clean — no manually-added settings"

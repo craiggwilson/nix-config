@@ -39,10 +39,14 @@
     homeManager =
       { config, ... }:
       {
-        hdwlinux.security.secrets.entries.gwsClientSecret = {
-          path = "${config.xdg.configHome}/gws/client_secret.json";
-          reference = "op://Work/google-api-oauth/client_secret.json";
-          mode = "0600";
+        secretspec.entries.gwsClientSecret = {
+          description = "Google Workspace CLI OAuth client secret for the CLI's own credentials.";
+          ref = {
+            vault = "Work";
+            item = "google-api-oauth";
+            field = "client_secret.json";
+          };
+          file.path = "${config.xdg.configHome}/gws/client_secret.json";
         };
       };
   };

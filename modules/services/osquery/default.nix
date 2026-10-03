@@ -7,6 +7,7 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
@@ -25,15 +26,17 @@
           )
         );
 
-        flags = lib.concatStringsSep " " (
-          lib.mapAttrsToList (name: value: "--${name}=${value}") cfg.flags-cli
-        );
+        flags = lib.mapAttrsToList (name: value: "--${name}=${value}") cfg.flags-cli;
 
-        osqueryi = pkgs.runCommand "osqueryi" { nativeBuildInputs = [ pkgs.makeWrapper ]; } ''
-          mkdir -p $out/bin
-          makeWrapper ${pkgs.osquery}/bin/osqueryi $out/bin/osqueryi \
-            --add-flags "--flagfile ${flagfile} --disable-database ${flags}"
-        '';
+        osqueryi = wrap.package {
+          package = pkgs.osquery;
+          exe = "osqueryi";
+          args = [
+            "--flagfile"
+            flagfile
+            "--disable-database=true"
+          ] ++ flags;
+        };
       in
       {
         options.hdwlinux.services.osquery = {
@@ -91,7 +94,7 @@
             ];
             description = "The osquery daemon";
             serviceConfig = {
-              ExecStart = "${pkgs.osquery}/bin/osqueryd --flagfile ${flagfile} ${flags}";
+              ExecStart = lib.escapeShellArgs ([ "${pkgs.osquery}/bin/osqueryd" "--flagfile" flagfile ] ++ flags);
               PIDFile = cfg.flags.pidfile;
               LogsDirectory = cfg.flags.logger_path;
               StateDirectory = dirname cfg.flags.database_path;

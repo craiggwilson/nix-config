@@ -104,8 +104,10 @@
             local edid_file="$2"
             local name="$3"
 
-            local card_num=$(echo "$connector" | sed -n 's/card\([0-9]*\)-.*/\1/p')
-            local conn_name=$(echo "$connector" | sed 's/card[0-9]*-//')
+            # boot.postBootCommands runs in stage-2, whose PATH is only coreutils
+            # and util-linux; everything else has to be pinned.
+            local card_num=$(echo "$connector" | ${lib.getExe' pkgs.gnused "sed"} -n 's/card\([0-9]*\)-.*/\1/p')
+            local conn_name=$(echo "$connector" | ${lib.getExe' pkgs.gnused "sed"} 's/card[0-9]*-//')
             local override_path="$DEBUG_DRI/$card_num/$conn_name/edid_override"
             local status_path="/sys/class/drm/$connector/status"
 

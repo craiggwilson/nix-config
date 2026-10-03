@@ -7,10 +7,15 @@
     homeManager =
       { lib, pkgs, ... }:
       let
-        mcpPackage = pkgs.writeShellScriptBin "sequential-thinking" ''
-          export PATH="${pkgs.nodejs}/bin:$PATH"
-          exec ${pkgs.nodejs}/bin/npx -y @modelcontextprotocol/server-sequential-thinking@2025.12.18 "$@"
-        '';
+        # A script is already the thing this server is: a wrapper with no env,
+        # args, prefix or contributor around it would only add a file.
+        mcpPackage = pkgs.writeShellApplication {
+          name = "sequential-thinking";
+          runtimeInputs = [ pkgs.nodejs ];
+          text = ''
+            exec npx -y @modelcontextprotocol/server-sequential-thinking@2025.12.18 "$@"
+          '';
+        };
       in
       {
         home.packages = [ ];

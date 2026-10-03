@@ -10,6 +10,7 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
@@ -188,9 +189,13 @@
       in
       {
         home.packages = [
-          (pkgs.writeShellScriptBin "auggie" ''
-            ${pkgs.hdwlinux.auggie}/bin/auggie --mcp-config ~/.augment/mcp-servers.json "$@"
-          '')
+          (wrap.package {
+            package = pkgs.hdwlinux.auggie;
+            args = [
+              "--mcp-config"
+              "${config.home.homeDirectory}/.augment/mcp-servers.json"
+            ];
+          })
         ];
 
         home.file = {

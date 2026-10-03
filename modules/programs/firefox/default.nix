@@ -14,6 +14,9 @@
 
         programs.firefox = {
           enable = true;
+          # Unstable's Firefox is not on cache.nixos.org yet, so pinning to the
+          # stable channel keeps this a cache fetch instead of a local PGO build.
+          package = pkgs.stable.firefox;
           configPath = "${config.home.homeDirectory}/.mozilla/firefox";
           profiles."default" = {
             id = 0;

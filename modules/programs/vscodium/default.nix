@@ -361,8 +361,23 @@
             };
 
             home.packages = [
-              (pkgs.writeShellScriptBin "code" (builtins.readFile ./code.sh))
-              (pkgs.writeShellScriptBin "vscode-diff-settings" (builtins.readFile ./vscode-diff-settings.sh))
+              (pkgs.writeShellApplication {
+                name = "code";
+                runtimeInputs = [ pkgs.vscodium ];
+                text = builtins.readFile ./code.sh;
+              })
+              (pkgs.writeShellApplication {
+                name = "vscode-diff-settings";
+                runtimeInputs = [
+                  pkgs.coreutils
+                  pkgs.gnused
+                  pkgs.ripgrep
+                ];
+                # SC2001 suggests ${diff//^/  }, which anchors at the start of the
+                # whole string and so indents only the first line.
+                excludeShellChecks = [ "SC2001" ];
+                text = builtins.readFile ./vscode-diff-settings.sh;
+              })
             ];
 
             xdg.mimeApps.defaultApplications."text/plain" = "code.desktop";

@@ -55,7 +55,7 @@
             {
               nextdns = {
                 name = "nextdns";
-                secretPath = config.hdwlinux.security.secrets.entries.dnsNextdnsProfile.path;
+                secretPath = config.secretspec.entries.dnsNextdnsProfile.file.path;
               };
             }
             { cloudflare.name = "cloudflare"; }
@@ -288,7 +288,7 @@
             wantedBy = [ "multi-user.target" ];
             after = [
               "network-online.target"
-              "opnix-secrets.service"
+              "secretspec-materialize.service"
             ];
             wants = [ "network-online.target" ];
             serviceConfig = {

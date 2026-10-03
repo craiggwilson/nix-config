@@ -9,22 +9,24 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
-        secrets = config.hdwlinux.security.secrets.entries;
-        hasSecrets = secrets ? githubApiToken;
-
-        mcpPackage = pkgs.writeShellScriptBin "github-mcp-server" ''
-          GITHUB_PERSONAL_ACCESS_TOKEN=$(cat ${secrets.githubApiToken.path}) ${pkgs.github-mcp-server}/bin/github-mcp-server "$@"
-        '';
+        hasToken = config.secretspec.entries ? GITHUB_API_TOKEN;
       in
       {
-        config = lib.mkIf hasSecrets {
+        config = lib.mkIf hasToken {
           hdwlinux.ai.clients.mcpServers.github.stdio = {
-            command = lib.getExe mcpPackage;
+            command = lib.getExe (
+              wrap.package {
+                package = pkgs.github-mcp-server;
+                secrets.scope = "github_mcp";
+              }
+            );
             args = [ "stdio" ];
           };
+          secretspec.scopes.github_mcp.secrets = [ "GITHUB_API_TOKEN" ];
         };
       };
   };

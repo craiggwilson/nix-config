@@ -5,22 +5,18 @@
     homeManager =
       {
         config,
-        lib,
         pkgs,
+        wrap,
         ...
       }:
       let
         themeColors = config.hdwlinux.theme.colors;
 
-        # Wrap obsidian to include python3 in PATH for the terminal plugin
-        obsidianWithPython = pkgs.symlinkJoin {
-          name = "obsidian-with-python";
-          paths = [ pkgs.obsidian ];
-          nativeBuildInputs = [ pkgs.makeWrapper ];
-          postBuild = ''
-            wrapProgram $out/bin/obsidian \
-              --prefix PATH : ${lib.makeBinPath [ pkgs.python3 ]}
-          '';
+        # Keep the plugin's Python lookup local to the wrapper instead of
+        # baking it into a custom join.
+        obsidianWithPython = wrap.package {
+          package = pkgs.obsidian;
+          runtimeInputs = [ pkgs.python3 ];
         };
 
         themePackage = pkgs.runCommandLocal "hdwlinux-obsidian-theme" { } ''

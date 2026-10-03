@@ -26,7 +26,7 @@
     # Regular remote flakes.
 
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-stable.url = "github:nixos/nixpkgs/nixos-26.05";
 
     disko = {
       url = "github:nix-community/disko";
@@ -90,11 +90,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    opnix = {
-      url = "github:craiggwilson/opnix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     panix = {
       url = "github:mihakrumpestar/panix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -139,13 +134,17 @@
         inputs.substrate.substrateModules.overlays
         inputs.substrate.substrateModules.packages
         inputs.substrate.substrateModules.published-modules
+        inputs.substrate.substrateModules.secrets
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.types
+        inputs.substrate.substrateModules.wrappers
       ];
 
       substrate.settings = {
         packageNamespace = "hdwlinux";
+
+        nixpkgsConfig.allowUnfree = true;
 
         homeManagerModules = [
           inputs.noctalia.homeModules.default

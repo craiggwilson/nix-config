@@ -8,13 +8,11 @@ in
 {
   substrate.users = {
     "${name}@personal" = {
-      system = "x86_64-linux";
       tags = [
         "users:${name}:personal"
       ];
     };
     "${name}@work" = {
-      system = "x86_64-linux";
       tags = [
         "users:${name}:work"
       ];
@@ -31,8 +29,6 @@ in
     nixos =
       { hasTag, ... }:
       {
-        hdwlinux.security.secrets.users = [ name ];
-
         nix.settings = {
           trusted-users = [ name ];
           allowed-users = [ name ];
@@ -66,39 +62,38 @@ in
     homeManager =
       { config, hasTag, ... }:
       {
-        hdwlinux = {
-          user = {
-            inherit
-              name
-              fullName
-              email
-              publicKey
-              ;
-          };
+        hdwlinux.user = {
+          inherit
+            name
+            fullName
+            email
+            publicKey
+            ;
+        };
 
-          security.secrets = {
-            entries = {
-              personalSshKey = {
-                path = "${config.home.homeDirectory}/.ssh/id_rsa";
-                reference = "op://Craig/SSH Key - Craig/private key";
-                mode = "0600";
+        secretspec = {
+          entries = {
+            personalSshKey = {
+              description = "Personal SSH private key used for signing and authenticated git access.";
+              ref = {
+                vault = "Craig";
+                item = "SSH Key - Craig";
+                field = "private key";
               };
-              githubApiToken = lib.mkIf (hasTag "programming") {
-                reference = "op://Craig/Github/api_token";
-                mode = "0600";
+              file.path = "${config.home.homeDirectory}/.ssh/id_rsa";
+            };
+            GITHUB_API_TOKEN = lib.mkIf (hasTag "programming") {
+              description = "GitHub API token for API access and nix flake fetches.";
+              ref = {
+                vault = "Craig";
+                item = "Github";
+                field = "api_token";
               };
             };
-
-            templates.nixGithubAccessTokens = lib.mkIf (hasTag "programming") {
-              source = ./nix-access-tokens.conf;
-              target = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
-              mode = "0600";
-              replacements = [
-                {
-                  string = "GITHUB_API_TOKEN";
-                  secretPath = config.hdwlinux.security.secrets.entries.githubApiToken.path;
-                }
-              ];
+            NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasTag "programming") {
+              description = "Nix GitHub access-tokens file composed from GITHUB_API_TOKEN.";
+              composed = "access-tokens = github.com=\${GITHUB_API_TOKEN}";
+              file.path = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
             };
           };
         };
