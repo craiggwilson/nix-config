@@ -1,8 +1,4 @@
-{
-  lib,
-  config,
-  ...
-}:
+_:
 let
   hostTokenRoot = "/etc/secretspec";
 in
@@ -11,7 +7,7 @@ in
     tags = [ "security:secrets" ];
 
     nixos =
-      { lib, pkgs, config, ... }:
+      { pkgs, ... }:
       {
         config.secretspec = {
           providers.onepassword = {
@@ -31,7 +27,7 @@ in
       };
 
     homeManager =
-      { lib, pkgs, config, ... }:
+      { pkgs, config, ... }:
       {
         config.secretspec = {
           providers.onepassword = {

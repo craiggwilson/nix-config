@@ -6,7 +6,7 @@
     ];
 
     homeManager =
-      { lib, ... }:
+      { ... }:
       {
         hdwlinux.ai.clients.models.providers.fireworks-ai = {
           displayName = "Fireworks AI";

@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.nh = {
 
-    nixos = { pkgs, config, ... }: {
+    nixos = { config, ... }: {
       programs.nh = {
         enable = true;
         flake = config.hdwlinux.flake;

@@ -100,6 +100,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -139,7 +141,19 @@
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.types
         inputs.substrate.substrateModules.wrappers
+        inputs.treefmt-nix.flakeModule
       ];
+
+      perSystem =
+        { ... }:
+        {
+          treefmt.config = {
+            projectRootFile = "flake.nix";
+            programs.nixfmt.enable = true;
+            programs.deadnix.enable = true;
+            programs.statix.enable = true;
+          };
+        };
 
       substrate.settings = {
         packageNamespace = "hdwlinux";
@@ -199,7 +213,7 @@
           inputs.stable-diffusion-webui-nix.overlays.default
 
           # Stable nixpkgs for packages not in unstable
-          (final: prev: {
+          (final: _prev: {
             stable = import inputs.nixpkgs-stable {
               system = final.stdenv.hostPlatform.system;
               config.allowUnfree = true;

@@ -1,6 +1,9 @@
 {
   config.substrate.modules.services.playerctld = {
-    tags = [ "gui" "audio" ];
+    tags = [
+      "gui"
+      "audio"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -10,4 +13,3 @@
       };
   };
 }
-

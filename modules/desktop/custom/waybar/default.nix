@@ -5,8 +5,6 @@
     homeManager =
       {
         config,
-        lib,
-        pkgs,
         ...
       }:
       let

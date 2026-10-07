@@ -6,7 +6,6 @@
     homeManager =
       {
         config,
-        lib,
         pkgs,
         ...
       }:

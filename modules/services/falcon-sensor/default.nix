@@ -4,7 +4,6 @@
 
     nixos =
       {
-        config,
         pkgs,
         wrap,
         ...

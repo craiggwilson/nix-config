@@ -353,7 +353,7 @@
             preset = "hdwlinux";
             disabled_agents = [ ];
             presets = {
-              hdwlinux = hdwlinux;
+              inherit hdwlinux;
             };
           };
         };

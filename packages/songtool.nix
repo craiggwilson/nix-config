@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 pkgs.buildGoModule {
   name = "songtool";
 

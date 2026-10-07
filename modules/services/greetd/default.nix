@@ -1,6 +1,7 @@
 {
   config.substrate.modules.services.greetd = {
-    nixos = { pkgs, ... }:
+    nixos =
+      { pkgs, ... }:
       let
         cmd = "uwsm start default";
       in
@@ -19,4 +20,3 @@
       };
   };
 }
-

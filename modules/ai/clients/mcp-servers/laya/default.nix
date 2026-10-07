@@ -5,7 +5,12 @@
     ];
 
     homeManager =
-      { lib, pkgs, osConfig ? { }, ... }:
+      {
+        lib,
+        pkgs,
+        osConfig ? { },
+        ...
+      }:
       let
         port = 8787;
         layaMcp = pkgs.hdwlinux.laya-mcp;

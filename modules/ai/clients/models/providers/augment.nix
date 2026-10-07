@@ -6,7 +6,7 @@
     ];
 
     homeManager =
-      { lib, ... }:
+      { ... }:
       {
         hdwlinux.ai.clients.models.providers.augment = {
           displayName = "Augment Code";

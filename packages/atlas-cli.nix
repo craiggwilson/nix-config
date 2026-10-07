@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ pkgs, ... }:
 pkgs.stdenv.mkDerivation {
   name = "atlas-cli";
   version = "1.54.0";

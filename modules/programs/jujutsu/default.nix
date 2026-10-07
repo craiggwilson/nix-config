@@ -3,7 +3,7 @@
     tags = [ "programming" ];
 
     homeManager =
-      { config, pkgs, ... }:
+      { config, ... }:
       {
         programs.jujutsu = {
           enable = true;

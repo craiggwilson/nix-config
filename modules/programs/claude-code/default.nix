@@ -137,7 +137,7 @@
                   if builtins.isString extDir then
                     [ ]
                   else
-                    lib.mapAttrsToList (pattern: p: pattern) (
+                    lib.mapAttrsToList (pattern: _p: pattern) (
                       lib.filterAttrs (pattern: p: p == "allow" && pattern != "*") extDir
                     );
               in

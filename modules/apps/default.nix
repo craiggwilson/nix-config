@@ -1,25 +1,28 @@
 {
   config.substrate.modules.apps = {
-    generic = { lib, ... }:
+    generic =
+      { lib, ... }:
       let
-        appType = lib.types.nullOr (lib.types.submodule {
-          options = {
-            package = lib.mkOption {
-              description = "The app's package.";
-              type = lib.types.package;
+        appType = lib.types.nullOr (
+          lib.types.submodule {
+            options = {
+              package = lib.mkOption {
+                description = "The app's package.";
+                type = lib.types.package;
+              };
+              desktopName = lib.mkOption {
+                description = "The .desktop file name for MIME associations.";
+                type = lib.types.nullOr lib.types.str;
+                default = null;
+              };
+              args = lib.mkOption {
+                description = "Default arguments passed to the program on launch.";
+                type = lib.types.listOf lib.types.str;
+                default = [ ];
+              };
             };
-            desktopName = lib.mkOption {
-              description = "The .desktop file name for MIME associations.";
-              type = lib.types.nullOr lib.types.str;
-              default = null;
-            };
-            args = lib.mkOption {
-              description = "Default arguments passed to the program on launch.";
-              type = lib.types.listOf lib.types.str;
-              default = [ ];
-            };
-          };
-        });
+          }
+        );
       in
       {
         options.hdwlinux.app = {
@@ -71,14 +74,23 @@
         };
       };
 
-    homeManager = { config, lib, pkgs, ... }:
+    homeManager =
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         apps = lib.filterAttrs (_: app: app != null) config.hdwlinux.app;
       in
       {
-        home.packages = lib.mapAttrsToList (name: app:
+        home.packages = lib.mapAttrsToList (
+          name: app:
           pkgs.writeShellScriptBin "app-${name}" ''
-            exec uwsm app -- ${lib.getExe app.package}${lib.optionalString (app.args != []) " ${lib.concatStringsSep " " app.args}"} "$@"
+            exec uwsm app -- ${lib.getExe app.package}${
+              lib.optionalString (app.args != [ ]) " ${lib.concatStringsSep " " app.args}"
+            } "$@"
           ''
         ) apps;
       };

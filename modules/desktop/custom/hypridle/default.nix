@@ -3,7 +3,7 @@
     tags = [ "desktop:custom" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      { pkgs, ... }:
       {
         home.packages = [ pkgs.hypridle ];
 

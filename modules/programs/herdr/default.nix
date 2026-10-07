@@ -289,7 +289,7 @@
     ];
 
     homeManager =
-      { config, lib, ... }:
+      _:
       {
         hdwlinux.programs.herdr.plugins = [
           {
@@ -315,8 +315,6 @@
 
     homeManager =
       {
-        config,
-        lib,
         pkgs,
         ...
       }:
@@ -361,7 +359,7 @@
     ];
 
     homeManager =
-      { config, lib, ... }:
+      _:
       {
         hdwlinux.programs.herdr.plugins = [
           {
@@ -392,8 +390,6 @@
 
     homeManager =
       {
-        config,
-        lib,
         pkgs,
         ...
       }:
@@ -427,8 +423,6 @@
 
     homeManager =
       {
-        config,
-        lib,
         pkgs,
         ...
       }:

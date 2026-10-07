@@ -22,4 +22,3 @@ pkgs.buildGoModule {
     homepage = "https://github.com/EngFlow/auth";
   };
 }
-

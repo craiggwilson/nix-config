@@ -45,7 +45,6 @@ in
       {
         lib,
         config,
-        pkgs,
         ...
       }:
       let

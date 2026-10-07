@@ -47,7 +47,7 @@
           };
         }
         // lib.mapAttrs (
-          n: v:
+          _n: v:
           {
             model = lib.head v.paths;
           }

@@ -6,7 +6,7 @@
     ];
 
     homeManager =
-      { config, lib, pkgs, wrap, ... }:
+      { pkgs, wrap, ... }:
       let
         # Inner wrapper injects --config. args are interpolated verbatim into the
         # exec line, so $EVERGREEN_CONFIG expands at exec time.

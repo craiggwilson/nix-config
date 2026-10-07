@@ -17,7 +17,11 @@
             }
           ];
           plugins."smart-enter" = ./plugins/smart-enter.yazi;
-          settings.mgr.ratio = [ 0 2 8 ];
+          settings.mgr.ratio = [
+            0
+            2
+            8
+          ];
           shellWrapperName = "y";
         };
       };

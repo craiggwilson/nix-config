@@ -35,7 +35,8 @@
             "--flagfile"
             flagfile
             "--disable-database=true"
-          ] ++ flags;
+          ]
+          ++ flags;
         };
       in
       {
@@ -94,7 +95,14 @@
             ];
             description = "The osquery daemon";
             serviceConfig = {
-              ExecStart = lib.escapeShellArgs ([ "${pkgs.osquery}/bin/osqueryd" "--flagfile" flagfile ] ++ flags);
+              ExecStart = lib.escapeShellArgs (
+                [
+                  "${pkgs.osquery}/bin/osqueryd"
+                  "--flagfile"
+                  flagfile
+                ]
+                ++ flags
+              );
               PIDFile = cfg.flags.pidfile;
               LogsDirectory = cfg.flags.logger_path;
               StateDirectory = dirname cfg.flags.database_path;
