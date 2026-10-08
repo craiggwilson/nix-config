@@ -1,19 +1,22 @@
-{ pkgs, ... }:
-pkgs.buildGoModule {
-  name = "songtool";
+{
+  substrate.packages.publish.songtool =
+    { pkgs, ... }:
+    pkgs.buildGoModule {
+      name = "songtool";
 
-  src = pkgs.fetchFromGitHub {
-    owner = "craiggwilson";
-    repo = "songtool";
-    rev = "master";
-    sha256 = "sha256-vWMRc6x/IlDcaGN5jkXHbieMY2ncfdh9MjwYaUw115M=";
-  };
+      src = pkgs.fetchFromGitHub {
+        owner = "craiggwilson";
+        repo = "songtool";
+        rev = "master";
+        sha256 = "sha256-vWMRc6x/IlDcaGN5jkXHbieMY2ncfdh9MjwYaUw115M=";
+      };
 
-  vendorHash = "sha256-ZiMbTWPK14IDTqs/re9U1ZwIAhqIw1VP+54Vaioga+A=";
+      vendorHash = "sha256-ZiMbTWPK14IDTqs/re9U1ZwIAhqIw1VP+54Vaioga+A=";
 
-  meta = {
-    mainProgram = "songtool";
-    description = "SongTool - a tool for viewing chords and lyrics";
-    homepage = "https://github.com/craiggwilson/songtool";
-  };
+      meta = {
+        mainProgram = "songtool";
+        description = "SongTool - a tool for viewing chords and lyrics";
+        homepage = "https://github.com/craiggwilson/songtool";
+      };
+    };
 }

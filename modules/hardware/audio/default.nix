@@ -1,6 +1,6 @@
-{ config, ... }:
+{ ... }:
 let
-  pcicardType = config.substrate.types.pcicard;
+  types = import ../../../lib/types.nix;
 in
 {
   config.substrate.modules.hardware.audio = {
@@ -11,7 +11,7 @@ in
       {
         options.hdwlinux.hardware.audio.soundcard = lib.mkOption {
           description = "The soundcard information.";
-          type = pcicardType lib;
+          type = types.pcicard lib;
         };
       };
 

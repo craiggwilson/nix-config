@@ -1,6 +1,6 @@
-{ config, ... }:
+{ ... }:
 let
-  graphicsCardType = config.substrate.types.graphicsCard;
+  types = import ../../../../lib/types.nix;
 in
 {
   config.substrate.modules.hardware.graphics.nvidia = {
@@ -12,7 +12,7 @@ in
       {
         options.hdwlinux.hardware.graphics.nvidia.card = lib.mkOption {
           description = "The nvidia graphics card information.";
-          type = graphicsCardType lib;
+          type = types.graphicsCard lib;
         };
       };
 

@@ -21,6 +21,7 @@
     substrate = {
       url = "github:craiggwilson/substrate";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
     };
 
     # Regular remote flakes.
@@ -52,8 +53,6 @@
     };
 
     import-tree.url = "github:vic/import-tree";
-
-    jail-nix.url = "sourcehut:~alexdavid/jail.nix";
 
     kolide-launcher = {
       url = "github:/kolide/nix-agent/main";
@@ -129,9 +128,10 @@
     inputs.substrate.build.with-flake-parts { inherit inputs; } {
       imports = [
         (inputs.import-tree ./modules)
+        (inputs.import-tree ./packages)
+        (inputs.import-tree ./shells)
         inputs.hdwlinux-private.substrateModules.nix-private
         inputs.substrate.substrateModules.home-manager
-        inputs.substrate.substrateModules.jail
         inputs.substrate.substrateModules.nixos
         inputs.substrate.substrateModules.overlays
         inputs.substrate.substrateModules.packages
@@ -139,24 +139,21 @@
         inputs.substrate.substrateModules.secrets
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
-        inputs.substrate.substrateModules.types
         inputs.substrate.substrateModules.wrappers
         inputs.treefmt-nix.flakeModule
       ];
 
-      perSystem =
-        { ... }:
-        {
-          treefmt.config = {
-            projectRootFile = "flake.nix";
-            programs.nixfmt.enable = true;
-            programs.deadnix.enable = true;
-            programs.statix.enable = true;
-          };
+      perSystem = _: {
+        treefmt.config = {
+          projectRootFile = "flake.nix";
+          programs.nixfmt.enable = true;
+          programs.deadnix.enable = true;
+          programs.statix.enable = true;
         };
+      };
 
       substrate.settings = {
-        packageNamespace = "hdwlinux";
+        packages.namespace = "hdwlinux";
 
         nixpkgsConfig.allowUnfree = true;
 
@@ -168,39 +165,6 @@
         nixosModules = [
           inputs.disko.nixosModules.disko
         ];
-
-        publish = {
-          packages = [
-            ./packages/atlas-cli.nix
-            ./packages/auggie.nix
-            ./packages/code42-aat.nix
-            ./packages/context7-mcp.nix
-            ./packages/debussy.nix
-            ./packages/engflow_auth.nix
-            ./packages/evergreen.nix
-            ./packages/falcon-sensor.nix
-            ./packages/fern.nix
-            ./packages/laya.nix
-            ./packages/laya-mcp.nix
-            ./packages/mcp-atlassian.nix
-            ./packages/mcp-musescore.nix
-            ./packages/mongo-orchestration.nix
-            ./packages/semantic-router.nix
-            ./packages/songtool.nix
-            ./packages/writeShellApplicationWithSubcommands.nix
-          ];
-
-          shells = [
-            ./shells/automation
-            ./shells/go
-            ./shells/hdwlinux
-            ./shells/mms
-            ./shells/mongotune
-            ./shells/observability
-            ./shells/rust
-            ./shells/typescript
-          ];
-        };
 
         overlays = [
           # NUR (Nix User Repository)

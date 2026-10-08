@@ -1,9 +1,12 @@
 {
-  inputs,
-  pkgs,
-  ...
-}:
+  substrate.shells.publish.hdwlinux =
+    {
+      inputs,
+      pkgs,
+      ...
+    }:
 
-pkgs.mkShell {
-  packages = [ inputs.panix.packages.${pkgs.system}.default ];
+    pkgs.mkShell {
+      packages = [ inputs.panix.packages.${pkgs.system}.default ];
+    };
 }

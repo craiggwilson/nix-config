@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  fileTypeFn = config.substrate.types.file;
+  types = import ../../../lib/types.nix;
 in
 {
   config.substrate.modules.ai.llm = {
@@ -9,7 +9,7 @@ in
     homeManager =
       { lib, pkgs, ... }:
       let
-        fileType = fileTypeFn lib;
+        fileType = types.file lib;
 
         fetchGGUF =
           model:
