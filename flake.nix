@@ -127,17 +127,17 @@
     inputs:
     inputs.substrate.build.with-flake-parts { inherit inputs; } {
       imports = [
+        (inputs.import-tree ./devenv)
         (inputs.import-tree ./modules)
         (inputs.import-tree ./packages)
-        (inputs.import-tree ./shells)
         inputs.hdwlinux-private.substrateModules.nix-private
+        inputs.substrate.substrateModules.devenv
         inputs.substrate.substrateModules.home-manager
         inputs.substrate.substrateModules.nixos
         inputs.substrate.substrateModules.overlays
         inputs.substrate.substrateModules.packages
         inputs.substrate.substrateModules.published-modules
         inputs.substrate.substrateModules.secrets
-        inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.wrappers
         inputs.treefmt-nix.flakeModule
