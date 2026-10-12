@@ -3,7 +3,12 @@
     tags = [ "desktop:custom" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         hdwlinux.app.fileManager = lib.mkDefault {
           package = pkgs.nautilus;
@@ -28,4 +33,3 @@
       };
   };
 }
-

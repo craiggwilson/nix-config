@@ -19,18 +19,17 @@
         # passed through env: each secretspec entry is named exactly as the
         # RCLONE_CONFIG_* variable rclone reads, and the secrets contributor
         # exports it into the environment at exec time.
-        plaintextEnv =
-          lib.mergeAttrsList (
-            lib.mapAttrsToList (
-              remoteName: remote:
-              lib.listToAttrs (
-                lib.mapAttrsToList (n: v: {
-                  name = "RCLONE_CONFIG_${varOf remoteName}_${varOf n}";
-                  value = v;
-                }) remote.config
-              )
-            ) cfg.remotes
-          );
+        plaintextEnv = lib.mergeAttrsList (
+          lib.mapAttrsToList (
+            remoteName: remote:
+            lib.listToAttrs (
+              lib.mapAttrsToList (n: v: {
+                name = "RCLONE_CONFIG_${varOf remoteName}_${varOf n}";
+                value = v;
+              }) remote.config
+            )
+          ) cfg.remotes
+        );
 
         rclonePkg = wrap.package {
           package = wrap.package {

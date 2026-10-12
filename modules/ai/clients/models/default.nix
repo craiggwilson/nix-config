@@ -154,7 +154,7 @@
         # Personal hosts route all aliases through the opencode-go provider
         go = model: {
           provider = "opencode-go";
-          model = model;
+          inherit model;
         };
       in
       {

@@ -148,10 +148,12 @@
                 ]) allowPatterns
               );
 
-            allDeny = lib.unique (lib.concatLists (
-              lib.mapAttrsToList (name: value: collectEntries "deny" name value) tools
-            ));
-            allAsk = lib.unique (lib.concatLists (lib.mapAttrsToList (name: value: collectEntries "ask" name value) tools));
+            allDeny = lib.unique (
+              lib.concatLists (lib.mapAttrsToList (name: value: collectEntries "deny" name value) tools)
+            );
+            allAsk = lib.unique (
+              lib.concatLists (lib.mapAttrsToList (name: value: collectEntries "ask" name value) tools)
+            );
             allAllow = externalDirAllows;
           in
           {

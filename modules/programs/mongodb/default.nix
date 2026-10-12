@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.mongodb = {
-    tags = [ "programming" "users:craig:work" ];
+    tags = [
+      "programming"
+      "users:craig:work"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -14,4 +17,3 @@
       };
   };
 }
-

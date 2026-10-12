@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   types = import ../../../lib/types.nix;
 in

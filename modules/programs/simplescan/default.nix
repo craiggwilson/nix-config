@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.simplescan = {
-    tags = [ "gui" "scanning" ];
+    tags = [
+      "gui"
+      "scanning"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -9,4 +12,3 @@
       };
   };
 }
-

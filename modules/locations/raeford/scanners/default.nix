@@ -1,6 +1,9 @@
 {
   config.substrate.modules.locations.raeford.scanners = {
-    tags = [ "raeford" "scanning" ];
+    tags = [
+      "raeford"
+      "scanning"
+    ];
 
     nixos = {
       hardware.sane.brscan4 = {
@@ -15,4 +18,3 @@
     };
   };
 }
-

@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.meld = {
-    tags = [ "gui" "programming" ];
+    tags = [
+      "gui"
+      "programming"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -9,4 +12,3 @@
       };
   };
 }
-

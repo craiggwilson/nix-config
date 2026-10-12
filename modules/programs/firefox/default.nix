@@ -3,7 +3,12 @@
     tags = [ "gui" ];
 
     homeManager =
-      { config, lib, pkgs, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       {
         hdwlinux.app.webBrowser = lib.mkDefault {
           package = config.programs.firefox.package;

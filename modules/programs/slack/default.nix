@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.slack = {
-    tags = [ "gui" "users:craig:work" ];
+    tags = [
+      "gui"
+      "users:craig:work"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -9,4 +12,3 @@
       };
   };
 }
-

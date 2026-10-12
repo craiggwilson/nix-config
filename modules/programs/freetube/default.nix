@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.freetube = {
-    tags = [ "gui" "users:craig:personal" ];
+    tags = [
+      "gui"
+      "users:craig:personal"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -9,4 +12,3 @@
       };
   };
 }
-

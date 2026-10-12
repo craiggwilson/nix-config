@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.steam = {
-    tags = [ "gui" "gaming" ];
+    tags = [
+      "gui"
+      "gaming"
+    ];
 
     nixos = {
       programs.steam = {
@@ -11,4 +14,3 @@
     };
   };
 }
-

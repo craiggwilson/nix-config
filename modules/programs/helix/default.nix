@@ -24,9 +24,18 @@
               true-color = true;
 
               statusline = {
-                left = [ "mode" "spinner" "file-name" "file-modification-indicator" ];
+                left = [
+                  "mode"
+                  "spinner"
+                  "file-name"
+                  "file-modification-indicator"
+                ];
                 center = [ "diagnostics" ];
-                right = [ "selections" "position" "file-type" ];
+                right = [
+                  "selections"
+                  "position"
+                  "file-type"
+                ];
               };
             };
 

@@ -1,7 +1,10 @@
 { inputs, ... }:
 {
   config.substrate.modules.programs.spotify = {
-    tags = [ "audio" "gui" ];
+    tags = [
+      "audio"
+      "gui"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -24,4 +27,3 @@
       };
   };
 }
-

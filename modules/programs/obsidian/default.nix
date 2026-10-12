@@ -21,12 +21,16 @@
 
         themePackage = pkgs.runCommandLocal "hdwlinux-obsidian-theme" { } ''
           mkdir -p "$out"
-          cp ${pkgs.writeText "manifest.json" (builtins.toJSON {
-            name = "hdwlinux";
-            version = "0.0.0";
-            minAppVersion = "1.0.0";
-            author = "hdwlinux";
-          })} "$out/manifest.json"
+          cp ${
+            pkgs.writeText "manifest.json" (
+              builtins.toJSON {
+                name = "hdwlinux";
+                version = "0.0.0";
+                minAppVersion = "1.0.0";
+                author = "hdwlinux";
+              }
+            )
+          } "$out/manifest.json"
           cp ${pkgs.writeText "theme.css" ((import ./_template.nix) themeColors)} "$out/theme.css"
         '';
       in
