@@ -866,11 +866,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1791859475,
-        "narHash": "sha256-tNNR1pa1ncxKT24dAwv1jgYg591N2haXNG8gJR+XYI8=",
+        "lastModified": 1791933369,
+        "narHash": "sha256-CoQuHfaiEWQjeBlCG4ulSdm99+W5n3pQ2ojHanML6Pc=",
         "owner": "craiggwilson",
         "repo": "substrate",
-        "rev": "7e0e936d8acb418875236cb8e72994d0f2e25647",
+        "rev": "b050eb40d12f21b4d58294f7d097ee83da558bcd",
         "type": "github"
       },
       "original": {

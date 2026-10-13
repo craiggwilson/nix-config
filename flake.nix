@@ -165,12 +165,12 @@
 
         nixpkgsConfig.allowUnfree = true;
 
-        homeManagerModules = [
+        homeManager.modules = [
           inputs.noctalia.homeModules.default
           inputs.vicinae.homeManagerModules.default
         ];
 
-        nixosModules = [
+        nixos.modules = [
           inputs.disko.nixosModules.disko
         ];
 
@@ -192,7 +192,7 @@
             };
           })
         ];
-        tags = [
+        tags.options = [
           # Host-specific tags
           "host:minimal"
 
