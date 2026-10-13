@@ -15,7 +15,17 @@
             name = "init-falcon";
             text = ''
               mkdir -p /opt/CrowdStrike
-              ln -sf ${falcon}/opt/CrowdStrike/* /opt/CrowdStrike
+              # The deb ships empty ASPM/Falcon4IT/Packages directories, and the
+              # sensor also creates real ones there at runtime; `ln` cannot replace
+              # a directory with a symlink, so leave existing directories alone and
+              # only refresh files and stale links.
+              for entry in ${falcon}/opt/CrowdStrike/*; do
+                name=$(basename "$entry")
+                if [[ -e "/opt/CrowdStrike/$name" && ! -L "/opt/CrowdStrike/$name" ]]; then
+                  continue
+                fi
+                ln -sfn "$entry" "/opt/CrowdStrike/$name"
+              done
               ${falcon.pkgs.falconctl}/bin/falconctl -f -s --cid="$FALCON_CID"
             '';
           };
@@ -61,7 +71,11 @@
             PIDFile = "/run/falcond.pid";
             Restart = "always";
             TimeoutStopSec = "60s";
-            KillMode = "process";
+            # falcond forks the real sensor into its own cgroup; with the
+            # default KillMode=process a stop kills only falcond and orphans
+            # the sensor, which then holds the kernel sensor resources and
+            # makes every subsequent start fail with EBUSY.
+            KillMode = "control-group";
           };
           wantedBy = [ "multi-user.target" ];
         };
