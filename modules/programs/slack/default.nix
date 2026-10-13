@@ -8,7 +8,10 @@
     homeManager =
       { pkgs, ... }:
       {
-        home.packages = [ pkgs.slack ];
+        home.packages = [
+          pkgs.slack
+          pkgs.hdwlinux.slackcli
+        ];
       };
   };
 }
