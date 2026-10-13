@@ -1,5 +1,5 @@
 {
-  substrate.packages.publish.mcp-atlassian =
+  substrate.packages.internal.mcp-atlassian =
     { lib, pkgs, ... }:
     let
       inherit (pkgs) python3Packages;

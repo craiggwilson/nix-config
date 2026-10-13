@@ -1,5 +1,5 @@
 {
-  substrate.packages.publish.falcon-sensor =
+  substrate.packages.internal.falcon-sensor =
     { lib, pkgs, ... }:
     let
       src = pkgs.requireFile rec {

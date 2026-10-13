@@ -1,5 +1,5 @@
 {
-  substrate.packages.publish.fern =
+  substrate.packages.internal.fern =
     {
       pkgs,
       ...

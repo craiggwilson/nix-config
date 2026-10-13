@@ -1,5 +1,5 @@
 {
-  substrate.packages.publish.laya-mcp =
+  substrate.packages.internal.laya-mcp =
     { lib, pkgs, ... }:
     let
       inherit (pkgs) python3Packages;
