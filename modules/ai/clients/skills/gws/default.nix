@@ -8,13 +8,38 @@
       {
         pkgs,
         inputs,
+        wrap,
         ...
       }:
       let
         gwsSrc = inputs.googleworkspace-cli;
+
+        # Every gws invocation resolves its OAuth credentials (including the
+        # refresh token) from secretspec at exec time: the entry is materialized
+        # as an exec-time temp file and GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE —
+        # which gws checks before its encrypted store or the keyring — points at
+        # it. No credential material is persisted on disk.
+        gws = wrap.package {
+          package = gwsSrc.packages.${pkgs.stdenv.hostPlatform.system}.gws;
+          secrets.scope = "gws";
+        };
       in
       {
-        home.packages = [ inputs.googleworkspace-cli.packages.${pkgs.stdenv.hostPlatform.system}.gws ];
+        home.packages = [ gws ];
+
+        secretspec.entries.GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE = {
+          description = "Google Workspace CLI OAuth user credentials (JSON with refresh token).";
+          asPath = true;
+          ref = {
+            vault = "Work";
+            item = "Google - Work";
+            field = "gws_credentials";
+          };
+        };
+
+        secretspec.scopes.gws.secrets = [
+          "GOOGLE_WORKSPACE_CLI_CREDENTIALS_FILE"
+        ];
 
         hdwlinux.ai.clients.skills = {
           gws-shared = "${gwsSrc}/skills/gws-shared";

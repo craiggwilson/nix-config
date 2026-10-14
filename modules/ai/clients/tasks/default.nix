@@ -7,6 +7,7 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
@@ -25,6 +26,13 @@
           let
             serviceName = "ai-task-${name}";
             promptFile = "${config.home.homeDirectory}/.config/opencode/prompts/tasks/${name}.md";
+            # systemd WorkingDirectory= requires an absolute path and does not
+            # expand "~", so resolve a leading "~" to the home directory here.
+            workingDirectory =
+              if lib.hasPrefix "~" task.workingDirectory then
+                config.home.homeDirectory + lib.removePrefix "~" task.workingDirectory
+              else
+                task.workingDirectory;
             flags = lib.concatStringsSep " " (
               lib.optional (task.agent != null) "--agent ${lib.escapeShellArg task.agent}"
               ++ lib.optionals (task.model != null) [
@@ -34,18 +42,38 @@
               ++ lib.optional task.continueSession "--continue"
               ++ lib.optional task.autoApprove "--auto"
             );
-            execStart = pkgs.writeShellScript serviceName ''
+            # Values are written verbatim so they can reference secrets injected
+            # at exec time (e.g. GH_TOKEN="$GITHUB_API_TOKEN").
+            exports = lib.concatStringsSep "\n" (
+              lib.mapAttrsToList (k: v: ''export ${k}="${v}"'') task.environment
+            );
+            scriptBin = pkgs.writeShellScriptBin serviceName ''
               # Unattended runs need the agent's tools on PATH; the user manager
               # starts with a minimal environment.
               PATH="${
-                lib.makeBinPath [
-                  pkgs.coreutils
-                  pkgs.git
-                  pkgs.jujutsu
-                ]
+                lib.makeBinPath (
+                  [
+                    pkgs.coreutils
+                    pkgs.git
+                    pkgs.jujutsu
+                  ]
+                  ++ task.packages
+                )
               }:$PATH"
+              ${exports}
               exec ${lib.getExe config.programs.opencode.package} run ${flags} "$(cat ${lib.escapeShellArg promptFile})"
             '';
+            # When a secrets scope is set, wrap the script so secretspec resolves
+            # that scope and injects its values into the environment at exec time.
+            execStart = lib.getExe (
+              if task.secretsScope == null then
+                scriptBin
+              else
+                wrap.package {
+                  package = scriptBin;
+                  secrets.scope = task.secretsScope;
+                }
+            );
           in
           {
             services.${serviceName} = {
@@ -53,8 +81,10 @@
               Service = {
                 Type = "oneshot";
                 ExecStart = execStart;
-                RuntimeMaxSec = task.timeout;
-                WorkingDirectory = task.workingDirectory;
+                # oneshot services bound their runtime with TimeoutStartSec;
+                # RuntimeMaxSec is ignored for Type=oneshot.
+                TimeoutStartSec = task.timeout;
+                WorkingDirectory = workingDirectory;
               };
             };
 

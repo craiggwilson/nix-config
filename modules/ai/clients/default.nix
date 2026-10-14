@@ -130,10 +130,25 @@
               description = "A description of what this task does.";
               type = lib.types.str;
             };
+            environment = lib.mkOption {
+              description = ''
+                Extra environment variables exported before the task runs, as
+                shell `export KEY="VALUE"` lines. Values are written verbatim, so
+                they may reference secrets injected by `secretsScope` at runtime
+                (e.g. `GH_TOKEN = "$GITHUB_API_TOKEN"`).
+              '';
+              type = lib.types.attrsOf lib.types.str;
+              default = { };
+            };
             model = lib.mkOption {
               description = "Model alias to use for this task. Defaults to the harness's default model.";
               type = lib.types.nullOr lib.types.str;
               default = null;
+            };
+            packages = lib.mkOption {
+              description = "Extra packages placed on the task's PATH (e.g. CLIs the agent shells out to).";
+              type = lib.types.listOf lib.types.package;
+              default = [ ];
             };
             prompt = lib.mkOption {
               description = "Path to the markdown file containing the task prompt.";
@@ -142,6 +157,16 @@
             schedule = lib.mkOption {
               description = "systemd OnCalendar specification, e.g. \"daily\" or \"Mon *-*-* 09:00:00\".";
               type = lib.types.str;
+            };
+            secretsScope = lib.mkOption {
+              description = ''
+                secretspec scope wrapped around the task. When set, the scope's
+                secrets are resolved and injected into the task's environment at
+                exec time (via `wrap.package`); the scope must be declared in
+                `secretspec.scopes`.
+              '';
+              type = lib.types.nullOr lib.types.str;
+              default = null;
             };
             timeout = lib.mkOption {
               description = "Maximum runtime of a single task invocation, as a systemd time span.";
