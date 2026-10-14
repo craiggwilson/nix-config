@@ -162,6 +162,46 @@ window-rule {
     block-out-from "screen-capture"
 }
 
+// Zoom: float utility windows (share toolbar, menus, settings, popouts) so
+// they don't tile into columns, then re-tile the main window by its stable
+// title. App-id is "zoom" under XWayland and "Zoom" native Wayland.
+window-rule {
+    match app-id=r#"^(?i)zoom(\.us)?$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^(?i)zoom(\.us)?$"#
+    match title=r#"^Zoom Workplace"#
+    open-floating false
+}
+
+// The screen-share toolbar (as_toolbar) is a transparent overlay; strip the
+// focus ring, shadow, and corner clipping so only the app's own controls show,
+// and pin it to its natural floating size.
+window-rule {
+    match app-id=r#"^(?i)zoom(\.us)?$"#
+    match title=r#"^as_toolbar$"#
+
+    default-column-width { fixed 722; }
+    default-window-height { fixed 89; }
+
+    focus-ring {
+        off
+    }
+
+    border {
+        off
+    }
+
+    shadow {
+        off
+    }
+
+    geometry-corner-radius 0
+    clip-to-geometry false
+}
+
 workspace "stash" { }
 
 window-rule {
