@@ -109,6 +109,53 @@
           };
         };
 
+        taskType = lib.types.submodule {
+          options = {
+            agent = lib.mkOption {
+              description = "Named agent to run the task. Defaults to the harness's default agent.";
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+            };
+            autoApprove = lib.mkOption {
+              description = "Auto-approve permissions not explicitly denied. Required for unattended runs, since an \"ask\" permission would block forever.";
+              type = lib.types.bool;
+              default = true;
+            };
+            continueSession = lib.mkOption {
+              description = "Continue the previous session so recurring runs build on prior state.";
+              type = lib.types.bool;
+              default = false;
+            };
+            description = lib.mkOption {
+              description = "A description of what this task does.";
+              type = lib.types.str;
+            };
+            model = lib.mkOption {
+              description = "Model alias to use for this task. Defaults to the harness's default model.";
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+            };
+            prompt = lib.mkOption {
+              description = "Path to the markdown file containing the task prompt.";
+              type = lib.types.path;
+            };
+            schedule = lib.mkOption {
+              description = "systemd OnCalendar specification, e.g. \"daily\" or \"Mon *-*-* 09:00:00\".";
+              type = lib.types.str;
+            };
+            timeout = lib.mkOption {
+              description = "Maximum runtime of a single task invocation, as a systemd time span.";
+              type = lib.types.str;
+              default = "1h";
+            };
+            workingDirectory = lib.mkOption {
+              description = "Directory the task runs in. \"~\" expands to the user's home directory.";
+              type = lib.types.str;
+              default = "~";
+            };
+          };
+        };
+
         mcpServerType = lib.types.attrTag {
           stdio = lib.mkOption {
             description = "A stdio-based MCP server that communicates via stdin/stdout.";
@@ -195,6 +242,16 @@
           skills = lib.mkOption {
             description = "Skill definitions (directories containing multiple files).";
             type = lib.types.attrsOf lib.types.path;
+            default = { };
+          };
+
+          tasks = lib.mkOption {
+            description = ''
+              Scheduled agent tasks. Definitions are harness-agnostic; the enabled
+              harness module (e.g. opencode) renders each task into a systemd user
+              service and timer.
+            '';
+            type = lib.types.attrsOf taskType;
             default = { };
           };
 
