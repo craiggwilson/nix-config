@@ -24,6 +24,13 @@ Branching strategies, commit conventions, rebasing, and collaboration patterns f
 4. **Review** - Create PR, address feedback
 5. **Merge** - Squash or merge based on strategy
 
+## GitHub
+
+All GitHub operations — PRs, issues, reviews, checks, API queries — go through
+the `gh` CLI. It authenticates itself from the environment (there is no GitHub
+MCP server). Prefer `gh pr`, `gh search`, and `gh api` over raw REST calls, and
+`gh pr diff` / `gh pr view --json` for PR detail.
+
 ## Reference Guide
 
 Load detailed guidance based on context:
