@@ -77,7 +77,10 @@
           in
           {
             services.${serviceName} = {
-              Unit.Description = task.description;
+              Unit = {
+                Description = task.description;
+                After = map (taskName: "ai-task-${taskName}.service") task.after;
+              };
               Service = {
                 Type = "oneshot";
                 ExecStart = execStart;

@@ -111,6 +111,15 @@
 
         taskType = lib.types.submodule {
           options = {
+            after = lib.mkOption {
+              description = ''
+                Names of other tasks this task must wait for: the task's service
+                is ordered after theirs (systemd `After=`), so it starts only
+                once they finish. Use for tasks that consume another's output.
+              '';
+              type = lib.types.listOf lib.types.str;
+              default = [ ];
+            };
             agent = lib.mkOption {
               description = "Named agent to run the task. Defaults to the harness's default agent.";
               type = lib.types.nullOr lib.types.str;
