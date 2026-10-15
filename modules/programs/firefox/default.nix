@@ -10,11 +10,6 @@
         ...
       }:
       {
-        hdwlinux.app.webBrowser = lib.mkDefault {
-          package = config.programs.firefox.package;
-          desktopName = "firefox.desktop";
-        };
-
         hdwlinux.programs.browserctl.browsers.firefox = "firefox.desktop";
 
         programs.firefox = {

@@ -99,8 +99,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -111,6 +109,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+
     vicinae = {
       url = "github:vicinaehq/vicinae";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -120,6 +120,12 @@
       url = "github:vicinaehq/extensions";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.vicinae.follows = "vicinae";
+    };
+
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
     };
   };
 
@@ -168,6 +174,7 @@
         homeManager.modules = [
           inputs.noctalia.homeModules.default
           inputs.vicinae.homeManagerModules.default
+          inputs.zen-browser.homeModules.default
         ];
 
         nixos.modules = [
