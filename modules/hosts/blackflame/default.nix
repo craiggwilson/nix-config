@@ -6,15 +6,60 @@ in
 {
   substrate.hosts.${hostname} = {
     system = "x86_64-linux";
+    # Host-local facts: the identity, the machine model, and the location.
+    # Modules require these instead of re-claiming them.
+    provides = [
+      "host:${hostname}"
+      "hardware:model:system76-serval-ws"
+      "location:raeford"
+    ];
     nixpkgsConfig.cudaSupport = true;
     users = [ "craig@personal" ];
     tags = [
       "host:${hostname}"
     ];
+
+    requires = [
+      "hardware:audio"
+      "hardware:bluetooth"
+      "hardware:camera"
+      "hardware:firmware"
+      "hardware:graphics"
+      "hardware:graphics:cuda"
+      "hardware:graphics:nvidia"
+      "hardware:laptop"
+      "hardware:monitors"
+      "hardware:networking"
+      "hardware:power"
+      "hardware:storage"
+      "hardware:thunderbolt"
+
+      # System services local to this machine.
+      "boot:systemd"
+      "networking:dns"
+      "hardware:printing"
+      "hardware:scanning"
+
+      # Core: minimal cross-class utilities and interfaces, named
+      # specifically (there is no bare-core sweep or aggregator; matching
+      # is exact, wildcards explicit).
+      "core:home"
+      "core:interfaces"
+      "core:nix"
+      "core:networking"
+      "core:session"
+      "core:ssh"
+      "core:systemd"
+      "core:utils"
+      "core:xdg"
+
+      # Platform maintenance lives in the hardware domain, not core.
+    ];
   };
 
   substrate.modules.hosts.${hostname} = {
     tags = [ "host:${hostname}" ];
+    provides = [ "host:${hostname}" ];
 
     nixos =
       { config, ... }:

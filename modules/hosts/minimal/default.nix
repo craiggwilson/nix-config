@@ -6,10 +6,21 @@ in
   substrate.hosts.${hostname} = {
     system = "x86_64-linux";
     tags = [ "host:${hostname}" ];
+
+    requires = [
+      "host:${hostname}"
+
+      # Deliberately lean: ssh is what minimal exposes, interfaces declare
+      # the hdwlinux.* options its module sets (hdwlinux.theme.system). No
+      # bare core and no maintenance groups.
+      "core:ssh"
+      "core:interfaces"
+    ];
   };
 
   substrate.modules.hosts.${hostname} = {
     tags = [ "host:${hostname}" ];
+    provides = [ "host:${hostname}" ];
 
     nixos = {
       hdwlinux.theme.system = "none";

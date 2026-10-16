@@ -1,5 +1,7 @@
 {
   config.substrate.modules.ai.clients.models.providers.augment = {
+    provides = [ "ai:clients" ];
+    requires = [ "profiles:work" ];
     tags = [
       "users:craig:work"
       "ai:clients"

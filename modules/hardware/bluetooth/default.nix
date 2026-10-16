@@ -1,5 +1,6 @@
 {
   config.substrate.modules.hardware.bluetooth = {
+    provides = [ "hardware:bluetooth" ];
     tags = [ "bluetooth" ];
     nixos = {
       hardware.bluetooth.enable = true;

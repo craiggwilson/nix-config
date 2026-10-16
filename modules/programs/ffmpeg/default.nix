@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.ffmpeg = {
+    provides = [ "video:production" ];
     tags = [ "video:production" ];
 
     homeManager =

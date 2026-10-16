@@ -126,6 +126,7 @@ let
 in
 {
   config.substrate.modules.theming.catppuccin = {
+    provides = [ "theming:catppuccin" ];
     tags = [ "theming:catppuccin" ];
 
     nixos =

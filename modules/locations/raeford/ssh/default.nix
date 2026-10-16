@@ -1,5 +1,10 @@
 {
   config.substrate.modules.locations.raeford.ssh = {
+    provides = [ "core:ssh" ];
+    requires = [
+      "location:raeford"
+      "users:craig"
+    ];
     tags = [
       "users:craig"
       "raeford"
@@ -7,7 +12,7 @@
     homeManager =
       {
         config,
-        hasTag,
+        hasCapability,
         lib,
         ...
       }:
@@ -21,10 +26,12 @@
         ];
       in
       {
-        hdwlinux.security.ssh.settings = lib.genAttrs (lib.filter (m: !(hasTag "host:${m}")) machines) (m: {
-          HostName = "${m}.${domain}";
-          User = config.home.username;
-        });
+        hdwlinux.security.ssh.settings =
+          lib.genAttrs (lib.filter (m: !(hasCapability "host:${m}")) machines)
+            (m: {
+              HostName = "${m}.${domain}";
+              User = config.home.username;
+            });
       };
   };
 }

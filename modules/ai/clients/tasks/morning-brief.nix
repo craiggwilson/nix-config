@@ -1,5 +1,7 @@
 {
   config.substrate.modules.ai.clients.tasks.morning-brief = {
+    provides = [ "ai:clients" ];
+    requires = [ "profiles:work" ];
     tags = [
       "ai:clients"
       "users:craig:work"

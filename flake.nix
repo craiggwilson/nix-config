@@ -137,6 +137,7 @@
         (inputs.import-tree ./packages)
         (inputs.import-tree ./shells)
         inputs.hdwlinux-private.substrateModules.nix-private
+        inputs.substrate.substrateModules.capabilities
         inputs.substrate.substrateModules.home-manager
         inputs.substrate.substrateModules.nixos
         inputs.substrate.substrateModules.overlays
@@ -199,6 +200,11 @@
             };
           })
         ];
+        # Both the tags and capabilities extensions set substrate.settings.modulesFinder,
+        # so selection is forced here while capabilities exists alongside tags
+        # during the tags-to-caps migration (see tags-to-caps.md).
+        modulesFinder = inputs.nixpkgs.lib.mkForce "by-tags";
+
         tags.options = [
           # Host-specific tags
           "host:minimal"

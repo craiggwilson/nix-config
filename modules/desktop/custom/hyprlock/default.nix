@@ -1,5 +1,6 @@
 {
   config.substrate.modules.desktop.custom.hyprlock = {
+    provides = [ "desktop:custom" ];
     tags = [ "desktop:custom" ];
 
     nixos = {

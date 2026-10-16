@@ -1,6 +1,8 @@
 { inputs, ... }:
 {
   config.substrate.modules.programs.herdr = {
+    provides = [ "ai:clients" ];
+    requires = [ "programming" ];
     tags = [
       "ai:clients"
       "programming"
@@ -283,6 +285,8 @@
   };
 
   config.substrate.modules.programs.herdr.reviewr = {
+    provides = [ "ai:clients" ];
+    requires = [ "programming" ];
     tags = [
       "ai:clients"
       "programming"
@@ -306,6 +310,8 @@
   };
 
   config.substrate.modules.programs.herdr.herdr-plus = {
+    provides = [ "ai:clients" ];
+    requires = [ "programming" ];
     tags = [
       "ai:clients"
       "programming"
@@ -351,6 +357,8 @@
   };
 
   config.substrate.modules.programs.herdr.file-viewer = {
+    provides = [ "ai:clients" ];
+    requires = [ "programming" ];
     tags = [
       "ai:clients"
       "programming"
@@ -379,6 +387,8 @@
   };
 
   config.substrate.modules.programs.herdr.palette = {
+    provides = [ "ai:clients" ];
+    requires = [ "programming" ];
     tags = [
       "ai:clients"
       "programming"
@@ -412,6 +422,8 @@
   };
 
   config.substrate.modules.programs.herdr.floax = {
+    provides = [ "ai:clients" ];
+    requires = [ "programming" ];
     tags = [
       "ai:clients"
       "programming"

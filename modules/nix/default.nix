@@ -1,12 +1,13 @@
 { inputs, ... }:
 {
   config.substrate.modules.nix = {
+    provides = [ "core:nix" ];
     nixos =
       {
         config,
         lib,
         pkgs,
-        hasTag,
+        hasCapability,
         ...
       }:
       let
@@ -55,7 +56,7 @@
 
             switch.enable = true;
 
-            autoUpgrade = lib.mkIf (hasTag "users:craig:work") {
+            autoUpgrade = lib.mkIf (hasCapability "profiles:work") {
               enable = true;
               flake = config.hdwlinux.flake;
               allowReboot = false;

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.llm = {
+    provides = [ "ai:llm" ];
     tags = [ "ai:llm" ];
 
     homeManager = {

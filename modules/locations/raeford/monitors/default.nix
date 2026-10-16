@@ -1,5 +1,7 @@
 {
   config.substrate.modules.locations.raeford.monitors = {
+    provides = [ "hardware:monitors" ];
+    requires = [ "location:raeford" ];
     tags = [ "raeford" ];
 
     generic = {

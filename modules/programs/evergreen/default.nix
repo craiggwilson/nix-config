@@ -1,5 +1,7 @@
 {
   config.substrate.modules.programs.evergreen = {
+    provides = [ "programming" ];
+    requires = [ "profiles:work" ];
     tags = [
       "programming"
       "users:craig:work"

@@ -1,6 +1,7 @@
 {
   config.substrate.modules.users.craig.personal = {
     tags = [ "users:craig:personal" ];
+    provides = [ "profiles:personal" ];
 
     homeManager =
       { config, ... }:

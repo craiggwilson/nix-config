@@ -1,5 +1,7 @@
 {
   config.substrate.modules.programs.vscode = {
+    provides = [ "programming" ];
+    requires = [ "gui" ];
     tags = [
       "gui"
       "programming"
@@ -8,7 +10,7 @@
     homeManager =
       {
         config,
-        hasTag,
+        hasCapability,
         host,
         pkgs,
         lib,
@@ -353,7 +355,7 @@
                 lib.mapAttrs (_: p: {
                   inherit (p) enableMcpIntegration extensions keybindings;
                 }) profiles
-                // lib.optionalAttrs (hasTag "users:craig:work") {
+                // lib.optionalAttrs (hasCapability "profiles:work") {
                   mms = {
                     inherit (mmsProfile) enableMcpIntegration extensions keybindings;
                   };
@@ -382,7 +384,7 @@
 
             xdg.mimeApps.defaultApplications."text/plain" = "code.desktop";
           }
-          (lib.mkIf (hasTag "users:craig:work") (mkCanonicalSettings "mms" mmsProfile._settings))
+          (lib.mkIf (hasCapability "profiles:work") (mkCanonicalSettings "mms" mmsProfile._settings))
         ]
         ++ lib.mapAttrsToList (name: p: mkCanonicalSettings name p._settings) profiles
       );

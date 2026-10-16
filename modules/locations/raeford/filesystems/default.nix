@@ -1,5 +1,7 @@
 {
   config.substrate.modules.locations.raeford.filesystems = {
+    provides = [ "filesystem:nfs" ];
+    requires = [ "location:raeford" ];
     tags = [
       "raeford"
       "filesystem:nfs"
@@ -9,7 +11,7 @@
       {
         lib,
         config,
-        hasTag,
+        hasCapability,
         ...
       }:
       {
@@ -22,7 +24,7 @@
             "x-systemd.idle-timeout=600"
           ];
         };
-        fileSystems."/mnt/games" = lib.mkIf (hasTag "gaming") {
+        fileSystems."/mnt/games" = lib.mkIf (hasCapability "gaming") {
           device = "synology.${config.hdwlinux.networking.domain}:/volume2/games";
           fsType = "nfs";
           options = [

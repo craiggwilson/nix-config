@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.sqlite = {
+    provides = [ "programming" ];
     tags = [ "programming" ];
 
     homeManager =

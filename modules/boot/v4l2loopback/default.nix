@@ -1,5 +1,9 @@
 {
   config.substrate.modules.boot.v4l2loopback = {
+    provides = [
+      "video:v4l2loopback"
+      "video:production"
+    ];
     tags = [ "v4l2loopback" ];
     nixos = { config, ... }: {
       boot = {

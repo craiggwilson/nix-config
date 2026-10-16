@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.context7-mcp = {
+    provides = [ "ai:clients" ];
     tags = [
       "ai:clients"
     ];

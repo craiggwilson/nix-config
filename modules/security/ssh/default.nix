@@ -1,5 +1,7 @@
 {
   config.substrate.modules.security.ssh = {
+    provides = [ "core:ssh" ];
+
     homeManager =
       { config, lib, ... }:
       let

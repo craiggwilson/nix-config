@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.cloudflare-warp = {
+    provides = [ "profiles:work" ];
     tags = [ "users:craig:work" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = with pkgs; [ cloudflare-warp ];

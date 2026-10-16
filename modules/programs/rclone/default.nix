@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.rclone = {
+    provides = [ "cloud:sync" ];
     tags = [ "cloud:sync" ];
 
     homeManager =

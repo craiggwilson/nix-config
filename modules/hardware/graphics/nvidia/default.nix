@@ -4,6 +4,10 @@ let
 in
 {
   config.substrate.modules.hardware.graphics.nvidia = {
+    provides = [
+      "hardware:graphics:nvidia"
+      "hardware:graphics:cuda"
+    ];
     tags = [ "graphics:nvidia" ];
 
     generic =

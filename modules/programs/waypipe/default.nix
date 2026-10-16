@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.waypipe = {
+    provides = [ "gui" ];
     tags = [ "gui" ];
 
     nixos =

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.xembed-sni-proxy = {
+    provides = [ "gui" ];
     tags = [ "gui" ];
 
     homeManager = {

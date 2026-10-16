@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.discord = {
+    provides = [ "gui" ];
     tags = [ "gui" ];
 
     homeManager =

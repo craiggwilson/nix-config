@@ -1,5 +1,12 @@
 {
-  config.substrate.modules.security.sudo = {
+  config.substrate.modules.security.sudo.personal = {
+    # These configs were never active under tags (the merged sudo node
+    # AND'd both user tags, matching no host). Deliberately activating:
+    # core:security is a host requirement; the profile gate scopes which
+    # variant loads.
+    provides = [ "core:security" ];
+    requires = [ "profiles:personal" ];
+
     tags = [ "users:craig:personal" ];
     nixos = {
       security.sudo.enable = false;

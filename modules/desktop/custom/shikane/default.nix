@@ -1,5 +1,6 @@
 {
   config.substrate.modules.desktop.custom.shikane = {
+    provides = [ "desktop:custom" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

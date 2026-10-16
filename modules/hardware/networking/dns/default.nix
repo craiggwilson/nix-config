@@ -1,6 +1,7 @@
 { lib, ... }:
 {
-  config.substrate.modules.networking.dns = {
+  config.substrate.modules.hardware.networking.dns = {
+    provides = [ "networking:dns" ];
     tags = [ "networking:dns" ];
 
     generic = {

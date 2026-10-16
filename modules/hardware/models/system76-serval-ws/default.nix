@@ -1,6 +1,16 @@
 { inputs, ... }:
 {
   config.substrate.modules.hardware.models.system76-serval-ws = {
+    # Pure option-setter for this machine model: the model fact is
+    # provided by the host root; the domains' options get their values here.
+    provides = [
+      "hardware:audio"
+      "hardware:graphics"
+      "hardware:graphics:nvidia"
+      "hardware:monitors"
+      "core:interfaces"
+    ];
+    requires = [ "hardware:model:system76-serval-ws" ];
     tags = [ "hardware:system76-serval-ws" ];
 
     generic = {

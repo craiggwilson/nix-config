@@ -11,26 +11,79 @@ in
       tags = [
         "users:${name}:personal"
       ];
+
+      provides = [
+        "users:${name}"
+        "profiles:personal"
+      ];
+
+      requires = [
+        # Feature capabilities this identity asks for. These replace the
+        # users:craig:personal meta-tag expansion from the tags catalogue:
+        # capability requires filter, they never pull, so every leaf the
+        # user wants is named here.
+        "core:security"
+        "ai:clients"
+        "ai:image"
+        "ai:llm"
+        "audio:production"
+        "cloud:sync"
+        "desktop:noctalia:niri"
+        "gui"
+        "filesystem:nfs"
+        "apps:flatpak"
+        "gaming"
+        "networking:tailscale"
+        "virtualization:podman"
+        "programming"
+        "security:passwordmanager"
+        "security:secrets"
+        "theming:catppuccin"
+        "video:production"
+        "hardware:yubikey"
+      ];
     };
     "${name}@work" = {
       tags = [
         "users:${name}:work"
+      ];
+
+      provides = [
+        "users:${name}"
+        "profiles:work"
+      ];
+
+      requires = [
+        "core:security"
+        "ai:clients"
+        "cloud:sync"
+        "desktop:noctalia:niri"
+        "gui"
+        "filesystem:envfs"
+        "virtualization:docker"
+        "programming"
+        "security:passwordmanager"
+        "security:secrets"
+        "theming:catppuccin"
+        "video:production"
+        "hardware:yubikey"
       ];
     };
   };
 
   substrate.modules.users.${name} = {
     tags = [ "users:${name}" ];
+    provides = [ "users:${name}" ];
 
     nixos =
-      { hasTag, ... }:
+      { hasCapability, ... }:
       {
         nix.settings = {
           trusted-users = [ name ];
           allowed-users = [ name ];
         };
 
-        nix.extraOptions = lib.mkIf (hasTag "programming") ''
+        nix.extraOptions = lib.mkIf (hasCapability "programming") ''
           !include /home/${name}/.config/hdwlinux/secrets/nixGithubAccessTokens
         '';
 
@@ -39,24 +92,26 @@ in
             "inputs"
             "wheel"
           ]
-          ++ lib.optionals (hasTag "audio") [ "audio" ]
-          ++ lib.optionals (hasTag "printing") [ "lp" ]
-          ++ lib.optionals (hasTag "scanning") [ "scanner" ]
-          ++ lib.optionals (hasTag "networking") [ "networkmanager" ]
-          ++ lib.optionals (hasTag "virtualization:docker") [ "docker" ]
-          ++ lib.optionals (hasTag "security:passwordmanager") [ "onepassword-cli" ]
-          ++ lib.optionals (hasTag "gui" && hasTag "security:passwordmanager") [ "onepassword" ];
+          ++ lib.optionals (hasCapability "hardware:audio") [ "audio" ]
+          ++ lib.optionals (hasCapability "hardware:printing") [ "lp" ]
+          ++ lib.optionals (hasCapability "hardware:scanning") [ "scanner" ]
+          ++ lib.optionals (hasCapability "hardware:networking") [ "networkmanager" ]
+          ++ lib.optionals (hasCapability "virtualization:docker") [ "docker" ]
+          ++ lib.optionals (hasCapability "security:passwordmanager") [ "onepassword-cli" ]
+          ++ lib.optionals (hasCapability "gui" && hasCapability "security:passwordmanager") [
+            "onepassword"
+          ];
 
           openssh.authorizedKeys.keys = [ publicKey ];
         };
 
         programs._1password-gui.polkitPolicyOwners = lib.mkIf (
-          hasTag "gui" && hasTag "security:passwordmanager"
+          hasCapability "gui" && hasCapability "security:passwordmanager"
         ) [ name ];
       };
 
     homeManager =
-      { config, hasTag, ... }:
+      { config, hasCapability, ... }:
       {
         hdwlinux.user = {
           inherit
@@ -78,7 +133,7 @@ in
               };
               file.path = "${config.home.homeDirectory}/.ssh/id_rsa";
             };
-            GITHUB_API_TOKEN = lib.mkIf (hasTag "programming") {
+            GITHUB_API_TOKEN = lib.mkIf (hasCapability "programming") {
               description = "GitHub API token for API access and nix flake fetches.";
               ref = {
                 vault = "Craig";
@@ -86,7 +141,7 @@ in
                 field = "api_token";
               };
             };
-            NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasTag "programming") {
+            NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasCapability "programming") {
               description = "Nix GitHub access-tokens file composed from GITHUB_API_TOKEN.";
               composed = "access-tokens = github.com=\${GITHUB_API_TOKEN}";
               file.path = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";

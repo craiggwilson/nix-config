@@ -4,6 +4,7 @@ let
 in
 {
   config.substrate.modules.ai.image = {
+    provides = [ "ai:image" ];
     tags = [ "ai:image" ];
 
     homeManager =

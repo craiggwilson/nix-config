@@ -4,6 +4,7 @@ let
 in
 {
   config.substrate.modules.hardware.audio = {
+    provides = [ "hardware:audio" ];
     tags = [ "audio" ];
 
     generic =

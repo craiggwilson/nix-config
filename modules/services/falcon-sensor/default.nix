@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.falcon-sensor = {
+    provides = [ "profiles:work" ];
     tags = [ "users:craig:work" ];
 
     nixos =

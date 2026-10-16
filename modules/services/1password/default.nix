@@ -1,50 +1,51 @@
 {
   config.substrate.modules.services._1password = {
+    provides = [ "security:passwordmanager" ];
     tags = [ "security:passwordmanager" ];
 
     nixos =
       {
         lib,
-        hasTag,
+        hasCapability,
         ...
       }:
       {
         programs._1password.enable = true;
 
-        programs._1password-gui = lib.mkIf (hasTag "gui") {
+        programs._1password-gui = lib.mkIf (hasCapability "gui") {
           enable = true;
         };
 
-        security.pam.services."1password".enableGnomeKeyring = hasTag "gui";
+        security.pam.services."1password".enableGnomeKeyring = hasCapability "gui";
       };
 
     homeManager =
       {
-        hasTag,
+        hasCapability,
         lib,
         pkgs,
         ...
       }:
       {
-        hdwlinux.app.passwordManager = lib.mkIf (hasTag "gui") (
+        hdwlinux.app.passwordManager = lib.mkIf (hasCapability "gui") (
           lib.mkDefault {
             package = pkgs._1password-gui;
           }
         );
-        hdwlinux.app.passwordManager-toggle = lib.mkIf (hasTag "gui") (
+        hdwlinux.app.passwordManager-toggle = lib.mkIf (hasCapability "gui") (
           lib.mkDefault {
             package = pkgs._1password-gui;
             args = [ "--toggle" ];
           }
         );
-        hdwlinux.app.passwordManager-lock = lib.mkIf (hasTag "gui") (
+        hdwlinux.app.passwordManager-lock = lib.mkIf (hasCapability "gui") (
           lib.mkDefault {
             package = pkgs._1password-gui;
             args = [ "--lock" ];
           }
         );
 
-        systemd.user.services."1password" = lib.mkIf (hasTag "gui") {
+        systemd.user.services."1password" = lib.mkIf (hasCapability "gui") {
           Unit = {
             Description = "Password manager daemon";
             Documentation = [ "https://www.1password.com" ];

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.delta = {
+    provides = [ "programming" ];
     tags = [ "programming" ];
 
     homeManager = {

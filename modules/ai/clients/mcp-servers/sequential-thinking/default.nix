@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.sequential-thinking = {
+    provides = [ "ai:clients" ];
     tags = [
       "ai:clients"
     ];

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.excalidraw-diagrams = {
+    provides = [ "ai:clients" ];
     tags = [
       "ai:clients"
     ];

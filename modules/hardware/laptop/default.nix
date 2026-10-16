@@ -1,6 +1,7 @@
 { lib, ... }:
 {
   config.substrate.modules.hardware.laptop = {
+    provides = [ "hardware:laptop" ];
     tags = [ "laptop" ];
 
     nixos = {

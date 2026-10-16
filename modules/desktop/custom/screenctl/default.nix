@@ -1,5 +1,6 @@
 {
   config.substrate.modules.desktop.custom.screenctl = {
+    provides = [ "desktop:custom" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

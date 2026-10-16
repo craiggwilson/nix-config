@@ -1,5 +1,6 @@
 {
   config.substrate.modules.virtualization.podman = {
+    provides = [ "virtualization:podman" ];
     tags = [ "virtualization:podman" ];
     nixos =
       { config, ... }:

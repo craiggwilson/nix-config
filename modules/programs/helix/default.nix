@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.helix = {
+    provides = [ "programming" ];
     tags = [ "programming" ];
 
     homeManager =

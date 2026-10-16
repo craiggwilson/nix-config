@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.models.providers."opencode-go" = {
+    provides = [ "ai:clients" ];
     tags = [ "ai:clients" ];
 
     homeManager = {

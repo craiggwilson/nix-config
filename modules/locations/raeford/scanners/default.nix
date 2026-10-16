@@ -1,5 +1,7 @@
 {
   config.substrate.modules.locations.raeford.scanners = {
+    provides = [ "hardware:scanning" ];
+    requires = [ "location:raeford" ];
     tags = [
       "raeford"
       "scanning"

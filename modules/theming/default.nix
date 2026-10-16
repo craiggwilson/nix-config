@@ -1,5 +1,8 @@
 {
   config.substrate.modules.theming.options = {
+    provides = [ "core:theming" ];
+    requires = [ "core:interfaces" ];
+
     nixos =
       { lib, config, ... }:
       {

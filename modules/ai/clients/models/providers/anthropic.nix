@@ -1,5 +1,7 @@
 {
   config.substrate.modules.ai.clients.models.providers.anthropic = {
+    provides = [ "ai:clients" ];
+    requires = [ "profiles:work" ];
     tags = [
       "users:craig:work"
       "ai:clients"

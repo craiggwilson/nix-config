@@ -1,6 +1,7 @@
 {
   config.substrate.modules.users.craig.work = {
     tags = [ "users:craig:work" ];
+    provides = [ "profiles:work" ];
 
     homeManager =
       {
@@ -8,7 +9,7 @@
         pkgs,
         lib,
         wrap,
-        hasTag,
+        hasCapability,
         ...
       }:
       let
@@ -30,7 +31,7 @@
         };
       in
       {
-        hdwlinux.ai.clients.mcpServers = lib.mkIf (hasTag "ai:clients") {
+        hdwlinux.ai.clients.mcpServers = lib.mkIf (hasCapability "ai:clients") {
           augment-context-engine.stdio = {
             command = lib.getExe pkgs.hdwlinux.auggie;
             args = [

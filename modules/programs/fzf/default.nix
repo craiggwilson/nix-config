@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.fzf = {
+    provides = [ "programming" ];
     tags = [ "programming" ];
 
     homeManager =

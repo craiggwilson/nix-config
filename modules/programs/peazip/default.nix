@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.peazip = {
+    provides = [ "gui" ];
     tags = [ "gui" ];
 
     homeManager =

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.qimgv = {
+    provides = [ "gui" ];
     tags = [ "gui" ];
 
     homeManager =

@@ -4,6 +4,7 @@ let
 in
 {
   config.substrate.modules.desktop.custom.hyprland = {
+    provides = [ "desktop:custom:hyprland" ];
     tags = [
       "gui"
       "desktop:custom:hyprland"

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.obsidian-markdown = {
+    provides = [ "ai:clients" ];
     tags = [ "ai:clients" ];
 
     homeManager = {

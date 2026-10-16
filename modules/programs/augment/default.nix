@@ -1,5 +1,7 @@
 {
   config.substrate.modules.programs.augment = {
+    provides = [ "ai:clients" ];
+    requires = [ "profiles:work" ];
     tags = [
       "ai:clients"
       "users:craig:work"

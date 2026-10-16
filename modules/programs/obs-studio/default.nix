@@ -1,5 +1,7 @@
 {
   config.substrate.modules.programs.obs-studio = {
+    provides = [ "video:production" ];
+    requires = [ "gui" ];
     tags = [
       "gui"
       "video:production"

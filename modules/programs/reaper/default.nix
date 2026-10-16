@@ -1,5 +1,7 @@
 {
   config.substrate.modules.programs.reaper = {
+    provides = [ "audio:production" ];
+    requires = [ "gui" ];
     tags = [
       "audio:production"
       "gui"

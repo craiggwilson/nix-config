@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.starship = {
+    provides = [ "programming" ];
     tags = [ "programming" ];
 
     homeManager =

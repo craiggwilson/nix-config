@@ -1,18 +1,19 @@
 {
   config.substrate.modules.hardware.yubikey = {
+    provides = [ "hardware:yubikey" ];
     tags = [ "yubikey" ];
     nixos =
       {
         lib,
         pkgs,
-        hasTag,
+        hasCapability,
         ...
       }:
       {
         environment.systemPackages = [
           pkgs.yubikey-manager
         ]
-        ++ lib.optionals (hasTag "gui") [
+        ++ lib.optionals (hasCapability "gui") [
           pkgs.yubioath-flutter
         ];
       };

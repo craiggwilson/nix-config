@@ -1,6 +1,8 @@
 { inputs, ... }:
 {
   config.substrate.modules.programs.spotify = {
+    provides = [ "hardware:audio" ];
+    requires = [ "gui" ];
     tags = [
       "audio"
       "gui"

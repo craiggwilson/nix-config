@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.lsd = {
+    provides = [ "programming" ];
     tags = [ "programming" ];
 
     homeManager = {

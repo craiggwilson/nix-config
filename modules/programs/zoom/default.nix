@@ -1,5 +1,7 @@
 {
   config.substrate.modules.programs.zoom = {
+    provides = [ "gui" ];
+    requires = [ "profiles:work" ];
     tags = [
       "gui"
       "users:craig:work"

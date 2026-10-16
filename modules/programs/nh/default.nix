@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.nh = {
+    provides = [ "core:nix" ];
 
     nixos = { config, ... }: {
       programs.nh = {

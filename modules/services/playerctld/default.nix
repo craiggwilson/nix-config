@@ -1,5 +1,7 @@
 {
   config.substrate.modules.services.playerctld = {
+    provides = [ "gui" ];
+    requires = [ "hardware:audio" ];
     tags = [
       "gui"
       "audio"

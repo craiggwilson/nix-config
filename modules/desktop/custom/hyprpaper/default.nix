@@ -1,5 +1,6 @@
 {
   config.substrate.modules.desktop.custom.hyprpaper = {
+    provides = [ "desktop:custom" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

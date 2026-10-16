@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.models.providers.llama-cpp = {
+    provides = [ "ai:llm" ];
     tags = [
       "ai:llm"
       "ai:clients"

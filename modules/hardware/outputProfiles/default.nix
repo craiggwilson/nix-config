@@ -1,5 +1,7 @@
 {
   config.substrate.modules.hardware.outputProfiles = {
+    provides = [ "hardware:monitors" ];
+    requires = [ "core:interfaces" ];
     generic =
       { lib, ... }:
       let

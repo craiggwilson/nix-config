@@ -1,5 +1,10 @@
 {
   config.substrate.modules.programs.claude-code = {
+    provides = [ "ai:clients" ];
+    requires = [
+      "programming"
+      "profiles:work"
+    ];
     tags = [
       "ai:clients"
       "programming"
@@ -63,14 +68,15 @@
         alwaysRules = lib.filterAttrs (_: r: r.loadMode == "always") config.hdwlinux.ai.clients.rules;
         autoRules = lib.filterAttrs (_: r: r.loadMode == "auto") config.hdwlinux.ai.clients.rules;
 
-        # Generate CLAUDE.md content: imports each always-loaded rule from the nix store.
+        # Generate CLAUDE.md content: inline each always-loaded rule body.
+        # Referencing rules via @<store-path> imports embedded the flake source
+        # store path in the file, making the whole config derivation shift on
+        # any source change; inlining keeps the content path-independent.
         claudeMdContent =
           let
-            imports = lib.mapAttrsToList (
-              _: rule: "@${builtins.unsafeDiscardStringContext (toString rule.prompt)}"
-            ) alwaysRules;
+            ruleContents = lib.mapAttrsToList (_: rule: builtins.readFile rule.prompt) alwaysRules;
           in
-          lib.concatStringsSep "\n" imports + "\n";
+          lib.concatStringsSep "\n\n" ruleContents;
 
         # Build a derivation containing symlinks to all agent markdown files.
         agentsDir = pkgs.linkFarm "claude-code-agents" (

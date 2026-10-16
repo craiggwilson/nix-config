@@ -1,5 +1,7 @@
 {
   config.substrate.modules.locations.raeford.outputProfiles = {
+    provides = [ "core:interfaces" ];
+    requires = [ "location:raeford" ];
     tags = [ "raeford" ];
 
     generic = {

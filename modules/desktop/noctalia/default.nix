@@ -1,5 +1,9 @@
 {
   config.substrate.modules.desktop.noctalia = {
+    provides = [
+      "desktop:noctalia"
+      "desktop:noctalia:niri"
+    ];
     tags = [ "desktop:noctalia" ];
 
     # Noctalia shell: bar, notifications, launcher, clipboard, wallpaper,
@@ -19,7 +23,7 @@
     homeManager =
       {
         config,
-        hasTag,
+        hasCapability,
         lib,
         pkgs,
         ...
@@ -28,9 +32,9 @@
         colors = config.hdwlinux.theme.colors;
         wallpaper = config.hdwlinux.theme.wallpaper;
 
-        hasProgramming = hasTag "programming";
-        hasTailscale = hasTag "networking:tailscale";
-        isWork = hasTag "users:craig:work";
+        hasProgramming = hasCapability "programming";
+        hasTailscale = hasCapability "networking:tailscale";
+        isWork = hasCapability "profiles:work";
 
         mkCapsule = id: members: {
           inherit id members;

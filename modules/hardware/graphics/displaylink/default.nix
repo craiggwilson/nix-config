@@ -1,5 +1,7 @@
 {
   config.substrate.modules.hardware.graphics.displaylink = {
+    provides = [ "hardware:graphics:displaylink" ];
+    requires = [ "hardware:monitors" ];
     nixos =
       {
         pkgs,

@@ -1,5 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.gws = {
+    provides = [ "ai:clients" ];
     tags = [
       "ai:clients"
     ];
@@ -56,6 +57,8 @@
   };
 
   config.substrate.modules.ai.clients.skills.gws-craig-work = {
+    provides = [ "ai:clients" ];
+    requires = [ "profiles:work" ];
     tags = [
       "ai:clients"
       "users:craig:work"

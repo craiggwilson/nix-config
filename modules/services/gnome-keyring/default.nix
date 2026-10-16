@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.gnome-keyring = {
+    provides = [ "gui" ];
     tags = [ "gui" ];
     nixos = { pkgs, ... }: {
       services.gnome.gnome-keyring = {
