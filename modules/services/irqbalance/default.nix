@@ -1,6 +1,6 @@
 {
   config.substrate.modules.services.irqbalance = {
-    provides = [ "hardware:power" ];
+    provides = [ "services:irqbalance" "hardware:power" ];
 
     nixos = {
       services.irqbalance.enable = true;

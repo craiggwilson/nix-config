@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.gamemode = {
-    provides = [ "gaming" ];
+    provides = [ "programs:gamemode" "gaming" ];
     tags = [ "gaming" ];
     nixos = {
       programs.gamemode = {

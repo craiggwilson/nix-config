@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.tasks.day-plan = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:tasks:day-plan" "ai:clients" ];
     requires = [ "profiles:work" ];
     tags = [
       "ai:clients"

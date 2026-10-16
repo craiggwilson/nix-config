@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.pre-commit = {
-    provides = [ "programming" ];
+    provides = [ "programs:pre-commit" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

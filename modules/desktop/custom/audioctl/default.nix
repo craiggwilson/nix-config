@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.audioctl = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:audioctl" ];
     requires = [ "hardware:audio" ];
     tags = [
       "desktop:custom"

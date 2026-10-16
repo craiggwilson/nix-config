@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.usbutils = {
-    provides = [ "core:networking" ];
+    provides = [ "programs:usbutils" "core:networking" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.usbutils ];
     };

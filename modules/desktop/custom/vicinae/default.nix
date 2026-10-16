@@ -1,7 +1,7 @@
 { inputs, ... }:
 {
   config.substrate.modules.desktop.custom.vicinae = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:vicinae" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

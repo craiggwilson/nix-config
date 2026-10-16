@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.openspec = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:openspec" "ai:clients" ];
     requires = [ "programming" ];
     tags = [
       "programming"

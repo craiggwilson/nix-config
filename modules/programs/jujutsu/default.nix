@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.jujutsu = {
-    provides = [ "programming" ];
+    provides = [ "programs:jujutsu" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.slack = {
-    provides = [ "gui" ];
+    provides = [ "programs:slack" "gui" ];
     requires = [ "profiles:work" ];
     tags = [
       "gui"

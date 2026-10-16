@@ -1,6 +1,6 @@
 {
   config.substrate.modules.security.polkit = {
-    provides = [ "core:session" ];
+    provides = [ "security:polkit" "core:session" ];
 
     nixos = {
       security.polkit.enable = true;

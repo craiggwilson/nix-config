@@ -1,6 +1,6 @@
 {
   config.substrate.modules.security.ssh = {
-    provides = [ "core:ssh" ];
+    provides = [ "security:ssh" "core:ssh" ];
 
     homeManager =
       { config, lib, ... }:

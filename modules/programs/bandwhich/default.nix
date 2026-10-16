@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.bandwhich = {
-    provides = [ "core:networking" ];
+    provides = [ "programs:bandwhich" "core:networking" ];
     nixos = {
       programs.bandwhich = {
         enable = true;

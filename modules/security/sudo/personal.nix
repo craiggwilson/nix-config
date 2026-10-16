@@ -4,7 +4,7 @@
     # AND'd both user tags, matching no host). Deliberately activating:
     # core:security is a host requirement; the profile gate scopes which
     # variant loads.
-    provides = [ "core:security" ];
+    provides = [ "security:sudo:personal" "core:security" ];
     requires = [ "profiles:personal" ];
 
     tags = [ "users:craig:personal" ];

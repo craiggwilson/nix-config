@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.java = {
-    provides = [ "programming" ];
+    provides = [ "programs:java" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

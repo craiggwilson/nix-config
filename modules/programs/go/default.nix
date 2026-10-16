@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.go = {
-    provides = [ "programming" ];
+    provides = [ "programs:go" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

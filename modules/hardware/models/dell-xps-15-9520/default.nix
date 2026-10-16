@@ -3,13 +3,7 @@
   config.substrate.modules.hardware.models.dell-xps-15-9520 = {
     # Pure option-setter for this machine model: the model fact is
     # provided by the host root; the domains' options get their values here.
-    provides = [
-      "hardware:audio"
-      "hardware:graphics"
-      "hardware:graphics:nvidia"
-      "hardware:monitors"
-      "core:interfaces"
-    ];
+    provides = [ "hardware:models:dell-xps-15-9520" "hardware:audio" "hardware:graphics" "hardware:graphics:nvidia" "hardware:monitors" "core:interfaces" ];
     requires = [ "hardware:model:dell-xps-15-9520" ];
     tags = [ "hardware:dell-xps-15-9520" ];
 
@@ -139,15 +133,15 @@
                   max_lifespan)
                     sudo tlp setcharge 55 60
                     echo "Set profile: max_lifespan (55-60%)"
-                    ;;
+                    ;
                   balanced)
                     sudo tlp setcharge 75 80
                     echo "Set profile: balanced (75-80%)"
-                    ;;
+                    ;
                   full_charge)
                     sudo tlp fullcharge
                     echo "Set profile: full_charge (charging to 100%)"
-                    ;;
+                    ;
                   *)
                     echo "Available profiles: max_lifespan, balanced, full_charge"
                     echo ""
@@ -155,7 +149,7 @@
                     echo "  balanced      - Charge 75-80% (good balance)"
                     echo "  full_charge   - Charge to 100% (for travel)"
                     exit 1
-                    ;;
+                    ;
                 esac
               '';
               "*" = "sudo tlp-stat -b";

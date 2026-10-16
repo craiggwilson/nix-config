@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.libqalculate = {
-    provides = [ "gui" ];
+    provides = [ "programs:libqalculate" "gui" ];
     tags = [ "desktop" ];
 
     homeManager = { pkgs, ... }: {

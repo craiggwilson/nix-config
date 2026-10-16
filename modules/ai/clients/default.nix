@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.options = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:options" "ai:clients" ];
     tags = [
       "ai:clients"
     ];

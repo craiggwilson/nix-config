@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.bambu-studio = {
-    provides = [ "profiles:personal" ];
+    provides = [ "programs:bambu-studio" "profiles:personal" ];
     tags = [
       "users:craig:personal"
     ];

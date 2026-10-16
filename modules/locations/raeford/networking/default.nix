@@ -1,6 +1,6 @@
 {
   config.substrate.modules.locations.raeford.networking = {
-    provides = [ "hardware:networking" ];
+    provides = [ "locations:raeford:networking" "hardware:networking" ];
     requires = [ "location:raeford" ];
     tags = [ "raeford" ];
 

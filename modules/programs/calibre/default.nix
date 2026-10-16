@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.calibre = {
-    provides = [ "gui" ];
+    provides = [ "programs:calibre" "gui" ];
     requires = [ "profiles:personal" ];
     tags = [
       "gui"

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.models.providers.fireworks-ai = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:models:providers:fireworks-ai" "ai:clients" ];
     requires = [ "profiles:work" ];
     tags = [
       "users:craig:work"

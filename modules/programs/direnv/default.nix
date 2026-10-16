@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.direnv = {
-    provides = [ "programming" ];
+    provides = [ "programs:direnv" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

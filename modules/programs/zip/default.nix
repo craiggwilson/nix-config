@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.zip = {
-    provides = [ "core:utils" ];
+    provides = [ "programs:zip" "core:utils" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [
         pkgs.zip

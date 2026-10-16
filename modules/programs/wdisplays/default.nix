@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.wdisplays = {
-    provides = [ "gui" ];
+    provides = [ "programs:wdisplays" "gui" ];
     tags = [ "gui" ];
 
     homeManager =

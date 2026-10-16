@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.obsidian-cli = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:skills:obsidian-cli" "ai:clients" ];
     tags = [ "ai:clients" ];
 
     homeManager = {

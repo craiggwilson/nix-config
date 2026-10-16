@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.fastmail-mcp = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:mcp-servers:fastmail-mcp" "ai:clients" ];
     requires = [ "profiles:personal" ];
     tags = [
       "ai:clients"

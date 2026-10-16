@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.lilypond = {
-    provides = [ "profiles:personal" ];
+    provides = [ "programs:lilypond" "profiles:personal" ];
     tags = [ "users:craig:personal" ];
 
     homeManager =

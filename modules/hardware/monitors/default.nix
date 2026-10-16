@@ -1,8 +1,6 @@
 {
   config.substrate.modules.hardware.monitors-fix = {
-    provides = [
-      "hardware:monitors"
-    ];
+    provides = [ "hardware:monitors-fix" "hardware:monitors" ];
     tags = [ "gui" ];
     generic =
       { lib, ... }:

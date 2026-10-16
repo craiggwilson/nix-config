@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.viddy = {
-    provides = [ "programming" ];
+    provides = [ "programs:viddy" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

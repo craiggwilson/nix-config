@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.zsh = {
-    provides = [ "programming" ];
+    provides = [ "programs:zsh" "programming" ];
     tags = [ "programming" ];
 
     nixos =

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.bat = {
-    provides = [ "programming" ];
+    provides = [ "programs:bat" "programming" ];
     tags = [ "programming" ];
 
     homeManager = {

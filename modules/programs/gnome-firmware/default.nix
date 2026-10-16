@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.gnome-firmware = {
-    provides = [ "gui" ];
+    provides = [ "programs:gnome-firmware" "gui" ];
     tags = [ "gui" ];
 
     homeManager =

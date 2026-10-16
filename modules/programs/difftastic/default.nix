@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.difftastic = {
-    provides = [ "programming" ];
+    provides = [ "programs:difftastic" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

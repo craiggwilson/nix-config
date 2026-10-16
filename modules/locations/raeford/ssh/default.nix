@@ -1,6 +1,6 @@
 {
   config.substrate.modules.locations.raeford.ssh = {
-    provides = [ "core:ssh" ];
+    provides = [ "locations:raeford:ssh" "core:ssh" ];
     requires = [
       "location:raeford"
       "users:craig"

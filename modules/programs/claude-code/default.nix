@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.claude-code = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:claude-code" "ai:clients" ];
     requires = [
       "programming"
       "profiles:work"

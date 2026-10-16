@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.udiskie = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:udiskie" ];
     tags = [ "desktop:custom" ];
 
     homeManager = {

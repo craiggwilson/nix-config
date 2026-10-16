@@ -203,7 +203,7 @@
         # Both the tags and capabilities extensions set substrate.settings.modulesFinder,
         # so selection is forced here while capabilities exists alongside tags
         # during the tags-to-caps migration (see tags-to-caps.md).
-        modulesFinder = inputs.nixpkgs.lib.mkForce "by-tags";
+        modulesFinder = inputs.nixpkgs.lib.mkForce "by-capabilities";
 
         tags.options = [
           # Host-specific tags

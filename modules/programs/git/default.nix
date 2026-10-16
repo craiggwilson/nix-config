@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.git = {
-    provides = [ "programming" ];
+    provides = [ "programs:git" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

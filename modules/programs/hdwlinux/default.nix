@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.hdwlinux = {
     # Untagged under tags — always included — so it rides core:nix.
-    provides = [ "core:nix" ];
+    provides = [ "programs:hdwlinux" "core:nix" ];
     tags = [ ]; # Always included
 
     homeManager =

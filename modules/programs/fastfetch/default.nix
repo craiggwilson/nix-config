@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.fastfetch = {
-    provides = [ "core:utils" ];
+    provides = [ "programs:fastfetch" "core:utils" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.fastfetch ];
     };

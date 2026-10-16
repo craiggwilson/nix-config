@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.appimage = {
-    provides = [ "hardware:storage" ];
+    provides = [ "programs:appimage" "hardware:storage" ];
     nixos = {
       programs.appimage = {
         enable = true;

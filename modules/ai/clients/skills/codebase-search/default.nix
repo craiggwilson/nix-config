@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.codebase-search = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:skills:codebase-search" "ai:clients" ];
     tags = [
       "ai:clients"
     ];

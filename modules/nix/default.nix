@@ -1,7 +1,7 @@
 { inputs, ... }:
 {
   config.substrate.modules.nix = {
-    provides = [ "core:nix" ];
+    provides = [ "nix" "core:nix" ];
     nixos =
       {
         config,

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.gamescope = {
-    provides = [ "gaming" ];
+    provides = [ "programs:gamescope" "gaming" ];
     requires = [ "gui" ];
     tags = [
       "gui"

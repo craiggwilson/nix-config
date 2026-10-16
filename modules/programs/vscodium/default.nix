@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.vscode = {
-    provides = [ "programming" ];
+    provides = [ "programs:vscode" "programming" ];
     requires = [ "gui" ];
     tags = [
       "gui"

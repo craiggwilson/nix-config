@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.manix = {
-    provides = [ "programming" ];
+    provides = [ "programs:manix" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

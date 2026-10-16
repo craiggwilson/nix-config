@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.browserctl = {
-    provides = [ "gui" ];
+    provides = [ "programs:browserctl" "gui" ];
     tags = [ "gui" ];
 
     homeManager =
@@ -48,7 +48,7 @@
             ${name})
               ${lib.concatMapStringsSep "\n              " (applyToPath desktop) mimeappsPaths}
               echo "Default browser set to ${name}"
-              ;;
+              ;
           '') cfg.browsers
         );
 
@@ -91,8 +91,8 @@
               use = ''
                 case "''${1-}" in
                   ${browserCase}
-                  "") echo "Usage: browserctl use <browser>"; echo "Available: ${browserNames}"; exit 1 ;;
-                  *) echo "Unknown browser: $1"; echo "Available: ${browserNames}"; exit 1 ;;
+                  "") echo "Usage: browserctl use <browser>"; echo "Available: ${browserNames}"; exit 1 ;
+                  *) echo "Unknown browser: $1"; echo "Available: ${browserNames}"; exit 1 ;
                 esac
               '';
               restore = ''

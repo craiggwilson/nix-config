@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.musescore = {
-    provides = [ "audio:composition" ];
+    provides = [ "programs:musescore" "audio:production" ];
     requires = [ "gui" ];
     tags = [
       "gui"
@@ -21,7 +21,7 @@
   };
 
   config.substrate.modules.programs.musescore.mcp = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:musescore:mcp" "ai:clients" ];
     requires = [
       "gui"
       "profiles:personal"

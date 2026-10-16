@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.papers = {
-    provides = [ "gui" ];
+    provides = [ "programs:papers" "gui" ];
     tags = [ "gui" ];
 
     homeManager =

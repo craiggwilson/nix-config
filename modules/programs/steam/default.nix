@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.steam = {
-    provides = [ "gaming" ];
+    provides = [ "programs:steam" "gaming" ];
     requires = [ "gui" ];
     tags = [
       "gui"

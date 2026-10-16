@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.watchman = {
-    provides = [ "programming" ];
+    provides = [ "programs:watchman" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

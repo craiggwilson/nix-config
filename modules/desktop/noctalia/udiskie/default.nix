@@ -1,9 +1,6 @@
 {
   config.substrate.modules.desktop.noctalia.udiskie = {
-    provides = [
-      "desktop:noctalia"
-      "desktop:noctalia:niri"
-    ];
+    provides = [ "desktop:noctalia:udiskie" "desktop:noctalia" "desktop:noctalia:niri" ];
     tags = [ "desktop:noctalia" ];
 
     homeManager = {

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.hardware.networking.tailscale = {
-    provides = [ "networking:tailscale" ];
+    provides = [ "hardware:networking:tailscale" "networking:tailscale" ];
     tags = [
       "networking:tailscale"
     ];

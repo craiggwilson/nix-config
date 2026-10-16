@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.home-manager = {
-    provides = [ "core:home" ];
+    provides = [ "programs:home-manager" "core:home" ];
     homeManager = {
       programs.home-manager.enable = true;
     };

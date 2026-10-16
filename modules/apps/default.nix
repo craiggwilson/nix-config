@@ -1,6 +1,6 @@
 {
   config.substrate.modules.apps = {
-    provides = [ "core:interfaces" ];
+    provides = [ "apps" "core:interfaces" ];
     generic =
       { lib, ... }:
       let

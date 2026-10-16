@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.opencode = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:opencode" "ai:clients" ];
     tags = [
       "ai:clients"
     ];
@@ -161,7 +161,7 @@
   };
 
   config.substrate.modules.programs.opencode.grove-gateway = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:opencode:grove-gateway" "ai:clients" ];
     requires = [ "profiles:work" ];
     tags = [
       "ai:clients"
@@ -191,7 +191,7 @@
   };
 
   config.substrate.modules.programs.opencode.opencode-mem = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:opencode:opencode-mem" "ai:clients" ];
     tags = [
       "ai:clients"
     ];
@@ -262,7 +262,7 @@
   };
 
   config.substrate.modules.programs.opencode.ponytail = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:opencode:ponytail" "ai:clients" ];
     tags = [
       "ai:clients"
     ];
@@ -275,7 +275,7 @@
   };
 
   config.substrate.modules.programs.opencode.oh-my-opencode-slim = {
-    provides = [ "ai:clients" ];
+    provides = [ "programs:opencode:oh-my-opencode-slim" "ai:clients" ];
     tags = [
       "ai:clients"
     ];

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.slackcli = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:skills:slackcli" "ai:clients" ];
     requires = [ "profiles:work" ];
     tags = [
       "ai:clients"

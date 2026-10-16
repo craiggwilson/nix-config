@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.nautilus = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:nautilus" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

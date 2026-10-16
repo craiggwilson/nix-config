@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.hypridle = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:hypridle" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

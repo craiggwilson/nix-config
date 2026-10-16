@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.freetube = {
-    provides = [ "gui" ];
+    provides = [ "programs:freetube" "gui" ];
     requires = [ "profiles:personal" ];
     tags = [
       "gui"

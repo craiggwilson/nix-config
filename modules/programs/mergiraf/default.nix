@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.mergiraf = {
-    provides = [ "programming" ];
+    provides = [ "programs:mergiraf" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

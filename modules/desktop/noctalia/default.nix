@@ -1,9 +1,6 @@
 {
   config.substrate.modules.desktop.noctalia = {
-    provides = [
-      "desktop:noctalia"
-      "desktop:noctalia:niri"
-    ];
+    provides = [ "desktop:noctalia" "desktop:noctalia:niri" ];
     tags = [ "desktop:noctalia" ];
 
     # Noctalia shell: bar, notifications, launcher, clipboard, wallpaper,

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.locations.raeford.filesystems = {
-    provides = [ "filesystem:nfs" ];
+    provides = [ "locations:raeford:filesystems" "filesystem:nfs" ];
     requires = [ "location:raeford" ];
     tags = [
       "raeford"

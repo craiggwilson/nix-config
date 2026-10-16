@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.ff = {
-    provides = [ "programming" ];
+    provides = [ "programs:ff" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

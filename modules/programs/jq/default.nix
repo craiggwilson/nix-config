@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.jq = {
-    provides = [ "programming" ];
+    provides = [ "programs:jq" "programming" ];
     tags = [ "programming" ];
 
     homeManager = { pkgs, ... }: {

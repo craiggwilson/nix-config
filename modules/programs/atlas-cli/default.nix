@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.atlas-cli = {
-    provides = [ "programming" ];
+    provides = [ "programs:atlas-cli" "programming" ];
     requires = [ "profiles:work" ];
     tags = [
       "programming"

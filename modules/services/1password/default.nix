@@ -1,6 +1,6 @@
 {
   config.substrate.modules.services._1password = {
-    provides = [ "security:passwordmanager" ];
+    provides = [ "services:_1password" "security:passwordmanager" ];
     tags = [ "security:passwordmanager" ];
 
     nixos =

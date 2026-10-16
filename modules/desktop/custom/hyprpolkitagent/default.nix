@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.hyprpolkitagent = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:hyprpolkitagent" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

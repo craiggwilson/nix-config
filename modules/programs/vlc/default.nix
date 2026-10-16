@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.vlc = {
-    provides = [ "gui" ];
+    provides = [ "programs:vlc" "gui" ];
     tags = [ "gui" ];
 
     homeManager =

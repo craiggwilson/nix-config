@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.idea = {
-    provides = [ "programming" ];
+    provides = [ "programs:idea" "programming" ];
     requires = [
       "gui"
       "profiles:work"

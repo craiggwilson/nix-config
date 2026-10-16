@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.lldb = {
-    provides = [ "programming" ];
+    provides = [ "programs:lldb" "programming" ];
     tags = [ "programming" ];
 
     homeManager =

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.tree = {
-    provides = [ "core:utils" ];
+    provides = [ "programs:tree" "core:utils" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.tree ];
     };

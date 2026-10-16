@@ -1,7 +1,7 @@
 { lib, ... }:
 {
   config.substrate.modules.hardware.networking.dns = {
-    provides = [ "networking:dns" ];
+    provides = [ "hardware:networking:dns" "networking:dns" ];
     tags = [ "networking:dns" ];
 
     generic = {
@@ -140,17 +140,17 @@
                 profile="''${raw//[$'\n\r\t ']/}"
                 SERVERS="${lib.concatStringsSep " " (map (ip: "${ip}#$profile.dns.nextdns.io") nextdnsServers)}"
                 tls=yes
-                ;;'';
+                ;'';
             cloudflare = ''
               ${lib.escapeShellArg b.name})
                 SERVERS=${lib.escapeShellArg (lib.concatStringsSep " " cloudflareServers)}
                 tls=yes
-                ;;'';
+                ;'';
             plain = ''
               ${lib.escapeShellArg b.name})
                 SERVERS=${lib.escapeShellArg (lib.concatStringsSep " " b.servers)}
                 tls=no
-                ;;'';
+                ;'';
           };
 
         dnsScript = pkgs.writeShellScript "hdwlinux-dns" ''
@@ -201,12 +201,12 @@
                   "$RESOLVECTL" dnsovertls "$dev" no
                 fi
                 return 0
-                ;;
+                ;
               ${lib.concatMapStringsSep "\n" providerCase cfg.providers}
               *)
                 echo "hdwlinux-dns: unknown provider '$provider' (known: $PROVIDER_NAMES off)" >&2
                 return 1
-                ;;
+                ;
             esac
 
             "$RESOLVECTL" domain "$dev" '~.'
@@ -241,26 +241,26 @@
                 fi
               done < <("$NMCLI" -t -f DEVICE,TYPE,STATE device)
               exit "$rc"
-              ;;
+              ;
             list)
               active_info
               printf 'Current: %s\n\n' "$ACTIVE"
               printf '%s %-20s %-12s %s\n' " " "PROVIDER" "ENCRYPTION" "SERVERS"
               ${lib.concatMapStringsSep "\n" providerRow cfg.providers}
               printf '%s %-20s %-12s %s\n' "$(mark_provider off)" off None "Network (DHCP) DNS"
-              ;;
+              ;
             provider)
               active_info
               printf '%s\n' "$ACTIVE"
-              ;;
+              ;
             *)
               # NetworkManager dispatcher invocation: $1=device $2=action.
               case "''${2:-}" in
                 up|dhcp4-change|dhcp6-change|connectivity-change)
                   apply_link "$1"
-                  ;;
+                  ;
               esac
-              ;;
+              ;
           esac
         '';
       in

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.laya = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:mcp-servers:laya" "ai:clients" ];
     tags = [
       "ai:clients"
     ];

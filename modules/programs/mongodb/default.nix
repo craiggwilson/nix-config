@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.mongodb = {
-    provides = [ "programming" ];
+    provides = [ "programs:mongodb" "programming" ];
     requires = [ "profiles:work" ];
     tags = [
       "programming"

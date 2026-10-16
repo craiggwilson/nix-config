@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.obsidian = {
-    provides = [ "gui" ];
+    provides = [ "programs:obsidian" "gui" ];
     tags = [ "gui" ];
 
     homeManager =

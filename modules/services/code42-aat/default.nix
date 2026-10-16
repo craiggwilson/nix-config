@@ -1,9 +1,6 @@
 {
   config.substrate.modules.services.code42-aat = {
-    provides = [
-      "profiles:work"
-      "services:code42-aat"
-    ];
+    provides = [ "profiles:work" "services:code42-aat" ];
     tags = [ "users:craig:work" ];
 
     nixos =

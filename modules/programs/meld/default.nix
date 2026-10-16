@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.meld = {
-    provides = [ "programming" ];
+    provides = [ "programs:meld" "programming" ];
     requires = [ "gui" ];
     tags = [
       "gui"

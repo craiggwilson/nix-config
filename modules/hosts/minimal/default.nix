@@ -15,6 +15,7 @@ in
       # bare core and no maintenance groups.
       "core:ssh"
       "core:interfaces"
+      "core:theming"
     ];
   };
 

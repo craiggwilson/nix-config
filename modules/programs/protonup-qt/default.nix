@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.protonup-qt = {
-    provides = [ "gaming" ];
+    provides = [ "programs:protonup-qt" "gaming" ];
     requires = [ "gui" ];
     tags = [
       "gui"

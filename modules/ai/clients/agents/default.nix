@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.agents = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:agents" "ai:clients" ];
     tags = [ "ai:clients" ];
 
     homeManager =

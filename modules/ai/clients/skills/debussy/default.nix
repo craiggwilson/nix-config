@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.debussy = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:skills:debussy" "ai:clients" ];
     requires = [ "profiles:personal" ];
     tags = [
       "ai:clients"

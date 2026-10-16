@@ -2,7 +2,7 @@
   config.substrate.modules.services.system76-battery = {
     # Model-scoped power quirk: rides the hardware:power family, gated on
     # the machine model fact the host root provides.
-    provides = [ "hardware:power" ];
+    provides = [ "services:system76-battery" "hardware:power" ];
     requires = [ "hardware:model:system76-serval-ws" ];
     tags = [ "hardware:system76-serval-ws" ];
     nixos = { pkgs, ... }: {

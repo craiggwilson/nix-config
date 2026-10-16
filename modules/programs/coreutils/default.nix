@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.coreutils = {
-    provides = [ "core:utils" ];
+    provides = [ "programs:coreutils" "core:utils" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.coreutils ];
     };

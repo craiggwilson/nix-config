@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.git = {
-    provides = [ "ai:clients" ];
+    provides = [ "ai:clients:skills:git" "ai:clients" ];
     tags = [ "ai:clients" ];
 
     homeManager = {

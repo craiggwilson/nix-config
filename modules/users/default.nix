@@ -31,7 +31,7 @@ let
 in
 {
   config.substrate.modules.users = {
-    provides = [ "core:interfaces" ];
+    provides = [ "users" "core:interfaces" ];
     homeManager =
       { config, lib, ... }:
       {

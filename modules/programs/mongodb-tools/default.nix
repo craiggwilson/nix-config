@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.mongodb-tools = {
-    provides = [ "programming" ];
+    provides = [ "programs:mongodb-tools" "programming" ];
     requires = [ "profiles:work" ];
     tags = [
       "programming"

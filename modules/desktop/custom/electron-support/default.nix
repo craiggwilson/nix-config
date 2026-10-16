@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.electron-support = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:electron-support" ];
     tags = [ "desktop:custom" ];
 
     homeManager = {

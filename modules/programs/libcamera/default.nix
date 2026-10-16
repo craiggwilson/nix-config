@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.libcamera = {
-    provides = [ "hardware:camera" ];
+    provides = [ "programs:libcamera" "hardware:camera" ];
     tags = [ "camera" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.libcamera ];

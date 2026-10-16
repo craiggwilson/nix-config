@@ -1,6 +1,6 @@
 {
   config.substrate.modules.services.llama-cpp = {
-    provides = [ "ai:llm" ];
+    provides = [ "services:llama-cpp" "ai:llm" ];
     tags = [ "ai:llm" ];
 
     homeManager =

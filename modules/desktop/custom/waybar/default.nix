@@ -1,6 +1,6 @@
 {
   config.substrate.modules.desktop.custom.waybar = {
-    provides = [ "desktop:custom" ];
+    provides = [ "desktop:custom:waybar" ];
     tags = [ "desktop:custom" ];
 
     homeManager =

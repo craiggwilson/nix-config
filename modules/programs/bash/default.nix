@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.bash = {
-    provides = [ "core:home" ];
+    provides = [ "programs:bash" "core:home" ];
     homeManager =
       { config, ... }:
       {
