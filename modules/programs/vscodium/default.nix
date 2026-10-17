@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.vscode = {
-    provides = [ "programs:vscode" "programming" ];
-    requires = [ "gui" ];
-    tags = [
-      "gui"
+    provides = [
+      "programs:vscode"
       "programming"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       {
         config,

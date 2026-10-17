@@ -1,8 +1,6 @@
 {
   config.substrate.modules.desktop.custom.clipboard = {
     provides = [ "desktop:custom:clipboard" ];
-    tags = [ "desktop:custom" ];
-
     homeManager =
       { pkgs, ... }:
       {

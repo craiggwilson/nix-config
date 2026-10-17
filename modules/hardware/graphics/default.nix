@@ -5,7 +5,6 @@ in
 {
   config.substrate.modules.hardware.graphics = {
     provides = [ "hardware:graphics" ];
-    tags = [ "graphics" ];
     generic =
       { lib, ... }:
       {

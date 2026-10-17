@@ -1,8 +1,10 @@
 {
   config.substrate.modules.desktop.noctalia.shikane = {
-    provides = [ "desktop:noctalia:shikane" "desktop:noctalia" "desktop:noctalia:niri" ];
-    tags = [ "desktop:noctalia" ];
-
+    provides = [
+      "desktop:noctalia:shikane"
+      "desktop:noctalia"
+      "desktop:noctalia:niri"
+    ];
     homeManager =
       {
         config,

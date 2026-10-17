@@ -15,10 +15,6 @@ in
     ];
     nixpkgsConfig.cudaSupport = true;
     users = [ "craig@personal" ];
-    tags = [
-      "host:${hostname}"
-    ];
-
     requires = [
       "hardware:audio"
       "hardware:bluetooth"
@@ -58,7 +54,6 @@ in
   };
 
   substrate.modules.hosts.${hostname} = {
-    tags = [ "host:${hostname}" ];
     provides = [ "host:${hostname}" ];
 
     nixos =

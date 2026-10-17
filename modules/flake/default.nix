@@ -1,6 +1,9 @@
 {
   config.substrate.modules.flake = {
-    provides = [ "flake" "core:nix" ];
+    provides = [
+      "flake"
+      "core:nix"
+    ];
     generic =
       { lib, ... }:
       {

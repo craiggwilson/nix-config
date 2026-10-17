@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.firefox = {
-    provides = [ "programs:firefox" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "programs:firefox"
+      "gui"
+    ];
     homeManager =
       {
         config,

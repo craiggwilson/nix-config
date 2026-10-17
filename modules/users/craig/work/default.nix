@@ -1,7 +1,9 @@
 {
   config.substrate.modules.users.craig.work = {
-    tags = [ "users:craig:work" ];
-    provides = [ "users:craig:work" "profiles:work" ];
+    provides = [
+      "users:craig:work"
+      "profiles:work"
+    ];
 
     homeManager =
       {

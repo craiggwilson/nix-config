@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.cava = {
-    provides = [ "programs:cava" "hardware:audio" ];
-    tags = [ "audio" ];
-
+    provides = [
+      "programs:cava"
+      "hardware:audio"
+    ];
     homeManager =
       { pkgs, ... }:
       {

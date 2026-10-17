@@ -1,8 +1,9 @@
 {
   config.substrate.modules.services.osquery = {
-    provides = [ "services:osquery" "profiles:work" ];
-    tags = [ "users:craig:work" ];
-
+    provides = [
+      "services:osquery"
+      "profiles:work"
+    ];
     nixos =
       {
         config,

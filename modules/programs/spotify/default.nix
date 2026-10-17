@@ -1,13 +1,11 @@
 { inputs, ... }:
 {
   config.substrate.modules.programs.spotify = {
-    provides = [ "programs:spotify" "hardware:audio" ];
-    requires = [ "gui" ];
-    tags = [
-      "audio"
-      "gui"
+    provides = [
+      "programs:spotify"
+      "hardware:audio"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       let

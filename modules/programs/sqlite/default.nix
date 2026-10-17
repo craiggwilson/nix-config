@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.sqlite = {
-    provides = [ "programs:sqlite" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:sqlite"
+      "programming"
+    ];
     homeManager =
       { pkgs, ... }:
       {

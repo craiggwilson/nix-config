@@ -1,8 +1,6 @@
 {
   config.substrate.modules.desktop.custom.wlsunset = {
     provides = [ "desktop:custom:wlsunset" ];
-    tags = [ "desktop:custom" ];
-
     homeManager = {
       services.wlsunset = {
         enable = true;

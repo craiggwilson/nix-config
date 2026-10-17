@@ -1,12 +1,10 @@
 {
   config.substrate.modules.services.playerctld = {
-    provides = [ "services:playerctld" "gui" ];
-    requires = [ "hardware:audio" ];
-    tags = [
+    provides = [
+      "services:playerctld"
       "gui"
-      "audio"
     ];
-
+    requires = [ "hardware:audio" ];
     homeManager =
       { pkgs, ... }:
       {

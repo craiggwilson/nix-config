@@ -1,10 +1,9 @@
 {
   config.substrate.modules.ai.clients.skills.excalidraw-diagrams = {
-    provides = [ "ai:clients:skills:excalidraw-diagrams" "ai:clients" ];
-    tags = [
+    provides = [
+      "ai:clients:skills:excalidraw-diagrams"
       "ai:clients"
     ];
-
     homeManager =
       { pkgs, ... }:
       let

@@ -1,12 +1,10 @@
 {
   config.substrate.modules.locations.raeford.filesystems = {
-    provides = [ "locations:raeford:filesystems" "filesystem:nfs" ];
-    requires = [ "location:raeford" ];
-    tags = [
-      "raeford"
+    provides = [
+      "locations:raeford:filesystems"
       "filesystem:nfs"
     ];
-
+    requires = [ "location:raeford" ];
     nixos =
       {
         lib,

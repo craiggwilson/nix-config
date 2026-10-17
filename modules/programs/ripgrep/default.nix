@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.ripgrep = {
-    provides = [ "programs:ripgrep" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:ripgrep"
+      "programming"
+    ];
     homeManager = {
       programs.ripgrep = {
         enable = true;

@@ -1,8 +1,6 @@
 {
   config.substrate.modules.desktop.custom.notifier = {
     provides = [ "desktop:custom:notifier" ];
-    tags = [ "desktop:custom" ];
-
     homeManager =
       {
         config,

@@ -5,8 +5,6 @@ in
 {
   substrate.hosts.${hostname} = {
     system = "x86_64-linux";
-    tags = [ "host:${hostname}" ];
-
     requires = [
       "host:${hostname}"
 
@@ -20,7 +18,6 @@ in
   };
 
   substrate.modules.hosts.${hostname} = {
-    tags = [ "host:${hostname}" ];
     provides = [ "host:${hostname}" ];
 
     nixos = {

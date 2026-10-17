@@ -8,10 +8,6 @@ in
 {
   substrate.users = {
     "${name}@personal" = {
-      tags = [
-        "users:${name}:personal"
-      ];
-
       provides = [
         "users:${name}"
         "profiles:personal"
@@ -45,10 +41,6 @@ in
       ];
     };
     "${name}@work" = {
-      tags = [
-        "users:${name}:work"
-      ];
-
       provides = [
         "users:${name}"
         "profiles:work"
@@ -74,7 +66,6 @@ in
   };
 
   substrate.modules.users.${name} = {
-    tags = [ "users:${name}" ];
     provides = [ "users:${name}" ];
 
     nixos =

@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.augment = {
-    provides = [ "programs:augment" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "programs:augment"
       "ai:clients"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       {
         config,

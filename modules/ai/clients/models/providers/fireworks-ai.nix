@@ -1,12 +1,10 @@
 {
   config.substrate.modules.ai.clients.models.providers.fireworks-ai = {
-    provides = [ "ai:clients:models:providers:fireworks-ai" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
-      "users:craig:work"
+    provides = [
+      "ai:clients:models:providers:fireworks-ai"
       "ai:clients"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager = _: {
       hdwlinux.ai.clients.models.providers.fireworks-ai = {
         displayName = "Fireworks AI";

@@ -1,12 +1,10 @@
 {
   config.substrate.modules.ai.clients.skills.debussy = {
-    provides = [ "ai:clients:skills:debussy" "ai:clients" ];
-    requires = [ "profiles:personal" ];
-    tags = [
+    provides = [
+      "ai:clients:skills:debussy"
       "ai:clients"
-      "users:craig:personal"
     ];
-
+    requires = [ "profiles:personal" ];
     homeManager = {
       hdwlinux.ai.clients.skills.debussy = ./skill;
     };

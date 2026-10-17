@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.jira-cli = {
-    provides = [ "programs:jira-cli" "profiles:work" ];
-    tags = [ "users:craig:work" ];
-
+    provides = [
+      "programs:jira-cli"
+      "profiles:work"
+    ];
     homeManager =
       {
         config,

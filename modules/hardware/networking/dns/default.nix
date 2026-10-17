@@ -1,9 +1,10 @@
 { lib, ... }:
 {
   config.substrate.modules.hardware.networking.dns = {
-    provides = [ "hardware:networking:dns" "networking:dns" ];
-    tags = [ "networking:dns" ];
-
+    provides = [
+      "hardware:networking:dns"
+      "networking:dns"
+    ];
     generic = {
       options.hdwlinux.networking.dns.providers = lib.mkOption {
         type = lib.types.listOf (

@@ -1,8 +1,9 @@
 {
   config.substrate.modules.desktop.noctalia = {
-    provides = [ "desktop:noctalia" "desktop:noctalia:niri" ];
-    tags = [ "desktop:noctalia" ];
-
+    provides = [
+      "desktop:noctalia"
+      "desktop:noctalia:niri"
+    ];
     # Noctalia shell: bar, notifications, launcher, clipboard, wallpaper,
     # lock screen, idle, OSD, and night light. Replaces the waybar, mako,
     # hyprpaper, hypridle/hyprlock, syshud, wlsunset, vicinae, and

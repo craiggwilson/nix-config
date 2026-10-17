@@ -1,12 +1,10 @@
 {
   config.substrate.modules.ai.clients.models.providers.anthropic = {
-    provides = [ "ai:clients:models:providers:anthropic" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
-      "users:craig:work"
+    provides = [
+      "ai:clients:models:providers:anthropic"
       "ai:clients"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager = _: {
       hdwlinux.ai.clients.models.providers.anthropic = {
         displayName = "Anthropic";

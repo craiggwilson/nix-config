@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.simplescan = {
-    provides = [ "programs:simplescan" "gui" ];
-    requires = [ "hardware:scanning" ];
-    tags = [
+    provides = [
+      "programs:simplescan"
       "gui"
-      "scanning"
     ];
-
+    requires = [ "hardware:scanning" ];
     homeManager =
       { pkgs, ... }:
       {

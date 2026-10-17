@@ -1,6 +1,9 @@
 {
   config.substrate.modules.services.greetd = {
-    provides = [ "services:greetd" "core:session" ];
+    provides = [
+      "services:greetd"
+      "core:session"
+    ];
 
     nixos =
       { pkgs, ... }:

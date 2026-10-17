@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.bat = {
-    provides = [ "programs:bat" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:bat"
+      "programming"
+    ];
     homeManager = {
       programs.bat = {
         enable = true;

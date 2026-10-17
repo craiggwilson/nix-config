@@ -1,9 +1,10 @@
 {
   config.substrate.modules.locations.raeford.monitors = {
-    provides = [ "locations:raeford:monitors" "hardware:monitors" ];
+    provides = [
+      "locations:raeford:monitors"
+      "hardware:monitors"
+    ];
     requires = [ "location:raeford" ];
-    tags = [ "raeford" ];
-
     generic = {
       hdwlinux.hardware.monitors = {
         office-main = {

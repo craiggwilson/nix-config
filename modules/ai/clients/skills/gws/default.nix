@@ -1,10 +1,9 @@
 {
   config.substrate.modules.ai.clients.skills.gws = {
-    provides = [ "ai:clients:skills:gws" "ai:clients" ];
-    tags = [
+    provides = [
+      "ai:clients:skills:gws"
       "ai:clients"
     ];
-
     homeManager =
       {
         pkgs,
@@ -57,13 +56,11 @@
   };
 
   config.substrate.modules.ai.clients.skills.gws-craig-work = {
-    provides = [ "ai:clients:skills:gws-craig-work" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "ai:clients:skills:gws-craig-work"
       "ai:clients"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       { config, ... }:
       {

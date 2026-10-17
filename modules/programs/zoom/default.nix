@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.zoom = {
-    provides = [ "programs:zoom" "gui" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "programs:zoom"
       "gui"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       { lib, pkgs, ... }:
       {

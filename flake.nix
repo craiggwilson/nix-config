@@ -145,6 +145,11 @@
         inputs.substrate.substrateModules.published-modules
         inputs.substrate.substrateModules.secrets
         inputs.substrate.substrateModules.shells
+        # The tags extension still declares `extraModuleOptions.tags` and
+        # neighbors the modulesFinder enum without which substrate's module
+        # tree renders an endless type description (see /tmp/opencode/caps/rep
+        # for the standalone repro). Both are dropped once substrate gains a
+        # conversions-free extension.
         inputs.substrate.substrateModules.tags
         inputs.substrate.substrateModules.wrappers
         inputs.treefmt-nix.flakeModule
@@ -200,156 +205,8 @@
             };
           })
         ];
-        # Both the tags and capabilities extensions set substrate.settings.modulesFinder,
-        # so selection is forced here while capabilities exists alongside tags
-        # during the tags-to-caps migration (see tags-to-caps.md).
         modulesFinder = inputs.nixpkgs.lib.mkForce "by-capabilities";
 
-        tags.options = [
-          # Host-specific tags
-          "host:minimal"
-
-          {
-            "host:blackflame" = [
-              "hardware:system76-serval-ws"
-
-              "boot:systemd"
-              "cuda"
-              "networking:dns"
-              "printing"
-              "raeford"
-              "scanning"
-            ];
-          }
-          {
-            "host:unsouled" = [
-              "hardware:dell-xps-15-9520"
-
-              "boot:systemd"
-              "cuda"
-              "printing"
-              "raeford"
-              "scanning"
-            ];
-          }
-
-          # User-specific tags
-          {
-            "users:craig" = [
-              "ai:clients"
-              "cloud:sync"
-              "desktop:noctalia:niri"
-              "programming"
-              "security:passwordmanager"
-              "security:secrets"
-              "theming:catppuccin"
-              "video:production"
-              "yubikey"
-            ];
-          }
-          {
-            "users:craig:personal" = [
-              #"audio:midi"
-              "ai:image"
-              "ai:llm"
-              "audio:production"
-              "filesystem:nfs"
-              "flatpaks"
-              "gaming"
-              "networking:tailscale"
-              "virtualization:podman"
-            ];
-          }
-          {
-            "users:craig:work" = [
-              "filesystem:envfs"
-              "virtualization:docker"
-            ];
-          }
-
-          # Hardware model tags - imply common hardware features
-          {
-            "hardware:dell-xps-15-9520" = [
-              "audio"
-              "bluetooth"
-              "camera"
-              "graphics:nvidia"
-              "laptop"
-              "networking"
-              "thunderbolt"
-            ];
-          }
-          {
-            "hardware:system76-serval-ws" = [
-              "audio"
-              "bluetooth"
-              "camera"
-              "graphics:nvidia"
-              "laptop"
-              "networking"
-              "thunderbolt"
-            ];
-          }
-
-          # Feature tags
-          "ai:clients"
-          "ai:image"
-          "ai:llm"
-          "audio"
-          "audio:midi"
-          "audio:production"
-          "bluetooth"
-          "boot:systemd"
-          "camera"
-          "cloud:sync"
-          "cuda"
-          "desktop"
-          { "desktop:custom" = [ "gui" ]; }
-          "desktop:custom:hyprland"
-          "desktop:custom:niri"
-          { "desktop:noctalia" = [ "gui" ]; }
-          "desktop:noctalia:niri"
-          "filesystem:envfs"
-          "filesystem:nfs"
-          "flatpaks"
-          "fonts"
-          { "gaming" = [ "gui" ]; }
-          "gaming:streaming"
-          "graphics"
-          "graphics:nvidia"
-          {
-            "gui" = [
-              "fonts"
-              "graphics"
-            ];
-          }
-          "laptop"
-          "networking"
-          "networking:dns"
-          "networking:tailscale"
-          "printing"
-          "programming"
-          "raeford"
-          "scanning"
-          "security"
-          "security:passwordmanager"
-          "security:secrets"
-          "theming"
-          "theming:catppuccin"
-          "thunderbolt"
-          "v4l2loopback"
-          "video"
-          {
-            "video:production" = [
-              "v4l2loopback"
-            ];
-          }
-          "virtualization"
-          "virtualization:docker"
-          "virtualization:podman"
-          "virtualization:waydroid"
-          "yubikey"
-        ];
       };
     };
 }

@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.browserctl = {
-    provides = [ "programs:browserctl" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "programs:browserctl"
+      "gui"
+    ];
     homeManager =
       {
         config,

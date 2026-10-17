@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.steam = {
-    provides = [ "programs:steam" "gaming" ];
-    requires = [ "gui" ];
-    tags = [
-      "gui"
+    provides = [
+      "programs:steam"
       "gaming"
     ];
-
+    requires = [ "gui" ];
     nixos = {
       programs.steam = {
         enable = true;

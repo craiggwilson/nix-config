@@ -1,8 +1,6 @@
 {
   config.substrate.modules.ai.llm = {
     provides = [ "ai:llm" ];
-    tags = [ "ai:llm" ];
-
     homeManager = {
       config.hdwlinux.ai.llm.models = {
         "Qwen3-4B-Instruct-2507-Q4_0" = {

@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs = {
-    provides = [ "programs" "core:interfaces" ];
+    provides = [
+      "programs"
+      "core:interfaces"
+    ];
     generic =
       { lib, ... }:
       {

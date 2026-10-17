@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.meld = {
-    provides = [ "programs:meld" "programming" ];
-    requires = [ "gui" ];
-    tags = [
-      "gui"
+    provides = [
+      "programs:meld"
       "programming"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

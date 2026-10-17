@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.aws-cli = {
-    provides = [ "programs:aws-cli" "profiles:work" ];
-    tags = [ "users:craig:work" ];
-
+    provides = [
+      "programs:aws-cli"
+      "profiles:work"
+    ];
     homeManager =
       { pkgs, ... }:
       {

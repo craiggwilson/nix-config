@@ -1,8 +1,9 @@
 {
   config.substrate.modules.ai.clients.commands = {
-    provides = [ "ai:clients:commands" "ai:clients" ];
-    tags = [ "ai:clients" ];
-
+    provides = [
+      "ai:clients:commands"
+      "ai:clients"
+    ];
     homeManager =
       { lib, ... }:
       let

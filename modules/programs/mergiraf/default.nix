@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.mergiraf = {
-    provides = [ "programs:mergiraf" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:mergiraf"
+      "programming"
+    ];
     homeManager =
       { pkgs, ... }:
       {

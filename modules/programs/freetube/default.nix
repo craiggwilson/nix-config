@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.freetube = {
-    provides = [ "programs:freetube" "gui" ];
-    requires = [ "profiles:personal" ];
-    tags = [
+    provides = [
+      "programs:freetube"
       "gui"
-      "users:craig:personal"
     ];
-
+    requires = [ "profiles:personal" ];
     homeManager =
       { pkgs, ... }:
       {

@@ -1,6 +1,9 @@
 {
   config.substrate.modules.services.dbus = {
-    provides = [ "services:dbus" "core:session" ];
+    provides = [
+      "services:dbus"
+      "core:session"
+    ];
 
     nixos = {
       services.dbus = {

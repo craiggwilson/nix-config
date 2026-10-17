@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.zellij = {
-    provides = [ "programs:zellij" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:zellij"
+      "programming"
+    ];
     homeManager =
       {
         config,

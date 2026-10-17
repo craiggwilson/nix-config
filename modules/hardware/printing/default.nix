@@ -4,8 +4,6 @@ in
 {
   config.substrate.modules.hardware.printing = {
     provides = [ "hardware:printing" ];
-    tags = [ "printing" ];
-
     nixos =
       { lib, pkgs, ... }:
       {

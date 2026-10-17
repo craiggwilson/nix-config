@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.mission-center = {
-    provides = [ "programs:mission-center" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "programs:mission-center"
+      "gui"
+    ];
     homeManager =
       { pkgs, ... }:
       {

@@ -1,8 +1,6 @@
 {
   config.substrate.modules.desktop.custom.hyprlock = {
     provides = [ "desktop:custom:hyprlock" ];
-    tags = [ "desktop:custom" ];
-
     nixos = {
       security.pam.services.hyprlock.text = ''
         auth sufficient pam_unix.so try_first_pass likeauth nullok

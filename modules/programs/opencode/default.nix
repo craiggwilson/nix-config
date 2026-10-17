@@ -1,10 +1,9 @@
 {
   config.substrate.modules.programs.opencode = {
-    provides = [ "programs:opencode" "ai:clients" ];
-    tags = [
+    provides = [
+      "programs:opencode"
       "ai:clients"
     ];
-
     homeManager =
       {
         config,
@@ -161,13 +160,11 @@
   };
 
   config.substrate.modules.programs.opencode.grove-gateway = {
-    provides = [ "programs:opencode:grove-gateway" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "programs:opencode:grove-gateway"
       "ai:clients"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       { pkgs, ... }:
       let
@@ -191,11 +188,10 @@
   };
 
   config.substrate.modules.programs.opencode.opencode-mem = {
-    provides = [ "programs:opencode:opencode-mem" "ai:clients" ];
-    tags = [
+    provides = [
+      "programs:opencode:opencode-mem"
       "ai:clients"
     ];
-
     homeManager =
       {
         config,
@@ -262,11 +258,10 @@
   };
 
   config.substrate.modules.programs.opencode.ponytail = {
-    provides = [ "programs:opencode:ponytail" "ai:clients" ];
-    tags = [
+    provides = [
+      "programs:opencode:ponytail"
       "ai:clients"
     ];
-
     homeManager = {
       programs.opencode.settings.plugin = [
         "@dietrichgebert/ponytail"
@@ -275,11 +270,10 @@
   };
 
   config.substrate.modules.programs.opencode.oh-my-opencode-slim = {
-    provides = [ "programs:opencode:oh-my-opencode-slim" "ai:clients" ];
-    tags = [
+    provides = [
+      "programs:opencode:oh-my-opencode-slim"
       "ai:clients"
     ];
-
     homeManager =
       {
         config,

@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.slack = {
-    provides = [ "programs:slack" "gui" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "programs:slack"
       "gui"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       { pkgs, ... }:
       {

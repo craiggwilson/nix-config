@@ -1,13 +1,11 @@
 { inputs, ... }:
 {
   config.substrate.modules.programs.herdr = {
-    provides = [ "programs:herdr" "ai:clients" ];
-    requires = [ "programming" ];
-    tags = [
+    provides = [
+      "programs:herdr"
       "ai:clients"
-      "programming"
     ];
-
+    requires = [ "programming" ];
     homeManager =
       {
         config,
@@ -285,13 +283,11 @@
   };
 
   config.substrate.modules.programs.herdr.reviewr = {
-    provides = [ "programs:herdr:reviewr" "ai:clients" ];
-    requires = [ "programming" ];
-    tags = [
+    provides = [
+      "programs:herdr:reviewr"
       "ai:clients"
-      "programming"
     ];
-
+    requires = [ "programming" ];
     homeManager = _: {
       hdwlinux.programs.herdr.plugins = [
         {
@@ -310,13 +306,11 @@
   };
 
   config.substrate.modules.programs.herdr.herdr-plus = {
-    provides = [ "programs:herdr:herdr-plus" "ai:clients" ];
-    requires = [ "programming" ];
-    tags = [
+    provides = [
+      "programs:herdr:herdr-plus"
       "ai:clients"
-      "programming"
     ];
-
+    requires = [ "programming" ];
     homeManager =
       {
         pkgs,
@@ -357,13 +351,11 @@
   };
 
   config.substrate.modules.programs.herdr.file-viewer = {
-    provides = [ "programs:herdr:file-viewer" "ai:clients" ];
-    requires = [ "programming" ];
-    tags = [
+    provides = [
+      "programs:herdr:file-viewer"
       "ai:clients"
-      "programming"
     ];
-
+    requires = [ "programming" ];
     homeManager = _: {
       hdwlinux.programs.herdr.plugins = [
         {
@@ -387,13 +379,11 @@
   };
 
   config.substrate.modules.programs.herdr.palette = {
-    provides = [ "programs:herdr:palette" "ai:clients" ];
-    requires = [ "programming" ];
-    tags = [
+    provides = [
+      "programs:herdr:palette"
       "ai:clients"
-      "programming"
     ];
-
+    requires = [ "programming" ];
     homeManager =
       {
         pkgs,
@@ -422,13 +412,11 @@
   };
 
   config.substrate.modules.programs.herdr.floax = {
-    provides = [ "programs:herdr:floax" "ai:clients" ];
-    requires = [ "programming" ];
-    tags = [
+    provides = [
+      "programs:herdr:floax"
       "ai:clients"
-      "programming"
     ];
-
+    requires = [ "programming" ];
     homeManager =
       {
         pkgs,

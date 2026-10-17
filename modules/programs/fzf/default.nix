@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.fzf = {
-    provides = [ "programs:fzf" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:fzf"
+      "programming"
+    ];
     homeManager =
       { config, ... }:
       {

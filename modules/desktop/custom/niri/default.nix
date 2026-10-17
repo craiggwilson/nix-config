@@ -1,11 +1,6 @@
 {
   config.substrate.modules.desktop.custom.niri = {
     provides = [ "desktop:custom:niri" ];
-    tags = [
-      "gui"
-      "desktop:custom:niri"
-    ];
-
     nixos =
       {
         lib,

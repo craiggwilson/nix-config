@@ -15,8 +15,6 @@ in
 {
   config.substrate.modules.hardware.networking = {
     provides = [ "hardware:networking" ];
-    tags = [ "networking" ];
-
     generic = {
       options.hdwlinux.networking.domain = domainOption;
       options.hdwlinux.networking.lanCidrs = lanCidrsOption;

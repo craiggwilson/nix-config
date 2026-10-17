@@ -1,10 +1,9 @@
 {
   config.substrate.modules.hardware.networking.tailscale = {
-    provides = [ "hardware:networking:tailscale" "networking:tailscale" ];
-    tags = [
+    provides = [
+      "hardware:networking:tailscale"
       "networking:tailscale"
     ];
-
     nixos = {
       services.tailscale = {
         enable = true;

@@ -1,9 +1,10 @@
 {
   config.substrate.modules.locations.raeford.outputProfiles = {
-    provides = [ "locations:raeford:outputProfiles" "core:interfaces" ];
+    provides = [
+      "locations:raeford:outputProfiles"
+      "core:interfaces"
+    ];
     requires = [ "location:raeford" ];
-    tags = [ "raeford" ];
-
     generic = {
       hdwlinux.hardware.outputProfiles = {
         raeford-docked = {

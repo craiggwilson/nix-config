@@ -15,10 +15,6 @@ in
     ];
     nixpkgsConfig.cudaSupport = true;
     users = [ "craig@work" ];
-    tags = [
-      "host:${hostname}"
-    ];
-
     requires = [
       "host:${hostname}"
 
@@ -64,7 +60,6 @@ in
   };
 
   substrate.modules.hosts.${hostname} = {
-    tags = [ "host:${hostname}" ];
     provides = [ "host:${hostname}" ];
     nixos =
       { pkgs, ... }:

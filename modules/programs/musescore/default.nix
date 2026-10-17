@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.musescore = {
-    provides = [ "programs:musescore" "audio:production" ];
-    requires = [ "gui" ];
-    tags = [
-      "gui"
-      "users:craig:personal"
+    provides = [
+      "programs:musescore"
+      "audio:production"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       { lib, pkgs, ... }:
       {
@@ -21,17 +19,14 @@
   };
 
   config.substrate.modules.programs.musescore.mcp = {
-    provides = [ "programs:musescore:mcp" "ai:clients" ];
+    provides = [
+      "programs:musescore:mcp"
+      "ai:clients"
+    ];
     requires = [
       "gui"
       "profiles:personal"
     ];
-    tags = [
-      "ai:clients"
-      "gui"
-      "users:craig:personal"
-    ];
-
     homeManager =
       { lib, pkgs, ... }:
       {

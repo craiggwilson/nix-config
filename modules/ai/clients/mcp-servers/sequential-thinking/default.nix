@@ -1,10 +1,9 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.sequential-thinking = {
-    provides = [ "ai:clients:mcp-servers:sequential-thinking" "ai:clients" ];
-    tags = [
+    provides = [
+      "ai:clients:mcp-servers:sequential-thinking"
       "ai:clients"
     ];
-
     homeManager =
       { lib, pkgs, ... }:
       let

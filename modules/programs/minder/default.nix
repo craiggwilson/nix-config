@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.minder = {
-    provides = [ "programs:minder" "apps:minder" ];
+    provides = [
+      "programs:minder"
+      "apps:minder"
+    ];
     homeManager =
       { pkgs, ... }:
       {

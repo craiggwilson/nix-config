@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.mongodb-tools = {
-    provides = [ "programs:mongodb-tools" "programming" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "programs:mongodb-tools"
       "programming"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       { pkgs, ... }:
       {

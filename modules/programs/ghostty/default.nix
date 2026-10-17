@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.ghostty = {
-    provides = [ "programs:ghostty" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "programs:ghostty"
+      "gui"
+    ];
     homeManager =
       {
         config,

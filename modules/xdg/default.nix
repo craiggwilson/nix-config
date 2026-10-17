@@ -1,6 +1,9 @@
 {
   config.substrate.modules.xdg = {
-    provides = [ "xdg" "core:xdg" ];
+    provides = [
+      "xdg"
+      "core:xdg"
+    ];
     homeManager =
       {
         config,

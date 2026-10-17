@@ -5,8 +5,6 @@ in
 {
   config.substrate.modules.security.secrets = {
     provides = [ "security:secrets" ];
-    tags = [ "security:secrets" ];
-
     nixos =
       { pkgs, ... }:
       {

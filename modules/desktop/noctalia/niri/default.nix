@@ -1,11 +1,6 @@
 {
   config.substrate.modules.desktop.noctalia.niri = {
     provides = [ "desktop:noctalia:niri" ];
-    tags = [
-      "gui"
-      "desktop:noctalia:niri"
-    ];
-
     nixos =
       { lib, pkgs, ... }:
       {

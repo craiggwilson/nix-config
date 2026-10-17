@@ -1,7 +1,6 @@
 {
   config.substrate.modules.hardware.scanning = {
     provides = [ "hardware:scanning" ];
-    tags = [ "scanning" ];
     nixos =
       { pkgs, ... }:
       {

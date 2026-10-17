@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.evergreen = {
-    provides = [ "programs:evergreen" "programming" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "programs:evergreen"
       "programming"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager =
       { pkgs, wrap, ... }:
       let

@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.zoxide = {
-    provides = [ "programs:zoxide" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:zoxide"
+      "programming"
+    ];
     homeManager =
       { config, ... }:
       {

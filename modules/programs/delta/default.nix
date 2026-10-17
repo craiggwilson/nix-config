@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.delta = {
-    provides = [ "programs:delta" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:delta"
+      "programming"
+    ];
     homeManager = {
       programs.delta = {
         enable = true;

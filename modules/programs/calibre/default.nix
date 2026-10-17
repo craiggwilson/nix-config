@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.calibre = {
-    provides = [ "programs:calibre" "gui" ];
-    requires = [ "profiles:personal" ];
-    tags = [
+    provides = [
+      "programs:calibre"
       "gui"
-      "users:craig:personal"
     ];
-
+    requires = [ "profiles:personal" ];
     homeManager = {
       programs.calibre = {
         enable = true;

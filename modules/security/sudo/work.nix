@@ -1,10 +1,11 @@
 {
   config.substrate.modules.security.sudo.work = {
     # See personal.nix for the activation note.
-    provides = [ "security:sudo:work" "core:security" ];
+    provides = [
+      "security:sudo:work"
+      "core:security"
+    ];
     requires = [ "profiles:work" ];
-
-    tags = [ "users:craig:work" ];
     nixos = {
       security.sudo.enable = false;
       security.sudo-rs = {

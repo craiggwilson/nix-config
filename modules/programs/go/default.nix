@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.go = {
-    provides = [ "programs:go" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:go"
+      "programming"
+    ];
     homeManager =
       { pkgs, ... }:
       {

@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.yazi = {
-    provides = [ "programs:yazi" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:yazi"
+      "programming"
+    ];
     homeManager =
       { config, ... }:
       {

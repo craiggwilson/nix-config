@@ -1,7 +1,7 @@
 {
   config.substrate.modules.ai.clients.options = {
-    provides = [ "ai:clients:options" "ai:clients" ];
-    tags = [
+    provides = [
+      "ai:clients:options"
       "ai:clients"
     ];
     homeManager =

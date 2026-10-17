@@ -1,8 +1,9 @@
 {
   config.substrate.modules.filesystems.envfs = {
-    provides = [ "filesystems:envfs" "filesystem:envfs" ];
-    tags = [ "filesystem:envfs" ];
-
+    provides = [
+      "filesystems:envfs"
+      "filesystem:envfs"
+    ];
     nixos = {
       # Provides /usr/bin and /bin via FUSE, resolving executables based on
       # the calling process's PATH. Required for shebangs (e.g. #!/usr/bin/env)

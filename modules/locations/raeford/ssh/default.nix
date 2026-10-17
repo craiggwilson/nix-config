@@ -1,13 +1,12 @@
 {
   config.substrate.modules.locations.raeford.ssh = {
-    provides = [ "locations:raeford:ssh" "core:ssh" ];
+    provides = [
+      "locations:raeford:ssh"
+      "core:ssh"
+    ];
     requires = [
       "location:raeford"
       "users:craig"
-    ];
-    tags = [
-      "users:craig"
-      "raeford"
     ];
     homeManager =
       {

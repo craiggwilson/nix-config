@@ -1,8 +1,6 @@
 {
   config.substrate.modules.desktop.custom.udiskie = {
     provides = [ "desktop:custom:udiskie" ];
-    tags = [ "desktop:custom" ];
-
     homeManager = {
       services.udiskie = {
         enable = true;

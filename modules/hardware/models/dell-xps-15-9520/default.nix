@@ -3,10 +3,15 @@
   config.substrate.modules.hardware.models.dell-xps-15-9520 = {
     # Pure option-setter for this machine model: the model fact is
     # provided by the host root; the domains' options get their values here.
-    provides = [ "hardware:models:dell-xps-15-9520" "hardware:audio" "hardware:graphics" "hardware:graphics:nvidia" "hardware:monitors" "core:interfaces" ];
+    provides = [
+      "hardware:models:dell-xps-15-9520"
+      "hardware:audio"
+      "hardware:graphics"
+      "hardware:graphics:nvidia"
+      "hardware:monitors"
+      "core:interfaces"
+    ];
     requires = [ "hardware:model:dell-xps-15-9520" ];
-    tags = [ "hardware:dell-xps-15-9520" ];
-
     generic = {
       hdwlinux.hardware = {
         audio.soundcard = {

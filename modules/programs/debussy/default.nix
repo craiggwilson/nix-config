@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.debussy = {
-    provides = [ "programs:debussy" "audio:production" ];
-    tags = [ "users:craig:personal" ];
-
+    provides = [
+      "programs:debussy"
+      "audio:production"
+    ];
     homeManager =
       { pkgs, ... }:
       {

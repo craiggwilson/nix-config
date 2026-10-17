@@ -1,8 +1,9 @@
 {
   config.substrate.modules.ai.clients.skills.gws-docs-markdown = {
-    provides = [ "ai:clients:skills:gws-docs-markdown" "ai:clients" ];
-    tags = [ "ai:clients" ];
-
+    provides = [
+      "ai:clients:skills:gws-docs-markdown"
+      "ai:clients"
+    ];
     homeManager =
       { pkgs, ... }:
       let

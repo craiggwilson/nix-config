@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.reaper = {
-    provides = [ "programs:reaper" "audio:production" ];
-    requires = [ "gui" ];
-    tags = [
+    provides = [
+      "programs:reaper"
       "audio:production"
-      "gui"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       { config, pkgs, ... }:
       {

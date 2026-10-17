@@ -1,6 +1,9 @@
 {
   config.substrate.modules.services.powertop = {
-    provides = [ "services:powertop" "hardware:power" ];
+    provides = [
+      "services:powertop"
+      "hardware:power"
+    ];
 
     nixos =
       { pkgs, ... }:

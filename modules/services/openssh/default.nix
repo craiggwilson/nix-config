@@ -1,6 +1,9 @@
 {
   config.substrate.modules.services.openssh = {
-    provides = [ "services:openssh" "core:ssh" ];
+    provides = [
+      "services:openssh"
+      "core:ssh"
+    ];
 
     nixos = {
       services.openssh = {

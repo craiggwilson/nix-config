@@ -1,12 +1,10 @@
 {
   config.substrate.modules.locations.raeford.scanners = {
-    provides = [ "locations:raeford:scanners" "hardware:scanning" ];
-    requires = [ "location:raeford" ];
-    tags = [
-      "raeford"
-      "scanning"
+    provides = [
+      "locations:raeford:scanners"
+      "hardware:scanning"
     ];
-
+    requires = [ "location:raeford" ];
     nixos = {
       hardware.sane.brscan4 = {
         enable = true;

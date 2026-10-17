@@ -1,16 +1,13 @@
 {
   config.substrate.modules.programs.claude-code = {
-    provides = [ "programs:claude-code" "ai:clients" ];
+    provides = [
+      "programs:claude-code"
+      "ai:clients"
+    ];
     requires = [
       "programming"
       "profiles:work"
     ];
-    tags = [
-      "ai:clients"
-      "programming"
-      "users:craig:work"
-    ];
-
     homeManager =
       {
         config,

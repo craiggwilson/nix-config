@@ -1,8 +1,10 @@
 {
   config.substrate.modules.desktop.noctalia.nautilus = {
-    provides = [ "desktop:noctalia:nautilus" "desktop:noctalia" "desktop:noctalia:niri" ];
-    tags = [ "desktop:noctalia" ];
-
+    provides = [
+      "desktop:noctalia:nautilus"
+      "desktop:noctalia"
+      "desktop:noctalia:niri"
+    ];
     # Plain nautilus so app-fileManager (and the Mod+E bind) work without
     # depending on desktop/custom/nautilus.
     homeManager =

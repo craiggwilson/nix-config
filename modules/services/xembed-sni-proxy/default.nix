@@ -1,8 +1,9 @@
 {
   config.substrate.modules.services.xembed-sni-proxy = {
-    provides = [ "services:xembed-sni-proxy" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "services:xembed-sni-proxy"
+      "gui"
+    ];
     homeManager = {
       systemd.user.services.xembed-sni-proxy.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
 

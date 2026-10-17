@@ -1,7 +1,9 @@
 {
   config.substrate.modules.services.kolide = {
-    provides = [ "services:kolide" "profiles:work" ];
-    tags = [ "users:craig:work" ];
+    provides = [
+      "services:kolide"
+      "profiles:work"
+    ];
     nixos =
       { inputs, ... }:
       {

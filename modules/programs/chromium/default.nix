@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.chromium = {
-    provides = [ "programs:chromium" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "programs:chromium"
+      "gui"
+    ];
     homeManager =
       { pkgs, ... }:
       {

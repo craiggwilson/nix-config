@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.watchman = {
-    provides = [ "programs:watchman" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:watchman"
+      "programming"
+    ];
     homeManager =
       { pkgs, ... }:
       {

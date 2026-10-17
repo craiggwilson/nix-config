@@ -1,12 +1,10 @@
 {
   config.substrate.modules.ai.clients.tasks.morning-brief = {
-    provides = [ "ai:clients:tasks:morning-brief" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "ai:clients:tasks:morning-brief"
       "ai:clients"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager = {
       hdwlinux.ai.clients.tasks.morning-brief = {
         description = "Senior-staff daily brief: triage open PRs and plan the day";

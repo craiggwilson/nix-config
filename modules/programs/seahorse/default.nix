@@ -1,7 +1,9 @@
 {
   config.substrate.modules.programs.seahorse = {
-    provides = [ "programs:seahorse" "gui" ];
-    tags = [ "gui" ];
+    provides = [
+      "programs:seahorse"
+      "gui"
+    ];
     nixos = {
       programs.seahorse = {
         enable = true;

@@ -4,13 +4,11 @@ let
 in
 {
   config.substrate.modules.locations.raeford.printers = {
-    provides = [ "locations:raeford:printers" "hardware:printing" ];
-    requires = [ "location:raeford" ];
-    tags = [
-      "raeford"
-      "printing"
+    provides = [
+      "locations:raeford:printers"
+      "hardware:printing"
     ];
-
+    requires = [ "location:raeford" ];
     nixos =
       { config, ... }:
       {

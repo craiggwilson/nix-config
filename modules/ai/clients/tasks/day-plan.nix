@@ -1,12 +1,10 @@
 {
   config.substrate.modules.ai.clients.tasks.day-plan = {
-    provides = [ "ai:clients:tasks:day-plan" "ai:clients" ];
-    requires = [ "profiles:work" ];
-    tags = [
+    provides = [
+      "ai:clients:tasks:day-plan"
       "ai:clients"
-      "users:craig:work"
     ];
-
+    requires = [ "profiles:work" ];
     homeManager = {
       hdwlinux.ai.clients.tasks.day-plan = {
         description = "Morning day plan: brief actions, calendar, project work, saved items";

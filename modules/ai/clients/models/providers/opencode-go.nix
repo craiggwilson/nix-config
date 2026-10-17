@@ -1,8 +1,9 @@
 {
   config.substrate.modules.ai.clients.models.providers."opencode-go" = {
-    provides = [ "ai:clients:models:providers:opencode-go" "ai:clients" ];
-    tags = [ "ai:clients" ];
-
+    provides = [
+      "ai:clients:models:providers:opencode-go"
+      "ai:clients"
+    ];
     homeManager = {
       hdwlinux.ai.clients.models.providers."opencode-go" = {
         displayName = "OpenCode Go";

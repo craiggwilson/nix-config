@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.zen = {
-    provides = [ "programs:zen" "gui" ];
-    tags = [ "gui" ];
-
+    provides = [
+      "programs:zen"
+      "gui"
+    ];
     homeManager =
       {
         config,

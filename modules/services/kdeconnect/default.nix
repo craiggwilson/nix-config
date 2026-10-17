@@ -1,8 +1,9 @@
 {
   config.substrate.modules.services.kdeconnect = {
-    provides = [ "services:kdeconnect" "gui" ];
-    tags = [ "desktop" ];
-
+    provides = [
+      "services:kdeconnect"
+      "gui"
+    ];
     nixos =
       {
         config,

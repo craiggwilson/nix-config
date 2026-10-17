@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.midivisualizer = {
-    provides = [ "programs:midivisualizer" "audio:midi" ];
-    requires = [ "gui" ];
-    tags = [
+    provides = [
+      "programs:midivisualizer"
       "audio:midi"
-      "gui"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

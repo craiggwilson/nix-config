@@ -1,8 +1,6 @@
 {
   config.substrate.modules.desktop.custom.syshud = {
     provides = [ "desktop:custom:syshud" ];
-    tags = [ "desktop:custom" ];
-
     homeManager =
       {
         config,

@@ -1,12 +1,10 @@
 {
   config.substrate.modules.programs.obs-studio = {
-    provides = [ "programs:obs-studio" "video:production" ];
-    requires = [ "gui" ];
-    tags = [
-      "gui"
+    provides = [
+      "programs:obs-studio"
       "video:production"
     ];
-
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

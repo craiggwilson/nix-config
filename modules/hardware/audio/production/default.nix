@@ -1,7 +1,9 @@
 {
   config.substrate.modules.hardware.audio.production = {
-    provides = [ "hardware:audio:production" "audio:production" ];
-    tags = [ "audio:production" ];
+    provides = [
+      "hardware:audio:production"
+      "audio:production"
+    ];
     nixos =
       { inputs, ... }:
       {

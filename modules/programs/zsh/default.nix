@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.zsh = {
-    provides = [ "programs:zsh" "programming" ];
-    tags = [ "programming" ];
-
+    provides = [
+      "programs:zsh"
+      "programming"
+    ];
     nixos =
       { pkgs, ... }:
       {
