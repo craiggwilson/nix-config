@@ -22,15 +22,87 @@
         hasTag,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
         colors = config.hdwlinux.theme.colors;
         wallpaper = config.hdwlinux.theme.wallpaper;
 
+        hasAI = hasTag "ai:clients";
         hasProgramming = hasTag "programming";
         hasTailscale = hasTag "networking:tailscale";
         isWork = hasTag "users:craig:work";
+
+        # tordex/processes shells out to a bare `python`, and alok-debnath/shelf
+        # both probes `python3` for a GTK 4 import and then runs its drop
+        # window with it. Neither resolves an interpreter from config, so a
+        # GTK-capable one has to own both names on the PATH noctalia hands its
+        # plugins. Only noctalia gets it; see the wrapper below.
+        gtkPython =
+          let
+            interpreter = pkgs.python3.withPackages (
+              ps: with ps; [
+                pillow
+                psutil
+                pygobject3
+              ]
+            );
+          in
+          pkgs.stdenv.mkDerivation {
+            name = "noctalia-gtk-python";
+
+            dontUnpack = true;
+            dontConfigure = true;
+
+            # gobject-introspection's setup hook walks buildInputs and collects their
+            # lib/girepository-1.0 into GI_TYPELIB_PATH; wrapGAppsHook4 bakes
+            # that (plus pixbuf loaders, gio modules and icon themes) into every
+            # executable in $out/bin during fixupPhase, so the GTK dependency
+            # list never has to be written out by hand.
+            # CAVEAT: dontUnpack (needed, there is no src) also skips the
+            # dependency-addition hooks, so GI_TYPELIB_PATH comes out empty and
+            # only the loaders and themes land. gi.repository.Gtk therefore does
+            # not import yet, which means alok-debnath/shelf and tordex/processes
+            # are configured but non-functional until that path is set by hand.
+            nativeBuildInputs = [
+              pkgs.gobject-introspection
+              pkgs.makeWrapper
+              pkgs.wrapGAppsHook4
+            ];
+            buildInputs = [
+              pkgs.adwaita-icon-theme
+              pkgs.dejavu_fonts
+              pkgs.gtk3
+              pkgs.gtk4
+              pkgs.gtk4-layer-shell
+              pkgs.hicolor-icon-theme
+            ];
+
+            installPhase = ''
+              runHook preInstall
+
+              for name in python python3; do
+                makeWrapper ${interpreter}/bin/python3 "$out/bin/$name"
+              done
+
+              runHook postInstall
+            '';
+          };
+
+        # Everything the shell and its plugins shell out to, on noctalia's PATH and
+        # nowhere else. gtk4 / gtk4-layer-shell are not here because nothing
+        # execs them: they are libraries, dlopened by gtkPython, which carries
+        # them through its own GI_TYPELIB_PATH.
+        noctalia = wrap.package {
+          package = pkgs.noctalia;
+          runtimeInputs = [
+            pkgs.brightnessctl
+            gtkPython
+            pkgs.gpu-screen-recorder
+            pkgs.udiskie
+          ];
+        };
 
         mkCapsule = id: members: {
           inherit id members;
@@ -50,16 +122,10 @@
           };
       in
       {
-        home.packages = [
-          pkgs.brightnessctl
-          pkgs.gpu-screen-recorder
-          pkgs.python3
-          pkgs.udiskie
-        ];
-
         programs.noctalia = {
           enable = true;
           systemd.enable = true;
+          package = noctalia;
 
           customPalettes.hdwlinux = import ./_palette.nix colors;
 
@@ -81,6 +147,10 @@
               polkit_agent = true;
               privacy.screen_filter_regex = "obs";
               panel.transparency_mode = "glass";
+
+              # Open the launcher from wherever it was summoned rather than
+              # sliding it in from the edge.
+              panel.launcher_placement = "attached";
             };
 
             location = {
@@ -127,6 +197,13 @@
               "samuelskovbakke/calculator-plus"
               "weinguyen/procmon"
               "icefish/phone-connect"
+              "alok-debnath/shelf"
+              "tordex/processes"
+              "turja-roy/todoist"
+            ]
+            ++ lib.optionals hasAI [
+              "hy4ri/herdr"
+              "zumik3-del/opencode-go-usage"
             ]
             ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
             ++ lib.optionals isWork [ "levi/warp" ]
@@ -142,9 +219,18 @@
                 manager_placement = "attached";
               };
 
-              "icefish/phone-connect".panel_open_near_click = false;
+              "hy4ri/herdr".panel_open_near_click = false;
 
               "samuelskovbakke/calculator-plus".panel_open_near_click = false;
+
+              "tordex/processes".panel_open_near_click = false;
+
+              # NOTE: no api_key here on purpose. This plugin only reads its key
+              # from this setting, and anything written from Nix is readable in
+              # /nix/store. Set it once in Noctalia's Settings > Plugins, where
+              # it stays in the user's own state file.
+
+              "zumik3-del/opencode-go-usage".panel_open_near_click = false;
 
               "weinguyen/procmon" = {
                 panel_open_near_click = false;
@@ -189,10 +275,12 @@
                 ))
                 (mkCapsule "power" [
                   "battery"
+                  "processes"
                   "procmon"
                 ])
                 (mkCapsuleEnd "utils" (
                   [
+                    "shelf"
                     "calculator"
                     "obsidian"
                   ]
@@ -202,20 +290,33 @@
                   "output"
                   "input"
                 ])
+              ]
+              ++ lib.optionals hasAI [
+                # Herdr turns red when an agent is blocked, so this wants to be
+                # glanceable rather than tucked behind a panel.
+                (mkCapsule "ai" [
+                  "herdr"
+                  "opencode"
+                ])
               ];
 
               start = [
                 "caffeine"
                 "workspaces"
+                "visualizer"
+                "media"
               ];
 
-              center = [
-                "visualizer"
+              center = lib.optionals hasAI [ "group:ai" ] ++ [
                 "privacy"
                 "clock"
+                "todoist"
                 "group:utils"
               ];
 
+              # todoist, shelf and processes have no chosen home yet — they are
+              # parked here only so they are configured and usable. Move them
+              # once you have settled on a layout.
               end = [
                 "tray"
                 "udiskie"
@@ -242,6 +343,10 @@
                 device = "input";
               };
               kdeconnect.type = "icefish/phone-connect:bar";
+              media = {
+                max_length = 500;
+                scale = 0.75;
+              };
               network.show_label = false;
               obsidian.type = "davemhammer/obsidian:status";
 
@@ -254,14 +359,27 @@
                 hide_inactive = true;
               };
               procmon.type = "weinguyen/procmon:widget";
+              processes.type = "tordex/processes:widget";
+              shelf.type = "alok-debnath/shelf:shelf";
+              todoist.type = "turja-roy/todoist:widget";
               tray = {
                 drawer = true;
                 match_adjacent_spacing = true;
                 pinned = [ "1Password" ];
+
+                # Blueman registers a StatusNotifierItem ("blueman") for the
+                # bluetooth applet. The built-in bluetooth bar widget in
+                # group:network already covers it, so drop the duplicate tray
+                # icon. Tokens match exactly, so this is the SNI Id property.
+                hidden = [ "blueman" ];
               };
               udiskie.type = "aristides/udiskie:status";
               visualizer.type = "audio_visualizer";
               workspaces.hide_when_empty = false;
+            }
+            // lib.optionalAttrs hasAI {
+              herdr.type = "hy4ri/herdr:bar";
+              opencode.type = "zumik3-del/opencode-go-usage:bar";
             }
             // lib.optionalAttrs hasProgramming {
               github.type = "raycursive/github-prs:bar";
