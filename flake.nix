@@ -15,9 +15,9 @@
   };
 
   inputs = {
-    # Personal projects. These will ultimately be normal github references when they are good enough
-    # to not be changed so often.
-    hdwlinux-private.url = "git+file:///home/craig/Projects/hdwlinux/nix-private";
+    # Personal projects. Fetched the same way on every machine; update the lock
+    # with `nix flake update hdwlinux-private` after pushing to the remote.
+    hdwlinux-private.url = "github:craiggwilson/nix-private";
     substrate = {
       url = "github:craiggwilson/substrate";
       inputs.nixpkgs.follows = "nixpkgs";

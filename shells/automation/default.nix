@@ -5,10 +5,6 @@
       ...
     }:
 
-    let
-      path = "/home/craig/Projects/github.com/10gen/mms-automation/go_planner";
-    in
-
     pkgs.mkShell {
       buildInputs = with pkgs; [
         gnumake
@@ -20,7 +16,11 @@
         cmake
       ];
 
-      CM_ROOT = path;
-      GOPATH = path;
+      # Workspace lives under ~/Projects, anchored at $HOME so the shape holds on
+      # every machine; shellHook expands it since env values are evaluated literally.
+      shellHook = ''
+        export CM_ROOT="$HOME/Projects/github.com/10gen/mms-automation/go_planner"
+        export GOPATH="$CM_ROOT"
+      '';
     };
 }

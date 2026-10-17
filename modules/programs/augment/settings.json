@@ -1,8 +1,8 @@
 {
   "model": "opus4.5",
   "indexingAllowDirs": [
-    "/home/craig/Projects/hdwlinux/nix-config",
-    "/home/craig/Projects/hdwlinux/nix-private",
+    "/home/craig/Projects/github.com/craiggwilson/nix-config/default",
+    "/home/craig/Projects/github.com/craiggwilson/nix-private/default",
     "/home/craig/Projects/atlas/mms",
     "/home/craig/Projects/atlas/mms-automation",
     "/home/craig/Projects/atlas/gosre",

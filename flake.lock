@@ -209,14 +209,15 @@
       "locked": {
         "lastModified": 1791836874,
         "narHash": "sha256-pVrAuqaTaAVOUq1siHxPz5o8Kg96T6C9SYmeD+iNVmg=",
+        "owner": "craiggwilson",
+        "repo": "nix-private",
         "rev": "b6c84af0a44ddb2c0beaa876c6e62f4bb24bc59e",
-        "revCount": 99,
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/nix-private"
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "file:///home/craig/Projects/hdwlinux/nix-private"
+        "owner": "craiggwilson",
+        "repo": "nix-private",
+        "type": "github"
       }
     },
     "herdr": {

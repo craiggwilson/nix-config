@@ -1,7 +1,7 @@
 name = "nix-config"
 description = "NixOS / Home Manager config"
 group = "hdwlinux"
-working_dir = "~/Projects/hdwlinux/nix-config"
+working_dir = "~/Projects/github.com/craiggwilson/nix-config/default"
 
 [[tabs]]
 name = "terminal"

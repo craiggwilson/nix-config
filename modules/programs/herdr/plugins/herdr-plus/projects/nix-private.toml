@@ -1,7 +1,7 @@
 name = "nix-private"
 description = "Private host secrets and data"
 group = "hdwlinux"
-working_dir = "~/Projects/hdwlinux/nix-private"
+working_dir = "~/Projects/github.com/craiggwilson/nix-private/default"
 
 [[tabs]]
 name = "terminal"
