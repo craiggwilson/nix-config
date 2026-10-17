@@ -22,6 +22,7 @@ in
         "ai:clients"
         "ai:image"
         "ai:llm"
+        "audio:composition"
         "audio:production"
         "cloud:sync"
         "desktop:noctalia:niri"

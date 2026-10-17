@@ -4,6 +4,7 @@
       "programs:zen"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       {
         config,

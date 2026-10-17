@@ -1,7 +1,7 @@
 {
   config.substrate.modules.filesystems.gvfs = {
     provides = [
-      "filesystems:gvfs"
+      "filesystem:gvfs"
       "hardware:storage"
     ];
     nixos = {

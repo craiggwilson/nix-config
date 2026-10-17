@@ -4,7 +4,10 @@
       "programs:slack"
       "gui"
     ];
-    requires = [ "profiles:work" ];
+    requires = [
+      "gui"
+      "profiles:work"
+    ];
     homeManager =
       { pkgs, ... }:
       {

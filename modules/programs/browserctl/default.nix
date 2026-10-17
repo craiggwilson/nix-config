@@ -4,6 +4,7 @@
       "programs:browserctl"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       {
         config,

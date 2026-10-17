@@ -4,6 +4,7 @@
       "programs:firefox"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       {
         config,

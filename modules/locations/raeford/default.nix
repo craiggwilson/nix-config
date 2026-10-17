@@ -4,7 +4,6 @@
   # location context. Location-common system configuration lives here.
   config.substrate.modules.locations.raeford = {
     provides = [
-      "locations:raeford"
       "location:raeford"
     ];
 

@@ -4,6 +4,7 @@
       "services:xembed-sni-proxy"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager = {
       systemd.user.services.xembed-sni-proxy.Unit.ConditionEnvironment = "WAYLAND_DISPLAY";
 

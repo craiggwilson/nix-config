@@ -4,6 +4,7 @@
       "programs:ghostty"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       {
         config,

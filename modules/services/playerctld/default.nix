@@ -4,7 +4,10 @@
       "services:playerctld"
       "gui"
     ];
-    requires = [ "hardware:audio" ];
+    requires = [
+      "gui"
+      "hardware:audio"
+    ];
     homeManager =
       { pkgs, ... }:
       {

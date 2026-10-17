@@ -4,7 +4,10 @@
       "programs:simplescan"
       "gui"
     ];
-    requires = [ "hardware:scanning" ];
+    requires = [
+      "gui"
+      "hardware:scanning"
+    ];
     homeManager =
       { pkgs, ... }:
       {

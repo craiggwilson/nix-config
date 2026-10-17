@@ -4,6 +4,7 @@
       "programs:mission-center"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

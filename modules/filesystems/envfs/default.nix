@@ -1,7 +1,6 @@
 {
   config.substrate.modules.filesystems.envfs = {
     provides = [
-      "filesystems:envfs"
       "filesystem:envfs"
     ];
     nixos = {

@@ -2,7 +2,7 @@
   config.substrate.modules.programs.musescore = {
     provides = [
       "programs:musescore"
-      "audio:production"
+      "audio:composition"
     ];
     requires = [ "gui" ];
     homeManager =

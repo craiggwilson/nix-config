@@ -4,6 +4,7 @@
       "programs:woomer"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

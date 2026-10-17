@@ -2,7 +2,7 @@
   config.substrate.modules.programs.debussy = {
     provides = [
       "programs:debussy"
-      "audio:production"
+      "audio:composition"
     ];
     homeManager =
       { pkgs, ... }:

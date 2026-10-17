@@ -4,6 +4,7 @@
       "programs:libreoffice"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

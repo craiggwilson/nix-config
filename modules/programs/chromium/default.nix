@@ -4,6 +4,7 @@
       "programs:chromium"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

@@ -4,6 +4,7 @@
       "programs:obsidian"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       {
         config,

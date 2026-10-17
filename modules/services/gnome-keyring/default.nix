@@ -4,6 +4,7 @@
       "services:gnome-keyring"
       "gui"
     ];
+    requires = [ "gui" ];
     nixos = { pkgs, ... }: {
       services.gnome.gnome-keyring = {
         enable = true;

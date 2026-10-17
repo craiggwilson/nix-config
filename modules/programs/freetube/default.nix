@@ -4,7 +4,10 @@
       "programs:freetube"
       "gui"
     ];
-    requires = [ "profiles:personal" ];
+    requires = [
+      "gui"
+      "profiles:personal"
+    ];
     homeManager =
       { pkgs, ... }:
       {

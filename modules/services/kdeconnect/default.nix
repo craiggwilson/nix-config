@@ -4,6 +4,7 @@
       "services:kdeconnect"
       "gui"
     ];
+    requires = [ "gui" ];
     nixos =
       {
         config,

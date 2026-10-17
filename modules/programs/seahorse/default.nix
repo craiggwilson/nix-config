@@ -4,6 +4,7 @@
       "programs:seahorse"
       "gui"
     ];
+    requires = [ "gui" ];
     nixos = {
       programs.seahorse = {
         enable = true;

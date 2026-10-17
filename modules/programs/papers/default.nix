@@ -4,6 +4,7 @@
       "programs:papers"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { lib, pkgs, ... }:
       {

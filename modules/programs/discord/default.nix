@@ -4,6 +4,7 @@
       "programs:discord"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

@@ -4,6 +4,7 @@
       "programs:qimgv"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { lib, pkgs, ... }:
       {

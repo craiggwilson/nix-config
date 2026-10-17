@@ -4,6 +4,7 @@
       "programs:vlc"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

@@ -4,6 +4,7 @@
       "programs:libqalculate"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager = { pkgs, ... }: {
       home.packages = [ pkgs.libqalculate ];
     };

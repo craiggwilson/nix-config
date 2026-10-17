@@ -4,6 +4,7 @@
       "programs:wdisplays"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {

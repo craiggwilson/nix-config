@@ -4,7 +4,10 @@
       "programs:zoom"
       "gui"
     ];
-    requires = [ "profiles:work" ];
+    requires = [
+      "gui"
+      "profiles:work"
+    ];
     homeManager =
       { lib, pkgs, ... }:
       {

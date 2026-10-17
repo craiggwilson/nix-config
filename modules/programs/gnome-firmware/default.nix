@@ -4,6 +4,7 @@
       "programs:gnome-firmware"
       "gui"
     ];
+    requires = [ "gui" ];
     homeManager =
       { pkgs, ... }:
       {
