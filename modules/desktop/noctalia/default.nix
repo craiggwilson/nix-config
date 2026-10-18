@@ -96,6 +96,8 @@
         # them through its own GI_TYPELIB_PATH.
         noctalia = wrap.package {
           package = pkgs.noctalia;
+          secrets.scope = "noctalia";
+          preHook = ''export TODOIST_TOKEN="$TODOIST_API_TOKEN"'';
           runtimeInputs = [
             pkgs.brightnessctl
             gtkPython
@@ -122,20 +124,13 @@
           };
       in
       {
-        secretspec.entries.todoistToken = {
-          description = "Todoist API token for the Noctalia Todoist widget.";
-          ref = {
-            vault = "Craig";
-            item = "Todoist";
-            field = "token";
-          };
-          file.path = "${config.xdg.configHome}/todoist/token";
-        };
+        secretspec.scopes.noctalia.secrets = [ "TODOIST_API_TOKEN" ];
 
         programs.noctalia = {
           enable = true;
           systemd.enable = true;
           package = noctalia;
+          validateConfig = false;
 
           customPalettes.hdwlinux = import ./_palette.nix colors;
 
