@@ -110,6 +110,31 @@
         # Opencode theme derived from the active hdwlinux theme colors
         opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
 
+        # OpenCode reads {env:NAME} from its own environment, so a secret header
+        # is spelled that way here and the launcher below supplies the value.
+        # The registry records only that a secret is needed; this is where that
+        # becomes OpenCode's syntax.
+        mcpHeaders =
+          headers:
+          lib.mapAttrs (
+            _: value: if builtins.isString value then value else "${value.prefix}{env:${value.secret}}"
+          ) headers;
+
+        mcpServers = lib.mapAttrs (
+          _: server:
+          if server ? stdio then
+            {
+              type = "local";
+              command = [ server.stdio.command ] ++ server.stdio.args;
+            }
+          else
+            lib.filterAttrs (_: value: value != { }) {
+              type = "remote";
+              url = server.http.url;
+              headers = mcpHeaders server.http.headers;
+            }
+        ) config.hdwlinux.ai.clients.mcpServers;
+
       in
       {
         home.packages = [
@@ -131,9 +156,9 @@
         programs.opencode = {
           enable = true;
 
-          # MCP servers are picked up from programs.mcp.servers, which is
-          # populated by modules/ai/clients/default.nix from hdwlinux.ai.clients.mcpServers
-          enableMcpIntegration = true;
+          # The MCP servers are rendered below rather than taken from
+          # programs.mcp.servers, which cannot carry a secret header.
+          enableMcpIntegration = false;
 
           themes.hdwlinux = opencodeTheme;
 
@@ -154,6 +179,9 @@
             permission = config.hdwlinux.ai.clients.tools;
             small_model = resolveAlias "fast";
             lsp = true;
+          }
+          // lib.optionalAttrs (mcpServers != { }) {
+            mcp = mcpServers;
           };
         };
       };
@@ -326,6 +354,10 @@
         # keybind, from a script -- picks a port. Home Manager still owns the
         # configuration; it just installs nothing, because the command it would
         # install is the wrapper.
+        #
+        # This is also the wrapper that resolves the MCP secrets: OpenCode
+        # substitutes {env:NAME} in its config from the environment it is
+        # launched with.
         opencodeCommand = wrap.package {
           package = pkgs.writeShellApplication {
             name = "omos";
@@ -334,6 +366,7 @@
           };
           name = "opencode";
           env.OPENCODE_BIN = lib.getExe pkgs.opencode;
+          secrets.scope = "ai_clients_mcp";
         };
       in
       {

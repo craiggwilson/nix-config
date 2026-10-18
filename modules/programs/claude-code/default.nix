@@ -164,6 +164,16 @@
 
         derivedPermissions = toolsToClaudePermissions config.hdwlinux.ai.clients.tools;
 
+        # Claude Code expands ${VAR} in a server's `url` and `headers` from its
+        # own environment, so a secret header is written that way and the wrapper
+        # below resolves the value at launch. The registry records only that a
+        # secret is needed; this is where that becomes Claude Code's syntax.
+        mcpHeaders =
+          headers:
+          lib.mapAttrs (
+            _: value: if builtins.isString value then value else "${value.prefix}\${${value.secret}}"
+          ) headers;
+
         # Transform MCP servers to Claude Code's --mcp-config JSON format.
         mcpConfig = {
           mcpServers = lib.mapAttrs (
@@ -174,16 +184,16 @@
                 command = server.stdio.command;
                 args = server.stdio.args;
               }
-            else if server ? http then
+            else
               {
                 type = "http";
                 url = server.http.url;
-                headers = server.http.headers;
+                headers = mcpHeaders server.http.headers;
               }
-            else
-              throw "Unknown MCP server type"
           ) config.hdwlinux.ai.clients.mcpServers;
         };
+
+        mcpConfigText = builtins.toJSON mcpConfig;
 
         # Claude Code settings.json with permissions.
         settingsJson = {
@@ -210,12 +220,14 @@
         };
 
         # Keep Claude's managed state in place and only inject the MCP config path.
+        # The scope resolves the secrets behind the ${...} references in it.
         claudeWrapper = wrap.package {
           package = pkgs.claude-code;
           args = [
             "--mcp-config"
             "${config.home.homeDirectory}/.claude/mcp-servers.json"
           ];
+          secrets.scope = "ai_clients_mcp";
         };
 
       in
@@ -227,8 +239,8 @@
           ".claude/agents".source = agentsDir;
           ".claude/rules".source = rulesDir;
           ".claude/skills".source = skillsDir;
-          ".claude/mcp-servers.json".text = builtins.toJSON mcpConfig;
           ".claude/settings.json".text = builtins.toJSON settingsJson;
+          ".claude/mcp-servers.json".text = mcpConfigText;
         };
       };
   };

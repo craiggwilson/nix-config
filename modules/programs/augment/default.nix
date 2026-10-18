@@ -170,21 +170,31 @@
           }) config.hdwlinux.ai.clients.skills
         );
 
-        mcpServers = lib.mapAttrs (
-          name: server:
-          if server ? stdio then
-            {
-              command = server.stdio.command;
-              args = server.stdio.args;
-            }
-          else if server ? http then
-            {
-              url = server.http.url;
-              headers = server.http.headers;
-            }
-          else
-            throw "Unknown MCP server type for ${name}"
-        ) (lib.filterAttrs (n: _: n != "augment-context-engine") config.hdwlinux.ai.clients.mcpServers);
+        # Augment has no equivalent of OpenCode's {env:...} or Claude Code's
+        # ${...} header substitution, so a server needing a secret is left out
+        # rather than written out with a header that cannot resolve.
+        mcpServers =
+          lib.mapAttrs
+            (
+              _: server:
+              if server ? stdio then
+                {
+                  command = server.stdio.command;
+                  args = server.stdio.args;
+                }
+              else
+                {
+                  url = server.http.url;
+                  headers = server.http.headers;
+                }
+            )
+            (
+              config.hdwlinux.ai.clients.mcpServersWithoutSecrets (
+                lib.filterAttrs (n: _: n != "augment-context-engine") config.hdwlinux.ai.clients.mcpServers
+              )
+            );
+
+        mcpConfigText = builtins.toJSON { inherit mcpServers; };
 
       in
       {
@@ -203,7 +213,7 @@
           ".augment/commands".source = commandsDir;
           ".augment/rules".source = rulesDir;
           ".augment/skills".source = skillsDir;
-          ".augment/mcp-servers.json".text = builtins.toJSON { inherit mcpServers; };
+          ".augment/mcp-servers.json".text = mcpConfigText;
         };
 
       };

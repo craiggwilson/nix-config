@@ -4,7 +4,11 @@
       "ai:clients"
     ];
     homeManager =
-      { config, lib, ... }:
+      {
+        config,
+        lib,
+        ...
+      }:
       let
         # Resolve one provider/model entry to its full model info including provider.
         # Returns the model with provider info attached.
@@ -190,6 +194,42 @@
           };
         };
 
+        # A header whose value cannot be a Nix string: baking the value in would
+        # put it in the world-readable store.
+        #
+        # This records *that* a header needs a secret, not how to spell it.
+        # Each client renders it its own way -- OpenCode substitutes {env:NAME}
+        # from its own environment, for instance -- so no encoding lives here.
+        secretHeaderType = lib.types.submodule {
+          options = {
+            secret = lib.mkOption {
+              description = "Name of the `secretspec` entry holding the header value.";
+              type = lib.types.str;
+            };
+
+            prefix = lib.mkOption {
+              description = "Literal text placed before the secret, such as `\"Bearer \"`.";
+              type = lib.types.str;
+              default = "";
+            };
+          };
+        };
+
+        mcpServerSecretNames =
+          server:
+          if server ? http then
+            lib.foldl' (acc: value: if builtins.isString value then acc else acc ++ [ value.secret ]) [ ] (
+              builtins.attrValues server.http.headers
+            )
+          else
+            [ ];
+
+        # The servers a client should be given when it has no way to supply a
+        # secret: those are left out, rather than written out with a header that
+        # cannot resolve.
+        mcpServersWithoutSecrets =
+          servers: lib.filterAttrs (_: server: mcpServerSecretNames server == [ ]) servers;
+
         mcpServerType = lib.types.attrTag {
           stdio = lib.mkOption {
             description = "A stdio-based MCP server that communicates via stdin/stdout.";
@@ -216,8 +256,13 @@
                   type = lib.types.str;
                 };
                 headers = lib.mkOption {
-                  description = "HTTP headers to include in requests.";
-                  type = lib.types.attrsOf lib.types.str;
+                  description = ''
+                    HTTP headers to include in requests. A value is either a
+                    literal string or `{ secret = "NAME"; prefix = "..."; }`
+                    naming a `secretspec` entry, for a header that carries a
+                    secret.
+                  '';
+                  type = lib.types.attrsOf (lib.types.either lib.types.str secretHeaderType);
                   default = { };
                 };
               };
@@ -267,6 +312,35 @@
             default = { };
           };
 
+          mcpServerSecretNames = lib.mkOption {
+            description = "Names of the `secretspec` entries one MCP server's headers reference.";
+            type = lib.types.functionTo (lib.types.listOf lib.types.str);
+            readOnly = true;
+            default = mcpServerSecretNames;
+          };
+
+          mcpServersSecretNames = lib.mkOption {
+            description = ''
+              Every `secretspec` entry referenced by any MCP server's headers. A
+              client uses this to request the secrets it needs in its own
+              environment, however it chooses to consume them.
+            '';
+            type = lib.types.functionTo (lib.types.listOf lib.types.str);
+            readOnly = true;
+            default = servers: lib.unique (lib.concatMap mcpServerSecretNames (lib.attrValues servers));
+          };
+
+          mcpServersWithoutSecrets = lib.mkOption {
+            description = ''
+              The MCP servers whose headers carry no secret. A client with no way
+              to supply one takes this subset, so a server it cannot authenticate
+              to is left out instead of breaking evaluation.
+            '';
+            type = lib.types.functionTo (lib.types.attrsOf mcpServerType);
+            readOnly = true;
+            default = mcpServersWithoutSecrets;
+          };
+
           rules = lib.mkOption {
             description = "Rule definitions for AI assistants.";
             type = lib.types.attrsOf ruleType;
@@ -301,8 +375,12 @@
           };
         };
 
-        # Map hdwlinux MCP server definitions to programs.mcp.servers so that
-        # any program with enableMcpIntegration can pick them up automatically.
+        # Map hdwlinux MCP server definitions to programs.mcp.servers so that any
+        # program with enableMcpIntegration can pick them up automatically.
+        #
+        # programs.mcp.servers carries literal strings only, so a server needing a
+        # secret is left out. Clients that can supply one -- OpenCode and Claude
+        # Code, for two -- read hdwlinux.ai.clients.mcpServers directly.
         config.programs.mcp = {
           enable = true;
           servers = lib.mapAttrs (
@@ -312,15 +390,19 @@
                 command = server.stdio.command;
                 args = server.stdio.args;
               }
-            else if server ? http then
+            else
               {
                 url = server.http.url;
                 headers = server.http.headers;
               }
-            else
-              throw "Unknown MCP server type"
-          ) config.hdwlinux.ai.clients.mcpServers;
+          ) (config.hdwlinux.ai.clients.mcpServersWithoutSecrets config.hdwlinux.ai.clients.mcpServers);
         };
+
+        # The secrets behind the {env:...} and ${...} references the clients
+        # below put in their configurations. Declared here rather than per client
+        # so any of them can wrap its launcher for the same scope.
+        config.secretspec.scopes.ai_clients_mcp.secrets =
+          config.hdwlinux.ai.clients.mcpServersSecretNames config.hdwlinux.ai.clients.mcpServers;
 
         config.hdwlinux.ai.clients.tools = {
           bash = {
