@@ -40,7 +40,7 @@
           package = obsidianWithPython;
           cli.enable = true;
 
-          vaults.kb.target = "Projects/kb";
+          vaults.kb.target = "Projects/github.com/craiggwilson/kb";
 
           defaultSettings = {
             app = {

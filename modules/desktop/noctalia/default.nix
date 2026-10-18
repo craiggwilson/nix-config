@@ -122,6 +122,16 @@
           };
       in
       {
+        secretspec.entries.todoistToken = {
+          description = "Todoist API token for the Noctalia Todoist widget.";
+          ref = {
+            vault = "Craig";
+            item = "Todoist";
+            field = "token";
+          };
+          file.path = "${config.xdg.configHome}/todoist/token";
+        };
+
         programs.noctalia = {
           enable = true;
           systemd.enable = true;
