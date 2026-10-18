@@ -28,8 +28,8 @@
             directory = {
               style = colors.base0C;
               truncation_symbol = "…/";
-              truncate_to_repo = false;
-              truncation_length = 2;
+              truncate_to_repo = true;
+              truncation_length = 3;
             };
 
             fill.symbol = " ";

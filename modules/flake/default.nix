@@ -9,7 +9,7 @@
           # Declared here rather than in a user module so hosts with no users
           # (minimal) still get a value for the host-scoped consumers.
           # Lives in the user home; same on every machine.
-          default = "/home/craig/Projects/github.com/craiggwilson/nix-config/default";
+          default = "/home/craig/Projects/github.com/craiggwilson/nix-config";
         };
       };
 

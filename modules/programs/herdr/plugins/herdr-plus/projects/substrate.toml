@@ -1,7 +1,7 @@
 name = "substrate"
 description = "Tag-based NixOS / Home Manager framework"
 group = "hdwlinux"
-working_dir = "~/Projects/github.com/craiggwilson/substrate/default"
+working_dir = "~/Projects/github.com/craiggwilson/substrate"
 
 [[tabs]]
 name = "terminal"
