@@ -227,11 +227,16 @@
             "--mcp-config"
             "${config.home.homeDirectory}/.claude/mcp-servers.json"
           ];
-          secrets.scope = "ai_clients_mcp";
+          secrets.scope = "ai_clients_claude_code";
         };
 
       in
       {
+        # Claude's launcher scope: every secret the MCP servers and model
+        # providers reference, so its ${...} references resolve at exec time.
+        secretspec.scopes.ai_clients_claude_code.secrets =
+          config.hdwlinux.ai.clients.mcpServersSecretNames ++ config.hdwlinux.ai.clients.providerSecretNames;
+
         home.packages = [ claudeWrapper ];
 
         home.file = {

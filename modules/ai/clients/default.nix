@@ -224,12 +224,6 @@
           else
             [ ];
 
-        # The servers a client should be given when it has no way to supply a
-        # secret: those are left out, rather than written out with a header that
-        # cannot resolve.
-        mcpServersWithoutSecrets =
-          servers: lib.filterAttrs (_: server: mcpServerSecretNames server == [ ]) servers;
-
         mcpServerType = lib.types.attrTag {
           stdio = lib.mkOption {
             description = "A stdio-based MCP server that communicates via stdin/stdout.";
@@ -312,22 +306,17 @@
             default = { };
           };
 
-          mcpServerSecretNames = lib.mkOption {
-            description = "Names of the `secretspec` entries one MCP server's headers reference.";
-            type = lib.types.functionTo (lib.types.listOf lib.types.str);
-            readOnly = true;
-            default = mcpServerSecretNames;
-          };
-
           mcpServersSecretNames = lib.mkOption {
             description = ''
               Every `secretspec` entry referenced by any MCP server's headers. A
               client uses this to request the secrets it needs in its own
               environment, however it chooses to consume them.
             '';
-            type = lib.types.functionTo (lib.types.listOf lib.types.str);
+            type = lib.types.listOf lib.types.str;
             readOnly = true;
-            default = servers: lib.unique (lib.concatMap mcpServerSecretNames (lib.attrValues servers));
+            default = lib.unique (
+              lib.concatMap mcpServerSecretNames (lib.attrValues config.hdwlinux.ai.clients.mcpServers)
+            );
           };
 
           mcpServersWithoutSecrets = lib.mkOption {
@@ -336,9 +325,26 @@
               to supply one takes this subset, so a server it cannot authenticate
               to is left out instead of breaking evaluation.
             '';
-            type = lib.types.functionTo (lib.types.attrsOf mcpServerType);
+            type = lib.types.attrsOf mcpServerType;
             readOnly = true;
-            default = mcpServersWithoutSecrets;
+            default = lib.filterAttrs (
+              _: server: mcpServerSecretNames server == [ ]
+            ) config.hdwlinux.ai.clients.mcpServers;
+          };
+
+          providerSecretNames = lib.mkOption {
+            description = ''
+              Names of the `secretspec` entries providers declared with
+              `models.providers.<name>.secret`. A client uses this to request
+              the secrets it needs in its own environment.
+            '';
+            type = lib.types.listOf lib.types.str;
+            readOnly = true;
+            default = lib.unique (
+              lib.filter (s: s != null) (
+                map (p: p.secret) (lib.attrValues config.hdwlinux.ai.clients.models.providers)
+              )
+            );
           };
 
           rules = lib.mkOption {
@@ -381,6 +387,9 @@
         # programs.mcp.servers carries literal strings only, so a server needing a
         # secret is left out. Clients that can supply one -- OpenCode and Claude
         # Code, for two -- read hdwlinux.ai.clients.mcpServers directly.
+        # MCP servers carry their own secret references (secretHeaderType);
+        # the harness modules aggregate them (plus provider keys) into the
+        # scope their launcher wrapper resolves.
         config.programs.mcp = {
           enable = true;
           servers = lib.mapAttrs (
@@ -395,14 +404,8 @@
                 url = server.http.url;
                 headers = server.http.headers;
               }
-          ) (config.hdwlinux.ai.clients.mcpServersWithoutSecrets config.hdwlinux.ai.clients.mcpServers);
+          ) config.hdwlinux.ai.clients.mcpServersWithoutSecrets;
         };
-
-        # The secrets behind the {env:...} and ${...} references the clients
-        # below put in their configurations. Declared here rather than per client
-        # so any of them can wrap its launcher for the same scope.
-        config.secretspec.scopes.ai_clients_mcp.secrets =
-          config.hdwlinux.ai.clients.mcpServersSecretNames config.hdwlinux.ai.clients.mcpServers;
 
         config.hdwlinux.ai.clients.tools = {
           bash = {

@@ -80,7 +80,10 @@
     };
 
     opencode = {
-      url = "github:anomalyco/opencode";
+      # Pinned to a dev rev: the v2.0.32 tag's nix packaging is broken (the
+      # node_modules fileset omits the root script/ dir the cli build imports).
+      # d85746a is dev with the fix; repin to a v2.0.33+ tag when one lands.
+      url = "github:anomalyco/opencode/d85746a054924241a7edde736eefd079dff9bc00";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -190,6 +193,10 @@
 
           # Janrupf stable-diffusion-webui — exposes pkgs.stable-diffusion-webui.{forge,comfy}
           inputs.stable-diffusion-webui-nix.overlays.default
+
+          # opencode v2 — exposes pkgs.opencode and pkgs.opencode-desktop from
+          # the opencode flake instead of nixpkgs' 1.x
+          inputs.opencode.overlays.default
 
           # Stable nixpkgs for packages not in unstable
           (final: _prev: {

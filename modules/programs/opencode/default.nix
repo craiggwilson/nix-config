@@ -21,22 +21,70 @@
           in
           map (m: "${m.provider}/${m.model}") alias.models;
 
-        # Primary "provider/model" for single-model consumers (agent definitions, small_model)
+        # Primary "provider/model" for single-model consumers (agent definitions, title)
         resolveAlias = aliasName: lib.head (resolveAliases aliasName);
 
-        # Transform tools attrset for OpenCode config (boolean values)
-        # "allow" -> true, "ask"/"deny" -> false
-        transformTools = tools: lib.mapAttrs (_: perm: perm == "allow") tools;
+        # Transform agent-level tool toggles into opencode v2 permissions
+        # entries: "allow" -> allow, anything else -> deny.
+        transformTools =
+          tools:
+          lib.mapAttrsToList (name: perm: {
+            action = name;
+            resource = "*";
+            effect = if perm == "allow" then "allow" else "deny";
+          }) tools;
+
+        # v2 renames: bash -> shell, task -> subagent; write merges into edit.
+        renameAction =
+          name:
+          {
+            bash = "shell";
+            task = "subagent";
+            write = "edit";
+          }
+          .${name} or name;
+
+        # Convert the v1-style grouped permission map (tool -> "allow"/"ask"/"deny"
+        # or pattern -> permission) into opencode v2's ordered permissions array of
+        # { action, resource, effect }. Specific patterns come before "*" so the
+        # wildcard can't shadow them.
+        permissionArray =
+          tools:
+          let
+            entries = lib.flatten (
+              lib.mapAttrsToList (
+                action: value:
+                let
+                  action' = renameAction action;
+                in
+                if builtins.isString value then
+                  [
+                    {
+                      action = action';
+                      resource = "*";
+                      effect = value;
+                    }
+                  ]
+                else
+                  lib.mapAttrsToList (resource: effect: {
+                    action = action';
+                    inherit resource effect;
+                  }) value
+              ) tools
+            );
+            split = lib.partition (e: e.resource == "*") entries;
+          in
+          lib.unique (split.wrong ++ split.right);
 
         agentConfig = lib.mapAttrs (
           name: agent:
           {
             inherit (agent) color description mode;
             model = resolveAlias agent.model;
-            prompt = "{file:${config.home.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
-            inherit (agent) temperature;
+            system = "{file:${config.home.homeDirectory}/.config/opencode/prompts/agents/${name}.md}";
+            request.body.temperature = agent.temperature;
           }
-          // lib.optionalAttrs (agent.tools != { }) { tools = transformTools agent.tools; }
+          // lib.optionalAttrs (agent.tools != { }) { permissions = transformTools agent.tools; }
         ) config.hdwlinux.ai.clients.agents;
 
         commandConfig = lib.mapAttrs (name: command: {
@@ -51,8 +99,8 @@
         # Provider metadata: OpenCode-specific configuration for each provider
         providerMeta = {
           "llama.cpp" = {
-            npm = "@ai-sdk/openai-compatible";
-            options = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
+            package = "aisdk:@ai-sdk/openai-compatible";
+            settings = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
               baseURL = "http://${config.hdwlinux.services.llama-cpp.host}:${toString config.hdwlinux.services.llama-cpp.port}/v1";
             };
             # llama.cpp models may have additional opencode-specific settings
@@ -63,49 +111,63 @@
                 oc = llmModel.settings.opencode or { };
               in
               {
-                id = slug;
+                modelID = slug;
                 name = model.displayName;
                 limit = {
                   context = model.limits.context;
                   output = model.limits.output;
                 };
               }
-              // lib.optionalAttrs (oc ? reasoning) { inherit (oc) reasoning; }
-              // lib.optionalAttrs (oc ? tool_call) { inherit (oc) tool_call; };
+              // lib.optionalAttrs (oc ? tool_call) { capabilities.tools = oc.tool_call; };
           };
           "fireworks-ai" = {
-            npm = "@ai-sdk/openai-compatible";
+            package = "aisdk:@ai-sdk/openai-compatible";
             env = [ "FIREWORKS_API_KEY" ];
-            options = {
+            settings = {
               baseURL = "https://api.fireworks.ai/inference/v1";
             };
           };
         };
 
         # Build providers config from hdwlinux.ai.clients.models.providers
-        # Only include providers that have metadata defined
-        providers = lib.mapAttrs (
-          providerKey: provider:
-          let
-            meta = providerMeta.${providerKey} or { };
-            transformModel =
-              meta.transformModel or (slug: model: {
-                id = slug;
-                name = model.displayName;
-                limit = {
-                  context = model.limits.context;
-                  output = model.limits.output;
-                };
-              });
-          in
-          {
-            npm = meta.npm or null;
-            name = provider.displayName;
-            models = lib.mapAttrs (slug: model: transformModel slug model) provider.models;
-          }
-          // lib.optionalAttrs (meta ? options && meta.options != { }) { inherit (meta) options; }
-          // lib.optionalAttrs (meta ? env && meta.env != [ ]) { inherit (meta) env; }
-        ) (lib.filterAttrs (k: _: providerMeta ? ${k}) config.hdwlinux.ai.clients.models.providers);
+        # Only include providers that have metadata and at least one model —
+        # a provider with metadata but no models (e.g. grove on personal
+        # hosts) would render as an empty entry.
+        providers =
+          lib.mapAttrs
+            (
+              providerKey: provider:
+              let
+                # Provider modules can carry their own OpenCode wiring
+                # (settings.opencode); the static metadata below covers the
+                # providers that don't.
+                meta = providerMeta.${providerKey} or (provider.settings.opencode or { });
+                transformModel =
+                  meta.transformModel or (slug: model: {
+                    modelID = slug;
+                    name = model.displayName;
+                    limit = {
+                      context = model.limits.context;
+                      output = model.limits.output;
+                    };
+                  });
+              in
+              lib.filterAttrs (_: value: value != null) {
+                package = meta.package or null;
+                name = provider.displayName;
+                models = lib.mapAttrs (slug: model: transformModel slug model) provider.models;
+              }
+              // lib.optionalAttrs (meta ? settings && meta.settings != { }) { inherit (meta) settings; }
+              // lib.optionalAttrs (meta ? headers && meta.headers != { }) { inherit (meta) headers; }
+              // lib.optionalAttrs (meta ? env && meta.env != [ ]) { inherit (meta) env; }
+            )
+            (
+              lib.filterAttrs (_: p: p.models != { }) (
+                lib.filterAttrs (
+                  k: p: providerMeta ? ${k} || p.settings ? opencode
+                ) config.hdwlinux.ai.clients.models.providers
+              )
+            );
 
         # Opencode theme derived from the active hdwlinux theme colors
         opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
@@ -137,6 +199,11 @@
 
       in
       {
+        # The launcher scope: every secret the MCP servers and model providers
+        # reference, aggregated here so OpenCode's {env:...} substitution can
+        # resolve them at exec time.
+        secretspec.scopes.ai_clients_opencode.secrets =
+          config.hdwlinux.ai.clients.mcpServersSecretNames ++ config.hdwlinux.ai.clients.providerSecretNames;
         home.packages = [
           pkgs.opencode-desktop
         ];
@@ -151,6 +218,16 @@
           (lib.mapAttrs' (
             name: agent: lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
           ) config.hdwlinux.ai.clients.agents)
+          # v2 moved terminal client config from tui.json to a global cli.json;
+          # the tui.json migration only happens once, so own the file directly.
+          {
+            "opencode/cli.json".text = builtins.toJSON {
+              theme = "hdwlinux";
+              keybinds = {
+                app_exit = "ctrl+q";
+              };
+            };
+          }
         ];
 
         programs.opencode = {
@@ -162,55 +239,21 @@
 
           themes.hdwlinux = opencodeTheme;
 
-          tui = {
-            theme = "hdwlinux";
-            keybinds = {
-              "app_exit" = "ctrl+q";
-            };
-          };
-
           skills = config.hdwlinux.ai.clients.skills;
 
           settings = {
-            provider = providers;
-            agent = agentConfig;
-            command = commandConfig;
+            inherit providers;
+            # v2 dropped small_model; the built-in title agent carries the fast model now.
+            agents = agentConfig // {
+              title.model = resolveAlias "fast";
+            };
+            commands = commandConfig;
             instructions = ruleInstructions;
-            permission = config.hdwlinux.ai.clients.tools;
-            small_model = resolveAlias "fast";
-            lsp = true;
+            permissions = permissionArray config.hdwlinux.ai.clients.tools;
           }
           // lib.optionalAttrs (mcpServers != { }) {
-            mcp = mcpServers;
+            mcp.servers = mcpServers;
           };
-        };
-      };
-  };
-
-  config.substrate.modules.programs.opencode.grove-gateway = {
-    tags = [
-      "ai:clients"
-      "users:craig:work"
-    ];
-
-    homeManager =
-      { pkgs, ... }:
-      let
-        # grove-gateway-opencode-plugin directory in the nix store
-        grovePluginDir = "${
-          pkgs.callPackage ./plugins/_grove_gateway.nix { }
-        }/lib/grove-gateway-opencode-plugin";
-      in
-      {
-        programs.opencode.settings.plugin = [
-          "file://${grovePluginDir}"
-        ];
-
-        # Allow non-Grove providers (e.g. fireworks) to coexist with Grove providers.
-        # Without this, the grove gateway plugin defaults to filtering out all non-Grove
-        # providers except github-copilot.
-        xdg.configFile."opencode/grove.jsonc".text = builtins.toJSON {
-          allowProviders = "*";
         };
       };
   };
@@ -275,7 +318,7 @@
         };
       in
       {
-        programs.opencode.settings.plugin = [
+        programs.opencode.settings.plugins = [
           "opencode-mem"
         ];
 
@@ -291,7 +334,7 @@
     ];
 
     homeManager = {
-      programs.opencode.settings.plugin = [
+      programs.opencode.settings.plugins = [
         "@dietrichgebert/ponytail"
       ];
     };
@@ -306,7 +349,6 @@
       {
         config,
         pkgs,
-        lib,
         wrap,
         ...
       }:
@@ -350,29 +392,23 @@
           };
         };
 
-        # `opencode` on PATH is omos.sh, so every launch -- typed, from a
-        # keybind, from a script -- picks a port. Home Manager still owns the
-        # configuration; it just installs nothing, because the command it would
-        # install is the wrapper.
+        # `opencode` on PATH is a wrapper that resolves the ai_clients_opencode
+        # secrets at exec time, so OpenCode can substitute {env:NAME} in its
+        # config (MCP headers and provider API keys) from the environment
+        # it is launched with.
         #
-        # This is also the wrapper that resolves the MCP secrets: OpenCode
-        # substitutes {env:NAME} in its config from the environment it is
-        # launched with.
+        # v2 runs a shared background service that oh-my-opencode-slim attaches
+        # its subagent panes to, so the v1-era explicit-port wrapper is gone.
         opencodeCommand = wrap.package {
-          package = pkgs.writeShellApplication {
-            name = "omos";
-            runtimeInputs = [ pkgs.python3 ];
-            text = builtins.readFile ./omos.sh;
-          };
+          package = pkgs.opencode;
           name = "opencode";
-          env.OPENCODE_BIN = lib.getExe pkgs.opencode;
-          secrets.scope = "ai_clients_mcp";
+          secrets.scope = "ai_clients_opencode";
         };
       in
       {
         programs.opencode.package = opencodeCommand;
 
-        programs.opencode.settings.plugin = [
+        programs.opencode.settings.plugins = [
           "oh-my-opencode-slim@beta"
         ];
 

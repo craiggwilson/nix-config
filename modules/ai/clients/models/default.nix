@@ -76,6 +76,18 @@
                 type = lib.types.attrsOf modelType;
                 default = { };
               };
+
+              secret = lib.mkOption {
+                description = "Name of the `secretspec` entry holding this provider's API key.";
+                type = lib.types.nullOr lib.types.str;
+                default = null;
+              };
+
+              settings = lib.mkOption {
+                description = "Client-specific provider settings, keyed by client (e.g. opencode).";
+                type = lib.types.attrsOf lib.types.anything;
+                default = { };
+              };
             };
           }
         );
@@ -221,8 +233,9 @@
     homeManager =
       { lib, ... }:
       let
-        # Work host routes aliases through the grove gateway (plugin pinned at v1.3.0)
-        # and directly to fireworks.ai for open-source models.
+        # Work host routes aliases through the grove gateway (declared
+        # statically in the opencode module) and directly to fireworks.ai for
+        # open-source models. grove-misc model keys are the gateway's API IDs.
         mk = provider: model: { inherit provider model; };
         fw = model: mk "fireworks-ai" "accounts/fireworks/models/${model}";
         router = model: mk "fireworks-ai" "accounts/fireworks/routers/${model}";
@@ -232,7 +245,7 @@
           analysis = {
             models = [
               (router "glm-latest")
-              (mk "grove-misc" "fw-glm-5.2")
+              (mk "grove-misc" "FW-GLM-5.2")
               (mk "grove-openai" "gpt-5.6-terra")
               (mk "grove-anthropic" "claude-opus-4-7")
             ];
@@ -246,7 +259,7 @@
           code-review = {
             models = [
               (router "glm-latest")
-              (mk "grove-misc" "fw-glm-5.2")
+              (mk "grove-misc" "FW-GLM-5.2")
               (mk "grove-openai" "gpt-5.4")
               (fw "kimi-k3")
             ];
@@ -254,7 +267,7 @@
           coding = {
             models = [
               (router "deepseek-pro-latest")
-              (mk "grove-misc" "fw-deepseek-v4-pro")
+              (mk "grove-misc" "FW-DeepSeek-V4-Pro")
               (fw "kimi-k3")
               (mk "grove-openai" "gpt-5.3-codex")
             ];
@@ -264,7 +277,7 @@
               (router "deepseek-flash-latest")
               (mk "grove-anthropic" "claude-haiku-4-5")
               (mk "grove-openai" "gpt-5.4-mini")
-              (mk "grove-misc" "deepseek-v4-flash")
+              (mk "grove-misc" "DeepSeek-V4-Flash")
             ];
           };
           orchestration = {
@@ -278,7 +291,7 @@
             models = [
               (mk "grove-openai" "gpt-5.6-luna")
               (mk "grove-openai" "gpt-5.4")
-              (mk "grove-misc" "fw-glm-5.2")
+              (mk "grove-misc" "FW-GLM-5.2")
               (router "glm-latest")
             ];
           };
