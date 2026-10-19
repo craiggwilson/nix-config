@@ -69,7 +69,50 @@
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
         flake = config.hdwlinux.flake;
-        actionCommand = action: lib.concatMapStringsSep " " builtins.toJSON action.command;
+        nativeActionCommands = {
+          centerColumn = "center-column";
+          closeWindow = "close-window";
+          consumeWindowLeft = "consume-or-expel-window-left";
+          consumeWindowRight = "consume-or-expel-window-right";
+          exitCompositor = "quit";
+          focusWindowDown = "focus-window-or-monitor-down";
+          focusWindowLeft = "focus-column-or-monitor-left";
+          focusWindowRight = "focus-column-or-monitor-right";
+          focusWindowUp = "focus-window-or-monitor-up";
+          focusWorkspaceDown = "focus-workspace-down";
+          focusWorkspaceUp = "focus-workspace-up";
+          increaseColumnWidth = ''set-column-width "+10%"'';
+          increaseWindowHeight = ''set-window-height "+10%"'';
+          maximizeWindow = "maximize-window-to-edges";
+          moveColumnDown = "move-window-down";
+          moveColumnLeft = "move-column-left-or-to-monitor-left";
+          moveColumnRight = "move-column-right-or-to-monitor-right";
+          moveColumnUp = "move-window-up";
+          moveWorkspaceDown = "move-workspace-down";
+          moveWorkspaceUp = "move-workspace-up";
+          switchColumnWidth = "switch-preset-column-width";
+          showHotkeyOverlay = "show-hotkey-overlay";
+          takeScreenshot = "screenshot";
+          takeScreenScreenshot = "screenshot-screen";
+          takeWindowScreenshot = "screenshot-window";
+          toggleFloating = "toggle-window-floating";
+          toggleFullscreen = "fullscreen-window";
+          toggleOverview = "toggle-overview";
+          toggleScratchpad = ''spawn "niri-scratchpad" "target" "--spawn" "app-terminal --class=scratch.terminal" "appid" "scratch.terminal"'';
+          toggleTabbedDisplay = "toggle-column-tabbed-display";
+        };
+        nativeActions =
+          nativeActionCommands
+          // lib.concatMapAttrs (number: _: {
+            "focusWorkspace${number}" = "focus-workspace ${number}";
+            "moveColumnToWorkspace${number}" = "move-column-to-workspace ${number}";
+          }) (lib.genAttrs (map toString (lib.range 1 10)) (_: { }));
+        actionBinding =
+          action:
+          if builtins.isList action.command then
+            "{ spawn ${lib.concatMapStringsSep " " builtins.toJSON action.command}; }"
+          else
+            "{ ${action.command.value}; }";
         actionBindings =
           lib.concatMapStringsSep "\n"
             (
@@ -77,7 +120,9 @@
               let
                 action = config.hdwlinux.desktop.actions.${name};
               in
-              "    ${action.binding} hotkey-overlay-title=\"${action.description}\" { spawn ${actionCommand action}; }"
+              "    ${action.binding} hotkey-overlay-title=${
+                    if action.showInHotkeyOverlay then builtins.toJSON action.description else "null"
+                  } ${actionBinding action}"
             )
             (
               lib.filter (name: config.hdwlinux.desktop.actions.${name}.binding != null) (
@@ -86,6 +131,13 @@
             );
       in
       {
+        hdwlinux.desktop.actions = lib.mapAttrs (_: value: {
+          command = {
+            type = "native";
+            inherit value;
+          };
+        }) nativeActions;
+
         home.packages = [
           (pkgs.xwayland-satellite.override { withSystemd = false; })
           inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.default
@@ -98,9 +150,12 @@
         xdg.configFile = {
           "niri/config.kdl".text = ''
             include "colors.kdl"
-            include "functional.kdl"
+            include "common.kdl"
+            include "shell.kdl"
             include "actions.kdl"
           '';
+
+          "niri/common.kdl".source = ./config/common.kdl;
 
           "niri/colors.kdl".text = ''
             layout {
@@ -164,7 +219,7 @@
           '';
         }
         // lib.optionalAttrs (flake != null) {
-          "niri/functional.kdl".source = config.lib.file.mkOutOfStoreSymlink (
+          "niri/shell.kdl".source = config.lib.file.mkOutOfStoreSymlink (
             if hasTag "desktop:noctalia" then
               "${flake}/modules/compositors/niri/config/noctalia.kdl"
             else

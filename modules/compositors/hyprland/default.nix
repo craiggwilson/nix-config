@@ -60,10 +60,52 @@ in
                 lib.replaceStrings [ "Mod" "Shift" "Ctrl" "Alt" ] [ "SUPER" "SHIFT" "CTRL" "ALT" ] modifier
               ) modifiers
             );
-            command = lib.concatStringsSep " " action.command;
+            command =
+              if builtins.isList action.command then
+                "exec, ${lib.concatStringsSep " " action.command}"
+              else
+                action.command.value;
           in
-          "${hyprModifiers}, ${key}, exec, ${command}"
+          "${hyprModifiers}, ${key}, ${command}"
         ) (lib.filterAttrs (_: action: action.binding != null) config.hdwlinux.desktop.actions);
+        nativeActionCommands = {
+          centerColumn = "centerwindow";
+          closeWindow = "killactive";
+          exitCompositor = "exit";
+          consumeWindowLeft = "movewindow l";
+          consumeWindowRight = "movewindow r";
+          focusWindowDown = "movefocus d";
+          focusWindowLeft = "movefocus l";
+          focusWindowRight = "movefocus r";
+          focusWindowUp = "movefocus u";
+          focusWorkspaceDown = "workspace -1";
+          focusWorkspaceUp = "workspace +1";
+          increaseColumnWidth = "resizeactive 100 0";
+          increaseWindowHeight = "resizeactive 0 100";
+          maximizeWindow = "fullscreen 1";
+          moveColumnDown = "movewindow d";
+          moveColumnLeft = "movewindow l";
+          moveColumnRight = "movewindow r";
+          moveColumnUp = "movewindow u";
+          moveWorkspaceDown = "movetoworkspace -1";
+          moveWorkspaceUp = "movetoworkspace +1";
+          switchColumnWidth = "alterzorder top";
+          showHotkeyOverlay = "exec, uwsm app -- vicinae vicinae://launch/keybind-cheatsheet";
+          takeScreenshot = "exec, uwsm app -- screenctl capture show-menu";
+          takeScreenScreenshot = "exec, uwsm app -- screenctl capture show-menu";
+          takeWindowScreenshot = "exec, uwsm app -- screenctl capture show-menu";
+          toggleFloating = "togglefloating";
+          toggleFullscreen = "fullscreen 1";
+          toggleOverview = "overview, toggle";
+          toggleScratchpad = "togglespecialworkspace, dropdown";
+          toggleTabbedDisplay = "togglegroup";
+        };
+        nativeActions =
+          nativeActionCommands
+          // lib.concatMapAttrs (number: _: {
+            "focusWorkspace${number}" = "workspace ${number}";
+            "moveColumnToWorkspace${number}" = "movetoworkspace ${number}";
+          }) (lib.genAttrs (map toString (lib.range 1 10)) (_: { }));
         colors = config.hdwlinux.theme.colors.hex;
         rgb = color: "rgb(${color})";
         rgba = color: alpha: "rgba(${color}${alpha})";
@@ -81,6 +123,13 @@ in
             "";
       in
       {
+        hdwlinux.desktop.actions = lib.mapAttrs (_: value: {
+          command = {
+            type = "native";
+            inherit value;
+          };
+        }) nativeActions;
+
         systemd.user.startServices = true;
 
         wayland.windowManager.hyprland = {
@@ -218,51 +267,8 @@ in
               ];
 
               bind = actionBindings ++ [
-                "SUPER, G, togglefloating,"
-                "SUPER, M, fullscreen, 1"
-                "SUPER SHIFT, M, fullscreen, 0"
-                "SUPER, O, togglesplit,"
-                "SUPER, Q, killactive"
-                "SUPER, S, togglegroup,"
-                "SUPER SHIFT, T, movetoworkspace, special:dropdown"
-                "SUPER, GRAVE, togglespecialworkspace, dropdown"
                 "SUPER, ESCAPE, exec, uwsm app -- missioncenter"
                 "SUPER, EQUAL, exec, uwsm app -- woomer"
-                ", PRINT, exec, uwsm app -- screenctl capture show-menu"
-                "ALT, PRINT, exec, uwsm app -- screenctl record show-menu"
-
-                "SUPER CTRL, left, workspace, -1"
-                "SUPER CTRL, right, workspace, +1"
-                "SUPER, left, movefocus, l"
-                "SUPER, right, movefocus, r"
-                "SUPER, up, movefocus, u"
-                "SUPER, down, movefocus, d"
-                "SUPER, 1, workspace, 1"
-                "SUPER, 2, workspace, 2"
-                "SUPER, 3, workspace, 3"
-                "SUPER, 4, workspace, 4"
-                "SUPER, 5, workspace, 5"
-                "SUPER, 6, workspace, 6"
-                "SUPER, 7, workspace, 7"
-                "SUPER, 8, workspace, 8"
-                "SUPER, 9, workspace, 9"
-                "SUPER, 0, workspace, 10"
-
-                "SUPER SHIFT, left, movetoworkspace, -1"
-                "SUPER SHIFT, right, movetoworkspace, +1"
-                "SUPER SHIFT, 1, movetoworkspace, 1"
-                "SUPER SHIFT, 2, movetoworkspace, 2"
-                "SUPER SHIFT, 3, movetoworkspace, 3"
-                "SUPER SHIFT, 4, movetoworkspace, 4"
-                "SUPER SHIFT, 5, movetoworkspace, 5"
-                "SUPER SHIFT, 6, movetoworkspace, 6"
-                "SUPER SHIFT, 7, movetoworkspace, 7"
-                "SUPER SHIFT, 8, movetoworkspace, 8"
-                "SUPER SHIFT, 9, movetoworkspace, 9"
-                "SUPER SHIFT, 0, movetoworkspace, 10"
-
-                "SUPER SHIFT CTRL, left, resizeactive, -100 0"
-                "SUPER SHIFT CTRL, right, resizeactive, 100 0"
 
               ];
 

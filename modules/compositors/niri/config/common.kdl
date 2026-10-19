@@ -1,0 +1,179 @@
+cursor {
+    hide-when-typing
+}
+
+gestures {
+    hot-corners {
+        off
+    }
+}
+
+hotkey-overlay {
+    skip-at-startup
+    hide-not-bound
+}
+
+debug {
+    ignore-drm-device "/dev/dri/renderD129"
+}
+
+input {
+    keyboard {
+        xkb {
+            layout "us"
+            options "compose:ralt,ctrl:nocaps"
+        }
+    }
+
+    touchpad {
+        dwt
+        tap
+        natural-scroll
+    }
+
+    mouse { }
+
+    tablet {
+        map-to-output "eDP-1"
+    }
+
+    touch {
+        map-to-output "eDP-1"
+    }
+}
+
+layout {
+    focus-ring {
+        on
+        width 3
+    }
+
+    tab-indicator {
+        width 6
+        corner-radius 3
+        gaps-between-tabs 6
+        gap 8
+        place-within-column
+        hide-when-single-tab
+        position "top"
+    }
+
+    always-center-single-column
+
+    center-focused-column "never"
+
+    default-column-display "normal"
+
+    default-column-width { proportion 0.33333; }
+
+    gaps 10
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.95
+    }
+}
+
+prefer-no-csd
+
+recent-windows {
+    off
+}
+
+screenshot-path "~/Pictures/Screenshots/Screenshot from %Y-%m-%d %H-%M-%S.png"
+
+window-rule {
+    geometry-corner-radius 10
+    clip-to-geometry true
+}
+
+window-rule {
+    match app-id="com.mitchellh.ghostty"
+    default-column-width { proportion 0.5; }
+
+    background-effect {
+        blur true
+        xray false
+    }
+
+    opacity 0.88
+}
+
+window-rule {
+    match app-id="codium"
+    match app-id="Slack"
+    match app-id="obsidian"
+
+    background-effect {
+        blur true
+        xray false
+    }
+
+    draw-border-with-background false
+
+    opacity 0.88
+}
+
+window-rule {
+    match app-id="1password"
+    match app-id="slack"
+
+    block-out-from "screen-capture"
+}
+
+// Zoom utility windows need to float while the main meeting window tiles.
+window-rule {
+    match app-id=r#"^(?i)zoom(\.us)?$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id=r#"^(?i)zoom(\.us)?$"#
+    match title=r#"^Zoom Workplace"#
+    open-floating false
+}
+
+window-rule {
+    match app-id=r#"^(?i)zoom(\.us)?$"#
+    match title=r#"^as_toolbar$"#
+
+    default-column-width { fixed 722; }
+    default-window-height { fixed 89; }
+
+    focus-ring {
+        off
+    }
+    border {
+        off
+    }
+    shadow {
+        off
+    }
+    geometry-corner-radius 0
+    clip-to-geometry false
+}
+
+workspace "stash" { }
+
+window-rule {
+    match app-id=r#"^scratch*"#
+    open-on-workspace "stash"
+    open-floating true
+
+    default-column-width { proportion 0.95; }
+    default-window-height { proportion 0.95; }
+    default-column-display "tabbed"
+}
+
+spawn-at-startup "app-terminal" "--class=scratch.terminal"
+
+binds { 
+    Mod+C hotkey-overlay-title="Clear Dynamic Cast Target" { clear-dynamic-cast-target; }
+    Mod+Shift+C hotkey-overlay-title="Set Dynamic Cast Window" { set-dynamic-cast-window; }
+    Mod+Ctrl+C hotkey-overlay-title="Set Dynamic Cast Monitor" { set-dynamic-cast-monitor; }
+
+    Mod+WheelScrollDown                 { focus-workspace-down; }
+    Mod+WheelScrollUp                   { focus-workspace-up; }
+    Mod+WheelScrollRight                { focus-column-right; }
+    Mod+WheelScrollLeft                 { focus-column-left; }
+}

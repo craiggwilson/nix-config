@@ -10,6 +10,7 @@
             "vicinae://toggle"
           ];
           description = "Show application launcher";
+          showInHotkeyOverlay = true;
         };
         showClipboard = {
           binding = "Mod+V";
@@ -18,6 +19,7 @@
             "show-menu"
           ];
           description = "Show clipboard menu";
+          showInHotkeyOverlay = true;
         };
         showPowerMenu = {
           binding = "Mod+X";
@@ -26,6 +28,7 @@
             "vicinae://launch/power?toggle=true"
           ];
           description = "Show power menu";
+          showInHotkeyOverlay = true;
         };
         showScreenRecordMenu = {
           binding = "Mod+Print";
@@ -37,12 +40,13 @@
           description = "Show screen recording menu";
         };
         showWindowSwitcher = {
-          binding = "Mod+Tab";
+          binding = "Alt+Tab";
           command = [
             "vicinae"
             "vicinae://launch/windows?toggle=true"
           ];
           description = "Show window switcher";
+          showInHotkeyOverlay = true;
         };
         toggleAudioMute = {
           binding = "XF86AudioMute";
