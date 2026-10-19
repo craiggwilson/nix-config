@@ -25,7 +25,7 @@
           };
         };
 
-        hdwlinux.app.webBrowser = lib.mkDefault {
+        hdwlinux.desktop.apps.webBrowser = lib.mkDefault {
           package = config.programs.zen-browser.package;
           desktopName = "zen-beta.desktop";
         };

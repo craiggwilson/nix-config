@@ -69,6 +69,21 @@
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
         flake = config.hdwlinux.flake;
+        actionCommand = action: lib.concatMapStringsSep " " builtins.toJSON action.command;
+        actionBindings =
+          lib.concatMapStringsSep "\n"
+            (
+              name:
+              let
+                action = config.hdwlinux.desktop.actions.${name};
+              in
+              "    ${action.binding} hotkey-overlay-title=\"${action.description}\" { spawn ${actionCommand action}; }"
+            )
+            (
+              lib.filter (name: config.hdwlinux.desktop.actions.${name}.binding != null) (
+                builtins.attrNames config.hdwlinux.desktop.actions
+              )
+            );
       in
       {
         home.packages = [
@@ -84,6 +99,7 @@
           "niri/config.kdl".text = ''
             include "colors.kdl"
             include "functional.kdl"
+            include "actions.kdl"
           '';
 
           "niri/colors.kdl".text = ''
@@ -139,6 +155,12 @@
                     active-color "${colors.base08}"
                 }
             }
+          '';
+
+          "niri/actions.kdl".text = ''
+              binds {
+            ${actionBindings}
+              }
           '';
         }
         // lib.optionalAttrs (flake != null) {

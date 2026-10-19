@@ -5,7 +5,7 @@
     homeManager =
       { lib, pkgs, ... }:
       {
-        hdwlinux.app.imageViewer = lib.mkDefault {
+        hdwlinux.desktop.apps.imageViewer = lib.mkDefault {
           package = pkgs.qimgv;
           desktopName = "qimgv.desktop";
         };

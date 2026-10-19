@@ -48,6 +48,22 @@ in
         ...
       }:
       let
+        actionBindings = lib.mapAttrsToList (
+          _: action:
+          let
+            parts = lib.splitString "+" action.binding;
+            key = lib.last parts;
+            modifiers = lib.init parts;
+            hyprModifiers = lib.concatStringsSep " " (
+              map (
+                modifier:
+                lib.replaceStrings [ "Mod" "Shift" "Ctrl" "Alt" ] [ "SUPER" "SHIFT" "CTRL" "ALT" ] modifier
+              ) modifiers
+            );
+            command = lib.concatStringsSep " " action.command;
+          in
+          "${hyprModifiers}, ${key}, exec, ${command}"
+        ) (lib.filterAttrs (_: action: action.binding != null) config.hdwlinux.desktop.actions);
         colors = config.hdwlinux.theme.colors.hex;
         rgb = color: "rgb(${color})";
         rgba = color: alpha: "rgba(${color}${alpha})";
@@ -201,24 +217,15 @@ in
                 "workspace special:dropdown,class:^(com.mitchellh.ghostty)$"
               ];
 
-              bind = [
-                "SUPER, B, exec, app-webBrowser"
-                "SUPER, E, exec, app-fileManager"
+              bind = actionBindings ++ [
                 "SUPER, G, togglefloating,"
-                "SUPER, L, exec, app-passwordManager-toggle"
-                "SUPER SHIFT, L, exec, app-passwordManager-lock"
                 "SUPER, M, fullscreen, 1"
                 "SUPER SHIFT, M, fullscreen, 0"
                 "SUPER, O, togglesplit,"
                 "SUPER, Q, killactive"
                 "SUPER, S, togglegroup,"
-                "SUPER, T, exec, app-terminal"
                 "SUPER SHIFT, T, movetoworkspace, special:dropdown"
-                "SUPER, X, exec, vicinae 'vicinae://launch/power?toggle=true'"
-                "SUPER, SPACE, exec, uwsm app -- vicinae vicinae://toggle"
-                "SUPER, TAB, exec, uwsm app -- vicinae 'vicinae://launch/windows?toggle=true'"
                 "SUPER, GRAVE, togglespecialworkspace, dropdown"
-                "SUPER, V, exec, uwsm app -- clipboardctl show-menu"
                 "SUPER, ESCAPE, exec, uwsm app -- missioncenter"
                 "SUPER, EQUAL, exec, uwsm app -- woomer"
                 ", PRINT, exec, uwsm app -- screenctl capture show-menu"
@@ -257,15 +264,9 @@ in
                 "SUPER SHIFT CTRL, left, resizeactive, -100 0"
                 "SUPER SHIFT CTRL, right, resizeactive, 100 0"
 
-                ", xf86audiomute, exec, audioctl output mute toggle"
               ];
 
-              binde = [
-                ", xf86audioraisevolume, exec, audioctl output volume raise"
-                ", xf86audiolowervolume, exec, audioctl output volume lower"
-                ", xf86monbrightnessup, exec, screenctl backlight raise"
-                ", xf86monbrightnessdown, exec, screenctl backlight lower"
-              ];
+              binde = [ ];
 
               bindm = [
                 "SUPER, mouse:272, movewindow"

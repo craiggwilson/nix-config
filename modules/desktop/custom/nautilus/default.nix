@@ -10,7 +10,7 @@
         ...
       }:
       {
-        hdwlinux.app.fileManager = lib.mkDefault {
+        hdwlinux.desktop.apps.fileManager = lib.mkDefault {
           package = pkgs.nautilus;
           desktopName = "nautilus.desktop";
         };
@@ -22,9 +22,9 @@
           pkgs.sushi
         ];
 
-        dconf.settings = lib.optionalAttrs (config.hdwlinux.app.terminal != null) {
+        dconf.settings = lib.optionalAttrs (config.hdwlinux.desktop.apps.terminal != null) {
           "com/github/stunkymonkey/nautilus-open-any-terminal" = {
-            terminal = lib.getExe config.hdwlinux.app.terminal.package;
+            terminal = lib.getExe config.hdwlinux.desktop.apps.terminal.package;
             new-tab = true;
             flatpak = "system";
             keybindings = "<Ctrl><Alt>t";

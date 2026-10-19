@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.apps = {
+  config.substrate.modules.desktop.apps = {
     generic =
       { lib, ... }:
       let
@@ -25,7 +25,7 @@
         );
       in
       {
-        options.hdwlinux.app = {
+        options.hdwlinux.desktop.apps = {
           terminal = lib.mkOption {
             description = "The terminal emulator.";
             type = appType;
@@ -82,7 +82,7 @@
         ...
       }:
       let
-        apps = lib.filterAttrs (_: app: app != null) config.hdwlinux.app;
+        apps = lib.filterAttrs (_: app: app != null) config.hdwlinux.desktop.apps;
       in
       {
         home.packages = lib.mapAttrsToList (

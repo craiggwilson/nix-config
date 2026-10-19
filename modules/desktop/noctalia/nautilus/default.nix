@@ -7,7 +7,7 @@
     homeManager =
       { lib, pkgs, ... }:
       {
-        hdwlinux.app.fileManager = lib.mkDefault {
+        hdwlinux.desktop.apps.fileManager = lib.mkDefault {
           package = pkgs.nautilus;
           desktopName = "nautilus.desktop";
         };

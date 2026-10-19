@@ -8,11 +8,11 @@
         ...
       }:
       let
-        hasApp = name: config.hdwlinux.app.${name} != null;
+        hasApp = name: config.hdwlinux.desktop.apps.${name} != null;
         getDesktopName =
           name:
           let
-            app = config.hdwlinux.app.${name};
+            app = config.hdwlinux.desktop.apps.${name};
           in
           if app.desktopName != null then app.desktopName else (lib.getName app.package) + ".desktop";
       in

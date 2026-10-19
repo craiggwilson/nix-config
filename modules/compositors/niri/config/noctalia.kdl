@@ -217,17 +217,11 @@ window-rule {
 spawn-at-startup "app-terminal" "--class=scratch.terminal"
 
 binds {
-    Mod+E hotkey-overlay-title="Launch file manager" { spawn "app-fileManager"; }
     Mod+F { fullscreen-window; }
     Mod+Shift+F { toggle-window-floating; }
-    Mod+L hotkey-overlay-title="Toggle password manager" { spawn "app-passwordManager-toggle"; }
-    Mod+Shift+L hotkey-overlay-title="Lock password manager" { spawn "app-passwordManager-lock"; }
     Mod+Q hotkey-overlay-title="Close window" { close-window; }
     Mod+R { switch-preset-column-width; }
-    Mod+T hotkey-overlay-title="Spawn Terminal" { spawn "app-terminal"; }
-    Mod+V hotkey-overlay-title="Show clipboard menu" { spawn-sh "noctalia msg panel-toggle clipboard"; }
     Mod+W { toggle-column-tabbed-display; }
-    Mod+X hotkey-overlay-title="Open power menu" { spawn-sh "noctalia msg panel-toggle session"; }
     Mod+Equal { set-column-width "+10%"; }
     Mod+Shift+Equal { set-window-height "+10%"; }
     Mod+Grave hotkey-overlay-title="Toggle scratchpad" { spawn "niri-scratchpad" "target" "--spawn" "app-terminal --class=scratch.terminal" "appid" "scratch.terminal"; }
@@ -236,19 +230,6 @@ binds {
     Mod+Return { center-column; }
     Mod+Shift+Return { maximize-window-to-edges; }
     Mod+Shift+Slash { show-hotkey-overlay; }
-    Mod+Space hotkey-overlay-title="Show application menu" { spawn-sh "noctalia msg panel-toggle launcher"; }
-    Mod+Tab repeat=false { toggle-overview; }
-
-    Mod+S hotkey-overlay-title="Toggle control center" { spawn-sh "noctalia msg panel-toggle control-center"; }
-    Mod+Comma hotkey-overlay-title="Toggle shell settings" { spawn-sh "noctalia msg settings-toggle"; }
-    Alt+Tab repeat=false hotkey-overlay-title="Window switcher" { spawn-sh "noctalia msg window-switcher"; }
-
-    // Volume/brightness go through Noctalia so its OSD is used (replaces syshud).
-    XF86AudioRaiseVolume { spawn-sh "noctalia msg volume-up"; }
-    XF86AudioLowerVolume { spawn-sh "noctalia msg volume-down"; }
-    XF86AudioMute         allow-when-locked=true { spawn-sh "noctalia msg volume-mute"; }
-    XF86MonBrightnessUp   { spawn-sh "noctalia msg brightness-up"; }
-    XF86MonBrightnessDown { spawn-sh "noctalia msg brightness-down"; }
 
     Mod+Left  { focus-column-or-monitor-left; }
     Mod+Down  { focus-window-or-monitor-down; }
@@ -300,7 +281,6 @@ binds {
     Print       { screenshot; }
     Ctrl+Print  { screenshot-screen; }
     Alt+Print   { screenshot-window; }
-    Mod+Print { spawn-sh "noctalia msg plugin noctalia/screen_recorder:service all toggle"; }
 
     Mod+C hotkey-overlay-title="Clear Dynamic Cast Target" { clear-dynamic-cast-target; }
     Mod+Shift+C hotkey-overlay-title="Set Dynamic Cast Window" { set-dynamic-cast-window; }

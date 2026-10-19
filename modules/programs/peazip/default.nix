@@ -5,7 +5,7 @@
     homeManager =
       { lib, pkgs, ... }:
       {
-        hdwlinux.app.archiver = lib.mkDefault {
+        hdwlinux.desktop.apps.archiver = lib.mkDefault {
           package = pkgs.peazip;
           desktopName = "peazip.desktop";
         };

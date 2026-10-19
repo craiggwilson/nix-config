@@ -5,7 +5,7 @@
     homeManager =
       { lib, pkgs, ... }:
       {
-        hdwlinux.app.documentViewer = lib.mkDefault {
+        hdwlinux.desktop.apps.documentViewer = lib.mkDefault {
           package = pkgs.papers;
           desktopName = "org.gnome.Papers.desktop";
         };

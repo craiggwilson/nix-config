@@ -59,7 +59,7 @@
             type = lib.types.str;
             default =
               let
-                app = config.hdwlinux.app.webBrowser;
+                app = config.hdwlinux.desktop.apps.webBrowser;
               in
               if app != null then
                 if app.desktopName != null then app.desktopName else (lib.getName app.package) + ".desktop"

@@ -13,7 +13,7 @@
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
       in
       {
-        hdwlinux.app.terminal = lib.mkDefault {
+        hdwlinux.desktop.apps.terminal = lib.mkDefault {
           package = config.programs.ghostty.package;
           desktopName = "ghostty.desktop";
         };
