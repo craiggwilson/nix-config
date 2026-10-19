@@ -16,6 +16,24 @@
         };
 
         security.pam.services."1password".enableGnomeKeyring = hasTag "gui";
+
+        # Zen isn't on 1Password's trusted-browser whitelist, so the
+        # BrowserSupport setgid wrapper rejects it with UnknownBrowser and the
+        # extension shows a "Something went wrong" page. Listing the browser's
+        # binary name here is 1Password's documented workaround for
+        # unofficially supported browsers; inert wherever zen isn't installed.
+        #
+        # The helper verifies by the basename of the browser's real executable
+        # (/proc/<pid>/exe), which under nixpkgs' wrapper is the unwrapped ELF
+        # (lib/zen-bin-*/zen), not the `zen-beta` wrapper script — so both
+        # names are listed.
+        environment.etc."1password/custom_allowed_browsers" = lib.mkIf (hasTag "gui") {
+          text = ''
+            zen
+            zen-beta
+          '';
+          mode = "0755";
+        };
       };
 
     homeManager =
