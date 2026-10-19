@@ -232,7 +232,8 @@
             "users:craig" = [
               "ai:clients"
               "cloud:sync"
-              "desktop:noctalia:niri"
+              "compositor:niri"
+              "desktop:noctalia"
               "programming"
               "security:passwordmanager"
               "security:secrets"
@@ -299,10 +300,9 @@
           "cuda"
           "desktop"
           { "desktop:custom" = [ "gui" ]; }
-          "desktop:custom:hyprland"
-          "desktop:custom:niri"
+          { "compositor:hyprland" = [ "gui" ]; }
+          { "compositor:niri" = [ "gui" ]; }
           { "desktop:noctalia" = [ "gui" ]; }
-          "desktop:noctalia:niri"
           "filesystem:envfs"
           "filesystem:nfs"
           "flatpaks"

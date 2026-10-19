@@ -3,10 +3,10 @@ let
   xwaylandEnabled = true;
 in
 {
-  config.substrate.modules.desktop.custom.hyprland = {
+  config.substrate.modules.compositors.hyprland = {
     tags = [
       "gui"
-      "desktop:custom:hyprland"
+      "compositor:hyprland"
     ];
 
     nixos =

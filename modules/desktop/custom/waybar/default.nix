@@ -5,10 +5,12 @@
     homeManager =
       {
         config,
+        hasTag,
         ...
       }:
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        workspacesModule = if hasTag "compositor:niri" then "niri/workspaces" else "hyprland/workspaces";
       in
       {
         xdg.configFile."waybar/colors.css".text = ''
@@ -50,7 +52,7 @@
               reload_style_on_change = true;
               modules-left = [
                 "idle_inhibitor"
-                "hyprland/workspaces"
+                workspacesModule
               ];
               modules-center = [
                 "systemd-failed-units"

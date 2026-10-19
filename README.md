@@ -103,8 +103,8 @@ implications:
 # Simple tag
 "programming"
 
-# Hierarchical tag (implies desktop:custom and desktop)
-"desktop:custom:niri"
+# Hierarchical tag
+"compositor:niri"
 
 # Tag with implications
 { "gui" = [ "fonts" "graphics" ]; }
@@ -116,7 +116,7 @@ implications:
 |:----|:------------|
 | `gui` | Graphical user interface |
 | `programming` | Development tools |
-| `desktop:custom:niri` | Niri window manager |
+| `compositor:niri` | Niri compositor |
 | `gaming` | Gaming support |
 | `ai:agent` | AI coding assistants |
 | `security:secrets` | Secret management |

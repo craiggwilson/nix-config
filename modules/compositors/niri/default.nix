@@ -1,12 +1,16 @@
 {
-  config.substrate.modules.desktop.noctalia.niri = {
+  config.substrate.modules.compositors.niri = {
     tags = [
       "gui"
-      "desktop:noctalia:niri"
+      "compositor:niri"
     ];
 
     nixos =
-      { lib, pkgs, ... }:
+      {
+        lib,
+        pkgs,
+        ...
+      }:
       {
         programs = {
           niri.enable = true;
@@ -22,7 +26,9 @@
           };
         };
 
-        services.xserver.desktopManager.runXdgAutostartIfNone = true;
+        services = {
+          xserver.desktopManager.runXdgAutostartIfNone = true;
+        };
 
         systemd.packages = [ pkgs.niri ];
 
@@ -53,13 +59,16 @@
 
     homeManager =
       {
-        config,
         inputs,
+        config,
+        hasTag,
+        lib,
         pkgs,
         ...
       }:
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
+        flake = config.hdwlinux.flake;
       in
       {
         home.packages = [
@@ -79,6 +88,8 @@
 
           "niri/colors.kdl".text = ''
             layout {
+                background-color "${colors.base00}"
+
                 focus-ring {
                     active-color "${colors.base0E}"
                     inactive-color "${colors.base03}"
@@ -107,7 +118,7 @@
                 }
                 shadow {
                     on
-
+                    
                     color "${colors.base0A}80"
                 }
             }
@@ -129,8 +140,14 @@
                 }
             }
           '';
-
-          "niri/functional.kdl".source = ./config/functional.kdl;
+        }
+        // lib.optionalAttrs (flake != null) {
+          "niri/functional.kdl".source = config.lib.file.mkOutOfStoreSymlink (
+            if hasTag "desktop:noctalia" then
+              "${flake}/modules/compositors/niri/config/noctalia.kdl"
+            else
+              "${flake}/modules/compositors/niri/config/custom.kdl"
+          );
         };
       };
   };
