@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.freetube = {
     tags = [
-      "gui"
+      "desktop"
       "users:craig:personal"
     ];
 

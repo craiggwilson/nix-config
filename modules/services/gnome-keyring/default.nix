@@ -1,6 +1,6 @@
 {
   config.substrate.modules.services.gnome-keyring = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
     nixos = { pkgs, ... }: {
       services.gnome.gnome-keyring = {
         enable = true;

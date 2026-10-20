@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.ghostty = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       {

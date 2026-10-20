@@ -2,7 +2,7 @@
   config.substrate.modules.programs.midivisualizer = {
     tags = [
       "audio:midi"
-      "gui"
+      "desktop"
     ];
 
     homeManager =

@@ -1,7 +1,6 @@
 {
   config.substrate.modules.programs.gamescope = {
     tags = [
-      "gui"
       "gaming"
     ];
 

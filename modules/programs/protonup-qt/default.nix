@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.protonup-qt = {
     tags = [
-      "gui"
+      "desktop"
       "gaming"
     ];
 

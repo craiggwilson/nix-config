@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.mailspring = {
     tags = [
-      "gui"
+      "desktop"
     ];
 
     homeManager =
@@ -26,7 +26,7 @@
   config.substrate.modules.programs.mailspring.mcp = {
     tags = [
       "ai:clients"
-      "gui"
+      "desktop"
     ];
 
     homeManager = {

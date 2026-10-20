@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.simplescan = {
     tags = [
-      "gui"
+      "desktop"
       "scanning"
     ];
 

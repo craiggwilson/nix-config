@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.qimgv = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { lib, pkgs, ... }:

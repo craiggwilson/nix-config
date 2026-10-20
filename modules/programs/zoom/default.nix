@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.zoom = {
     tags = [
-      "gui"
+      "desktop"
       "users:craig:work"
     ];
 

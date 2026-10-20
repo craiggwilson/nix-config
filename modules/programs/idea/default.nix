@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.idea = {
     tags = [
-      "gui"
+      "desktop"
       "programming"
       "users:craig:work"
     ];

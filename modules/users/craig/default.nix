@@ -45,13 +45,13 @@ in
           ++ lib.optionals (hasTag "networking") [ "networkmanager" ]
           ++ lib.optionals (hasTag "virtualization:docker") [ "docker" ]
           ++ lib.optionals (hasTag "security:passwordmanager") [ "onepassword-cli" ]
-          ++ lib.optionals (hasTag "gui" && hasTag "security:passwordmanager") [ "onepassword" ];
+          ++ lib.optionals (hasTag "desktop" && hasTag "security:passwordmanager") [ "onepassword" ];
 
           openssh.authorizedKeys.keys = [ publicKey ];
         };
 
         programs._1password-gui.polkitPolicyOwners = lib.mkIf (
-          hasTag "gui" && hasTag "security:passwordmanager"
+          hasTag "desktop" && hasTag "security:passwordmanager"
         ) [ name ];
       };
 

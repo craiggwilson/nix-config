@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.vscode = {
     tags = [
-      "gui"
+      "desktop"
       "programming"
     ];
 

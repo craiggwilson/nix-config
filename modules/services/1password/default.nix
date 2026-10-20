@@ -11,11 +11,11 @@
       {
         programs._1password.enable = true;
 
-        programs._1password-gui = lib.mkIf (hasTag "gui") {
+        programs._1password-gui = lib.mkIf (hasTag "desktop") {
           enable = true;
         };
 
-        security.pam.services."1password".enableGnomeKeyring = hasTag "gui";
+        security.pam.services."1password".enableGnomeKeyring = hasTag "desktop";
 
         # Zen isn't on 1Password's trusted-browser whitelist, so the
         # BrowserSupport setgid wrapper rejects it with UnknownBrowser and the
@@ -27,7 +27,7 @@
         # (/proc/<pid>/exe), which under nixpkgs' wrapper is the unwrapped ELF
         # (lib/zen-bin-*/zen), not the `zen-beta` wrapper script — so both
         # names are listed.
-        environment.etc."1password/custom_allowed_browsers" = lib.mkIf (hasTag "gui") {
+        environment.etc."1password/custom_allowed_browsers" = lib.mkIf (hasTag "desktop") {
           text = ''
             zen
             zen-beta
@@ -44,25 +44,25 @@
         ...
       }:
       {
-        hdwlinux.desktop.apps.passwordManager = lib.mkIf (hasTag "gui") (
+        hdwlinux.desktop.apps.passwordManager = lib.mkIf (hasTag "desktop") (
           lib.mkDefault {
             package = pkgs._1password-gui;
           }
         );
-        hdwlinux.desktop.apps.passwordManager-toggle = lib.mkIf (hasTag "gui") (
+        hdwlinux.desktop.apps.passwordManager-toggle = lib.mkIf (hasTag "desktop") (
           lib.mkDefault {
             package = pkgs._1password-gui;
             args = [ "--toggle" ];
           }
         );
-        hdwlinux.desktop.apps.passwordManager-lock = lib.mkIf (hasTag "gui") (
+        hdwlinux.desktop.apps.passwordManager-lock = lib.mkIf (hasTag "desktop") (
           lib.mkDefault {
             package = pkgs._1password-gui;
             args = [ "--lock" ];
           }
         );
 
-        systemd.user.services."1password" = lib.mkIf (hasTag "gui") {
+        systemd.user.services."1password" = lib.mkIf (hasTag "desktop") {
           Unit = {
             Description = "Password manager daemon";
             Documentation = [ "https://www.1password.com" ];

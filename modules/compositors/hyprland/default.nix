@@ -5,7 +5,6 @@ in
 {
   config.substrate.modules.compositors.hyprland = {
     tags = [
-      "gui"
       "compositor:hyprland"
     ];
 

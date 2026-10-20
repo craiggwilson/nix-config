@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.firefox = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       {

@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.calibre = {
     tags = [
-      "gui"
+      "desktop"
       "users:craig:personal"
     ];
 

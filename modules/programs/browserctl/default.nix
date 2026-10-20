@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.browserctl = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       {

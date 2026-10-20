@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.wdisplays = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { pkgs, ... }:

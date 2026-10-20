@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.steam = {
     tags = [
-      "gui"
+      "desktop"
       "gaming"
     ];
 

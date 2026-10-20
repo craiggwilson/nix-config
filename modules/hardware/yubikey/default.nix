@@ -12,7 +12,7 @@
         environment.systemPackages = [
           pkgs.yubikey-manager
         ]
-        ++ lib.optionals (hasTag "gui") [
+        ++ lib.optionals (hasTag "desktop") [
           pkgs.yubioath-flutter
         ];
       };

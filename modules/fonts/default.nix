@@ -1,6 +1,6 @@
 {
   config.substrate.modules.fonts = {
-    tags = [ "gui" ];
+    tags = [ "graphics" ];
     nixos = { pkgs, ... }: {
       fonts = {
         packages = [

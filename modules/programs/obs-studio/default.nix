@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.obs-studio = {
     tags = [
-      "gui"
+      "desktop"
       "video:production"
     ];
 

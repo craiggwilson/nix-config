@@ -154,7 +154,7 @@ cmakeFlags = [ "-DGGML_NATIVE=ON" ];
 
 Tags control which modules are enabled for hosts/users:
 
-- Simple tags: `"gui"`, `"programming"`
+- Simple tags: `"desktop"`, `"programming"`
 - Hierarchical tags: `"desktop:custom:niri"` (implies `desktop:custom` and `desktop`)
 - Meta-tags with implications: `{ "hardware:dell" = [ "laptop" "thunderbolt" ]; }`
 

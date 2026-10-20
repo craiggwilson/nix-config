@@ -297,26 +297,20 @@
           "boot:systemd"
           "camera"
           "cloud:sync"
+          "compositor:hyprland"
+          "compositor:niri"
           "cuda"
           "desktop"
-          { "desktop:custom" = [ "gui" ]; }
-          { "compositor:hyprland" = [ "gui" ]; }
-          { "compositor:niri" = [ "gui" ]; }
-          { "desktop:noctalia" = [ "gui" ]; }
+          "desktop:custom"
+          "desktop:noctalia"
           "filesystem:envfs"
           "filesystem:nfs"
           "flatpaks"
           "fonts"
-          { "gaming" = [ "gui" ]; }
+          { "gaming" = [ "desktop" ]; }
           "gaming:streaming"
-          "graphics"
+          { "graphics" = [ "fonts" ]; }
           "graphics:nvidia"
-          {
-            "gui" = [
-              "fonts"
-              "graphics"
-            ];
-          }
           "laptop"
           "networking"
           "networking:dns"

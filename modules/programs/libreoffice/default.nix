@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.libreoffice = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { pkgs, ... }:

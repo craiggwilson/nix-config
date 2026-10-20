@@ -107,14 +107,14 @@ implications:
 "compositor:niri"
 
 # Tag with implications
-{ "gui" = [ "fonts" "graphics" ]; }
+{ "desktop" = [ "fonts" "graphics" ]; }
 ```
 
 ### Common Tags
 
 | Tag | Description |
 |:----|:------------|
-| `gui` | Graphical user interface |
+| `desktop` | Graphical desktop environment |
 | `programming` | Development tools |
 | `compositor:niri` | Niri compositor |
 | `gaming` | Gaming support |

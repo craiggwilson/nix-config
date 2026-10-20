@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.zen = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       {

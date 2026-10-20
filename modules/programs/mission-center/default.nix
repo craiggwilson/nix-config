@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.mission-center = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { pkgs, ... }:

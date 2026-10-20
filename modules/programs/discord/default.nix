@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.discord = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { pkgs, ... }:

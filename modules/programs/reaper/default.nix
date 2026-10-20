@@ -2,7 +2,7 @@
   config.substrate.modules.programs.reaper = {
     tags = [
       "audio:production"
-      "gui"
+      "desktop"
     ];
 
     homeManager =

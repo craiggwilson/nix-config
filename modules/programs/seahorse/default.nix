@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.seahorse = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
     nixos = {
       programs.seahorse = {
         enable = true;

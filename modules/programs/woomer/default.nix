@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.woomer = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { pkgs, ... }:

@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.slack = {
     tags = [
-      "gui"
+      "desktop"
       "users:craig:work"
     ];
 

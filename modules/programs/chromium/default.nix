@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.chromium = {
-    tags = [ "gui" ];
+    tags = [ "desktop" ];
 
     homeManager =
       { pkgs, ... }:

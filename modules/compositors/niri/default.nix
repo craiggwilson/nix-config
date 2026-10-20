@@ -1,7 +1,6 @@
 {
   config.substrate.modules.compositors.niri = {
     tags = [
-      "gui"
       "compositor:niri"
     ];
 

@@ -1,7 +1,7 @@
 {
   config.substrate.modules.services.playerctld = {
     tags = [
-      "gui"
+      "desktop"
       "audio"
     ];
 

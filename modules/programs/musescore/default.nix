@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.musescore = {
     tags = [
-      "gui"
+      "desktop"
       "users:craig:personal"
     ];
 
@@ -21,7 +21,7 @@
   config.substrate.modules.programs.musescore.mcp = {
     tags = [
       "ai:clients"
-      "gui"
+      "desktop"
       "users:craig:personal"
     ];
 

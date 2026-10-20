@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.meld = {
     tags = [
-      "gui"
+      "desktop"
       "programming"
     ];
 
