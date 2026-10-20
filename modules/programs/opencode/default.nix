@@ -9,6 +9,7 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
@@ -120,13 +121,6 @@
               }
               // lib.optionalAttrs (oc ? tool_call) { capabilities.tools = oc.tool_call; };
           };
-          "fireworks-ai" = {
-            package = "aisdk:@ai-sdk/openai-compatible";
-            env = [ "FIREWORKS_API_KEY" ];
-            settings = {
-              baseURL = "https://api.fireworks.ai/inference/v1";
-            };
-          };
         };
 
         # Build providers config from hdwlinux.ai.clients.models.providers
@@ -218,20 +212,16 @@
           (lib.mapAttrs' (
             name: agent: lib.nameValuePair "opencode/prompts/agents/${name}.md" { source = agent.prompt; }
           ) config.hdwlinux.ai.clients.agents)
-          # v2 moved terminal client config from tui.json to a global cli.json;
-          # the tui.json migration only happens once, so own the file directly.
-          {
-            "opencode/cli.json".text = builtins.toJSON {
-              theme = "hdwlinux";
-              keybinds = {
-                app_exit = "ctrl+q";
-              };
-            };
-          }
         ];
 
         programs.opencode = {
           enable = true;
+
+          package = wrap.package {
+            package = pkgs.opencode;
+            name = "opencode";
+            secrets.scope = "ai_clients_opencode";
+          };
 
           # The MCP servers are rendered below rather than taken from
           # programs.mcp.servers, which cannot carry a secret header.
@@ -349,7 +339,6 @@
       {
         config,
         pkgs,
-        wrap,
         ...
       }:
       let
@@ -391,23 +380,8 @@
             model = resolveAliases "writing";
           };
         };
-
-        # `opencode` on PATH is a wrapper that resolves the ai_clients_opencode
-        # secrets at exec time, so OpenCode can substitute {env:NAME} in its
-        # config (MCP headers and provider API keys) from the environment
-        # it is launched with.
-        #
-        # v2 runs a shared background service that oh-my-opencode-slim attaches
-        # its subagent panes to, so the v1-era explicit-port wrapper is gone.
-        opencodeCommand = wrap.package {
-          package = pkgs.opencode;
-          name = "opencode";
-          secrets.scope = "ai_clients_opencode";
-        };
       in
       {
-        programs.opencode.package = opencodeCommand;
-
         programs.opencode.settings.plugins = [
           "oh-my-opencode-slim@beta"
         ];
