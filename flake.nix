@@ -239,6 +239,7 @@
             "users:craig" = [
               "ai:clients"
               "cloud:sync"
+              "compositor:hyprland"
               "compositor:niri"
               "desktop:noctalia"
               "programming"

@@ -156,7 +156,7 @@
           enable = true;
           systemd.enable = true;
           package = noctalia;
-          validateConfig = false;
+          checkConfig = false;
 
           customPalettes.hdwlinux = import ./_palette.nix colors;
 

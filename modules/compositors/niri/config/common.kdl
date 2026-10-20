@@ -172,8 +172,4 @@ binds {
     Mod+Shift+C hotkey-overlay-title="Set Dynamic Cast Window" { set-dynamic-cast-window; }
     Mod+Ctrl+C hotkey-overlay-title="Set Dynamic Cast Monitor" { set-dynamic-cast-monitor; }
 
-    Mod+WheelScrollDown                 { focus-workspace-down; }
-    Mod+WheelScrollUp                   { focus-workspace-up; }
-    Mod+WheelScrollRight                { focus-column-right; }
-    Mod+WheelScrollLeft                 { focus-column-left; }
 }

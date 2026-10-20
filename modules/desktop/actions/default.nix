@@ -3,6 +3,43 @@
     generic =
       { lib, ... }:
       let
+        gestureType = lib.types.submodule {
+          options = {
+            action = lib.mkOption {
+              type = lib.types.enum [
+                "columnMovement"
+                "workspaceSwitch"
+              ];
+            };
+            direction = lib.mkOption {
+              type = lib.types.enum [
+                "horizontal"
+                "vertical"
+              ];
+            };
+            fingers = lib.mkOption {
+              type = lib.types.ints.positive;
+            };
+          };
+        };
+        mouseBindingType = lib.types.submodule {
+          options = {
+            action = lib.mkOption {
+              type = lib.types.enum [
+                "focusWorkspaceDown"
+                "focusWorkspaceUp"
+                "moveWindow"
+                "resizeWindow"
+              ];
+            };
+            binding = lib.mkOption {
+              type = lib.types.str;
+            };
+            description = lib.mkOption {
+              type = lib.types.str;
+            };
+          };
+        };
         actionType = lib.types.submodule {
           options = {
             binding = lib.mkOption {
@@ -46,6 +83,14 @@
           default = { };
           description = "Semantic desktop actions and their optional key bindings.";
         };
+        options.hdwlinux.desktop.gestures = lib.mkOption {
+          type = lib.types.listOf gestureType;
+          default = [ ];
+        };
+        options.hdwlinux.desktop.mouseBindings = lib.mkOption {
+          type = lib.types.attrsOf mouseBindingType;
+          default = { };
+        };
       };
 
     homeManager =
@@ -58,6 +103,40 @@
         };
       in
       {
+        hdwlinux.desktop.gestures = [
+          {
+            action = "workspaceSwitch";
+            direction = "vertical";
+            fingers = 3;
+          }
+          {
+            action = "columnMovement";
+            direction = "horizontal";
+            fingers = 3;
+          }
+        ];
+        hdwlinux.desktop.mouseBindings = {
+          focusWorkspaceDown = {
+            action = "focusWorkspaceDown";
+            binding = "Mod+mouse_down";
+            description = "Focus the next workspace with the mouse wheel";
+          };
+          focusWorkspaceUp = {
+            action = "focusWorkspaceUp";
+            binding = "Mod+mouse_up";
+            description = "Focus the previous workspace with the mouse wheel";
+          };
+          moveWindow = {
+            action = "moveWindow";
+            binding = "Mod+mouse:272";
+            description = "Move the focused window with the mouse";
+          };
+          resizeWindow = {
+            action = "resizeWindow";
+            binding = "Mod+mouse:273";
+            description = "Resize the focused window with the mouse";
+          };
+        };
         hdwlinux.desktop.actions = lib.mkMerge [
           (lib.optionalAttrs (apps.terminal != null) {
             launchTerminal = (appAction "terminal" "Launch terminal" "Mod+T") // {

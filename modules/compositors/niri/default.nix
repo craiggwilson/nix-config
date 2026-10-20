@@ -13,16 +13,13 @@
       {
         programs = {
           niri.enable = true;
-          uwsm = {
-            enable = true;
-            waylandCompositors = {
-              niri = {
-                prettyName = "Niri";
-                comment = "Niri managed by UWSM";
-                binPath = "/run/current-system/sw/bin/niri-session";
-              };
-            };
-          };
+        };
+
+        hdwlinux.compositors.sessions.niri = {
+          command = "/run/current-system/sw/bin/niri-session";
+          comment = "A scrollable-tiling Wayland compositor";
+          desktopName = "niri";
+          prettyName = "Niri";
         };
 
         services = {
@@ -118,25 +115,39 @@
               name:
               let
                 action = config.hdwlinux.desktop.actions.${name};
+                command =
+                  if nativeActions ? ${name} then
+                    {
+                      type = "native";
+                      value = nativeActions.${name};
+                    }
+                  else
+                    action.command;
               in
               "    ${action.binding} hotkey-overlay-title=${
                     if action.showInHotkeyOverlay then builtins.toJSON action.description else "null"
-                  } ${actionBinding action}"
+                  } ${actionBinding (action // { inherit command; })}"
             )
             (
               lib.filter (name: config.hdwlinux.desktop.actions.${name}.binding != null) (
                 builtins.attrNames config.hdwlinux.desktop.actions
               )
             );
+        mouseBindings = lib.concatMapStringsSep "\n" (
+          binding:
+          let
+            niriBinding =
+              lib.replaceStrings [ "Mod+mouse_down" "Mod+mouse_up" ] [ "Mod+WheelScrollDown" "Mod+WheelScrollUp" ]
+                binding.binding;
+            action = lib.attrByPath [ binding.action ] null {
+              focusWorkspaceDown = "focus-workspace-down";
+              focusWorkspaceUp = "focus-workspace-up";
+            };
+          in
+          lib.optionalString (action != null) "    ${niriBinding} { ${action}; }"
+        ) (lib.attrValues config.hdwlinux.desktop.mouseBindings);
       in
       {
-        hdwlinux.desktop.actions = lib.mapAttrs (_: value: {
-          command = {
-            type = "native";
-            inherit value;
-          };
-        }) nativeActions;
-
         home.packages = [
           (pkgs.xwayland-satellite.override { withSystemd = false; })
           inputs.niri-scratchpad.packages.${pkgs.stdenv.hostPlatform.system}.default
@@ -214,6 +225,7 @@
           "niri/actions.kdl".text = ''
               binds {
             ${actionBindings}
+            ${mouseBindings}
               }
           '';
         }

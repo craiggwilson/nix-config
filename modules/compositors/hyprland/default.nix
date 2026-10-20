@@ -5,6 +5,7 @@ in
 {
   config.substrate.modules.compositors.hyprland = {
     tags = [
+      "desktop"
       "compositor:hyprland"
     ];
 
@@ -14,7 +15,13 @@ in
         programs.hyprland = {
           enable = true;
           xwayland.enable = xwaylandEnabled;
-          withUWSM = true;
+        };
+
+        hdwlinux.compositors.sessions.hyprland = {
+          command = "/run/current-system/sw/bin/start-hyprland";
+          comment = "A dynamic tiling Wayland compositor";
+          desktopName = "Hyprland";
+          prettyName = "Hyprland";
         };
 
         environment.sessionVariables = {
@@ -47,115 +54,125 @@ in
         ...
       }:
       let
-        actionBindings = lib.mapAttrsToList (
-          _: action:
-          let
-            parts = lib.splitString "+" action.binding;
-            key = lib.last parts;
-            modifiers = lib.init parts;
-            hyprModifiers = lib.concatStringsSep " " (
-              map (
-                modifier:
-                lib.replaceStrings [ "Mod" "Shift" "Ctrl" "Alt" ] [ "SUPER" "SHIFT" "CTRL" "ALT" ] modifier
-              ) modifiers
-            );
-            command =
-              if builtins.isList action.command then
-                "exec, ${lib.concatStringsSep " " action.command}"
-              else
-                action.command.value;
-          in
-          "${hyprModifiers}, ${key}, ${command}"
-        ) (lib.filterAttrs (_: action: action.binding != null) config.hdwlinux.desktop.actions);
+        actionBindings = lib.concatStringsSep "" (
+          lib.mapAttrsToList (
+            name: action:
+            let
+              parts = lib.splitString "+" action.binding;
+              key = lib.last parts;
+              modifiers = lib.init parts;
+              hyprModifiers = lib.concatStringsSep " + " (
+                map (
+                  modifier:
+                  lib.replaceStrings [ "Mod" "Shift" "Ctrl" "Alt" ] [ "SUPER" "SHIFT" "CTRL" "ALT" ] modifier
+                ) modifiers
+              );
+              command =
+                nativeActions.${name} or (
+                  if builtins.isList action.command then
+                    "hl.dsp.exec_cmd(${builtins.toJSON (lib.concatStringsSep " " action.command)})"
+                  else
+                    "hl.dsp.exec_cmd(${builtins.toJSON action.command.value})"
+                );
+            in
+            ''
+              hl.bind(${
+                builtins.toJSON (if modifiers == [ ] then key else "${hyprModifiers} + ${key}")
+              }, ${command})
+            ''
+          ) (lib.filterAttrs (_: action: action.binding != null) config.hdwlinux.desktop.actions)
+        );
         nativeActionCommands = {
-          centerColumn = "centerwindow";
-          closeWindow = "killactive";
-          exitCompositor = "exit";
-          consumeWindowLeft = "movewindow l";
-          consumeWindowRight = "movewindow r";
-          focusWindowDown = "movefocus d";
-          focusWindowLeft = "movefocus l";
-          focusWindowRight = "movefocus r";
-          focusWindowUp = "movefocus u";
-          focusWorkspaceDown = "workspace -1";
-          focusWorkspaceUp = "workspace +1";
-          increaseColumnWidth = "resizeactive 100 0";
-          increaseWindowHeight = "resizeactive 0 100";
-          maximizeWindow = "fullscreen 1";
-          moveColumnDown = "movewindow d";
-          moveColumnLeft = "movewindow l";
-          moveColumnRight = "movewindow r";
-          moveColumnUp = "movewindow u";
-          moveWorkspaceDown = "movetoworkspace -1";
-          moveWorkspaceUp = "movetoworkspace +1";
-          switchColumnWidth = "alterzorder top";
-          showHotkeyOverlay = "exec, uwsm app -- vicinae vicinae://launch/keybind-cheatsheet";
-          takeScreenshot = "exec, uwsm app -- screenctl capture show-menu";
-          takeScreenScreenshot = "exec, uwsm app -- screenctl capture show-menu";
-          takeWindowScreenshot = "exec, uwsm app -- screenctl capture show-menu";
-          toggleFloating = "togglefloating";
-          toggleFullscreen = "fullscreen 1";
-          toggleOverview = "overview, toggle";
-          toggleScratchpad = "togglespecialworkspace, dropdown";
-          toggleTabbedDisplay = "togglegroup";
+          centerColumn = "hl.dsp.window.center()";
+          closeWindow = "hl.dsp.window.close()";
+          exitCompositor = "hl.dsp.exit()";
+          consumeWindowLeft = ''hl.dsp.layout("consume_or_expel prev")'';
+          consumeWindowRight = ''hl.dsp.layout("consume_or_expel next")'';
+          focusWindowDown = ''hl.dsp.focus({ direction = "down" })'';
+          focusWindowLeft = ''hl.dsp.layout("focus l")'';
+          focusWindowRight = ''hl.dsp.layout("focus r")'';
+          focusWindowUp = ''hl.dsp.focus({ direction = "up" })'';
+          focusWorkspaceDown = ''hl.dsp.focus({ workspace = "e-1" })'';
+          focusWorkspaceUp = ''hl.dsp.focus({ workspace = "e+1" })'';
+          increaseColumnWidth = ''hl.dsp.layout("colresize +0.1")'';
+          increaseWindowHeight = "hl.dsp.window.resize()";
+          maximizeWindow = "hl.dsp.window.fullscreen({ mode = 1 })";
+          moveColumnDown = ''hl.dsp.window.move({ direction = "down" })'';
+          moveColumnLeft = ''hl.dsp.layout("swapcol l")'';
+          moveColumnRight = ''hl.dsp.layout("swapcol r")'';
+          moveColumnUp = ''hl.dsp.window.move({ direction = "up" })'';
+          moveWorkspaceDown = ''hl.dsp.window.move({ workspace = "e-1" })'';
+          moveWorkspaceUp = ''hl.dsp.window.move({ workspace = "e+1" })'';
+          switchColumnWidth = ''hl.dsp.layout("colresize +conf")'';
+          showHotkeyOverlay = ''hl.dsp.exec_cmd("uwsm app -- vicinae vicinae://launch/keybind-cheatsheet")'';
+          takeScreenshot = ''hl.dsp.exec_cmd("uwsm app -- screenctl capture show-menu")'';
+          takeScreenScreenshot = ''hl.dsp.exec_cmd("uwsm app -- screenctl capture show-menu")'';
+          takeWindowScreenshot = ''hl.dsp.exec_cmd("uwsm app -- screenctl capture show-menu")'';
+          toggleFloating = ''hl.dsp.window.float({ action = "toggle" })'';
+          toggleFullscreen = "hl.dsp.window.fullscreen({ mode = 1 })";
+          toggleOverview = ''hl.dsp.exec_cmd("noctalia msg window-switcher")'';
+          toggleScratchpad = ''hl.dsp.workspace.toggle_special("dropdown")'';
+          toggleTabbedDisplay = "hl.dsp.group.toggle()";
         };
         nativeActions =
           nativeActionCommands
           // lib.concatMapAttrs (number: _: {
-            "focusWorkspace${number}" = "workspace ${number}";
-            "moveColumnToWorkspace${number}" = "movetoworkspace ${number}";
+            "focusWorkspace${number}" = "hl.dsp.focus({ workspace = ${number} })";
+            "moveColumnToWorkspace${number}" = "hl.dsp.window.move({ workspace = ${number} })";
           }) (lib.genAttrs (map toString (lib.range 1 10)) (_: { }));
+        mouseBindingCommands = {
+          focusWorkspaceDown = ''hl.dsp.focus({ workspace = "e+1" })'';
+          focusWorkspaceUp = ''hl.dsp.focus({ workspace = "e-1" })'';
+          moveWindow = "hl.dsp.window.drag()";
+          resizeWindow = "hl.dsp.window.resize()";
+        };
+        mouseBindings = lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (
+            _: binding:
+            let
+              parts = lib.splitString "+" binding.binding;
+              key = lib.last parts;
+              modifiers = lib.init parts;
+              modifierText = lib.concatStringsSep " + " (
+                map (
+                  modifier:
+                  lib.replaceStrings [ "Mod" "Shift" "Ctrl" "Alt" ] [ "SUPER" "SHIFT" "CTRL" "ALT" ] modifier
+                ) modifiers
+              );
+            in
+            "hl.bind(${builtins.toJSON (if modifiers == [ ] then key else "${modifierText} + ${key}")}, ${
+              mouseBindingCommands.${binding.action}
+            }, { mouse = true })"
+          ) config.hdwlinux.desktop.mouseBindings
+        );
+        gestures = lib.concatStringsSep "\n" (
+          map (
+            gesture:
+            ''hl.gesture({ fingers = ${toString gesture.fingers}, direction = "${gesture.direction}", action = "workspace" })''
+          ) (lib.filter (gesture: gesture.action == "workspaceSwitch") config.hdwlinux.desktop.gestures)
+        );
+        columnGesture = lib.findFirst (
+          gesture: gesture.action == "columnMovement"
+        ) null config.hdwlinux.desktop.gestures;
         colors = config.hdwlinux.theme.colors.hex;
         rgb = color: "rgb(${color})";
         rgba = color: alpha: "rgba(${color}${alpha})";
 
-        laptopMonitor = config.hdwlinux.hardware.monitors.laptop or null;
-
         # Helper to describe monitor (vendor + model)
-        monitorDescription = mon: if mon == null then "" else "${mon.vendor or ""} ${mon.model or ""}";
-
-        criteria = if laptopMonitor != null then monitorDescription laptopMonitor else "";
-        monitor =
-          if laptopMonitor != null then
-            "${criteria}, ${laptopMonitor.mode}, auto, ${toString laptopMonitor.scale}"
-          else
-            "";
       in
       {
-        hdwlinux.desktop.actions = lib.mapAttrs (_: value: {
-          command = {
-            type = "native";
-            inherit value;
-          };
-        }) nativeActions;
-
         systemd.user.startServices = true;
 
         wayland.windowManager.hyprland = {
           enable = true;
           xwayland.enable = true;
-          systemd.enable = true;
+          systemd.enable = false;
+          configType = "lua";
 
-          settings = lib.mkMerge [
-            (lib.mkIf config.hdwlinux.theme.enable {
-              misc.background_color = rgb colors.base00;
-              general = {
-                "col.active_border" = rgb colors.base0E;
-                "col.inactive_border" = rgb colors.base03;
-              };
-              decoration.shadow.color = rgba colors.base00 "99";
-              group = {
-                "col.border_inactive" = rgb colors.base0D;
-                "col.border_active" = rgb colors.base06;
-                "col.border_locked_active" = rgb colors.base06;
-              };
-            })
-            {
-              workspace = [
-                "special:dropdown,gapsin:5,gapsout:30,on-created-empty:app-terminal,border:0,rounding:false,persistent:false"
-              ];
-
+          settings = {
+            config = {
               misc = {
+                background_color = rgb colors.base00;
                 disable_hyprland_logo = true;
                 disable_splash_rendering = true;
               };
@@ -168,7 +185,9 @@ in
                 gaps_in = 5;
                 gaps_out = 20;
                 border_size = 2;
-                layout = "dwindle";
+                layout = "scrolling";
+                "col.active_border" = rgb colors.base0E;
+                "col.inactive_border" = rgb colors.base03;
               };
 
               decoration = {
@@ -182,6 +201,7 @@ in
 
                 shadow = {
                   enabled = true;
+                  color = rgba colors.base00 "99";
                   range = 4;
                   render_power = 3;
                 };
@@ -189,18 +209,14 @@ in
                 dim_special = 0.2;
               };
 
+              group = {
+                "col.border_inactive" = rgb colors.base0D;
+                "col.border_active" = rgb colors.base06;
+                "col.border_locked_active" = rgb colors.base06;
+              };
+
               animations = {
                 enabled = true;
-                bezier = "myBezier, 0.05, 0.9, 0.1, 1.05";
-
-                animation = [
-                  "windows, 1, 7, myBezier"
-                  "windowsOut, 1, 7, default, popin 80%"
-                  "border, 1, 10, default"
-                  "borderangle, 1, 8, default"
-                  "fade, 1, 7, default"
-                  "workspaces, 1, 6, default"
-                ];
               };
 
               input = {
@@ -219,74 +235,66 @@ in
                 sensitivity = 0;
               };
 
-              dwindle = {
-                pseudotile = true;
-                preserve_split = true;
-                special_scale_factor = 1;
+              scrolling = {
+                column_width = 0.9;
+                fullscreen_on_one_column = false;
+                follow_focus = true;
+                focus_fit_method = 1;
+                direction = "right";
               };
 
-              master = {
-                new_status = "master";
-                special_scale_factor = 1;
-              };
+            };
+          };
 
-              gestures = {
-                gesture = [
-                  "3, horizontal, workspace"
-                ];
-              };
-
-              layerrule = [
-                "blur,waybar"
-                "ignorezero,waybar"
-                "blur,notifications"
-                "ignorezero,notifications"
-                "blur,vicinae"
-                "ignorezero,vicinae"
-                "dimaround,vicinae"
-                "blur,syshud"
-                "ignorezero,syshud"
-              ];
-
-              windowrule = [
-                "opacity .95 .85,class:^(code)$"
-                "opacity .95 .85,class:^(com.mitchellh.ghostty)$"
-                "opacity .95 .85,class:^(firefox)$"
-                "opacity .95 .85,class:^(jetbrains)$"
-                "opacity .95 .85,class:^(org.gnome.Nautilus)$"
-                "opacity .95 .85,class:^(Slack)$"
-                "opacity .95 .85,class:^(spotify)$"
-                "opacity .95 .85,class:^(steam)$"
-                "noscreenshare,class:^(1password)$"
-                "float,title:^(Quick Access — 1Password)$"
-                #"dimaround,title:^(Quick Access — 1Password)$, floating"
-                "center,title:^(Quick Access — 1Password)$"
-                "stayfocused,title:^(Quick Access — 1Password)$"
-                "workspace special:dropdown,class:^(com.mitchellh.ghostty)$"
-              ];
-
-              bind = actionBindings ++ [
-                "SUPER, ESCAPE, exec, uwsm app -- missioncenter"
-                "SUPER, EQUAL, exec, uwsm app -- woomer"
-
-              ];
-
-              binde = [ ];
-
-              bindm = [
-                "SUPER, mouse:272, movewindow"
-                "SUPER, mouse:273, resizewindow"
-                "SUPER, ALT_L, movewindow"
-                "SUPER, Control_L, resizewindow"
-              ];
-
-              bindl = [
-                ",switch:off:Lid Switch, exec, hyprctl keyword monitor \"${monitor}\""
-                ",switch:on:Lid Switch, exec, hyprctl keyword monitor \"${criteria}, disable\""
-              ];
-
+          extraConfig = ''
+            hl.curve("myBezier", { type = "bezier", points = { { 0.05, 0.9 }, { 0.1, 1.05 } } })
+            hl.animation({ leaf = "windows", enabled = true, speed = 7, bezier = "myBezier" })
+            hl.animation({ leaf = "windowsOut", enabled = true, speed = 7, bezier = "default", style = "popin 80%" })
+            hl.animation({ leaf = "border", enabled = true, speed = 10, bezier = "default" })
+            hl.animation({ leaf = "borderangle", enabled = true, speed = 8, bezier = "default" })
+            hl.animation({ leaf = "fade", enabled = true, speed = 7, bezier = "default" })
+            hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default", style = "slidevert" })
+            hl.workspace_rule({ workspace = "special:dropdown", gaps_in = 5, gaps_out = 30, on_created_empty = "app-terminal", border_size = 0, no_rounding = true, persistent = false })
+            ${mouseBindings}
+            ${gestures}
+            local horizontalGestureDirection = 0
+            ${lib.optionalString (columnGesture != null) ''
+              hl.gesture({
+                fingers = ${toString columnGesture.fingers},
+                direction = "${columnGesture.direction}",
+                action = {
+                  start = function() horizontalGestureDirection = 0 end,
+                  update = function(e) horizontalGestureDirection = e.delta.x end,
+                  finish = function()
+                    if horizontalGestureDirection ~= 0 then
+                      hl.dispatch(hl.dsp.layout(horizontalGestureDirection > 0 and "focus l" or "focus r"))
+                    end
+                  end,
+                },
+              })
+            ''}
+            ${actionBindings}
+            hl.bind("SUPER + ESCAPE", hl.dsp.exec_cmd("uwsm app -- missioncenter"))
+            hl.bind("SUPER + EQUAL", hl.dsp.exec_cmd("uwsm app -- woomer"))
+            local opacity_rules = {
+              { name = "code-opacity", match = { class = "^(code)$" }, opacity = "0.95 0.85" },
+              { name = "ghostty-opacity", match = { class = "^(com.mitchellh.ghostty)$" }, opacity = "0.95 0.85" },
+              { name = "firefox-opacity", match = { class = "^(firefox)$" }, opacity = "0.95 0.85" },
+              { name = "jetbrains-opacity", match = { class = "^(jetbrains)$" }, opacity = "0.95 0.85" },
+              { name = "nautilus-opacity", match = { class = "^(org.gnome.Nautilus)$" }, opacity = "0.95 0.85" },
+              { name = "slack-opacity", match = { class = "^(Slack)$" }, opacity = "0.95 0.85" },
+              { name = "spotify-opacity", match = { class = "^(spotify)$" }, opacity = "0.95 0.85" },
+              { name = "steam-opacity", match = { class = "^(steam)$" }, opacity = "0.95 0.85" },
             }
-          ];
+            for _, rule in ipairs(opacity_rules) do hl.window_rule(rule) end
+            hl.window_rule({ name = "password-manager", match = { class = "^(1password)$" }, no_screen_share = true })
+            hl.window_rule({ name = "password-manager-quick-access", match = { title = "^Quick Access — 1Password$" }, float = true, center = true, stay_focused = true })
+            hl.window_rule({ name = "scratch-terminal", match = { class = "^(com.mitchellh.ghostty)$" }, workspace = "special:dropdown" })
+            hl.layer_rule({ name = "waybar-blur", match = { namespace = "^waybar$" }, blur = true, ignore_alpha = true })
+            hl.layer_rule({ name = "notifications-blur", match = { namespace = "^notifications$" }, blur = true, ignore_alpha = true })
+            hl.layer_rule({ name = "vicinae-blur", match = { namespace = "^vicinae$" }, blur = true, ignore_alpha = true, dim_around = true })
+            hl.layer_rule({ name = "syshud-blur", match = { namespace = "^syshud$" }, blur = true, ignore_alpha = true })
+          '';
         };
       };
   };

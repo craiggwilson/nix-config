@@ -2,15 +2,12 @@
   config.substrate.modules.services.greetd = {
     nixos =
       { pkgs, ... }:
-      let
-        cmd = "uwsm start default";
-      in
       {
         services.greetd = {
           enable = true;
           settings = {
             default_session = {
-              command = "${pkgs.tuigreet}/bin/tuigreet --remember --remember-session --time --cmd \"${cmd}\"";
+              command = "${pkgs.tuigreet}/bin/tuigreet --sessions /run/current-system/sw/share/greetd-sessions --remember --remember-session --time";
               user = "greeter";
             };
           };
