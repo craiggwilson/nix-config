@@ -1,0 +1,46 @@
+{
+  config.substrate.modules.desktop.shells.custom.audioctl = {
+    tags = [
+      "desktop:shells:custom"
+      "audio"
+    ];
+
+    homeManager =
+      { pkgs, ... }:
+      {
+        home.packages = [
+          pkgs.pavucontrol
+          pkgs.wireplumber
+          (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
+            name = "audioctl";
+            subcommands = {
+              input = {
+                mute = {
+                  off = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ 0";
+                  on = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ 1";
+                  toggle = "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+                };
+                volume = {
+                  lower = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-";
+                  raise = "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+ --limit 1";
+                };
+                show-menu = "pavucontrol -t 4";
+              };
+              output = {
+                mute = {
+                  off = "wpctl set-mute @DEFAULT_AUDIO_SINK@ 0";
+                  on = "wpctl set-mute @DEFAULT_AUDIO_SINK@ 1";
+                  toggle = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+                };
+                volume = {
+                  lower = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-";
+                  raise = "wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+ --limit 1";
+                };
+                show-menu = "pavucontrol -t 3";
+              };
+            };
+          })
+        ];
+      };
+  };
+}

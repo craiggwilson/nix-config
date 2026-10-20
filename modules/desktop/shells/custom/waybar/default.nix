@@ -1,0 +1,323 @@
+{
+  config.substrate.modules.desktop.shells.custom.waybar = {
+    tags = [ "desktop:shells:custom" ];
+
+    homeManager =
+      { config, lib, ... }:
+      let
+        colors = config.hdwlinux.theme.colors.hexWithHashtag;
+      in
+      {
+        xdg.configFile."waybar/colors.css".text = ''
+          @define-color base00 ${colors.base00};
+          @define-color base01 ${colors.base01};
+          @define-color base02 ${colors.base02};
+          @define-color base03 ${colors.base03};
+          @define-color base04 ${colors.base04};
+          @define-color base05 ${colors.base05};
+          @define-color base06 ${colors.base06};
+          @define-color base07 ${colors.base07};
+          @define-color base08 ${colors.base08};
+          @define-color base09 ${colors.base09};
+          @define-color base0A ${colors.base0A};
+          @define-color base0B ${colors.base0B};
+          @define-color base0C ${colors.base0C};
+          @define-color base0D ${colors.base0D};
+          @define-color base0E ${colors.base0E};
+          @define-color base0F ${colors.base0F};
+        '';
+
+        # Overrides home-manager's own string-valued definition; the list form
+        # ANDs the conditions.
+        systemd.user.services.waybar.Unit.ConditionEnvironment = lib.mkForce [
+          "WAYLAND_DISPLAY"
+          "HDWLINUX_SHELL=custom"
+        ];
+
+        programs.waybar = {
+          enable = true;
+          systemd = {
+            enable = true;
+          };
+          style = ./style.css;
+          settings = [
+            {
+              layer = "top";
+              margin = "0 0";
+              position = "top";
+              exclusive = true;
+              passthrough = false;
+              gtk-layer-shell = true;
+              height = 35;
+              reload_style_on_change = true;
+              modules-left = [
+                "idle_inhibitor"
+                "ext/workspaces"
+              ];
+              modules-center = [
+                "systemd-failed-units"
+                "clock"
+                "privacy"
+              ];
+              modules-right = [
+                "tray"
+                "group/network"
+                "group/stats"
+                "backlight"
+                "group/sound"
+                "custom/notifications"
+                "custom/recording"
+              ];
+
+              "group/network" = {
+                orientation = "inherit";
+                drawer = {
+                  transition-duration = 500;
+                  transition-left-to-right = false;
+                };
+                modules = [
+                  "network"
+                  "network#speed"
+                ];
+              };
+
+              "group/sound" = {
+                orientation = "inherit";
+                modules = [
+                  "cava"
+                  "wireplumber"
+                  "wireplumber#microphone"
+                ];
+              };
+
+              "group/stats" = {
+                orientation = "inherit";
+                drawer = {
+                  transition-duration = 500;
+                  transition-left-to-right = false;
+                };
+                modules = [
+                  "battery"
+                  "cpu"
+                  "memory"
+                  "temperature"
+                  "power-profiles-daemon"
+                ];
+              };
+
+              backlight = {
+                format = "{icon} {percent}%";
+                format-icons = [
+                  "󰃞"
+                  "󰃟"
+                  "󰃠"
+                ];
+                on-scroll-down = "screenctl backlight lower";
+                on-scroll-up = "screenctl backlight raise";
+              };
+
+              battery = {
+                states = {
+                  good = 95;
+                  warning = 30;
+                  critical = 20;
+                };
+                format = "{icon} {capacity}%";
+                format-charging = " {capacity}%";
+                format-plugged = " {capacity}%";
+                format-alt = "{time} {icon}";
+                format-icons = [
+                  " "
+                  " "
+                  " "
+                  " "
+                  " "
+                ];
+              };
+
+              cava = {
+                method = "pipewire";
+                bars = 12;
+                bar_delimiter = 0;
+                sleep_timer = 5;
+                hide_on_silence = true;
+                waves = true;
+                format-icons = [
+                  "▁"
+                  "▂"
+                  "▃"
+                  "▄"
+                  "▅"
+                  "▆"
+                  "▇"
+                  "█"
+                ];
+              };
+
+              clock = {
+                format = " {:%I:%M   %m/%d}";
+                tooltip-format = ''
+                  <big>{:%Y %B}</big>
+                  <tt><small>{calendar}</small></tt>'';
+              };
+
+              cpu = {
+                interval = 5;
+                format = "{icon} CPU: {usage}%";
+                format-icons = [
+                  "󰝦"
+                  "󰪞"
+                  "󰪟"
+                  "󰪠"
+                  "󰪡"
+                  "󰪢"
+                  "󰪣"
+                  "󰪤"
+                  "󰪥"
+                ];
+              };
+
+              idle_inhibitor = {
+                format = "{icon}";
+                format-icons = {
+                  activated = "";
+                  deactivated = "";
+                };
+              };
+
+              memory = {
+                interval = 5;
+                format = "{icon} MEM: {percentage}%";
+                format-icons = [
+                  "󰝦"
+                  "󰪞"
+                  "󰪟"
+                  "󰪠"
+                  "󰪡"
+                  "󰪢"
+                  "󰪣"
+                  "󰪤"
+                  "󰪥"
+                ];
+              };
+
+              network = {
+                format-wifi = "{icon} {essid}";
+                format-icons = [
+                  "󰤟"
+                  "󰤢"
+                  "󰤥"
+                ];
+                format-ethernet = "󰈀";
+                format-disconnected = "Disconnected";
+                tooltip-format = "{ifname} {ipaddr}/{cidr}";
+                on-click = "vicinae 'vicinae://launch/wifi-commander/scan-wifi?toggle=true'";
+              };
+
+              "network#speed" = {
+                format = " {bandwidthUpBits}  {bandwidthDownBits}";
+                tooltip-format = " {bandwidthUpBytes}  {bandwidthDownBytes}";
+                interval = 1;
+              };
+
+              "custom/notifications" = {
+                exec = "notifyctl watch";
+                return-type = "json";
+                format = "{}";
+                on-click = "notifyctl toggle-tag do-not-disturb";
+                on-click-right = "notifyctl dismiss-all";
+                restart-interval = 1;
+              };
+
+              power-profiles-daemon = {
+                tooltip-format = "{profile}";
+                tooltip = true;
+                format-icons = {
+                  default = "";
+                  performance = "";
+                  balanced = "";
+                  power-saver = "";
+                };
+              };
+
+              privacy = {
+                icon-size = 12;
+                ignore = [
+                  {
+                    type = "audio-in";
+                    name = "cava";
+                  }
+                  {
+                    type = "screenshare";
+                    name = "obs";
+                  }
+                ];
+              };
+
+              "custom/recording" = {
+                exec = "screenctl record watch";
+                hide-empty-text = true;
+                format = "{}";
+                on-click = "screenctl record stop";
+                restart-interval = 1;
+              };
+
+              systemd-failed-units = {
+                hide-on-ok = true;
+                format = "✗ {nr_failed}";
+                format-ok = "✓";
+                system = true;
+                user = true;
+              };
+
+              temperature = {
+                format = " {temperatureF}°F";
+              };
+
+              tray = {
+                icon-size = 13;
+                spacing = 13;
+              };
+
+              wireplumber = {
+                tooltip = false;
+                format = "{icon} {volume}%";
+                format-muted = " Muted";
+                on-click = "audioctl output mute toggle";
+                on-click-right = "uwsm app -- audioctl output show-menu";
+                on-scroll-up = "audioctl output volume raise";
+                on-scroll-down = "audioctl output volume lower";
+                reverse-scrolling = true;
+                scroll-step = 5;
+                format-icons = [
+                  ""
+                  ""
+                  ""
+                ];
+              };
+
+              "wireplumber#microphone" = {
+                node-type = "Audio/Source";
+                tooltip = false;
+                format = " {volume}%";
+                format-muted = " Muted";
+                on-click = "audioctl input mute toggle";
+                on-click-right = "uwsm app -- audioctl input show-menu";
+                on-scroll-up = "audioctl input volume raise";
+                on-scroll-down = "audioctl input volume lower";
+                reverse-scrolling = true;
+                scroll-step = 5;
+              };
+
+              # ext-workspaces-v1 works on both Hyprland and niri; avoids a
+              # per-compositor module switch.
+              "ext/workspaces" = {
+                active-only = false;
+                on-click = "activate";
+              };
+            }
+          ];
+        };
+      };
+  };
+}

@@ -48,22 +48,30 @@
               description = "Optional compositor-neutral key binding.";
             };
             command = lib.mkOption {
-              type = lib.types.oneOf [
-                (lib.types.listOf lib.types.str)
-                (lib.types.submodule {
-                  options = {
-                    type = lib.mkOption {
-                      type = lib.types.enum [ "native" ];
-                      description = "Native compositor command.";
+              type = lib.types.nullOr (
+                lib.types.oneOf [
+                  (lib.types.listOf lib.types.str)
+                  (lib.types.submodule {
+                    options = {
+                      type = lib.mkOption {
+                        type = lib.types.enum [ "native" ];
+                        description = "Native compositor command.";
+                      };
+                      value = lib.mkOption {
+                        type = lib.types.str;
+                        description = "Native compositor command value.";
+                      };
                     };
-                    value = lib.mkOption {
-                      type = lib.types.str;
-                      description = "Native compositor command value.";
-                    };
-                  };
-                })
-              ];
-              description = "Command implementation for this action.";
+                  })
+                ]
+              );
+              default = null;
+              description = "Default command, applied to any shell without an override.";
+            };
+            commandOverride = lib.mkOption {
+              type = lib.types.attrsOf (lib.types.listOf lib.types.str);
+              default = { };
+              description = "Shell-specific command overrides, keyed by shell name.";
             };
             description = lib.mkOption {
               type = lib.types.str;
@@ -94,15 +102,69 @@
       };
 
     homeManager =
-      { config, lib, ... }:
+      {
+        config,
+        lib,
+        pkgs,
+        ...
+      }:
       let
         apps = config.hdwlinux.desktop.apps;
         appAction = name: description: binding: {
           inherit binding description;
           command = [ "app-${name}" ];
         };
+        actions = config.hdwlinux.desktop.actions;
+        # Actions carrying shell overrides are resolved at runtime by the
+        # hdwlinux-action dispatcher, which reads $HDWLINUX_SHELL to select the
+        # commandOverride entry (falling back to the action's default command).
+        dispatchable = lib.filterAttrs (_: action: action.commandOverride != { }) actions;
+        hdwlinux-action = pkgs.writeShellScriptBin "hdwlinux-action" (
+          ''
+            set -eu
+            action="''${1:?usage: hdwlinux-action <action>}"
+            shell="''${HDWLINUX_SHELL:-}"
+            case "$action" in
+          ''
+          + lib.concatStrings (
+            lib.mapAttrsToList (
+              name: action:
+              let
+                overrides = lib.concatStrings (
+                  lib.mapAttrsToList (shell: cmd: ''
+                    ${shell}) exec ${lib.escapeShellArgs cmd} ;;
+                  '') action.commandOverride
+                );
+                fallback =
+                  if builtins.isList action.command then
+                    "exec ${lib.escapeShellArgs action.command}"
+                  else
+                    ''
+                      echo "hdwlinux-action: no command for '${name}' under shell '$shell'" >&2
+                      exit 1
+                    '';
+              in
+              ''
+                ${name})
+                  case "$shell" in
+                  ${overrides}
+                  *) ${fallback} ;;
+                  esac
+                  ;;
+              ''
+            ) dispatchable
+          )
+          + ''
+            *)
+              echo "hdwlinux-action: unknown action '$action'" >&2
+              exit 1
+              ;;
+            esac
+          ''
+        );
       in
       {
+        home.packages = [ hdwlinux-action ];
         hdwlinux.desktop.gestures = [
           {
             action = "workspaceSwitch";
@@ -273,6 +335,13 @@
               binding = "Mod+Tab";
               description = "Toggle the overview";
               showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "window-switcher"
+                ];
+              };
             };
             toggleTabbedDisplay = {
               binding = "Mod+W";
@@ -295,6 +364,202 @@
               binding = "Mod+Shift+Slash";
               description = "Show the hotkey overlay";
               showInHotkeyOverlay = false;
+            };
+          }
+          {
+            showApplicationLauncher = {
+              binding = "Mod+Space";
+              description = "Show application launcher";
+              showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "panel-toggle"
+                  "launcher"
+                ];
+                custom = [
+                  "vicinae"
+                  "vicinae://toggle"
+                ];
+              };
+            };
+            showClipboard = {
+              binding = "Mod+V";
+              description = "Show clipboard menu";
+              showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "panel-toggle"
+                  "clipboard"
+                ];
+                custom = [
+                  "clipboardctl"
+                  "show-menu"
+                ];
+              };
+            };
+            showControlCenter = {
+              binding = "Mod+S";
+              description = "Show control center";
+              showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "panel-toggle"
+                  "control-center"
+                ];
+              };
+            };
+            showPowerMenu = {
+              binding = "Mod+X";
+              description = "Show power menu";
+              showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "panel-toggle"
+                  "session"
+                ];
+                custom = [
+                  "vicinae"
+                  "vicinae://launch/power?toggle=true"
+                ];
+              };
+            };
+            showScreenRecordMenu = {
+              binding = "Mod+Print";
+              description = "Toggle screen recording";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "plugin"
+                  "noctalia/screen_recorder:service"
+                  "all"
+                  "toggle"
+                ];
+                custom = [
+                  "screenctl"
+                  "record"
+                  "show-menu"
+                ];
+              };
+            };
+            showShellSettings = {
+              binding = "Mod+Comma";
+              description = "Show shell settings";
+              showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "settings-toggle"
+                ];
+              };
+            };
+            showWindowSwitcher = {
+              binding = "Alt+Tab";
+              description = "Show window switcher";
+              showInHotkeyOverlay = true;
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "window-switcher"
+                ];
+                custom = [
+                  "vicinae"
+                  "vicinae://launch/windows?toggle=true"
+                ];
+              };
+            };
+            toggleAudioMute = {
+              binding = "XF86AudioMute";
+              description = "Toggle audio mute";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "volume-mute"
+                ];
+                custom = [
+                  "audioctl"
+                  "output"
+                  "mute"
+                  "toggle"
+                ];
+              };
+            };
+            volumeLower = {
+              binding = "XF86AudioLowerVolume";
+              description = "Lower volume";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "volume-down"
+                ];
+                custom = [
+                  "audioctl"
+                  "output"
+                  "volume"
+                  "lower"
+                ];
+              };
+            };
+            volumeRaise = {
+              binding = "XF86AudioRaiseVolume";
+              description = "Raise volume";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "volume-up"
+                ];
+                custom = [
+                  "audioctl"
+                  "output"
+                  "volume"
+                  "raise"
+                ];
+              };
+            };
+            brightnessLower = {
+              binding = "XF86MonBrightnessDown";
+              description = "Lower brightness";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "brightness-down"
+                ];
+                custom = [
+                  "screenctl"
+                  "backlight"
+                  "lower"
+                ];
+              };
+            };
+            brightnessRaise = {
+              binding = "XF86MonBrightnessUp";
+              description = "Raise brightness";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "brightness-up"
+                ];
+                custom = [
+                  "screenctl"
+                  "backlight"
+                  "raise"
+                ];
+              };
             };
           }
           (lib.genAttrs (map (number: "focusWorkspace${toString number}") (lib.range 1 10)) (

@@ -133,9 +133,9 @@ pkgs.stdenv.mkDerivation {
 
 ### Naming Conventions
 
-- **Module paths**: lowercase with dots (`desktop.custom.niri`)
+- **Module paths**: lowercase with dots (`desktop.compositors.niri`)
 - **Options**: camelCase (`hdwlinux.ai.agent.mcpServers`)
-- **Tags**: lowercase with colons for hierarchy (`desktop:custom:niri`)
+- **Tags**: lowercase with colons for hierarchy (`desktop:compositors:niri`)
 - **Packages**: lowercase with hyphens (`atlas-cli`)
 
 ### Comments
@@ -155,7 +155,7 @@ cmakeFlags = [ "-DGGML_NATIVE=ON" ];
 Tags control which modules are enabled for hosts/users:
 
 - Simple tags: `"desktop"`, `"programming"`
-- Hierarchical tags: `"desktop:custom:niri"` (implies `desktop:custom` and `desktop`)
+- Hierarchical tags: `"desktop:compositors:niri"` (implies `desktop:compositors` and `desktop`)
 - Meta-tags with implications: `{ "hardware:dell" = [ "laptop" "thunderbolt" ]; }`
 
 Tags are validated at evaluation time. Invalid tags cause build failures.

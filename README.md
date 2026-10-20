@@ -104,7 +104,7 @@ implications:
 "programming"
 
 # Hierarchical tag
-"compositor:niri"
+"desktop:compositors:niri"
 
 # Tag with implications
 { "desktop" = [ "fonts" "graphics" ]; }
@@ -116,7 +116,8 @@ implications:
 |:----|:------------|
 | `desktop` | Graphical desktop environment |
 | `programming` | Development tools |
-| `compositor:niri` | Niri compositor |
+| `desktop:compositors:niri` | Niri compositor |
+| `desktop:shells:noctalia` | Noctalia desktop shell |
 | `gaming` | Gaming support |
 | `ai:agent` | AI coding assistants |
 | `security:secrets` | Secret management |
