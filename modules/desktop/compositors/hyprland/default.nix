@@ -68,17 +68,19 @@ in
                 # Resolution order: native compositor mapping, then the
                 # hdwlinux-action dispatcher (when shell overrides exist), then
                 # the default command.
-                nativeActions.${name} or (if action.commandOverride != { } then
-                  "hl.dsp.exec_cmd(${builtins.toJSON "hdwlinux-action ${name}"})"
-                else if action.command != null then
-                  (
-                    if builtins.isList action.command then
-                      "hl.dsp.exec_cmd(${builtins.toJSON (lib.concatStringsSep " " action.command)})"
-                    else
-                      "hl.dsp.exec_cmd(${builtins.toJSON action.command.value})"
-                  )
-                else
-                  throw "hyprland: action '${name}' has no native mapping, command, or commandOverride");
+                nativeActions.${name} or (
+                  if action.commandOverride != { } then
+                    "hl.dsp.exec_cmd(${builtins.toJSON "hdwlinux-action ${name}"})"
+                  else if action.command != null then
+                    (
+                      if builtins.isList action.command then
+                        "hl.dsp.exec_cmd(${builtins.toJSON (lib.concatStringsSep " " action.command)})"
+                      else
+                        "hl.dsp.exec_cmd(${builtins.toJSON action.command.value})"
+                    )
+                  else
+                    throw "hyprland: action '${name}' has no native mapping, command, or commandOverride"
+                );
             in
             ''
               hl.bind(${
@@ -110,9 +112,6 @@ in
           moveWorkspaceUp = ''hl.dsp.window.move({ workspace = "e+1" })'';
           switchColumnWidth = ''hl.dsp.layout("colresize +conf")'';
           showHotkeyOverlay = ''hl.dsp.exec_cmd("uwsm app -- vicinae vicinae://launch/keybind-cheatsheet")'';
-          takeScreenshot = ''hl.dsp.exec_cmd("uwsm app -- screenctl capture show-menu")'';
-          takeScreenScreenshot = ''hl.dsp.exec_cmd("uwsm app -- screenctl capture show-menu")'';
-          takeWindowScreenshot = ''hl.dsp.exec_cmd("uwsm app -- screenctl capture show-menu")'';
           toggleFloating = ''hl.dsp.window.float({ action = "toggle" })'';
           toggleFullscreen = "hl.dsp.window.fullscreen({ mode = 1 })";
           toggleScratchpad = ''hl.dsp.workspace.toggle_special("dropdown")'';
@@ -297,7 +296,16 @@ in
             hl.layer_rule({ name = "waybar-blur", match = { namespace = "^waybar$" }, blur = true, ignore_alpha = true })
             hl.layer_rule({ name = "notifications-blur", match = { namespace = "^notifications$" }, blur = true, ignore_alpha = true })
             hl.layer_rule({ name = "vicinae-blur", match = { namespace = "^vicinae$" }, blur = true, ignore_alpha = true, dim_around = true })
-            hl.layer_rule({ name = "syshud-blur", match = { namespace = "^syshud$" }, blur = true, ignore_alpha = true })
+             hl.layer_rule({ name = "syshud-blur", match = { namespace = "^syshud$" }, blur = true, ignore_alpha = true })
+             for _, namespace in ipairs({
+               "bar", "dock", "osd", "toast", "tooltip", "tray-menu-window",
+               "workspace-overview", "control-center", "app-launcher", "dash",
+               "notification-center-popout", "popout", "clipboard", "settings",
+               "spotlight", "polkit", "power-menu", "process-list-modal",
+               "file-browser", "color-picker", "network-info", "modal",
+             }) do
+               hl.layer_rule({ name = "dms-" .. namespace .. "-blur", match = { namespace = "^dms:" .. namespace .. "$" }, blur = true, ignore_alpha = true })
+             end
           '';
         };
       };

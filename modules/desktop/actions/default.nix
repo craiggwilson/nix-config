@@ -341,6 +341,11 @@
                   "msg"
                   "window-switcher"
                 ];
+                custom = [
+                  "vicinae"
+                  "vicinae://launch/windows?toggle=true"
+                ];
+                dux = [ "dms-overview" ];
               };
             };
             toggleTabbedDisplay = {
@@ -348,17 +353,57 @@
               description = "Toggle tabbed display";
               showInHotkeyOverlay = true;
             };
-            takeScreenshot = {
-              binding = "Print";
-              description = "Take a screenshot";
-            };
             takeScreenScreenshot = {
               binding = "Ctrl+Print";
               description = "Take a screenshot of the screen";
+              commandOverride = {
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "screenshot-fullscreen"
+                ];
+                custom = [
+                  "screenctl"
+                  "capture"
+                  "desktop"
+                ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "quickCapture"
+                  "screenshot"
+                  "full"
+                  "edit"
+                ];
+              };
             };
             takeWindowScreenshot = {
               binding = "Alt+Print";
               description = "Take a screenshot of the window";
+              commandOverride = {
+                # Noctalia has no window capture; picking the region is the
+                # closest thing it offers.
+                noctalia = [
+                  "noctalia"
+                  "msg"
+                  "screenshot-region"
+                ];
+                custom = [
+                  "screenctl"
+                  "capture"
+                  "window"
+                ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "quickCapture"
+                  "screenshot"
+                  "window"
+                  "edit"
+                ];
+              };
             };
             showHotkeyOverlay = {
               binding = "Mod+Shift+Slash";
@@ -382,6 +427,13 @@
                   "vicinae"
                   "vicinae://toggle"
                 ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "spotlight"
+                  "toggle"
+                ];
               };
             };
             showClipboard = {
@@ -399,6 +451,13 @@
                   "clipboardctl"
                   "show-menu"
                 ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "clipboard"
+                  "toggle"
+                ];
               };
             };
             showControlCenter = {
@@ -411,6 +470,17 @@
                   "msg"
                   "panel-toggle"
                   "control-center"
+                ];
+                custom = [
+                  "controlctl"
+                  "show-menu"
+                ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "control-center"
+                  "toggle"
                 ];
               };
             };
@@ -429,10 +499,17 @@
                   "vicinae"
                   "vicinae://launch/power?toggle=true"
                 ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "powermenu"
+                  "toggle"
+                ];
               };
             };
             showScreenRecordMenu = {
-              binding = "Mod+Print";
+              binding = "Print";
               description = "Toggle screen recording";
               commandOverride = {
                 noctalia = [
@@ -448,6 +525,15 @@
                   "record"
                   "show-menu"
                 ];
+                # DMS has no built-in recorder; the QuickCapture plugin is the
+                # shell's capture surface and exposes its menu over IPC.
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "quickCapture"
+                  "open"
+                ];
               };
             };
             showShellSettings = {
@@ -459,6 +545,17 @@
                   "noctalia"
                   "msg"
                   "settings-toggle"
+                ];
+                custom = [
+                  "vicinae"
+                  "vicinae://settings/open"
+                ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "settings"
+                  "focusOrToggle"
                 ];
               };
             };
@@ -476,6 +573,7 @@
                   "vicinae"
                   "vicinae://launch/windows?toggle=true"
                 ];
+                dux = [ "dms-overview" ];
               };
             };
             toggleAudioMute = {
@@ -492,6 +590,13 @@
                   "output"
                   "mute"
                   "toggle"
+                ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "audio"
+                  "mute"
                 ];
               };
             };
@@ -510,6 +615,14 @@
                   "volume"
                   "lower"
                 ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "audio"
+                  "decrement"
+                  "3"
+                ];
               };
             };
             volumeRaise = {
@@ -527,6 +640,14 @@
                   "volume"
                   "raise"
                 ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "audio"
+                  "increment"
+                  "3"
+                ];
               };
             };
             brightnessLower = {
@@ -543,6 +664,15 @@
                   "backlight"
                   "lower"
                 ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "brightness"
+                  "decrement"
+                  "5"
+                  ""
+                ];
               };
             };
             brightnessRaise = {
@@ -558,6 +688,15 @@
                   "screenctl"
                   "backlight"
                   "raise"
+                ];
+                dux = [
+                  "dms"
+                  "ipc"
+                  "call"
+                  "brightness"
+                  "increment"
+                  "5"
+                  ""
                 ];
               };
             };

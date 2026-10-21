@@ -1,0 +1,15 @@
+// DMS owns these layer-shell surfaces in the Dux session.
+layer-rule {
+    match namespace="^dms:(bar|dock|osd|toast|tooltip|tray-menu-window|workspace-overview)$"
+    background-effect {
+        xray false
+    }
+}
+
+layer-rule {
+    match namespace="^dms:(control-center|app-launcher|dash|notification-center-popout|popout|clipboard|settings|spotlight|polkit|power-menu|process-list-modal|file-browser|color-picker|network-info|modal)$"
+    background-effect {
+        blur true
+        xray false
+    }
+}

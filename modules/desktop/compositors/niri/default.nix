@@ -86,9 +86,6 @@
           moveWorkspaceUp = "move-workspace-up";
           switchColumnWidth = "switch-preset-column-width";
           showHotkeyOverlay = "show-hotkey-overlay";
-          takeScreenshot = "screenshot";
-          takeScreenScreenshot = "screenshot-screen";
-          takeWindowScreenshot = "screenshot-window";
           toggleFloating = "toggle-window-floating";
           toggleFullscreen = "fullscreen-window";
           toggleOverview = "toggle-overview";
@@ -185,12 +182,14 @@
             include "common.kdl"
             include "noctalia.kdl"
             include "custom.kdl"
+            include "dux.kdl"
             include "actions.kdl"
           '';
 
           "niri/common.kdl".source = ./config/common.kdl;
           "niri/noctalia.kdl".source = ./config/noctalia.kdl;
           "niri/custom.kdl".source = ./config/custom.kdl;
+          "niri/dux.kdl".source = ./config/dux.kdl;
 
           "niri/colors.kdl".text = ''
             layout {

@@ -414,6 +414,7 @@
             "git *" = "deny";
             "reboot *" = "deny";
             "rm -rf *" = "deny";
+            "secretspec *" = "deny";
             "shutdown *" = "deny";
             "su *" = "deny";
             "sudo *" = "deny";

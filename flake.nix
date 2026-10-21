@@ -34,6 +34,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    dux-shell = {
+      url = "github:duxlabs-dev/dux-shell/v2.0.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-parts.url = "github:hercules-ci/flake-parts";
 
     googleworkspace-cli = {
@@ -175,6 +180,7 @@
         nixpkgsConfig.allowUnfree = true;
 
         homeManager.modules = [
+          inputs.dux-shell.homeModules.default
           inputs.noctalia.homeModules.default
           inputs.vicinae.homeManagerModules.default
           inputs.zen-browser.homeModules.default
@@ -241,6 +247,7 @@
               "cloud:sync"
               "desktop:compositors:hyprland"
               "desktop:compositors:niri"
+              "desktop:shells:dux"
               "desktop:shells:noctalia"
               "programming"
               "security:passwordmanager"
@@ -310,6 +317,7 @@
           "cuda"
           "desktop"
           "desktop:shells:custom"
+          "desktop:shells:dux"
           "desktop:shells:noctalia"
           "filesystem:envfs"
           "filesystem:nfs"

@@ -14,6 +14,14 @@
           notify-send "Recording saved" "Saved to $filename" --icon "$thumbnail"
           EOF
         '';
+        # hyprshot only works under hyprland; niri captures on its own.
+        captureCommand = hyprshotMode: niriAction: ''
+          if [ -n "''${HYPRLAND_INSTANCE_SIGNATURE:-}" ]; then
+            hyprshot -m ${hyprshotMode} --clipboard-only
+          else
+            niri msg action ${niriAction}
+          fi
+        '';
       in
       {
         home.packages = [
@@ -37,10 +45,10 @@
                 set = "brightnessctl -s set \"$1\"";
               };
               capture = {
-                desktop = "hyprshot -m output --clipboard-only";
-                region = "hyprshot -m region --clipboard-only";
+                desktop = captureCommand "output" "screenshot-screen";
+                region = captureCommand "region" "screenshot";
                 show-menu = builtins.readFile ./screen-capture-menu.sh;
-                window = "hyprshot -m window --clipboard-only";
+                window = captureCommand "window" "screenshot-window";
               };
               power = {
                 # These are placeholder commands - compositor-specific power controls
