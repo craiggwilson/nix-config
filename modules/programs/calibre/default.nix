@@ -5,10 +5,13 @@
       "users:craig:personal"
     ];
 
-    homeManager = {
-      programs.calibre = {
-        enable = true;
+    homeManager =
+      { pkgs, ... }:
+      {
+        programs.calibre = {
+          enable = true;
+          package = pkgs.calibre.override { speechSupport = false; };
+        };
       };
-    };
   };
 }
