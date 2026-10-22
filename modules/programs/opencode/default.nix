@@ -25,14 +25,13 @@
         # Primary "provider/model" for single-model consumers (agent definitions, title)
         resolveAlias = aliasName: lib.head (resolveAliases aliasName);
 
-        # Transform agent-level tool toggles into opencode v2 permissions
-        # entries: "allow" -> allow, anything else -> deny.
+        # Transform agent-level tool permissions into OpenCode v2 permissions.
         transformTools =
           tools:
-          lib.mapAttrsToList (name: perm: {
-            action = name;
+          lib.mapAttrsToList (name: effect: {
+            action = renameAction name;
             resource = "*";
-            effect = if perm == "allow" then "allow" else "deny";
+            inherit effect;
           }) tools;
 
         # v2 renames: bash -> shell, task -> subagent; write merges into edit.
@@ -47,8 +46,8 @@
 
         # Convert the v1-style grouped permission map (tool -> "allow"/"ask"/"deny"
         # or pattern -> permission) into opencode v2's ordered permissions array of
-        # { action, resource, effect }. Specific patterns come before "*" so the
-        # wildcard can't shadow them.
+        # { action, resource, effect }. Wildcards come first because OpenCode uses
+        # the last matching rule.
         permissionArray =
           tools:
           let
@@ -75,7 +74,7 @@
             );
             split = lib.partition (e: e.resource == "*") entries;
           in
-          lib.unique (split.wrong ++ split.right);
+          lib.unique (split.right ++ split.wrong);
 
         agentConfig = lib.mapAttrs (
           name: agent:
@@ -338,7 +337,6 @@
     homeManager =
       {
         config,
-        pkgs,
         ...
       }:
       let

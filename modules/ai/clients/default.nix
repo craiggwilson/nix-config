@@ -478,6 +478,8 @@
             # Secrets directories require confirmation
             "./secrets/**" = "ask";
             "**/secrets/**" = "ask";
+            "./secretspec/**" = "ask";
+            "**/secretspec/**" = "ask";
           };
           skill = "allow";
           task = "allow";
