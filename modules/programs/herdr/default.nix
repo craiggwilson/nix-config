@@ -158,7 +158,7 @@
           };
 
           keys = {
-            prefix = "ctrl+b";
+            prefix = "alt+a";
 
             # Pane navigation (prefix-free, arrows + hjkl)
             focus_pane_left = [
@@ -199,8 +199,8 @@
             # Pane management (prefix-free)
             zoom = "alt+z";
             close_pane = "alt+w";
-            split_vertical = "alt+d";
-            split_horizontal = "alt+shift+d";
+            split_vertical = "alt+\\";
+            split_horizontal = "alt+-";
 
             # Tabs (prefix-free, brackets avoid arrow conflicts)
             new_tab = "alt+t";
@@ -218,6 +218,10 @@
             new_workspace = "prefix+shift+n";
             rename_workspace = "prefix+shift+w";
             close_workspace = "prefix+shift+d";
+            next_workspace = "alt+tab";
+            previous_workspace = "alt+shift+tab";
+            next_agent = "alt+shift+.";
+            previous_agent = "alt+shift+,";
 
             # Session (prefix)
             goto = "prefix+g";
@@ -244,6 +248,27 @@
             window_title = "{hostname}: {workspace}";
             status_indicators = "dots";
             mouse_scroll_lines = 3;
+
+            sidebar = {
+              agents.rows = [
+                [
+                  "state_icon"
+                  "machine"
+                  "workspace"
+                ]
+                [ "terminal_title_stripped" ]
+              ];
+              spaces.rows = [
+                [
+                  "state_icon"
+                  "workspace"
+                ]
+                [
+                  "$jj_bookmark"
+                  "$jj_status"
+                ]
+              ];
+            };
 
             toast = {
               delivery = "herdr";
@@ -273,7 +298,12 @@
         };
 
         config = {
-          home.packages = [ herdrPkg ];
+          home.packages = [
+            herdrPkg
+            pkgs.fzf
+            pkgs.jujutsu
+            pkgs.jq
+          ];
 
           home.activation.herdrPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] pluginInstallScript;
 
@@ -303,51 +333,6 @@
         }
       ];
     };
-  };
-
-  config.substrate.modules.programs.herdr.herdr-plus = {
-    tags = [
-      "ai:clients"
-      "programming"
-    ];
-
-    homeManager =
-      {
-        pkgs,
-        ...
-      }:
-      {
-        hdwlinux.programs.herdr.plugins = [
-          {
-            id = "cloudmanic.herdr-plus";
-            source = "cloudmanic/herdr-plus";
-            # Prebuilt binary is fine without this, but pins an exact source build.
-            buildInputs = [
-              pkgs.go
-              pkgs.stdenv.cc
-            ];
-            keybindings = [
-              {
-                key = "prefix+alt+p";
-                command = "cloudmanic.herdr-plus.projects";
-                description = "herdr-plus: projects";
-              }
-            ];
-          }
-        ];
-
-        xdg.configFile = {
-          "herdr/plugins/config/cloudmanic.herdr-plus/config.toml".source = ./plugins/herdr-plus/config.toml;
-          "herdr/plugins/config/cloudmanic.herdr-plus/projects/kb.toml".source =
-            ./plugins/herdr-plus/projects/kb.toml;
-          "herdr/plugins/config/cloudmanic.herdr-plus/projects/nix-config.toml".source =
-            ./plugins/herdr-plus/projects/nix-config.toml;
-          "herdr/plugins/config/cloudmanic.herdr-plus/projects/nix-private.toml".source =
-            ./plugins/herdr-plus/projects/nix-private.toml;
-          "herdr/plugins/config/cloudmanic.herdr-plus/projects/substrate.toml".source =
-            ./plugins/herdr-plus/projects/substrate.toml;
-        };
-      };
   };
 
   config.substrate.modules.programs.herdr.file-viewer = {
@@ -392,8 +377,8 @@
       {
         hdwlinux.programs.herdr.plugins = [
           {
-            id = "vjeantet.palette";
-            source = "vjeantet/herdr-palette";
+            id = "mmc.command-palette";
+            source = "mcavallo/herdr-command-palette";
             buildInputs = [
               pkgs.cargo
               pkgs.rustc
@@ -402,8 +387,18 @@
             keybindings = [
               {
                 key = "alt+p";
-                command = "vjeantet.palette.open";
+                command = "mmc.command-palette.open";
                 description = "command palette";
+              }
+              {
+                key = "prefix+.";
+                command = "mmc.command-palette.repeat-command";
+                description = "repeat last command";
+              }
+              {
+                key = "prefix+,";
+                command = "mmc.command-palette.repeat-jump";
+                description = "repeat last jump";
               }
             ];
           }
@@ -411,7 +406,7 @@
       };
   };
 
-  config.substrate.modules.programs.herdr.floax = {
+  config.substrate.modules.programs.herdr.jj-workspace = {
     tags = [
       "ai:clients"
       "programming"
@@ -423,15 +418,10 @@
         ...
       }:
       {
-        home.packages = [
-          pkgs.dtach
-          pkgs.jq
-        ];
-
         hdwlinux.programs.herdr.plugins = [
           {
-            id = "herdr-floax";
-            source = "Tyru5/herdr-floax";
+            id = "nathanflurry.jj-workspace";
+            source = "NathanFlurry/herdr-plugin-jj-workspace";
             buildInputs = [
               pkgs.cargo
               pkgs.rustc
@@ -439,13 +429,49 @@
             ];
             keybindings = [
               {
-                key = "alt+backtick";
-                command = "herdr-floax.toggle";
-                description = "toggle floating terminal";
+                key = "prefix+a";
+                command = "nathanflurry.jj-workspace.new-tab";
+                description = "new jj workspace tab";
+              }
+              {
+                key = "prefix+shift+a";
+                command = "nathanflurry.jj-workspace.new";
+                description = "new jj workspace";
+              }
+              {
+                key = "prefix+d";
+                command = "nathanflurry.jj-workspace.remove";
+                description = "remove jj workspace";
               }
             ];
           }
         ];
+
+        xdg.configFile."herdr/plugins/config/nathanflurry.jj-workspace/.env".text =
+          "JJ_WORKSPACE_ROOT=~/Projects/workspaces\n";
       };
+  };
+
+  config.substrate.modules.programs.herdr.jj-status = {
+    tags = [
+      "ai:clients"
+      "programming"
+    ];
+
+    homeManager = _: {
+      hdwlinux.programs.herdr.plugins = [
+        {
+          id = "mroth.jj-status";
+          source = "mroth/herdr-jj-status";
+          keybindings = [
+            {
+              key = "prefix+shift+j";
+              command = "mroth.jj-status.refresh";
+              description = "refresh jj status";
+            }
+          ];
+        }
+      ];
+    };
   };
 }

@@ -559,23 +559,6 @@
                 ];
               };
             };
-            showWindowSwitcher = {
-              binding = "Alt+Tab";
-              description = "Show window switcher";
-              showInHotkeyOverlay = true;
-              commandOverride = {
-                noctalia = [
-                  "noctalia"
-                  "msg"
-                  "window-switcher"
-                ];
-                custom = [
-                  "vicinae"
-                  "vicinae://launch/windows?toggle=true"
-                ];
-                dux = [ "dms-overview" ];
-              };
-            };
             toggleAudioMute = {
               binding = "XF86AudioMute";
               description = "Toggle audio mute";
