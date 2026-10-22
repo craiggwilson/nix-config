@@ -211,6 +211,27 @@
               config.allowUnfree = true;
             };
           })
+
+          # aggregateModules concatenates a kmodigest certificate for every
+          # external module and dies when one ships none — evdi, pulled in by
+          # the displaylink module, is built with a hand-written installPhase
+          # that never runs Kbuild's modules_install, so it has no certificate.
+          # Skip missing ones. Upstream: nixpkgs issues #575192 and #576406
+          # (fixes merged as PR #575861 and commit 39c4b705). Drop this along
+          # with the v4l2loopback override once the lock has those fixes.
+          (_final: prev: {
+            aggregateModules =
+              modules:
+              (prev.aggregateModules modules).overrideAttrs (old: {
+                postBuild =
+                  builtins.replaceStrings
+                    [ "xargs -d'\\n' cat >> modules.cer" ]
+                    [
+                      "xargs -d'\\n' sh -c 'for f; do [ -e \"$f\" ] && cat \"$f\"; done' sh >> modules.cer"
+                    ]
+                    old.postBuild;
+              });
+          })
         ];
         tags.options = [
           # Host-specific tags

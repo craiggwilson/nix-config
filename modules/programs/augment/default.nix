@@ -189,7 +189,9 @@
                 }
             )
             (
-              lib.filterAttrs (n: _: n != "augment-context-engine") config.hdwlinux.ai.clients.mcpServersWithoutSecrets
+              lib.filterAttrs (
+                n: _: n != "augment-context-engine"
+              ) config.hdwlinux.ai.clients.mcpServersWithoutSecrets
             );
 
         mcpConfigText = builtins.toJSON { inherit mcpServers; };
