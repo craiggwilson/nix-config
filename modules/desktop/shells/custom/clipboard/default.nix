@@ -6,7 +6,6 @@
       { pkgs, ... }:
       {
         home.packages = [
-          pkgs.wl-clipboard
           (pkgs.hdwlinux.writeShellApplicationWithSubcommands {
             name = "clipboardctl";
             runtimeInputs = [

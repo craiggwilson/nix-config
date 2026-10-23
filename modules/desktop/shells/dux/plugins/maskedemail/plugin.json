@@ -1,0 +1,11 @@
+{
+    "id": "maskedemail",
+    "name": "Masked Email",
+    "description": "Create and manage Fastmail masked emails",
+    "version": "1.0.0",
+    "author": "Craig",
+    "type": "widget",
+    "capabilities": ["dankbar-widget"],
+    "component": "./Widget.qml",
+    "icon": "mail"
+}

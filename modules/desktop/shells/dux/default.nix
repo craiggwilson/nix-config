@@ -83,6 +83,7 @@
           rev = "3bee1e952c626071167c4e0aedad6241f7f624e0";
           hash = "sha256-SgUWuMG5bDuFbdXvWmSUfgOyiq2kX/6iovUIWITDxsE=";
         };
+        maskedemailSrc = ./plugins/maskedemail;
         dms = wrap.package {
           package = dmsPackage;
 
@@ -157,6 +158,7 @@
             };
             herdrAgentMonitor.src = herdrAgentMonitorSrc;
             homeAssistantMonitor.src = homeAssistantMonitorSrc;
+            maskedemail.src = maskedemailSrc;
             quickCapture = {
               src = quickCaptureSrc;
               settings = {

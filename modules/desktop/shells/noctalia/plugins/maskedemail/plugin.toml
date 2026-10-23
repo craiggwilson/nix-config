@@ -1,0 +1,22 @@
+id = "craig/maskedemail"
+name = "Masked Email"
+version = "1.0.0"
+plugin_api = 24
+author = "Craig"
+license = "MIT"
+description = "Create and manage Fastmail masked emails"
+icon = "mail"
+tags = ["mail", "privacy"]
+
+[[widget]]
+id = "maskedemail"
+entry = "widget.luau"
+
+[[panel]]
+id = "manager"
+entry = "panel.luau"
+width = 420
+height = 600
+max_height = 600
+placement = "floating"
+position = "center"

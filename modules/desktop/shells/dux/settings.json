@@ -103,28 +103,28 @@
   "dashTabsEvenlySpaced": true,
   "dashTabs": [
     {
-      "id": "overview",
-      "enabled": true
+      "enabled": true,
+      "id": "overview"
     },
     {
-      "id": "media",
-      "enabled": true
+      "enabled": true,
+      "id": "media"
     },
     {
-      "id": "wallpaper",
-      "enabled": false
+      "enabled": false,
+      "id": "wallpaper"
     },
     {
-      "id": "weather",
-      "enabled": true
+      "enabled": true,
+      "id": "weather"
     },
     {
-      "id": "wellbeing",
-      "enabled": true
+      "enabled": true,
+      "id": "wellbeing"
     },
     {
-      "id": "notifications",
-      "enabled": false
+      "enabled": false,
+      "id": "notifications"
     }
   ],
   "dashOptions": {
@@ -165,6 +165,13 @@
       "squareCorners": false
     },
     "dot1792626104055": {
+      "attachToScreenEdge": false,
+      "borderEnabled": false,
+      "gothCornersEnabled": false,
+      "shadowIntensity": 0,
+      "squareCorners": false
+    },
+    "bar1792801906713": {
       "shadowIntensity": 0,
       "squareCorners": false,
       "attachToScreenEdge": false,
@@ -212,17 +219,17 @@
         {
           "enabled": true,
           "id": "workspaceSwitcher",
-          "workspaceIndicatorStyle": "lines",
-          "workspaceIndicatorCompact": true,
-          "workspaceIndicatorRoundness": -1,
-          "showWorkspaceIndex": false,
-          "showWorkspaceName": false,
-          "showWorkspaceApps": false,
-          "workspaceAppIconSizeOffset": 0,
           "showOccupiedWorkspacesOnly": false,
           "showSpecialWorkspaces": false,
-          "workspaceUnfocusedMonitorSeparateAppearance": false,
-          "workspaceFocusedBorderEnabled": false
+          "showWorkspaceApps": false,
+          "showWorkspaceIndex": false,
+          "showWorkspaceName": false,
+          "workspaceAppIconSizeOffset": 0,
+          "workspaceFocusedBorderEnabled": false,
+          "workspaceIndicatorCompact": true,
+          "workspaceIndicatorRoundness": -1,
+          "workspaceIndicatorStyle": "lines",
+          "workspaceUnfocusedMonitorSeparateAppearance": false
         },
         {
           "enabled": true,
@@ -318,8 +325,8 @@
       "bottomGap": 0,
       "centerWidgets": [
         {
-          "id": "openTrackerBar",
-          "enabled": true
+          "enabled": true,
+          "id": "openTrackerBar"
         },
         {
           "enabled": true,
@@ -341,6 +348,7 @@
       "hoverPopouts": false,
       "id": "dot1792626104055",
       "innerPadding": 4,
+      "island": false,
       "leftWidgets": [
         {
           "enabled": true,
@@ -349,17 +357,17 @@
         {
           "enabled": true,
           "id": "workspaceSwitcher",
-          "workspaceIndicatorStyle": "lines",
-          "workspaceIndicatorCompact": true,
-          "workspaceIndicatorRoundness": -1,
-          "showWorkspaceIndex": false,
-          "showWorkspaceName": false,
-          "showWorkspaceApps": false,
-          "workspaceAppIconSizeOffset": 0,
           "showOccupiedWorkspacesOnly": false,
           "showSpecialWorkspaces": false,
-          "workspaceUnfocusedMonitorSeparateAppearance": false,
-          "workspaceFocusedBorderEnabled": false
+          "showWorkspaceApps": false,
+          "showWorkspaceIndex": false,
+          "showWorkspaceName": false,
+          "workspaceAppIconSizeOffset": 0,
+          "workspaceFocusedBorderEnabled": false,
+          "workspaceIndicatorCompact": true,
+          "workspaceIndicatorRoundness": -1,
+          "workspaceIndicatorStyle": "lines",
+          "workspaceUnfocusedMonitorSeparateAppearance": false
         },
         {
           "enabled": true,
@@ -441,8 +449,58 @@
       "widgetFollowInterfaceStyle": false,
       "widgetPadding": 7,
       "widgetStyle": "pills",
+      "widgetTransparency": 1
+    },
+    {
+      "autoHide": false,
+      "autoHideDelay": 250,
+      "autoHideStrict": false,
+      "batteryColorMode": "theme",
+      "borderColor": "surfaceText",
+      "borderEnabled": false,
+      "borderOpacity": 1,
+      "borderThickness": 1,
+      "bottomGap": 0,
+      "centerWidgets": [],
+      "enabled": true,
+      "followInterfaceStyle": true,
+      "fontScale": 1,
+      "gothCornerRadiusOverride": false,
+      "gothCornerRadiusValue": 12,
+      "gothCornersEnabled": false,
+      "hoverPopoutDelay": 1000,
+      "hoverPopouts": false,
+      "id": "bar1792801906713",
+      "innerPadding": 4,
+      "leftWidgets": [
+        {
+          "id": "maskedemail",
+          "enabled": true
+        }
+      ],
+      "maximizeWidgetIcons": false,
+      "maximizeWidgetText": false,
+      "name": "Utility Bar",
+      "noBackground": true,
+      "openOnOverview": false,
+      "popupGapsAuto": true,
+      "popupGapsManual": 4,
+      "position": 3,
+      "rightWidgets": [],
+      "screenPreferences": [
+        "all"
+      ],
+      "showOnLastDisplay": true,
+      "showOnWindowsOpen": false,
+      "spacing": 4,
+      "squareCorners": false,
+      "transparency": 0.9,
+      "visible": true,
+      "widgetFollowInterfaceStyle": false,
+      "widgetPadding": 7,
+      "widgetStyle": "pills",
       "widgetTransparency": 1,
-      "island": false
+      "hideOnLastDisplay": false
     }
   ],
   "builtInPluginSettings": {

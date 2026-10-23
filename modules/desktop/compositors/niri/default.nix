@@ -223,7 +223,6 @@
                 }
                 shadow {
                     on
-                    
                     color "${colors.base0A}80"
                 }
             }
@@ -233,7 +232,7 @@
 
                 shadow {
                     on
-
+                    
                     softness 40
                     draw-behind-window true
                     spread 25

@@ -226,37 +226,66 @@
               };
             };
 
-            plugins.enabled = [
-              "noctalia/screen_recorder"
-              "davemhammer/obsidian"
-              "aristides/udiskie"
-              "kenn/keybind-cheatsheet"
-              "samuelskovbakke/calculator-plus"
-              "weinguyen/procmon"
-              "icefish/phone-connect"
-              "alok-debnath/shelf"
-              "tordex/processes"
-              "turja-roy/todoist"
-            ]
-            ++ lib.optionals hasAI [
-              "hy4ri/herdr"
-              "zumik3-del/opencode-go-usage"
-            ]
-            ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
-            ++ lib.optionals isWork [ "levi/warp" ]
-            ++ lib.optionals hasTailscale [ "rylos/tailnet" ];
+            plugins = {
+              enabled = [
+                "noctalia/screen_recorder"
+                "davemhammer/obsidian"
+                "aristides/udiskie"
+                "kenn/keybind-cheatsheet"
+                "samuelskovbakke/calculator-plus"
+                "weinguyen/procmon"
+                "icefish/phone-connect"
+                "alok-debnath/shelf"
+                "tordex/processes"
+                "turja-roy/todoist"
+                "craig/maskedemail"
+              ]
+              ++ lib.optionals hasAI [
+                "hy4ri/herdr"
+                "zumik3-del/opencode-go-usage"
+              ]
+              ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
+              ++ lib.optionals isWork [ "levi/warp" ]
+              ++ lib.optionals hasTailscale [ "rylos/tailnet" ];
+
+              source = [
+                {
+                  name = "official";
+                  kind = "git";
+                  location = "https://github.com/noctalia-dev/official-plugins";
+                  enabled = true;
+                }
+                {
+                  name = "community";
+                  kind = "git";
+                  location = "https://github.com/noctalia-dev/community-plugins";
+                  enabled = true;
+                }
+                {
+                  name = "hdwlinux";
+                  kind = "path";
+                  location = "${./plugins}";
+                  enabled = true;
+                }
+              ];
+            };
 
             plugin_settings = {
               "aristides/udiskie".manager_placement = "attached";
 
+              "craig/maskedemail".manager_placement = "attached";
+
               "davemhammer/obsidian" = {
-                vault_path = "/home/craig/Projects/kb";
+                vault_path = "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb";
                 daily_folder = "daily";
                 manager_open_near_click = false;
                 manager_placement = "attached";
               };
 
-              "hy4ri/herdr".panel_open_near_click = false;
+              "hy4ri/herdr" = {
+                panel_open_near_click = false;
+                show_other_machines = true;
+              };
 
               "samuelskovbakke/calculator-plus".panel_open_near_click = false;
 
@@ -287,7 +316,7 @@
             bar.main = {
               position = "top";
               thickness = 35;
-              background_opacity = 0.6;
+              background_opacity = 1.0;
               margin_ends = 0;
               margin_edge = 0;
               radius = 0;
@@ -313,12 +342,10 @@
                 (mkCapsule "power" [
                   "battery"
                   "processes"
-                  "procmon"
                 ])
                 (mkCapsuleEnd "utils" (
                   [
                     "shelf"
-                    "calculator"
                     "obsidian"
                   ]
                   ++ lib.optionals hasProgramming [ "github" ]
@@ -340,8 +367,8 @@
               start = [
                 "caffeine"
                 "workspaces"
-                "visualizer"
                 "media"
+                "visualizer"
               ];
 
               center = lib.optionals hasAI [ "group:ai" ] ++ [
@@ -365,6 +392,20 @@
               ];
             };
 
+            bar.utility = {
+              auto_hide = true;
+              center = [ ];
+              enabled = true;
+              end = [ ];
+              layer = "overlay";
+              position = "right";
+              reserve_space = false;
+              show_on_workspace_switch = false;
+              start = [ "widget" "maskedemail" ];
+            };
+
+            bar.order = [ "main" "utility" ];
+
             widget = {
               battery = {
                 display_mode = "graphic";
@@ -381,6 +422,7 @@
               };
               kdeconnect.type = "icefish/phone-connect:bar";
               media = {
+                hide_when_no_media = true;
                 max_length = 500;
                 scale = 0.75;
               };
@@ -402,7 +444,7 @@
               tray = {
                 drawer = true;
                 match_adjacent_spacing = true;
-                pinned = [ "1Password" ];
+                pinned = [ "1Password" "0 unread messages" ];
 
                 # Blueman registers a StatusNotifierItem ("blueman") for the
                 # bluetooth applet. The built-in bluetooth bar widget in
@@ -413,6 +455,9 @@
               udiskie.type = "aristides/udiskie:status";
               visualizer.type = "audio_visualizer";
               workspaces.hide_when_empty = false;
+              maskedemail.type = "craig/maskedemail:maskedemail";
+              opencode.bar_limit = "month";
+              widget.type = "samuelskovbakke/calculator-plus:widget";
             }
             // lib.optionalAttrs hasAI {
               herdr.type = "hy4ri/herdr:bar";
@@ -430,5 +475,6 @@
           };
         };
       };
+
   };
 }
