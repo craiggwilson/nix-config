@@ -112,27 +112,27 @@ in
 
         home.stateVersion = "23.05";
       };
-  };
 
-  substrate.modules.users.${name}.filesystems = {
-    tags = [
-      "users:${name}"
-      "raeford"
-      "filesystem:nfs"
-    ];
+    filesystems = {
+      tags = [
+        "users:${name}"
+        "raeford"
+        "filesystem:nfs"
+      ];
 
-    nixos =
-      { config, ... }:
-      {
-        fileSystems."/mnt/shared" = {
-          device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
-          fsType = "nfs";
-          options = [
-            "x-systemd.automount"
-            "noauto"
-            "x-systemd.idle-timeout=600"
-          ];
+      nixos =
+        { config, ... }:
+        {
+          fileSystems."/mnt/shared" = {
+            device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
+            fsType = "nfs";
+            options = [
+              "x-systemd.automount"
+              "noauto"
+              "x-systemd.idle-timeout=600"
+            ];
+          };
         };
-      };
+    };
   };
 }
