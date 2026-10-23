@@ -33,6 +33,10 @@
           RuntimeDirectory = "cloudflare-warp";
           LogsDirectory = "cloudflare-warp";
           Restart = "always";
+          # warp-svc writes a debug-level firehose (~200k lines/day, all
+          # arriving at info priority) which balloons the system journal.
+          # Drop it at the journald socket; unit lifecycle events still log.
+          LogLevelMax = 4;
         };
       };
     };
