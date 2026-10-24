@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.models = {
-    tags = [ "ai:clients" ];
+    tags = [ "profile:ai" ];
 
     homeManager =
       { config, lib, ... }:
@@ -154,10 +154,10 @@
       };
   };
 
-  config.substrate.modules.ai.clients.models.craig-personal = {
+  config.substrate.modules.ai.clients.models.personal = {
     tags = [
-      "users:craig:personal"
-      "ai:clients"
+      "profile:personal"
+      "profile:ai"
     ];
 
     homeManager =
@@ -226,8 +226,9 @@
 
   config.substrate.modules.ai.clients.models.craig-work = {
     tags = [
-      "users:craig:work"
-      "ai:clients"
+      "user:craig"
+      "profile:work"
+      "profile:ai"
     ];
 
     homeManager =

@@ -4,23 +4,74 @@ let
   fullName = "Craig Wilson";
   email = "craiggwilson@gmail.com";
   publicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDL5nMCsw3AQ1HaLzvLGW51yjlKGXGR0ECeEb/WAuIGBdKs+nKo7W40d9cXN/XYH6YWZXhg/mw6RFOP5K7CB1FlVozVOqSvso2GcCUCBacjCXWrnubRUsJ5mHDdsmm3jwYGzaSNjgutVpwtj0+ijwACS5C7/m2QpatSdYFOuQhNk1KhaatoKhwWuOeh5kbpWCwUZTtTwrzphegIFDWgfErWwa0O2LKI1cVsFZkT/SgKkjILDfNJ1sYL98tKPouNrMMZj+5/tV1vxIY3UFsbAY78lZUY1yeHmTdJBjwxtG9P7+Dw4CJf9RjS35eCUA84hw95GRVfGAMj/8VasTnHsstvuNiG58lp8ufbfC8T/wGPNH7LwPmqV0TdD26s2nTikvC0qiy/QU58IeXXahI2/dmaWK+qfCayw3sL2DS/5A+HLl09lpVLLNhChnN//0mvUy0to0rCbFwqFXwmIHlveGlYdkEoRiYD4jnu/aTLfnW6YC3Ew1wVyJRH3QHXIIbWafs7R6owHWhcWEe6/CYEDAq1RTy4dknXR7DTbqhKgPX+1FnG9l9GilAwRlsb1qThHikpj2LcRvj0t0tKNO92guUAFqPyByrN9CGDimefiRqZHXkwPTl0Cr4sq3xfuW9J3wgA0u0yieLQO6EKE8adLzOfrzHEathtg+anUPYg84n2Dw== craiggwilson@gmail.com";
+  commonTags = [
+    "core:security:passwordmanager"
+    "core:security:secrets"
+    "core:security:yubikey"
+    "desktop:theming:catppuccin"
+    # Compatibility for the private flake until its requires tags are
+    # migrated to the user:* namespace.
+    "users:craig"
+  ];
 in
 {
   substrate.users = {
     "${name}@personal" = {
       tags = [
-        "users:${name}:personal"
-      ];
+        "user:${name}"
+        "core:base"
+        "core:ssh"
+        "profile:personal"
+        "profile:programming"
+        "capability:audio"
+        "capability:midi"
+        "capability:displaylink"
+        "capability:gaming-controller"
+        "capability:performance"
+        "desktop"
+        "profile:gaming"
+        "profile:ai"
+        "service:ai:image-generation"
+        "service:ai:llm"
+        "role:audio-production"
+        "role:video-production"
+        "desktop:compositors:hyprland"
+        "desktop:compositors:niri"
+        "desktop:shells:dux"
+        "desktop:shells:noctalia"
+        "desktop:flatpaks"
+        "capability:filesystem:nfs"
+        "core:tools:cloud-sync"
+        "core:tools:system"
+        "core:networking:tailscale"
+        "capability:virtualization:podman"
+      ]
+      ++ commonTags;
     };
     "${name}@work" = {
       tags = [
-        "users:${name}:work"
-      ];
+        "user:${name}"
+        "core:base"
+        "core:ssh"
+        "profile:work"
+        "profile:programming"
+        "desktop"
+        "profile:ai"
+        "desktop:compositors:hyprland"
+        "desktop:compositors:niri"
+        "desktop:shells:dux"
+        "desktop:shells:noctalia"
+        "capability:filesystem:envfs"
+        "capability:filesystem:nfs"
+        "core:tools:system"
+        "core:security:passwordmanager"
+      ]
+      ++ commonTags;
     };
   };
 
   substrate.modules.users.${name} = {
-    tags = [ "users:${name}" ];
+    tags = [ "user:${name}" ];
 
     nixos =
       { config, hasTag, ... }:
@@ -30,7 +81,7 @@ in
           allowed-users = [ name ];
         };
 
-        nix.extraOptions = lib.mkIf (hasTag "programming") ''
+        nix.extraOptions = lib.mkIf (hasTag "profile:programming") ''
           !include /home/${name}/.config/hdwlinux/secrets/nixGithubAccessTokens
         '';
 
@@ -39,30 +90,34 @@ in
             "inputs"
             "wheel"
           ]
-          ++ lib.optionals (hasTag "audio") [ "audio" ]
-          ++ lib.optionals (hasTag "printing") [ "lp" ]
-          ++ lib.optionals (hasTag "scanning") [ "scanner" ]
-          ++ lib.optionals (hasTag "networking") [ "networkmanager" ]
-          ++ lib.optionals (hasTag "virtualization:docker") [ "docker" ]
-          ++ lib.optionals (hasTag "security:passwordmanager") [ "onepassword-cli" ]
-          ++ lib.optionals (hasTag "desktop" && hasTag "security:passwordmanager") [ "onepassword" ];
+          ++ lib.optionals (hasTag "capability:audio") [ "audio" ]
+          ++ lib.optionals (hasTag "capability:printing") [ "lp" ]
+          ++ lib.optionals (hasTag "capability:scanning") [ "scanner" ]
+          ++ lib.optionals (hasTag "core:networking") [ "networkmanager" ]
+          ++ lib.optionals (hasTag "capability:virtualization:docker") [ "docker" ]
+          ++ lib.optionals (hasTag "core:security:passwordmanager") [ "onepassword-cli" ]
+          ++ lib.optionals (hasTag "desktop" && hasTag "core:security:passwordmanager") [
+            "onepassword"
+          ];
 
           openssh.authorizedKeys.keys = [ publicKey ];
         };
 
         programs._1password-gui.polkitPolicyOwners = lib.mkIf (
-          hasTag "desktop" && hasTag "security:passwordmanager"
+          hasTag "desktop" && hasTag "core:security:passwordmanager"
         ) [ name ];
 
-        fileSystems."/mnt/shared" = lib.optionalAttrs (hasTag "raeford" && hasTag "filesystem:nfs") {
-          device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
-          fsType = "nfs";
-          options = [
-            "x-systemd.automount"
-            "noauto"
-            "x-systemd.idle-timeout=600"
-          ];
-        };
+        fileSystems."/mnt/shared" =
+          lib.optionalAttrs (hasTag "location:raeford" && hasTag "capability:filesystem:nfs")
+            {
+              device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
+              fsType = "nfs";
+              options = [
+                "x-systemd.automount"
+                "noauto"
+                "x-systemd.idle-timeout=600"
+              ];
+            };
       };
 
     homeManager =
@@ -88,7 +143,7 @@ in
               };
               file.path = "${config.home.homeDirectory}/.ssh/id_rsa";
             };
-            GITHUB_API_TOKEN = lib.mkIf (hasTag "programming") {
+            GITHUB_API_TOKEN = lib.mkIf (hasTag "profile:programming") {
               description = "GitHub API token for API access and nix flake fetches.";
               ref = {
                 vault = "Craig";
@@ -96,7 +151,7 @@ in
                 field = "api_token";
               };
             };
-            NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasTag "programming") {
+            NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasTag "profile:programming") {
               description = "Nix GitHub access-tokens file composed from GITHUB_API_TOKEN.";
               composed = "access-tokens = github.com=\${GITHUB_API_TOKEN}";
               file.path = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";

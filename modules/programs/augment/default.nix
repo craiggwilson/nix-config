@@ -1,8 +1,9 @@
 {
   config.substrate.modules.programs.augment = {
     tags = [
-      "ai:clients"
-      "users:craig:work"
+      "profile:ai"
+      "user:craig"
+      "profile:work"
     ];
 
     homeManager =

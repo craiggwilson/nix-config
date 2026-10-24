@@ -1,6 +1,6 @@
 {
   config.substrate.modules.services.sunshine = {
-    tags = [ "gaming:streaming" ];
+    tags = [ "service:gaming-streaming" ];
     nixos = {
       services.sunshine = {
         enable = true;

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.helix = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       { config, ... }:

@@ -1,5 +1,6 @@
 {
-  config.substrate.modules.xdg = {
+  config.substrate.modules.programs.xdg = {
+    tags = [ "desktop" ];
     homeManager =
       {
         config,

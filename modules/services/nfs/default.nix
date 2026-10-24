@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.filesystems.nfs = {
-    tags = [ "filesystem:nfs" ];
+  config.substrate.modules.services.nfs = {
+    tags = [ "capability:filesystem:nfs" ];
 
     nixos =
       { lib, config, ... }:

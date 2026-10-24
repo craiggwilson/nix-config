@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.zoxide = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       { config, ... }:

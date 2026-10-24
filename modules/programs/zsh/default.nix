@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.zsh = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     nixos =
       { pkgs, ... }:

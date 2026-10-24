@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.delta = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager = {
       programs.delta = {

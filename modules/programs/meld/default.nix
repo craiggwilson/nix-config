@@ -2,7 +2,7 @@
   config.substrate.modules.programs.meld = {
     tags = [
       "desktop"
-      "programming"
+      "profile:programming"
     ];
 
     homeManager =

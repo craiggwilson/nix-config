@@ -1,5 +1,6 @@
 {
   config.substrate.modules.hardware.outputProfiles = {
+    tags = [ "desktop" ];
     generic =
       { lib, ... }:
       let

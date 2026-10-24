@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.yazi = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       { config, ... }:

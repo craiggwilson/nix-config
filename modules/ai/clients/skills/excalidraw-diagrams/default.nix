@@ -1,7 +1,7 @@
 {
   config.substrate.modules.ai.clients.skills.excalidraw-diagrams = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =

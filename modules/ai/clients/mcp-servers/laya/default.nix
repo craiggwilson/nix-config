@@ -1,7 +1,7 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.laya = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =

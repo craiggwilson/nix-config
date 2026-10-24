@@ -1,6 +1,6 @@
 {
   config.substrate.modules.services.llama-cpp = {
-    tags = [ "ai:llm" ];
+    tags = [ "service:ai:llm" ];
 
     homeManager =
       {
@@ -87,7 +87,7 @@
               # the GPU is fully available to whichever model is active. Without this,
               # all requested models accumulate in VRAM and new ones load onto CPU.
               ExecStart =
-                (lib.optionalString (hasTag "graphics:nvidia") "/run/current-system/sw/bin/nvidia-offload ")
+                (lib.optionalString (hasTag "capability:graphics:nvidia") "/run/current-system/sw/bin/nvidia-offload ")
                 + "${lib.getExe' package "llama-server"} --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 1";
               Restart = "on-failure";
               RestartSec = 300;

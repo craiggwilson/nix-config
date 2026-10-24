@@ -31,10 +31,10 @@
         colors = config.hdwlinux.theme.colors;
         wallpaper = config.hdwlinux.theme.wallpaper;
 
-        hasAI = hasTag "ai:clients";
-        hasProgramming = hasTag "programming";
-        hasTailscale = hasTag "networking:tailscale";
-        isWork = hasTag "users:craig:work";
+        hasAI = hasTag "profile:ai";
+        hasProgramming = hasTag "profile:programming";
+        hasTailscale = hasTag "core:networking:tailscale";
+        isWork = hasTag "user:craig" && hasTag "profile:work";
 
         # tordex/processes shells out to a bare `python`, and alok-debnath/shelf
         # both probes `python3` for a GTK 4 import and then runs its drop
@@ -401,10 +401,16 @@
               position = "right";
               reserve_space = false;
               show_on_workspace_switch = false;
-              start = [ "widget" "maskedemail" ];
+              start = [
+                "widget"
+                "maskedemail"
+              ];
             };
 
-            bar.order = [ "main" "utility" ];
+            bar.order = [
+              "main"
+              "utility"
+            ];
 
             widget = {
               battery = {
@@ -444,7 +450,10 @@
               tray = {
                 drawer = true;
                 match_adjacent_spacing = true;
-                pinned = [ "1Password" "0 unread messages" ];
+                pinned = [
+                  "1Password"
+                  "0 unread messages"
+                ];
 
                 # Blueman registers a StatusNotifierItem ("blueman") for the
                 # bluetooth applet. The built-in bluetooth bar widget in

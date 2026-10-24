@@ -1,7 +1,7 @@
 {
   config.substrate.modules.locations.raeford.time = {
     tags = [
-      "raeford"
+      "location:raeford"
     ];
     nixos = {
       time.timeZone = "America/Chicago";

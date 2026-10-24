@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.hardware.monitors-fix = {
+  config.substrate.modules.hardware.monitors = {
     tags = [ "desktop" ];
     generic =
       { lib, ... }:

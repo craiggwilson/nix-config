@@ -2,7 +2,7 @@
 {
   config.substrate.modules.programs.spotify = {
     tags = [
-      "audio"
+      "capability:audio"
       "desktop"
     ];
 

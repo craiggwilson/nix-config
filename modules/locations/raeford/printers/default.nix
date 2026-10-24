@@ -5,8 +5,8 @@ in
 {
   config.substrate.modules.locations.raeford.printers = {
     tags = [
-      "raeford"
-      "printing"
+      "location:raeford"
+      "capability:printing"
     ];
 
     nixos =

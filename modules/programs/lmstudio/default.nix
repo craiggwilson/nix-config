@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.lmstudio = {
-    tags = [ "ai:llm" ];
+    tags = [ "service:ai:llm" ];
 
     homeManager =
       { pkgs, ... }:

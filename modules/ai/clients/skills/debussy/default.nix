@@ -1,8 +1,8 @@
 {
   config.substrate.modules.ai.clients.skills.debussy = {
     tags = [
-      "ai:clients"
-      "users:craig:personal"
+      "profile:ai"
+      "profile:personal"
     ];
 
     homeManager = {

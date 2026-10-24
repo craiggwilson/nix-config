@@ -2,7 +2,7 @@
   config.substrate.modules.programs.protonup-qt = {
     tags = [
       "desktop"
-      "gaming"
+      "profile:gaming"
     ];
 
     homeManager =

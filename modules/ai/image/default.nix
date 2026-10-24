@@ -4,7 +4,7 @@ let
 in
 {
   config.substrate.modules.ai.image = {
-    tags = [ "ai:image" ];
+    tags = [ "service:ai:image-generation" ];
 
     homeManager =
       { lib, pkgs, ... }:

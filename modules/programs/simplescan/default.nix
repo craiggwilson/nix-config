@@ -2,7 +2,7 @@
   config.substrate.modules.programs.simplescan = {
     tags = [
       "desktop"
-      "scanning"
+      "capability:scanning"
     ];
 
     homeManager =

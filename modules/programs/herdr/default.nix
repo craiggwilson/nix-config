@@ -2,8 +2,8 @@
 {
   config.substrate.modules.programs.herdr = {
     tags = [
-      "ai:clients"
-      "programming"
+      "profile:ai"
+      "profile:programming"
     ];
 
     homeManager =
@@ -314,8 +314,8 @@
 
   config.substrate.modules.programs.herdr.reviewr = {
     tags = [
-      "ai:clients"
-      "programming"
+      "profile:ai"
+      "profile:programming"
     ];
 
     homeManager = _: {
@@ -337,8 +337,8 @@
 
   config.substrate.modules.programs.herdr.file-viewer = {
     tags = [
-      "ai:clients"
-      "programming"
+      "profile:ai"
+      "profile:programming"
     ];
 
     homeManager = _: {
@@ -365,8 +365,8 @@
 
   config.substrate.modules.programs.herdr.palette = {
     tags = [
-      "ai:clients"
-      "programming"
+      "profile:ai"
+      "profile:programming"
     ];
 
     homeManager =
@@ -408,8 +408,8 @@
 
   config.substrate.modules.programs.herdr.jj-workspace = {
     tags = [
-      "ai:clients"
-      "programming"
+      "profile:ai"
+      "profile:programming"
     ];
 
     homeManager =
@@ -454,8 +454,8 @@
 
   config.substrate.modules.programs.herdr.jj-status = {
     tags = [
-      "ai:clients"
-      "programming"
+      "profile:ai"
+      "profile:programming"
     ];
 
     homeManager = _: {

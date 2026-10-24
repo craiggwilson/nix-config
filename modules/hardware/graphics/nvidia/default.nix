@@ -4,7 +4,7 @@ let
 in
 {
   config.substrate.modules.hardware.graphics.nvidia = {
-    tags = [ "graphics:nvidia" ];
+    tags = [ "capability:graphics:nvidia" ];
 
     generic =
       { lib, ... }:

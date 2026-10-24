@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.debussy = {
-    tags = [ "users:craig:personal" ];
+    tags = [ "profile:personal" ];
 
     homeManager =
       { pkgs, ... }:

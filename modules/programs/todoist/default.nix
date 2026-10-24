@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.todoist = {
-    tags = [ "users:craig" ];
+    tags = [ "user:craig" ];
 
     homeManager =
       {

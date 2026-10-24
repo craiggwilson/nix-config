@@ -1,8 +1,8 @@
 {
   config.substrate.modules.programs.openspec = {
     tags = [
-      "programming"
-      "ai:clients"
+      "profile:programming"
+      "profile:ai"
     ];
 
     homeManager =

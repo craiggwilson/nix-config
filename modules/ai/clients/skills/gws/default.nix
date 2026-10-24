@@ -1,7 +1,7 @@
 {
   config.substrate.modules.ai.clients.skills.gws = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =
@@ -55,10 +55,11 @@
       };
   };
 
-  config.substrate.modules.ai.clients.skills.gws-craig-work = {
+  config.substrate.modules.ai.clients.skills.gws.craig-work = {
     tags = [
-      "ai:clients"
-      "users:craig:work"
+      "profile:ai"
+      "user:craig"
+      "profile:work"
     ];
 
     homeManager =

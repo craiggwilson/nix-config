@@ -3,7 +3,7 @@ let
 in
 {
   config.substrate.modules.hardware.printing = {
-    tags = [ "printing" ];
+    tags = [ "capability:printing" ];
 
     nixos =
       { lib, pkgs, ... }:

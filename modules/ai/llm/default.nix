@@ -4,7 +4,7 @@ let
 in
 {
   config.substrate.modules.ai.llm = {
-    tags = [ "ai:llm" ];
+    tags = [ "service:ai:llm" ];
 
     homeManager =
       { lib, pkgs, ... }:

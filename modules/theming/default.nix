@@ -1,5 +1,8 @@
 {
   config.substrate.modules.theming.options = {
+    # The option schema is needed even on minimal hosts; concrete themes remain
+    # profile-scoped in theming/* modules.
+    tags = [ "core:base" ];
     nixos =
       { lib, config, ... }:
       {

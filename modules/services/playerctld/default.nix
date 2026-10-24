@@ -2,7 +2,7 @@
   config.substrate.modules.services.playerctld = {
     tags = [
       "desktop"
-      "audio"
+      "capability:audio"
     ];
 
     homeManager =

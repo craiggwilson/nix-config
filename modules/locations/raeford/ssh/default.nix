@@ -1,8 +1,7 @@
 {
   config.substrate.modules.locations.raeford.ssh = {
     tags = [
-      "users:craig"
-      "raeford"
+      "location:raeford"
     ];
     homeManager =
       {

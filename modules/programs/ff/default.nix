@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.ff = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       { pkgs, wrap, ... }:

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.hdwlinux = {
-    tags = [ ]; # Always included
+    tags = [ "core:base" ];
 
     homeManager =
       {

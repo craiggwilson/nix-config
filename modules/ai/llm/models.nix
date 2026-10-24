@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.ai.llm = {
-    tags = [ "ai:llm" ];
+  config.substrate.modules.ai.llm.models = {
+    tags = [ "service:ai:llm" ];
 
     homeManager = {
       config.hdwlinux.ai.llm.models = {

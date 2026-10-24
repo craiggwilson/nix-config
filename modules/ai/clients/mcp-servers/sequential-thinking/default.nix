@@ -1,7 +1,7 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.sequential-thinking = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =

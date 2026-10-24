@@ -2,8 +2,9 @@
   config.substrate.modules.programs.idea = {
     tags = [
       "desktop"
-      "programming"
-      "users:craig:work"
+      "profile:programming"
+      "user:craig"
+      "profile:work"
     ];
 
     homeManager =

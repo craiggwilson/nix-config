@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.bambu-studio = {
     tags = [
-      "users:craig:personal"
+      "profile:personal"
     ];
     homeManager = {
       config.hdwlinux.programs.flatpaks = [ "com.bambulab.BambuStudio" ];

@@ -1,7 +1,7 @@
 { lib, ... }:
 {
   config.substrate.modules.hardware.laptop = {
-    tags = [ "laptop" ];
+    tags = [ "role:laptop" ];
 
     nixos = {
       powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";

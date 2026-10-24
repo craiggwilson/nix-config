@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.gh = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       {

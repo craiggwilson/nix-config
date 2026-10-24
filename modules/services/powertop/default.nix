@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.powertop = {
+    tags = [ "capability:performance" ];
     nixos =
       { pkgs, ... }:
       {

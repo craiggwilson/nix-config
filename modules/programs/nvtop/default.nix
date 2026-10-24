@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.nvtop = {
-    tags = [ "graphics:nvidia" ];
+    tags = [ "capability:graphics:nvidia" ];
     nixos = { pkgs, ... }: {
       environment.systemPackages = [ pkgs.nvtopPackages.full ];
     };

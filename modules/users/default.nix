@@ -31,6 +31,7 @@ let
 in
 {
   config.substrate.modules.users = {
+    tags = [ "core:base" ];
     homeManager =
       { config, lib, ... }:
       {

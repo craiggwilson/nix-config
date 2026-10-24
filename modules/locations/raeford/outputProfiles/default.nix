@@ -1,6 +1,6 @@
 {
   config.substrate.modules.locations.raeford.outputProfiles = {
-    tags = [ "raeford" ];
+    tags = [ "location:raeford" ];
 
     generic = {
       hdwlinux.hardware.outputProfiles = {

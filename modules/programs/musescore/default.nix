@@ -2,7 +2,7 @@
   config.substrate.modules.programs.musescore = {
     tags = [
       "desktop"
-      "users:craig:personal"
+      "profile:personal"
     ];
 
     homeManager =

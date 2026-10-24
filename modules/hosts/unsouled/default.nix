@@ -10,6 +10,16 @@ in
     users = [ "craig@work" ];
     tags = [
       "host:${hostname}"
+      "capability:cuda"
+      "capability:firmware"
+      "capability:printing"
+      "capability:scanning"
+      "capability:virtualization:docker"
+      "core:base"
+      "core:ssh"
+      "hardware:dell-xps-15-9520"
+      "location:raeford"
+      "role:workstation"
     ];
   };
 

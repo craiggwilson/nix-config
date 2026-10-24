@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.rules = {
-    tags = [ "ai:clients" ];
+    tags = [ "profile:ai" ];
 
     homeManager =
       { lib, ... }:

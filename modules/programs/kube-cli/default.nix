@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.kube-cli = {
-    tags = [ "users:craig:work" ];
+    tags = [
+      "user:craig"
+      "profile:work"
+    ];
 
     homeManager =
       { pkgs, ... }:

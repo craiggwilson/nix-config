@@ -13,8 +13,8 @@ let
   };
 in
 {
-  config.substrate.modules.networking = {
-    tags = [ "networking" ];
+  config.substrate.modules.services.networking = {
+    tags = [ "core:networking" ];
 
     generic = {
       options.hdwlinux.networking.domain = domainOption;

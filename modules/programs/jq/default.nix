@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.jq = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager = { pkgs, ... }: {
       home.packages = [ pkgs.jq ];

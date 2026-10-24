@@ -1,8 +1,7 @@
 {
   config.substrate.modules.locations.raeford.hosts = {
     tags = [
-      "raeford"
-      "users:craig"
+      "location:raeford"
     ];
 
     nixos =
@@ -29,10 +28,11 @@
       {
         # extraHosts (literal text) rather than networking.hosts (attrset),
         # which renders in IP-sorted order and would lose the failover ordering.
-        networking.extraHosts = lib.concatStringsSep "\n" (lib.mapAttrsToList (
-          name: ips:
-          lib.concatMapStringsSep "\n" (ip: "${ip} ${name} ${name}.${domain}") ips
-        ) machines);
+        networking.extraHosts = lib.concatStringsSep "\n" (
+          lib.mapAttrsToList (
+            name: ips: lib.concatMapStringsSep "\n" (ip: "${ip} ${name} ${name}.${domain}") ips
+          ) machines
+        );
       };
   };
 }

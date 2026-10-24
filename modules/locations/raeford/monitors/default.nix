@@ -1,6 +1,6 @@
 {
   config.substrate.modules.locations.raeford.monitors = {
-    tags = [ "raeford" ];
+    tags = [ "location:raeford" ];
 
     generic = {
       hdwlinux.hardware.monitors = {

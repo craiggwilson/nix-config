@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.obsidian-bases = {
-    tags = [ "ai:clients" ];
+    tags = [ "profile:ai" ];
 
     homeManager = {
       hdwlinux.ai.clients.skills.obsidian-bases = ./skill;

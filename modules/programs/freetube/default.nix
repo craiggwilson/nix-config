@@ -2,7 +2,7 @@
   config.substrate.modules.programs.freetube = {
     tags = [
       "desktop"
-      "users:craig:personal"
+      "profile:personal"
     ];
 
     homeManager =

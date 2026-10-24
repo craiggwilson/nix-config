@@ -18,7 +18,7 @@
       }:
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
-        isWork = hasTag "users:craig:work";
+        isWork = hasTag "user:craig" && hasTag "profile:work";
         dmsPackage = inputs.dux-shell.lib.mkDmsShell pkgs;
         mkPlugin =
           {

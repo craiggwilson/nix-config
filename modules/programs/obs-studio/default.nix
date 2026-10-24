@@ -2,7 +2,7 @@
   config.substrate.modules.programs.obs-studio = {
     tags = [
       "desktop"
-      "video:production"
+      "role:video-production"
     ];
 
     homeManager =

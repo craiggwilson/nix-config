@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.java = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       { pkgs, ... }:

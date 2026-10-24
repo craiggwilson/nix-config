@@ -1,5 +1,6 @@
 {
   config.substrate.modules.desktop.actions = {
+    tags = [ "desktop" ];
     generic =
       { lib, ... }:
       let

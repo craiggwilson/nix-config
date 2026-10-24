@@ -1,9 +1,10 @@
 {
   config.substrate.modules.programs.claude-code = {
     tags = [
-      "ai:clients"
-      "programming"
-      "users:craig:work"
+      "profile:ai"
+      "profile:programming"
+      "user:craig"
+      "profile:work"
     ];
 
     homeManager =

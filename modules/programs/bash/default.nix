@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs.bash = {
+    tags = [ "core:base" ];
     homeManager =
       { config, ... }:
       {

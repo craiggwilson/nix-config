@@ -1,8 +1,8 @@
 {
-  config.substrate.modules.programs.vscode = {
+  config.substrate.modules.programs.vscodium = {
     tags = [
       "desktop"
-      "programming"
+      "profile:programming"
     ];
 
     homeManager =
@@ -353,7 +353,7 @@
                 lib.mapAttrs (_: p: {
                   inherit (p) enableMcpIntegration extensions keybindings;
                 }) profiles
-                // lib.optionalAttrs (hasTag "users:craig:work") {
+                // lib.optionalAttrs (hasTag "user:craig" && hasTag "profile:work") {
                   mms = {
                     inherit (mmsProfile) enableMcpIntegration extensions keybindings;
                   };
@@ -382,7 +382,9 @@
 
             xdg.mimeApps.defaultApplications."text/plain" = "code.desktop";
           }
-          (lib.mkIf (hasTag "users:craig:work") (mkCanonicalSettings "mms" mmsProfile._settings))
+          (lib.mkIf (hasTag "user:craig" && hasTag "profile:work") (
+            mkCanonicalSettings "mms" mmsProfile._settings
+          ))
         ]
         ++ lib.mapAttrsToList (name: p: mkCanonicalSettings name p._settings) profiles
       );

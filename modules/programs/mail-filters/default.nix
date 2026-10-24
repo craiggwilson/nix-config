@@ -461,8 +461,11 @@ let
   };
 in
 {
-  config.substrate.modules.programs.mail-filters-work = {
-    tags = [ "users:craig:work" ];
+  config.substrate.modules.programs.mail-filters.work = {
+    tags = [
+      "user:craig"
+      "profile:work"
+    ];
 
     homeManager =
       { pkgs, ... }:
@@ -471,8 +474,8 @@ in
       };
   };
 
-  config.substrate.modules.programs.mail-filters-personal = {
-    tags = [ "users:craig:personal" ];
+  config.substrate.modules.programs.mail-filters.personal = {
+    tags = [ "profile:personal" ];
 
     homeManager =
       { pkgs, ... }:

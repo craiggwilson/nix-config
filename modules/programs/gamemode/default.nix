@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.gamemode = {
-    tags = [ "gaming" ];
+    tags = [ "profile:gaming" ];
     nixos = {
       programs.gamemode = {
         enable = true;

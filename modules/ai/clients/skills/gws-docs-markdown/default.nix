@@ -1,6 +1,6 @@
 {
   config.substrate.modules.ai.clients.skills.gws-docs-markdown = {
-    tags = [ "ai:clients" ];
+    tags = [ "profile:ai" ];
 
     homeManager =
       { pkgs, ... }:

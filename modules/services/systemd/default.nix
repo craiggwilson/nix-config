@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.boot.systemd = {
-    tags = [ "boot:systemd" ];
+  config.substrate.modules.services.systemd = {
+    tags = [ "core:base" ];
     nixos =
       {
         config,

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.hardware.xone = {
-    tags = [ "gaming" ];
+    tags = [ "capability:gaming-controller" ];
     nixos = {
       hardware.xone.enable = true;
     };

@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.midivisualizer = {
     tags = [
-      "audio:midi"
+      "capability:midi"
       "desktop"
     ];
 

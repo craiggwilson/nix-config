@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.songtool = {
-    tags = [ "audio" ];
+    tags = [ "capability:audio" ];
 
     homeManager =
       { pkgs, ... }:

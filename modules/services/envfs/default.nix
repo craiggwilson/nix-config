@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.filesystems.envfs = {
-    tags = [ "filesystem:envfs" ];
+  config.substrate.modules.services.envfs = {
+    tags = [ "capability:filesystem:envfs" ];
 
     nixos = {
       # Provides /usr/bin and /bin via FUSE, resolving executables based on

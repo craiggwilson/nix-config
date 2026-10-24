@@ -1,5 +1,6 @@
 {
   config.substrate.modules.hardware.graphics.displaylink = {
+    tags = [ "capability:displaylink" ];
     nixos =
       {
         pkgs,

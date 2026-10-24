@@ -1,7 +1,7 @@
 {
-  config.substrate.modules.networking.tailscale = {
+  config.substrate.modules.services.networking.tailscale = {
     tags = [
-      "networking:tailscale"
+      "core:networking:tailscale"
     ];
 
     nixos = {

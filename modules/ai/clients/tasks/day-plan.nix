@@ -1,8 +1,9 @@
 {
   config.substrate.modules.ai.clients.tasks.day-plan = {
     tags = [
-      "ai:clients"
-      "users:craig:work"
+      "profile:ai"
+      "user:craig"
+      "profile:work"
     ];
 
     homeManager = {

@@ -1,5 +1,6 @@
 {
-  config.substrate.modules.flake = {
+  config.substrate.modules.nix.flake = {
+    tags = [ "core:base" ];
     generic =
       { lib, ... }:
       {

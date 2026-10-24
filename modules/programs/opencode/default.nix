@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.opencode = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =
@@ -249,7 +249,7 @@
 
   config.substrate.modules.programs.opencode.opencode-mem = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =
@@ -319,7 +319,7 @@
 
   config.substrate.modules.programs.opencode.ponytail = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager = {
@@ -331,7 +331,7 @@
 
   config.substrate.modules.programs.opencode.oh-my-opencode-slim = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =

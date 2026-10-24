@@ -1,8 +1,9 @@
 {
   config.substrate.modules.ai.clients.models.providers.grove = {
     tags = [
-      "users:craig:work"
-      "ai:clients"
+      "user:craig"
+      "profile:work"
+      "profile:ai"
     ];
 
     homeManager =

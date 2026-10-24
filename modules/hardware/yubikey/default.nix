@@ -1,6 +1,6 @@
 {
   config.substrate.modules.hardware.yubikey = {
-    tags = [ "yubikey" ];
+    tags = [ "core:security:yubikey" ];
     nixos =
       {
         lib,

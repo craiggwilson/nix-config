@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.greetd = {
+    tags = [ "desktop" ];
     nixos =
       { pkgs, ... }:
       {

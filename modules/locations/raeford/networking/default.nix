@@ -1,6 +1,6 @@
 {
   config.substrate.modules.locations.raeford.networking = {
-    tags = [ "raeford" ];
+    tags = [ "location:raeford" ];
 
     generic = {
       hdwlinux.networking.domain = "raeford.wilsonfamilyhq.com";

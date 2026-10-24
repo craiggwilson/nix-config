@@ -2,7 +2,7 @@
   config.substrate.modules.desktop.shells.custom.audioctl = {
     tags = [
       "desktop:shells:custom"
-      "audio"
+      "capability:audio"
     ];
 
     homeManager =

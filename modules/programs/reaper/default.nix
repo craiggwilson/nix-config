@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.reaper = {
     tags = [
-      "audio:production"
+      "role:audio-production"
       "desktop"
     ];
 

@@ -1,8 +1,8 @@
 {
   config.substrate.modules.locations.raeford.scanners = {
     tags = [
-      "raeford"
-      "scanning"
+      "location:raeford"
+      "capability:scanning"
     ];
 
     nixos = {

@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.zellij = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       {

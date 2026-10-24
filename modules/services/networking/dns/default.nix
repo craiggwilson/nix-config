@@ -1,7 +1,7 @@
 { lib, ... }:
 {
-  config.substrate.modules.networking.dns = {
-    tags = [ "networking:dns" ];
+  config.substrate.modules.services.networking.dns = {
+    tags = [ "core:networking:dns" ];
 
     generic = {
       options.hdwlinux.networking.dns.providers = lib.mkOption {
@@ -300,7 +300,7 @@
         };
       };
 
-    # The dispatcher script only exists on hosts tagged networking:dns with
+    # The dispatcher script only exists on hosts tagged core:networking:dns with
     # providers configured, so the commands simply fail elsewhere.
     homeManager = {
       config.hdwlinux.programs.hdwlinux.subcommands.dns = {

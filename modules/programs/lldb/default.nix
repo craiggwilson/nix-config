@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.lldb = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager =
       { pkgs, ... }:

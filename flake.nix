@@ -234,146 +234,110 @@
 
         ];
         tags.definitions = [
-          # Host-specific tags
-          "host:minimal"
+          # Capability tags
+          "capability:audio"
+          "capability:bluetooth"
+          "capability:camera"
+          "capability:cuda"
+          "capability:displaylink"
+          "capability:filesystem:envfs"
+          "capability:filesystem:nfs"
+          "capability:firmware"
+          "capability:gaming-controller"
+          "capability:graphics"
+          "capability:graphics:nvidia"
+          "capability:midi"
+          "capability:performance"
+          "capability:printing"
+          "capability:scanning"
+          "capability:thunderbolt"
+          "capability:v4l2loopback"
+          "capability:virtualization"
+          "capability:virtualization:docker"
+          "capability:virtualization:podman"
+          "capability:virtualization:waydroid"
 
-          {
-            "host:blackflame" = [
-              "hardware:system76-serval-ws"
+          # Core tags
+          "core:base"
+          "core:networking"
+          "core:networking:dns"
+          "core:networking:tailscale"
+          "core:security"
+          "core:security:passwordmanager"
+          "core:security:secrets"
+          "core:security:yubikey"
+          "core:ssh"
+          "core:tools"
+          "core:tools:cloud-sync"
+          "core:tools:system"
 
-              "boot:systemd"
-              "cuda"
-              "networking:dns"
-              "printing"
-              "raeford"
-              "scanning"
-            ];
-          }
-          {
-            "host:unsouled" = [
-              "hardware:dell-xps-15-9520"
-
-              "boot:systemd"
-              "cuda"
-              "printing"
-              "raeford"
-              "scanning"
-            ];
-          }
-
-          # User-specific tags
-          {
-            "users:craig" = [
-              "ai:clients"
-              "cloud:sync"
-              "desktop:compositors:hyprland"
-              "desktop:compositors:niri"
-              "desktop:shells:dux"
-              "desktop:shells:noctalia"
-              "programming"
-              "security:passwordmanager"
-              "security:secrets"
-              "theming:catppuccin"
-              "video:production"
-              "yubikey"
-            ];
-          }
-          {
-            "users:craig:personal" = [
-              #"audio:midi"
-              "ai:image"
-              "ai:llm"
-              "audio:production"
-              "filesystem:nfs"
-              "flatpaks"
-              "gaming"
-              "networking:tailscale"
-              "virtualization:podman"
-            ];
-          }
-          {
-            "users:craig:work" = [
-              "filesystem:envfs"
-              "virtualization:docker"
-            ];
-          }
+          # Desktop tags
+          "desktop"
+          "desktop:compositors:hyprland"
+          "desktop:compositors:niri"
+          "desktop:flatpaks"
+          "desktop:shells:custom"
+          "desktop:shells:dux"
+          "desktop:shells:noctalia"
+          "desktop:theming"
+          "desktop:theming:catppuccin"
 
           # Hardware model tags - imply common hardware features
           {
             "hardware:dell-xps-15-9520" = [
-              "audio"
-              "bluetooth"
-              "camera"
-              "graphics:nvidia"
-              "laptop"
-              "networking"
-              "thunderbolt"
+              "capability:audio"
+              "capability:bluetooth"
+              "capability:camera"
+              "capability:graphics:nvidia"
+              "capability:thunderbolt"
+              "core:networking"
+              "role:laptop"
             ];
           }
           {
             "hardware:system76-serval-ws" = [
-              "audio"
-              "bluetooth"
-              "camera"
-              "graphics:nvidia"
-              "laptop"
-              "networking"
-              "thunderbolt"
+              "capability:audio"
+              "capability:bluetooth"
+              "capability:camera"
+              "capability:graphics:nvidia"
+              "capability:thunderbolt"
+              "core:networking"
+              "role:laptop"
             ];
           }
 
-          # Feature tags
-          "ai:clients"
-          "ai:image"
-          "ai:llm"
-          "audio"
-          "audio:midi"
-          "audio:production"
-          "bluetooth"
-          "boot:systemd"
-          "camera"
-          "cloud:sync"
-          "desktop:compositors:hyprland"
-          "desktop:compositors:niri"
-          "cuda"
-          "desktop"
-          "desktop:shells:custom"
-          "desktop:shells:dux"
-          "desktop:shells:noctalia"
-          "filesystem:envfs"
-          "filesystem:nfs"
-          "flatpaks"
-          "fonts"
-          { "gaming" = [ "desktop" ]; }
-          "gaming:streaming"
-          { "graphics" = [ "fonts" ]; }
-          "graphics:nvidia"
-          "laptop"
-          "networking"
-          "networking:dns"
-          "networking:tailscale"
-          "printing"
-          "programming"
-          "raeford"
-          "scanning"
-          "security"
-          "security:passwordmanager"
-          "security:secrets"
-          "theming"
-          "theming:catppuccin"
-          "thunderbolt"
-          "v4l2loopback"
-          "video"
-          {
-            "video:production" = [
-              "v4l2loopback"
-            ];
-          }
-          "virtualization"
-          "virtualization:docker"
-          "virtualization:podman"
-          "virtualization:waydroid"
-          "yubikey"
+          # Host-specific tags
+          "host:minimal"
+          "host:blackflame"
+          "host:unsouled"
+
+          # Location and networking tags
+          "location:raeford"
+
+          # Profile tags
+          "profile:ai"
+          "profile:gaming"
+          "profile:personal"
+          "profile:programming"
+          "profile:work"
+
+          # Role tags
+          "role:audio-production"
+          "role:laptop"
+          { "role:video-production" = [ "capability:v4l2loopback" ]; }
+          "role:workstation"
+
+          # Service tags
+          "service:ai:image-generation"
+          "service:ai:llm"
+          "service:gaming-streaming"
+
+          # User identity
+          "user:craig"
+
+          # Legacy tags required by the private flake during migration.
+          "users:craig"
+          "users:craig:work"
         ];
       };
     };

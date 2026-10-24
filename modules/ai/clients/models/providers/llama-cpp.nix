@@ -1,8 +1,8 @@
 {
   config.substrate.modules.ai.clients.models.providers.llama-cpp = {
     tags = [
-      "ai:llm"
-      "ai:clients"
+      "service:ai:llm"
+      "profile:ai"
     ];
 
     homeManager =

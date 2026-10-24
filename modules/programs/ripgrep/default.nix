@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.ripgrep = {
-    tags = [ "programming" ];
+    tags = [ "profile:programming" ];
 
     homeManager = {
       programs.ripgrep = {

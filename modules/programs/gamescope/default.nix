@@ -1,7 +1,7 @@
 {
   config.substrate.modules.programs.gamescope = {
     tags = [
-      "gaming"
+      "profile:gaming"
     ];
 
     homeManager =

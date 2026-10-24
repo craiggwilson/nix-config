@@ -1,6 +1,6 @@
 {
   config.substrate.modules.hardware.camera = {
-    tags = [ "camera" ];
+    tags = [ "capability:camera" ];
 
     nixos =
       { pkgs, ... }:

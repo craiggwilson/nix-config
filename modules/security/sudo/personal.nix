@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.security.sudo = {
-    tags = [ "users:craig:personal" ];
+  config.substrate.modules.security.sudo.personal = {
+    tags = [ "profile:personal" ];
     nixos = {
       security.sudo.enable = false;
       security.sudo-rs = {
@@ -10,7 +10,6 @@
 
         extraConfig = ''
           Defaults timestamp_timeout=5
-          Defaults timestamp_type=global
           Defaults passwd_tries=3
           Defaults passwd_timeout=0
         '';

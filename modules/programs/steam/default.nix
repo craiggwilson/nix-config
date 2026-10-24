@@ -2,7 +2,7 @@
   config.substrate.modules.programs.steam = {
     tags = [
       "desktop"
-      "gaming"
+      "profile:gaming"
     ];
 
     nixos = {

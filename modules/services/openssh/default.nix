@@ -1,5 +1,6 @@
 {
   config.substrate.modules.services.openssh = {
+    tags = [ "core:ssh" ];
     nixos = {
       services.openssh = {
         enable = true;

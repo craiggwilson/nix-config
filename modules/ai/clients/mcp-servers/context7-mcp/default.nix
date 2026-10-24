@@ -1,7 +1,7 @@
 {
   config.substrate.modules.ai.clients.mcp-servers.context7-mcp = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
 
     homeManager =

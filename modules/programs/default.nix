@@ -1,5 +1,6 @@
 {
   config.substrate.modules.programs = {
+    tags = [ "core:base" ];
     generic =
       { lib, ... }:
       {

@@ -4,7 +4,7 @@ let
 in
 {
   config.substrate.modules.security.secrets = {
-    tags = [ "security:secrets" ];
+    tags = [ "core:security:secrets" ];
 
     nixos =
       { pkgs, ... }:

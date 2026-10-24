@@ -1,7 +1,7 @@
 {
-  config.substrate.modules.ai.clients.options = {
+  config.substrate.modules.ai.clients = {
     tags = [
-      "ai:clients"
+      "profile:ai"
     ];
     homeManager =
       {

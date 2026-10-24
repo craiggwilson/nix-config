@@ -25,7 +25,7 @@
   # everything about Mailspring lives in one module.
   config.substrate.modules.programs.mailspring.mcp = {
     tags = [
-      "ai:clients"
+      "profile:ai"
       "desktop"
     ];
 

@@ -10,6 +10,22 @@ in
     users = [ "craig@personal" ];
     tags = [
       "host:${hostname}"
+      "capability:cuda"
+      "capability:displaylink"
+      "capability:gaming-controller"
+      "capability:firmware"
+      "capability:performance"
+      "capability:printing"
+      "capability:scanning"
+      "capability:virtualization:podman"
+      "core:base"
+      "core:networking:dns"
+      "core:ssh"
+      "hardware:system76-serval-ws"
+      "location:raeford"
+      "role:audio-production"
+      "role:video-production"
+      "role:workstation"
     ];
   };
 

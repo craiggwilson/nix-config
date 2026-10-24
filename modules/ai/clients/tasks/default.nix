@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.ai.clients.tasks.opencode = {
-    tags = [ "ai:clients" ];
+  config.substrate.modules.ai.clients.tasks = {
+    tags = [ "profile:ai" ];
 
     homeManager =
       {

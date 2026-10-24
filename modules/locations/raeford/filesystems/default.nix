@@ -1,8 +1,8 @@
 {
   config.substrate.modules.locations.raeford.filesystems = {
     tags = [
-      "raeford"
-      "filesystem:nfs"
+      "location:raeford"
+      "capability:filesystem:nfs"
     ];
 
     nixos =
@@ -13,7 +13,7 @@
         ...
       }:
       {
-        fileSystems."/mnt/games" = lib.mkIf (hasTag "gaming") {
+        fileSystems."/mnt/games" = lib.mkIf (hasTag "profile:gaming") {
           device = "synology.${config.hdwlinux.networking.domain}:/volume2/games";
           fsType = "nfs";
           options = [

@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.boot.v4l2loopback = {
-    tags = [ "v4l2loopback" ];
+  config.substrate.modules.hardware.v4l2loopback = {
+    tags = [ "capability:v4l2loopback" ];
     nixos = { config, ... }: {
       boot = {
         kernelModules = [ "v4l2loopback" ];

@@ -8,7 +8,7 @@ let
 in
 {
   config.substrate.modules.services.flatpak = {
-    tags = [ "flatpaks" ];
+    tags = [ "desktop:flatpaks" ];
     nixos =
       { config, inputs, ... }:
       {

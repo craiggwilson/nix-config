@@ -1,6 +1,9 @@
 {
-  config.substrate.modules.security.sudo = {
-    tags = [ "users:craig:work" ];
+  config.substrate.modules.security.sudo.work = {
+    tags = [
+      "user:craig"
+      "profile:work"
+    ];
     nixos = {
       security.sudo.enable = false;
       security.sudo-rs = {
@@ -10,7 +13,6 @@
 
         extraConfig = ''
           Defaults timestamp_timeout=5
-          Defaults timestamp_type=global
           Defaults passwd_tries=3
           Defaults passwd_timeout=0
         '';

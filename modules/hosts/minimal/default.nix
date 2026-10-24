@@ -5,7 +5,11 @@ in
 {
   substrate.hosts.${hostname} = {
     system = "x86_64-linux";
-    tags = [ "host:${hostname}" ];
+    tags = [
+      "core:base"
+      "core:ssh"
+      "host:${hostname}"
+    ];
   };
 
   substrate.modules.hosts.${hostname} = {
