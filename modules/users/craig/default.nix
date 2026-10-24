@@ -66,6 +66,15 @@ in
       ]
       ++ commonTags;
     };
+    "${name}@server" = {
+      tags = [
+        "core:base"
+        "core:ssh"
+        "core:tools:system"
+        "user:${name}"
+      ]
+      ++ commonTags;
+    };
   };
 
   substrate.modules.users.${name} = {
