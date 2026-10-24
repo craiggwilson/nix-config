@@ -48,7 +48,7 @@
         config = {
           url =
             "https://huggingface.co/${config.repo}/resolve/main"
-            + lib.optionalString (config.subdir != null) "/split_files/${config.subdir}"
+            + lib.optionalString (config.subdir != null) "/${config.subdir}"
             + "/${config.name}?download=true";
         };
       }

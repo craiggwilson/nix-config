@@ -305,11 +305,17 @@
               "role:laptop"
             ];
           }
+          {
+            "hardware:dell-pro-max-gb10" = [
+              "core:networking"
+            ];
+          }
 
           # Host-specific tags
           "host:minimal"
           "host:blackflame"
           "host:unsouled"
+          "host:wintersteel"
 
           # Location and networking tags
           "location:raeford"

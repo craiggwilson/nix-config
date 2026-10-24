@@ -80,6 +80,7 @@
               After = [ "network.target" ];
             };
             Install = {
+              WantedBy = [ "default.target" ];
             };
             Service = {
               Type = "idle";

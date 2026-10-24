@@ -92,6 +92,7 @@ nix flake lock --update-input nixpkgs
 |:-----|:------------|:-------------|
 | `blackflame` | System76 Serval WS laptop | craig@personal |
 | `unsouled` | Dell XPS 15 9520 laptop | craig@work |
+| `wintersteel` | Dell Pro Max with NVIDIA GB10 | craig@server |
 | `minimal` | Minimal configuration for testing | - |
 
 ## Tag System
@@ -195,6 +196,51 @@ nix build .#nixosConfigurations.blackflame.config.system.build.toplevel
 # Show what would change
 sudo nixos-rebuild dry-activate --flake .#blackflame
 ```
+
+### GB10 / Dell Pro Max
+
+The `wintersteel` host targets the ARM64 Grace Blackwell platform and imports the
+community [`nixos-dgx-spark`](https://github.com/graham33/nixos-dgx-spark)
+module. It uses NVIDIA's kernel by default; this is currently the practical
+choice for GB10 Ethernet and GPU support.
+
+Before installing, boot the factory DGX OS once and apply available firmware
+updates. Factory firmware may not boot NixOS until it has been updated. Then
+boot a NixOS ARM64 installer and generate the machine-specific hardware
+configuration for reference. The Disko layout is in
+`modules/hosts/wintersteel/_disko.nix`; verify that `/dev/nvme0n1` is the
+internal disk before applying it because Disko will erase the selected disk.
+
+```bash
+sudo nixos-generate-config --root /mnt --dir /tmp/wintersteel-hardware
+```
+
+The upstream project also provides a USB image if a ready-made installer is
+more convenient:
+
+```bash
+nix build github:graham33/nixos-dgx-spark#usb-image
+```
+
+The layout uses an unencrypted Btrfs filesystem with separate `root`, `nix`,
+and `home` subvolumes. It does not create swap initially: swapping model data
+to the SSD would be a severe latency cliff for an AI-serving box. Add a
+dedicated swap device later if operational testing shows that is preferable.
+
+This initial host is intentionally headless: it uses the minimal `craig@server`
+profile for Home Manager, while desktop-specific tags are enabled only by
+desktop hosts. Root SSH login is disabled. Services such as llama.cpp should run
+as systemd services and do not require Craig to be logged in.
+
+Once the disk layout is known, validate and build the host with:
+
+```bash
+nix eval .#nixosConfigurations.wintersteel.config.system.build.toplevel.drvPath
+nix build .#nixosConfigurations.wintersteel.config.system.build.toplevel
+```
+
+Do not enable the optional 64K-page kernel or GPU clock cap until the stock
+4K configuration is booting and its thermals are understood.
 
 ### Test Substrate
 

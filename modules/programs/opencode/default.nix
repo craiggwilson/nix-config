@@ -197,10 +197,6 @@
         # resolve them at exec time.
         secretspec.scopes.ai_clients_opencode.secrets =
           config.hdwlinux.ai.clients.mcpServersSecretNames ++ config.hdwlinux.ai.clients.providerSecretNames;
-        home.packages = [
-          pkgs.opencode-desktop
-        ];
-
         xdg.configFile = lib.mkMerge [
           (lib.mapAttrs' (
             name: command: lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
