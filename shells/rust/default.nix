@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.rust =
+  substrate.publish.devShells.rust =
     {
       lib,
       pkgs,

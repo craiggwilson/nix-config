@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.observability =
+  substrate.publish.devShells.observability =
     {
       pkgs ? import <nixpkgs> { },
       lib,

@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.mcp-musescore =
+  substrate.packages.mcp-musescore =
     { lib, pkgs, ... }:
     pkgs.stdenv.mkDerivation {
       pname = "mcp-musescore";

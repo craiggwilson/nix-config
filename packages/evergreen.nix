@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.evergreen =
+  substrate.packages.evergreen =
     { pkgs, ... }:
     pkgs.buildGoModule {
       name = "evergreen";

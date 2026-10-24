@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.mongotune =
+  substrate.publish.devShells.mongotune =
     {
       lib,
       pkgs,

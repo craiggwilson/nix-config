@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.engflow_auth =
+  substrate.packages.engflow_auth =
     {
       pkgs,
       ...

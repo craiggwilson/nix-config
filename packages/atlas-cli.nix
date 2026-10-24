@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.atlas-cli =
+  substrate.packages.atlas-cli =
     { pkgs, ... }:
     pkgs.stdenv.mkDerivation {
       name = "atlas-cli";

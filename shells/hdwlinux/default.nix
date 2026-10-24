@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.hdwlinux =
+  substrate.publish.devShells.hdwlinux =
     {
       inputs,
       pkgs,

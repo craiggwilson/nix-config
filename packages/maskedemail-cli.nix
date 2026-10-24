@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.maskedemail-cli =
+  substrate.packages.maskedemail-cli =
     { lib, pkgs, ... }:
     pkgs.buildGoModule rec {
       pname = "maskedemail-cli";

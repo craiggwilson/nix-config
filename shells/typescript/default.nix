@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.typescript =
+  substrate.publish.devShells.typescript =
     {
       pkgs,
       ...

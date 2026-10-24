@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.automation =
+  substrate.publish.devShells.automation =
     {
       pkgs,
       ...

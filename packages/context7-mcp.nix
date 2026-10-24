@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.context7-mcp =
+  substrate.packages.context7-mcp =
     { lib, pkgs, ... }:
     let
       version = "4.0.0";

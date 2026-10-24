@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.auggie =
+  substrate.packages.auggie =
     { lib, pkgs, ... }:
     let
       name = "auggie";

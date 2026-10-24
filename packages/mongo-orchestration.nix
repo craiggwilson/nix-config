@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.mongo-orchestration =
+  substrate.packages.mongo-orchestration =
     { pkgs, ... }:
     let
       inherit (pkgs) python3Packages;

@@ -149,7 +149,6 @@
         inputs.substrate.substrateModules.nixos
         inputs.substrate.substrateModules.overlays
         inputs.substrate.substrateModules.packages
-        inputs.substrate.substrateModules.published-modules
         inputs.substrate.substrateModules.secrets
         inputs.substrate.substrateModules.shells
         inputs.substrate.substrateModules.tags

@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.songtool =
+  substrate.packages.songtool =
     { pkgs, ... }:
     pkgs.buildGoModule {
       name = "songtool";

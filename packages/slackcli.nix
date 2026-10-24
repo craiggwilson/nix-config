@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.slackcli =
+  substrate.packages.slackcli =
     { lib, pkgs, ... }:
     let
       pname = "slackcli";

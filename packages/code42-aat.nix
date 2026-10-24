@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.code42-aat =
+  substrate.packages.code42-aat =
     { lib, pkgs, ... }:
     let
       weird-version = "1.12.21-14";

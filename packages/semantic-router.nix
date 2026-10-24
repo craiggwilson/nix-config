@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.semantic-router =
+  substrate.packages.semantic-router =
     { lib, pkgs, ... }:
     let
       version = "0.3.0";

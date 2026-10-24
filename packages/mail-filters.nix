@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.mail-filters =
+  substrate.packages.mail-filters =
     { pkgs, ... }:
     pkgs.runCommand "mail-filters"
       {

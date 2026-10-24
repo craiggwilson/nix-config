@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.laya =
+  substrate.packages.laya =
     { lib, pkgs, ... }:
     let
       inherit (pkgs) python3Packages;

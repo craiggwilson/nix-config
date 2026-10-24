@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.opentracker-cli =
+  substrate.packages.opentracker-cli =
     { pkgs, ... }:
     pkgs.buildGoModule {
       pname = "opentracker-cli";

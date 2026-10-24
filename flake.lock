@@ -425,6 +425,27 @@
         "type": "github"
       }
     },
+    "nix-darwin": {
+      "inputs": {
+        "nixpkgs": [
+          "substrate",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792366139,
+        "narHash": "sha256-jto4pdsl0bgErQ5vaMc3gOyj//PILLRJuqX3I7fUk6s=",
+        "owner": "nix-darwin",
+        "repo": "nix-darwin",
+        "rev": "f0ec2b3fae4df92ea7788359aef9e07bb88d720f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-darwin",
+        "repo": "nix-darwin",
+        "type": "github"
+      }
+    },
     "nix-flatpak": {
       "locked": {
         "lastModified": 1790428548,
@@ -919,17 +940,18 @@
           "home-manager"
         ],
         "jail-nix": "jail-nix",
+        "nix-darwin": "nix-darwin",
         "nixpkgs": [
           "nixpkgs"
         ],
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1792288074,
-        "narHash": "sha256-9F1e9o+3fDbJncxHrpvHZ4LYNOOXcGUl+xN8LM1AzOg=",
+        "lastModified": 1792860342,
+        "narHash": "sha256-5ymF4o3fDONsftlxXcmbJgWnyq2X7ecQs2KnPUVhBoc=",
         "owner": "craiggwilson",
         "repo": "substrate",
-        "rev": "1b81da4fdff6364c06c4590625b028658a1151af",
+        "rev": "fb979bc126473ae884f137fd31c169ce3342af8c",
         "type": "github"
       },
       "original": {

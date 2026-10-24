@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.debussy =
+  substrate.packages.debussy =
     { lib, pkgs, ... }:
     let
       python = pkgs.python3;

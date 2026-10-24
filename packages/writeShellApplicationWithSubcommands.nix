@@ -1,5 +1,5 @@
 {
-  substrate.packages.internal.writeShellApplicationWithSubcommands =
+  substrate.packages.writeShellApplicationWithSubcommands =
     { lib, pkgs, ... }:
     let
       writeSwitchValue =

@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.mms =
+  substrate.publish.devShells.mms =
     {
       lib,
       pkgs,

@@ -1,5 +1,5 @@
 {
-  substrate.shells.publish.go =
+  substrate.publish.devShells.go =
     {
       pkgs,
       ...
