@@ -233,7 +233,7 @@
           })
 
         ];
-        tags.options = [
+        tags.definitions = [
           # Host-specific tags
           "host:minimal"
 
