@@ -157,6 +157,13 @@
   "muxUseCustomCommand": false,
   "osdPosition": 4,
   "connectedFrameBarStyleBackups": {
+    "bar1792801906713": {
+      "attachToScreenEdge": false,
+      "borderEnabled": false,
+      "gothCornersEnabled": false,
+      "shadowIntensity": 0,
+      "squareCorners": false
+    },
     "default": {
       "attachToScreenEdge": false,
       "borderEnabled": false,
@@ -170,13 +177,6 @@
       "gothCornersEnabled": false,
       "shadowIntensity": 0,
       "squareCorners": false
-    },
-    "bar1792801906713": {
-      "shadowIntensity": 0,
-      "squareCorners": false,
-      "attachToScreenEdge": false,
-      "gothCornersEnabled": false,
-      "borderEnabled": false
     }
   },
   "barConfigs": [
@@ -468,14 +468,23 @@
       "gothCornerRadiusOverride": false,
       "gothCornerRadiusValue": 12,
       "gothCornersEnabled": false,
+      "hideOnLastDisplay": false,
       "hoverPopoutDelay": 1000,
       "hoverPopouts": false,
       "id": "bar1792801906713",
       "innerPadding": 4,
       "leftWidgets": [
         {
-          "id": "maskedemail",
+          "id": "openTrackerBar",
           "enabled": true
+        },
+        {
+          "id": "herdrAgentMonitor",
+          "enabled": true
+        },
+        {
+          "enabled": true,
+          "id": "maskedemail"
         }
       ],
       "maximizeWidgetIcons": false,
@@ -499,8 +508,7 @@
       "widgetFollowInterfaceStyle": false,
       "widgetPadding": 7,
       "widgetStyle": "pills",
-      "widgetTransparency": 1,
-      "hideOnLastDisplay": false
+      "widgetTransparency": 1
     }
   ],
   "builtInPluginSettings": {

@@ -70,6 +70,12 @@
           rev = "60593eccfad53d987e3520d8c040d6f8a1c31acd";
           hash = "sha256-LweJ+ccXtoG+P27ZI0rAaTacyz/w6pQSQov6eQMIjrM=";
         };
+        openTrackerBarSrc = mkPlugin {
+          owner = "wsmajt";
+          repo = "OpenTrackerBar";
+          rev = "42e34a78ebd27ee31f2c596be72e0b91468adf50";
+          hash = "sha256-7vIMxQwdNoBy6Z0DG9FV+TI7r8+C51BFDaSqgOJqsZw=";
+        };
         quickCaptureSrc = mkPlugin {
           owner = "hthienloc";
           repo = "dms-plugins";
@@ -84,6 +90,9 @@
           hash = "sha256-SgUWuMG5bDuFbdXvWmSUfgOyiq2kX/6iovUIWITDxsE=";
         };
         maskedemailSrc = ./plugins/maskedemail;
+        opentracker = wrap.package {
+          package = pkgs.hdwlinux.opentracker-cli;
+        };
         dms = wrap.package {
           package = dmsPackage;
 
@@ -102,6 +111,8 @@
             pkgs.kdePackages.kdeconnect-kde
             pkgs.valent
             pkgs.tailscale
+            opentracker
+            config.programs.opencode.package
           ]
           ++ lib.optional isWork pkgs.cloudflare-warp;
         };
@@ -141,7 +152,10 @@
         '';
       in
       {
-        home.packages = [ dmsOverview ];
+        home.packages = [
+          dmsOverview
+          opentracker
+        ];
 
         programs.dank-material-shell = {
           enable = true;
@@ -158,6 +172,7 @@
             };
             herdrAgentMonitor.src = herdrAgentMonitorSrc;
             homeAssistantMonitor.src = homeAssistantMonitorSrc;
+            openTrackerBar.src = openTrackerBarSrc;
             maskedemail.src = maskedemailSrc;
             quickCapture = {
               src = quickCaptureSrc;
