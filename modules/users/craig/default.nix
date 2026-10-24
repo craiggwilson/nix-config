@@ -53,6 +53,16 @@ in
         programs._1password-gui.polkitPolicyOwners = lib.mkIf (
           hasTag "desktop" && hasTag "security:passwordmanager"
         ) [ name ];
+
+        fileSystems."/mnt/shared" = lib.optionalAttrs (hasTag "raeford" && hasTag "filesystem:nfs") {
+          device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
+          fsType = "nfs";
+          options = [
+            "x-systemd.automount"
+            "noauto"
+            "x-systemd.idle-timeout=600"
+          ];
+        };
       };
 
     homeManager =
@@ -112,27 +122,5 @@ in
 
         home.stateVersion = "23.05";
       };
-
-    filesystems = {
-      tags = [
-        "users:${name}"
-        "raeford"
-        "filesystem:nfs"
-      ];
-
-      nixos =
-        { config, ... }:
-        {
-          fileSystems."/mnt/shared" = {
-            device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
-            fsType = "nfs";
-            options = [
-              "x-systemd.automount"
-              "noauto"
-              "x-systemd.idle-timeout=600"
-            ];
-          };
-        };
-    };
   };
 }
