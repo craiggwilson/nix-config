@@ -19,7 +19,6 @@
         "-w"
         "-X main.buildVersion=${version}"
         "-X main.buildCommit=${src.rev}"
-        "-buildid="
       ];
 
       env.CGO_ENABLED = "0";

@@ -7,6 +7,6 @@
     }:
 
     pkgs.mkShell {
-      packages = [ inputs.panix.packages.${pkgs.system}.default ];
+      packages = [ inputs.panix.packages.${pkgs.stdenv.hostPlatform.system}.default ];
     };
 }
