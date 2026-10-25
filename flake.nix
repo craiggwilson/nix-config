@@ -58,6 +58,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hermes-agent.url = "github:NousResearch/hermes-agent/b02fa681328bae7071412677d76448ff46582f68";
+
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -364,10 +366,17 @@
               "core:networking"
             ];
           }
+          {
+            "hardware:raspberry-pi-4" = [
+              "capability:firmware"
+              "core:networking"
+            ];
+          }
 
           # Host-specific tags
           "host:minimal"
           "host:blackflame"
+          "host:soulsmith"
           "host:unsouled"
           "host:wintersteel"
 

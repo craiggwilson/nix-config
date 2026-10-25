@@ -1,6 +1,13 @@
+{ lib, ... }:
 {
   config.substrate.modules.security.ssh = {
     tags = [ "core:ssh" ];
+    nixos =
+      { hasTag, ... }:
+      {
+        services.openssh.settings.PermitRootLogin = lib.mkIf (!hasTag "host:minimal") "no";
+      };
+
     homeManager =
       { config, lib, ... }:
       let

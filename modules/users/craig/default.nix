@@ -8,7 +8,6 @@ let
     "core:security:passwordmanager"
     "core:security:secrets"
     "core:security:yubikey"
-    "desktop:theming:catppuccin"
   ];
 in
 {
@@ -36,6 +35,7 @@ in
         "desktop:flatpaks"
         "desktop:shells:dux"
         "desktop:shells:noctalia"
+        "desktop:theming:catppuccin"
         "profile:3d-printing"
         "profile:ai"
         "profile:email-management"
@@ -64,6 +64,7 @@ in
         "desktop:compositors:niri"
         "desktop:shells:dux"
         "desktop:shells:noctalia"
+        "desktop:theming:catppuccin"
         "profile:ai"
         "profile:cloud-infrastructure"
         "profile:database-development"
@@ -82,6 +83,7 @@ in
         "core:tools:system"
         "core:tools:version-control"
         "profile:server"
+        "role:server"
         "user:${name}"
       ];
     };
