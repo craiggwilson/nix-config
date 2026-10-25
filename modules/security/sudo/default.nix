@@ -1,9 +1,7 @@
 {
-  config.substrate.modules.security.sudo.work = {
-    tags = [
-      "user:craig"
-      "profile:work"
-    ];
+  config.substrate.modules.security.sudo = {
+    tags = [ "core:base" ];
+
     nixos = {
       security.sudo.enable = false;
       security.sudo-rs = {

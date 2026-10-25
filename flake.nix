@@ -46,6 +46,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hermes-agent.url = "github:NousResearch/hermes-agent";
+
     herdr = {
       url = "github:herdrdev/herdr";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -305,10 +307,17 @@
               "role:laptop"
             ];
           }
+          {
+            "hardware:raspberry-pi-4" = [
+              "capability:firmware"
+              "core:networking"
+            ];
+          }
 
           # Host-specific tags
           "host:minimal"
           "host:blackflame"
+          "host:soulsmith"
           "host:unsouled"
 
           # Location and networking tags
@@ -324,6 +333,7 @@
           # Role tags
           "role:audio-production"
           "role:laptop"
+          "role:server"
           { "role:video-production" = [ "capability:v4l2loopback" ]; }
           "role:workstation"
 

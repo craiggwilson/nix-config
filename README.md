@@ -92,6 +92,7 @@ nix flake lock --update-input nixpkgs
 |:-----|:------------|:-------------|
 | `blackflame` | System76 Serval WS laptop | craig@personal |
 | `unsouled` | Dell XPS 15 9520 laptop | craig@work |
+| `soulsmith` | Headless Raspberry Pi 4 Hermes agent | craig@server |
 | `minimal` | Minimal configuration for testing | - |
 
 ## Tag System

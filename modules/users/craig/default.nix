@@ -8,7 +8,6 @@ let
     "core:security:passwordmanager"
     "core:security:secrets"
     "core:security:yubikey"
-    "desktop:theming:catppuccin"
   ];
 in
 {
@@ -34,6 +33,7 @@ in
         "desktop:flatpaks"
         "desktop:shells:dux"
         "desktop:shells:noctalia"
+        "desktop:theming:catppuccin"
         "profile:ai"
         "profile:gaming"
         "profile:personal"
@@ -59,9 +59,20 @@ in
         "desktop:compositors:niri"
         "desktop:shells:dux"
         "desktop:shells:noctalia"
+        "desktop:theming:catppuccin"
         "profile:ai"
         "profile:programming"
         "profile:work"
+      ]
+      ++ commonTags;
+    };
+    "${name}@server" = {
+      tags = [
+        "user:${name}"
+        "core:base"
+        "core:ssh"
+        "core:tools:system"
+        "role:server"
       ]
       ++ commonTags;
     };
