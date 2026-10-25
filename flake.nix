@@ -335,9 +335,6 @@
           # User identity
           "user:craig"
 
-          # Legacy tags required by the private flake during migration.
-          "users:craig"
-          "users:craig:work"
         ];
       };
     };

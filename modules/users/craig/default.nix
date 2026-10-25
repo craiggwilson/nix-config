@@ -9,9 +9,6 @@ let
     "core:security:secrets"
     "core:security:yubikey"
     "desktop:theming:catppuccin"
-    # Compatibility for the private flake until its requires tags are
-    # migrated to the user:* namespace.
-    "users:craig"
   ];
 in
 {

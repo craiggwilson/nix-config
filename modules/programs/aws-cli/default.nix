@@ -3,6 +3,7 @@
     tags = [
       "user:craig"
       "profile:work"
+      "profile:programming"
     ];
 
     homeManager =
