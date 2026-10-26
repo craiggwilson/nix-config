@@ -11,7 +11,9 @@ in
     tags = [
       "host:${hostname}"
       "capability:cuda"
+      "capability:displaylink"
       "capability:firmware"
+      "capability:performance"
       "capability:printing"
       "capability:scanning"
       "capability:virtualization:docker"
@@ -19,6 +21,7 @@ in
       "core:ssh"
       "hardware:dell-xps-15-9520"
       "location:raeford"
+      "role:video-production"
       "role:workstation"
     ];
   };
