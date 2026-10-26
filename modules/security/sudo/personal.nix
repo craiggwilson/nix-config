@@ -6,7 +6,7 @@
       security.sudo-rs = {
         enable = true;
         execWheelOnly = true;
-        wheelNeedsPassword = false;
+        wheelNeedsPassword = true;
 
         extraConfig = ''
           Defaults timestamp_timeout=5
