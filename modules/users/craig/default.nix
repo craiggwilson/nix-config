@@ -18,7 +18,7 @@ in
         "user:${name}"
         "capability:audio"
         "capability:displaylink"
-        "capability:filesystem:nfs"
+        "capability:filesystem:cifs"
         "capability:gaming-controller"
         "capability:midi"
         "capability:performance"
@@ -48,8 +48,8 @@ in
     "${name}@work" = {
       tags = [
         "user:${name}"
+        "capability:filesystem:cifs"
         "capability:filesystem:envfs"
-        "capability:filesystem:nfs"
         "core:base"
         "core:security:passwordmanager"
         "core:ssh"
@@ -71,7 +71,10 @@ in
     tags = [ "user:${name}" ];
 
     nixos =
-      { config, hasTag, ... }:
+      {
+        hasTag,
+        ...
+      }:
       {
         nix.settings = {
           trusted-users = [ name ];
@@ -83,6 +86,7 @@ in
         '';
 
         users.users.${name} = {
+          uid = 1000;
           extraGroups = [
             "inputs"
             "wheel"
@@ -100,21 +104,49 @@ in
           openssh.authorizedKeys.keys = [ publicKey ];
         };
 
+        users.groups.users.gid = 100;
+
         programs._1password-gui.polkitPolicyOwners = lib.mkIf (
           hasTag "desktop" && hasTag "core:security:passwordmanager"
         ) [ name ];
 
-        fileSystems."/mnt/shared" =
-          lib.optionalAttrs (hasTag "location:raeford" && hasTag "capability:filesystem:nfs")
+        hdwlinux.filesystems.cifs.mounts =
+          (lib.optionals (hasTag "location:raeford" && hasTag "profile:personal") [
             {
-              device = "synology.${config.hdwlinux.networking.domain}:/volume1/homes/craig";
-              fsType = "nfs";
-              options = [
-                "x-systemd.automount"
-                "noauto"
-                "x-systemd.idle-timeout=600"
-              ];
-            };
+              group = "users";
+              local = "/home/${name}/mnt/synology/games";
+              remote = "//synology/games";
+              owner = "${name}";
+              username = "craiggwilson";
+            }
+            {
+              group = "users";
+              local = "/home/${name}/mnt/synology/music";
+              remote = "//synology/music";
+              owner = "${name}";
+              username = "craiggwilson";
+            }
+            {
+              group = "users";
+              local = "/home/${name}/mnt/synology/photos";
+              remote = "//synology/photo";
+              owner = "${name}";
+              username = "craiggwilson";
+            }
+          ])
+          ++ (lib.optionals
+            (hasTag "location:raeford" && (hasTag "profile:personal" || hasTag "profile:work"))
+            [
+              {
+                group = "users";
+                local = "/home/${name}/mnt/synology/home";
+                remote = "//synology/home";
+                owner = "${name}";
+                username = "craiggwilson";
+              }
+            ]
+          );
+
       };
 
     homeManager =

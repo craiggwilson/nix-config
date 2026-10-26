@@ -240,6 +240,7 @@
           "capability:camera"
           "capability:cuda"
           "capability:displaylink"
+          "capability:filesystem:cifs"
           "capability:filesystem:envfs"
           "capability:filesystem:nfs"
           "capability:firmware"
