@@ -312,57 +312,6 @@
       };
   };
 
-  config.substrate.modules.programs.herdr.reviewr = {
-    tags = [
-      "profile:ai"
-      "profile:programming"
-    ];
-
-    homeManager = _: {
-      hdwlinux.programs.herdr.plugins = [
-        {
-          id = "persiyanov.reviewr";
-          source = "persiyanov/herdr-reviewr";
-          keybindings = [
-            {
-              key = "alt+r";
-              command = "persiyanov.reviewr.toggle";
-              description = "reviewr: toggle";
-            }
-          ];
-        }
-      ];
-    };
-  };
-
-  config.substrate.modules.programs.herdr.file-viewer = {
-    tags = [
-      "profile:ai"
-      "profile:programming"
-    ];
-
-    homeManager = _: {
-      hdwlinux.programs.herdr.plugins = [
-        {
-          id = "herdr-file-viewer";
-          source = "smarzban/herdr-file-viewer";
-          keybindings = [
-            {
-              key = "alt+f";
-              command = "herdr-file-viewer.open-file-viewer";
-              description = "file viewer";
-            }
-            {
-              key = "alt+shift+f";
-              command = "herdr-file-viewer.open-file-viewer-tab";
-              description = "file viewer (tab)";
-            }
-          ];
-        }
-      ];
-    };
-  };
-
   config.substrate.modules.programs.herdr.palette = {
     tags = [
       "profile:ai"
