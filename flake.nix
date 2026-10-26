@@ -144,6 +144,7 @@
         (inputs.import-tree ./modules)
         (inputs.import-tree ./packages)
         (inputs.import-tree ./shells)
+        ./synology/default.nix
         inputs.hdwlinux-private.substrateModules.nix-private
         inputs.substrate.substrateModules.home-manager
         inputs.substrate.substrateModules.nixos
