@@ -2,7 +2,13 @@
   substrate.packages.mcp-atlassian =
     { lib, pkgs, ... }:
     let
-      inherit (pkgs) python3Packages;
+      # fastmcp and mcp-atlassian require mcp < 2; nixpkgs 26.11 ships mcp 2.x,
+      # which also trips fastmcp-slim's meta.broken (broken when mcp >= 2).
+      # Older locks only have mcp 1.x (no mcp_1 alias), hence the fallback.
+      python3Packages =
+        (pkgs.python3.override {
+          packageOverrides = _final: prev: { mcp = prev.mcp_1 or prev.mcp; };
+        }).pkgs;
 
       markdown-to-confluence = python3Packages.buildPythonPackage rec {
         pname = "markdown-to-confluence";
@@ -39,14 +45,14 @@
     in
     python3Packages.buildPythonApplication rec {
       pname = "mcp-atlassian";
-      version = "0.23.0";
+      version = "0.23.1";
       pyproject = true;
 
       src = pkgs.fetchFromGitHub {
         owner = "sooperset";
         repo = "mcp-atlassian";
         rev = "v${version}";
-        sha256 = "sha256-aTiPYMhZwWCjS/S9pZgdb4oFbXyNO7Q/aMUt0bKfSjM=";
+        sha256 = "sha256-zbBsEBEfSvsS7dTbbvx2HG2GQhxGtvwVpYf4JPZVCKw=";
       };
 
       build-system = [

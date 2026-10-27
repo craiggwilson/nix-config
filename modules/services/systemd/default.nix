@@ -13,13 +13,6 @@
           {
             consoleLogLevel = 3;
 
-            initrd = {
-              systemd = {
-                enable = true;
-              };
-              verbose = false;
-            };
-
             kernelParams = [
               "acpi_backlight=native"
               "boot.shell_on_fail"
