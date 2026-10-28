@@ -163,7 +163,7 @@
           package = dms;
           enableDynamicTheming = false;
           enableAudioWavelength = false;
-          enableCalendarEvents = false;
+          enableCalendarEvents = true;
           plugins = {
             dankKDEConnect.src = dankKDEConnectSrc;
             dankscale = {
@@ -212,6 +212,11 @@
         ];
 
         systemd.user.services.dms.Unit.ConditionEnvironment = "HDWLINUX_SHELL=dux";
+
+        programs.dank-calendar = {
+          enable = true;
+          systemd.enable = true;
+        };
       };
   };
 }

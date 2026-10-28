@@ -39,6 +39,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    dux-calendar = {
+      url = "github:duxlabs-dev/dux-calendar";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     flake-parts.url = "github:hercules-ci/flake-parts";
 
     googleworkspace-cli = {
@@ -180,6 +185,7 @@
         nixpkgsConfig.allowUnfree = true;
 
         homeManager.modules = [
+          inputs.dux-calendar.homeModules.default
           inputs.dux-shell.homeModules.default
           inputs.noctalia.homeModules.default
           inputs.vicinae.homeManagerModules.default

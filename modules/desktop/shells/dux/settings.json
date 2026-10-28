@@ -89,6 +89,7 @@
     "hyprland"
   ],
   "widgetColorMode": "default",
+  "defaultTaskCalendarId": "8b357f0c-59d5-4089-97f5-41b79fe92fb3",
   "barElevationEnabled": false,
   "blurForegroundLayers": true,
   "foregroundLayerTransparency": 1,
@@ -103,33 +104,36 @@
   "dashTabsEvenlySpaced": true,
   "dashTabs": [
     {
-      "enabled": true,
-      "id": "overview"
+      "id": "overview",
+      "enabled": true
     },
     {
-      "enabled": true,
-      "id": "media"
+      "id": "media",
+      "enabled": true
     },
     {
-      "enabled": false,
-      "id": "wallpaper"
+      "id": "wallpaper",
+      "enabled": false
     },
     {
-      "enabled": true,
-      "id": "weather"
+      "id": "weather",
+      "enabled": true
     },
     {
-      "enabled": true,
-      "id": "wellbeing"
+      "id": "wellbeing",
+      "enabled": true
     },
     {
-      "enabled": false,
-      "id": "notifications"
+      "id": "notifications",
+      "enabled": false
     }
   ],
   "dashOptions": {
     "media": {
       "lyrics": false
+    },
+    "calendar": {
+      "weekends": true
     }
   },
   "cursorSettings": {
@@ -475,12 +479,12 @@
       "innerPadding": 4,
       "leftWidgets": [
         {
-          "id": "openTrackerBar",
-          "enabled": true
+          "enabled": true,
+          "id": "openTrackerBar"
         },
         {
-          "id": "herdrAgentMonitor",
-          "enabled": true
+          "enabled": true,
+          "id": "herdrAgentMonitor"
         },
         {
           "enabled": true,

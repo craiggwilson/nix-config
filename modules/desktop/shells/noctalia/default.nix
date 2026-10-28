@@ -100,9 +100,7 @@
         # Deliberately secrets-free: every `noctalia msg` IPC call (the niri
         # binds for the launcher, volume, brightness, clipboard, ...) runs
         # through this stub, and a secrets chain here costs a secretspec -> op
-        # round trip per keypress (~1s). Only the daemon needs the Todoist
-        # token, and the systemd unit below delivers it from a materialized
-        # env file instead.
+        # round trip per keypress (~1s).
         noctalia = wrap.package {
           package = pkgs.noctalia;
           runtimeInputs = [
@@ -131,33 +129,6 @@
           };
       in
       {
-        # The daemon's Todoist token, composed as a KEY=value line and
-        # materialized to a runtime file the systemd unit reads via
-        # EnvironmentFile. Replaces the old wrapper-level secrets chain, which
-        # made every IPC invocation pay a provider round trip (see the
-        # wrapper comment above).
-        secretspec.entries.TODOIST_TOKEN_ENV = {
-          description = "TODOIST_TOKEN assignment for the noctalia daemon";
-
-          # Indented string so ''${ stays literal: secretspec substitutes the
-          # ${UPPERCASE_NAME} placeholder with the entry's resolved value.
-          composed = ''
-            TODOIST_TOKEN=''${TODOIST_API_TOKEN}
-          '';
-          file = { };
-        };
-
-        # Soft ordering: a failed or slow materialization must not hold the
-        # shell back; the Todoist widget just degrades until the next run.
-        # Gated to the noctalia shell so the custom shell's stack stays inert.
-        systemd.user.services.noctalia = {
-          Unit = {
-            After = [ "secretspec-materialize.service" ];
-            ConditionEnvironment = "HDWLINUX_SHELL=noctalia";
-          };
-          Service.EnvironmentFile = config.secretspec.entries.TODOIST_TOKEN_ENV.file.path;
-        };
-
         programs.noctalia = {
           enable = true;
           systemd.enable = true;
@@ -237,7 +208,6 @@
                 "icefish/phone-connect"
                 "alok-debnath/shelf"
                 "tordex/processes"
-                "turja-roy/todoist"
                 "craig/maskedemail"
               ]
               ++ lib.optionals hasAI [
@@ -374,13 +344,9 @@
               center = lib.optionals hasAI [ "group:ai" ] ++ [
                 "privacy"
                 "clock"
-                "todoist"
                 "group:utils"
               ];
 
-              # todoist, shelf and processes have no chosen home yet — they are
-              # parked here only so they are configured and usable. Move them
-              # once you have settled on a layout.
               end = [
                 "tray"
                 "udiskie"
@@ -446,7 +412,6 @@
               procmon.type = "weinguyen/procmon:widget";
               processes.type = "tordex/processes:widget";
               shelf.type = "alok-debnath/shelf:shelf";
-              todoist.type = "turja-roy/todoist:widget";
               tray = {
                 drawer = true;
                 match_adjacent_spacing = true;
