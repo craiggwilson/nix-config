@@ -22,7 +22,8 @@
 
       dependencies = [
         pkgs.hdwlinux.laya
-        python3Packages.mcp
+        # laya-mcp 0.2.3 uses FastMCP from the v1 SDK; MCP v2 removed that export.
+        python3Packages.mcp_1
       ];
 
       # Upstream test suite requires a network-attached model and dev extras.

@@ -175,20 +175,25 @@
             _: value: if builtins.isString value then value else "${value.prefix}{env:${value.secret}}"
           ) headers;
 
-        mcpServers = lib.mapAttrs (
-          _: server:
-          if server ? stdio then
-            {
-              type = "local";
-              command = [ server.stdio.command ] ++ server.stdio.args;
-            }
-          else
-            lib.filterAttrs (_: value: value != { }) {
-              type = "remote";
-              url = server.http.url;
-              headers = mcpHeaders server.http.headers;
-            }
-        ) config.hdwlinux.ai.clients.mcpServers;
+        mcpServers =
+          lib.mapAttrs
+            (
+              _: server:
+              if server ? stdio then
+                {
+                  type = "local";
+                  command = [ server.stdio.command ] ++ server.stdio.args;
+                }
+              else
+                lib.filterAttrs (_: value: value != { }) {
+                  type = "remote";
+                  url = server.http.url;
+                  headers = mcpHeaders server.http.headers;
+                }
+            )
+            # oh-my-opencode-slim supplies Context7 itself; avoid starting the shared
+            # local server a second time for OpenCode. Other clients still receive it.
+            (lib.removeAttrs config.hdwlinux.ai.clients.mcpServers [ "context7-mcp" ]);
 
       in
       {
