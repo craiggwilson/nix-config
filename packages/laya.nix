@@ -6,12 +6,13 @@
     in
     python3Packages.buildPythonPackage rec {
       pname = "laya";
-      version = "0.3.11";
+      # laya-mcp currently requires laya < 0.4.
+      version = "0.3.29";
       pyproject = true;
 
       src = pkgs.fetchPypi {
         inherit pname version;
-        hash = "sha256-9ITv6zOaOfaP5ExlCUeqkCOL+4TZ7FRQsVe1H7L6B5Q=";
+        hash = "sha256-ejxkFjvhlci6bKZcnPartDnePXDYkJAPgPPQ6SPm0LQ=";
       };
 
       build-system = with python3Packages; [

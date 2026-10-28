@@ -6,13 +6,13 @@
     in
     python3Packages.buildPythonApplication rec {
       pname = "laya-mcp";
-      version = "0.2.2";
+      version = "0.2.3";
       pyproject = true;
 
       # sdist filename normalizes the dash to an underscore, breaking fetchPypi's URL guess
       src = pkgs.fetchurl {
         url = "https://files.pythonhosted.org/packages/source/l/laya-mcp/laya_mcp-${version}.tar.gz";
-        hash = "sha256-/23XYlNw5FlOutpC2C+CeiPfErs+H7gEo7Xif3ASC2g=";
+        hash = "sha256-LT1MZP49v4mIXcuUPysHMaG1R/2Z3C6NbCbVB8l/PSQ=";
       };
 
       build-system = with python3Packages; [

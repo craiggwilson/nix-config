@@ -6,14 +6,14 @@
     in
     python3Packages.buildPythonApplication rec {
       pname = "mongo-orchestration";
-      version = "0.11.0";
+      version = "0.11.1";
       pyproject = true;
 
       src = pkgs.fetchFromGitHub {
         owner = "10gen";
         repo = "mongo-orchestration";
-        rev = "400c3399db9b44d0cc4e53486e705bd876f526bd";
-        sha256 = "sha256-hlY7WgdV0DRpQeTnO2kgtb+KG2sjezDFawhX5bFCG7k=";
+        rev = "0.11.1";
+        sha256 = "sha256-6GxktOUTetJcpCpoWMgiUAH2+AJ5JAQm5hurJFptIXA=";
       };
 
       build-system = [

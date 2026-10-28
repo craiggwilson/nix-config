@@ -7,11 +7,11 @@
 
       music21 = pythonPkgs.buildPythonPackage rec {
         pname = "music21";
-        version = "10.5.0";
+        version = "10.5.1";
 
         src = pkgs.fetchurl {
-          url = "https://files.pythonhosted.org/packages/81/4c/4f307e5ab6fbf59233813e58e07128a599c810dd974673449e132ce1432d/music21-10.5.0-py3-none-any.whl";
-          hash = "sha256-mSTv9fv1hJDmfL87eKWLpTBA53woGTDTVK8yp0fpRgY=";
+          url = "https://files.pythonhosted.org/packages/15/12/dee0eef7c82a63e83eea94bdcde97c66ab55213d89cee1347d2d11601faa/music21-10.5.1-py3-none-any.whl";
+          hash = "sha256-3DMJSYxMlc69+NTyDIaN62tjvOHZKcrU9Rp8zJgph7E=";
         };
 
         format = "wheel";
@@ -38,11 +38,11 @@
 
       verovio = pythonPkgs.buildPythonPackage rec {
         pname = "verovio";
-        version = "6.2.1";
+        version = "6.3.0";
 
         src = pkgs.fetchurl {
-          url = "https://files.pythonhosted.org/packages/a1/23/0470c944d4dfb79bb86b8b5e606cb182583c3d04d053d4e5e3ff82bc2ed7/verovio-6.2.1-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.whl";
-          hash = "sha256-b4U8XpS4mvVD9pjz3MxA/po/NmwNzCTPQQBeiUcUKFs=";
+          url = "https://files.pythonhosted.org/packages/a7/23/25d6a382968815baf686099d519064c3444aaad7297b6e6c507c5608f225/verovio-6.3.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl";
+          hash = "sha256-CJanCKWxMMxbqzoWjXBDWtiz5UaSCI5+Xigf7xHAsF0=";
         };
 
         format = "wheel";

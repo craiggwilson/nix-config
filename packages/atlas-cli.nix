@@ -3,11 +3,11 @@
     { pkgs, ... }:
     pkgs.stdenv.mkDerivation {
       name = "atlas-cli";
-      version = "1.54.0";
+      version = "1.59.3";
 
       src = pkgs.fetchzip {
-        url = "https://fastdl.mongodb.org/mongocli/mongodb-atlas-cli_1.54.0_linux_x86_64.tar.gz";
-        hash = "sha256-iAQJGNJclFAEH8mjUWw1JR0guSPO+bKul93B7dRPDkE=";
+        url = "https://fastdl.mongodb.org/mongocli/mongodb-atlas-cli_1.59.3_linux_x86_64.tar.gz";
+        hash = "sha256-678upM9lqqi2Bcf2LeeJ6vhTNdA3FDEyjbvZErSVphU=";
       };
 
       installPhase = ''

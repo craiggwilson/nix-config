@@ -3,19 +3,19 @@
     { pkgs, ... }:
     pkgs.buildGoModule {
       pname = "opentracker-cli";
-      version = "1.5.0-beta.2";
+      version = "1.5.0-beta.4";
 
       src = pkgs.fetchFromGitHub {
         owner = "wsmajt";
         repo = "opentracker";
-        rev = "3b7e88c830961bca4b3b1d1b8d7a414d5aa5756b";
-        hash = "sha256-1H4TqqBPW+YUQPXdwNyVOslFkddme43tfb6c7bMwwQo=";
+        rev = "v1.5.0-beta.4";
+        hash = "sha256-YboPU/GyHRDcYYID2ji8nNsmvecYfnEnNzGbc1VmL/g=";
       };
 
-      vendorHash = "sha256-oe6f1/jXOZmOtezM+sWQV5+Yj4fVqV/3nvpc4EovSmA=";
+      vendorHash = "sha256-h2KZAB3pYdJAPotdj7YxF9P39EEk5OyCef2Esq2SWBA=";
 
       ldflags = [
-        "-X main.version=1.5.0-beta.2"
+        "-X main.version=1.5.0-beta.4"
         "-s"
         "-w"
       ];

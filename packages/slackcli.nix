@@ -3,15 +3,14 @@
     { lib, pkgs, ... }:
     let
       pname = "slackcli";
-      version = "0.15.0";
+      version = "0.17.0";
 
       src = pkgs.fetchFromGitHub {
         owner = "shaharia-lab";
         repo = "slackcli";
-        # The commit v0.15.0 tags, which is also the commit the security review
-        # covered.
-        rev = "ae88d3c77a911647f13c8c856863cfc162b1f3f4";
-        hash = "sha256-+EKR6/sBGyejN+fzRrja6XRVw8f0c92ZFXouC0vZL8A=";
+        # Pin the release tag so the vendored dependency tree matches the source.
+        rev = "v0.17.0";
+        hash = "sha256-EPvs4bjq+mbaLy0Pd/YZHXvPMTFvLJQsf8DsJh4w7x8=";
       };
 
       # `bun install` is the only step that needs the network, so it is isolated
@@ -44,7 +43,7 @@
 
         outputHashMode = "recursive";
         outputHashAlgo = "sha256";
-        outputHash = "sha256-Vhb5tuqEI+84hjNxM8XGXqE1bVJ00ct4yCoFCbznGS4=";
+        outputHash = "sha256-B58jhoBrJQQgdr2xOUPg+UHwGl2XwmqJUDPGj6yh174=";
       };
     in
     pkgs.stdenv.mkDerivation rec {
