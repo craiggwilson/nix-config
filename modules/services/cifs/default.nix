@@ -12,6 +12,11 @@
               default = true;
               description = "Whether to automount this share when accessed.";
             };
+            credentialsFile = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Path to a mount.cifs credentials file.";
+            };
             group = lib.mkOption {
               type = lib.types.str;
               description = "Local group that owns the mounted files.";
@@ -55,7 +60,7 @@
         mountOptions =
           m:
           [
-            "username=${m.username}"
+            (if m.credentialsFile == null then "username=${m.username}" else "credentials=${m.credentialsFile}")
             "vers=3.1.1"
             "uid=${toString config.users.users.${m.owner}.uid}"
             "gid=${toString config.users.groups.${m.group}.gid}"

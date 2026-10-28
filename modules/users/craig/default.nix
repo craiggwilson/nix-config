@@ -72,9 +72,13 @@ in
 
     nixos =
       {
+        config,
         hasTag,
         ...
       }:
+      let
+        synologyCredentialsFile = config.secretspec.entries.synologyCifsCredentials.file.path;
+      in
       {
         nix.settings = {
           trusted-users = [ name ];
@@ -114,9 +118,18 @@ in
           (lib.optionals (hasTag "location:raeford" && hasTag "profile:personal") [
             {
               group = "users";
+              local = "/home/${name}/mnt/synology/docker";
+              remote = "//synology/docker";
+              owner = "${name}";
+              credentialsFile = synologyCredentialsFile;
+              username = "craiggwilson";
+            }
+            {
+              group = "users";
               local = "/home/${name}/mnt/synology/games";
               remote = "//synology/games";
               owner = "${name}";
+              credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
             }
             {
@@ -124,6 +137,7 @@ in
               local = "/home/${name}/mnt/synology/music";
               remote = "//synology/music";
               owner = "${name}";
+              credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
             }
             {
@@ -131,6 +145,7 @@ in
               local = "/home/${name}/mnt/synology/photos";
               remote = "//synology/photo";
               owner = "${name}";
+              credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
             }
           ])
@@ -142,6 +157,7 @@ in
                 local = "/home/${name}/mnt/synology/home";
                 remote = "//synology/home";
                 owner = "${name}";
+                credentialsFile = synologyCredentialsFile;
                 username = "craiggwilson";
               }
             ]

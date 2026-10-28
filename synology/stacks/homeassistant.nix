@@ -1,17 +1,6 @@
+{ lib }:
 let
-  configuration = ''
-    # Keep the initial instance intentionally small. Integrations and
-    # automations are added through Home Assistant and versioned here once
-    # they have been selected deliberately.
-    default_config:
-
-    homeassistant:
-      name: Home
-      country: US
-      currency: USD
-      time_zone: America/New_York
-      unit_system: us_customary
-  '';
+  filesDirectory = ./homeassistant/files;
 in
 {
   compose.services.homeassistant = {
@@ -27,5 +16,9 @@ in
     ];
   };
 
-  files."configuration.yaml" = configuration;
+  directories = [ "themes" ];
+
+  files = lib.mapAttrs (fileName: _: builtins.readFile (filesDirectory + "/${fileName}")) (
+    lib.filterAttrs (_: fileType: fileType == "regular") (builtins.readDir filesDirectory)
+  );
 }

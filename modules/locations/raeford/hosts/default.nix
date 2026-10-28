@@ -24,9 +24,26 @@
           synology = [ "192.168.100.50" ];
           printer = [ "192.168.150.71" ];
           controller = [ "192.168.1.6" ];
+          homeassistant = [ "192.168.100.50" ];
         };
       in
       {
+        secretspec.entries.SYNOLOGY_CIFS_PASSWORD = {
+          description = "Password for the Synology SMB account.";
+          ref = {
+            vault = "Craig";
+            item = "Synology - Craig";
+            field = "password";
+          };
+        };
+        secretspec.entries.synologyCifsCredentials = {
+          description = "Credentials file for Synology SMB mounts.";
+          composed = ''
+            username=craiggwilson
+            password=''${SYNOLOGY_CIFS_PASSWORD}'';
+          file = { };
+        };
+
         # extraHosts (literal text) rather than networking.hosts (attrset),
         # which renders in IP-sorted order and would lose the failover ordering.
         networking.extraHosts = lib.concatStringsSep "\n" (

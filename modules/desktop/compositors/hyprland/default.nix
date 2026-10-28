@@ -7,7 +7,7 @@ in
     tags = [ "desktop:compositors:hyprland" ];
 
     nixos =
-      { pkgs, ... }:
+      _:
       {
         programs.hyprland = {
           enable = true;
