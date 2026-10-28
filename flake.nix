@@ -233,6 +233,19 @@
               });
           })
 
+          # _1password-gui 8.12.42 aborts (SIGTRAP) once its crash reporter
+          # reaches for chrome_crashpad_handler, which the package never
+          # gives an rpath — so the handler dies loading libglib and the
+          # app core-dumps a minute into every start. Upstream: nixpkgs
+          # issue #576668. Drop once the lock has the fix.
+          (_final: prev: {
+            _1password-gui = prev._1password-gui.overrideAttrs (old: {
+              postFixup = (old.postFixup or "") + ''
+                patchelf --add-rpath ${prev.glib.out}/lib $out/share/1password/chrome_crashpad_handler
+              '';
+            });
+          })
+
         ];
         tags.definitions = [
           # Capability tags

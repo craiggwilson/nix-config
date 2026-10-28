@@ -11,12 +11,31 @@
         config,
         lib,
         pkgs,
+        wrap,
         ...
       }:
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
 
         herdrPkg = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+        # The inbound remote bridge — and the server it starts, which
+        # spawns every pane — inherits SSH_CONNECTION/SSH_CLIENT/SSH_TTY
+        # from the sshd login that ran it, so all hosted shells render as
+        # SSH sessions (starship showing user@host, etc.). Scrub the
+        # markers on exactly those two subcommands; the TUI keeps its
+        # own environment so OSC52/clipboard still work when the UI
+        # itself runs over a real SSH login.
+        herdr = wrap.package {
+          package = herdrPkg;
+          preHook = ''
+            case "''${1:-}" in
+              remote-client-bridge | server)
+                unset SSH_CONNECTION SSH_CLIENT SSH_TTY
+                ;;
+            esac
+          '';
+        };
 
         pluginKeybindingType = lib.types.submodule {
           options = {
@@ -299,7 +318,7 @@
 
         config = {
           home.packages = [
-            herdrPkg
+            herdr
             pkgs.fzf
             pkgs.jujutsu
             pkgs.jq

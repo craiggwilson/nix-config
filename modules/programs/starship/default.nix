@@ -34,6 +34,16 @@
 
             fill.symbol = " ";
 
+            # herdr-hosted panes inherit SSH markers from the bridged
+            # sshd login that runs the herdr server, but those shells run
+            # on this machine — so treat them as local and never show
+            # user@host there (HERDR_ENV marks every shell herdr hosts;
+            # a negated entry hides the module even in a real SSH
+            # session). username below mirrors this.
+            hostname = {
+              detect_env_vars = [ "!HERDR_ENV" ];
+            };
+
             nix_shell = {
               symbol = "❄️ ";
               format = "[$symbol]($style)";
@@ -54,6 +64,7 @@
             };
 
             username = {
+              detect_env_vars = [ "!HERDR_ENV" ];
               show_always = false;
               style_user = colors.base05;
               format = "[$user]($style) ";
