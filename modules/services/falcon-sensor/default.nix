@@ -55,13 +55,14 @@
         systemd.services.falcon-sensor = {
           enable = true;
           description = "CrowdStrike Falcon Sensor";
-          unitConfig.DefaultDependencies = false;
-          after = [ "local-fs.target" ];
-          conflicts = [ "shutdown.target" ];
-          before = [
-            "sysinit.target"
-            "shutdown.target"
-          ];
+          # init-falcon fetches the CID from 1Password on every start, so the
+          # unit cannot run before the network exists. The deb package's
+          # pre-sysinit ordering (DefaultDependencies=false, before
+          # sysinit.target) races DNS at boot, burns the start limit in one
+          # second, and leaves the sensor dead; standard dependencies plus
+          # network-online start it a few seconds later but actually running.
+          after = [ "network-online.target" ];
+          wants = [ "network-online.target" ];
           serviceConfig = {
             ExecStartPre = "${
               wrap.package {
@@ -73,6 +74,10 @@
             Type = "forking";
             PIDFile = "/run/falcond.pid";
             Restart = "always";
+            # WARP's DNS proxy connects after network-online, so the first
+            # attempts can still fail; space retries out so they ride past
+            # the default start limit instead of tripping it.
+            RestartSec = 15;
             TimeoutStopSec = "60s";
             # falcond forks the real sensor into its own cgroup; with the
             # default KillMode=process a stop kills only falcond and orphans

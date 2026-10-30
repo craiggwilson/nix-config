@@ -26,6 +26,15 @@
           includeClosures = true;
           privateTmp = true;
           profile = ''
+            # Fail fast when the materialized secrets are missing so the
+            # service's Restart= cycles while waiting for them, instead of
+            # starting with empty deployment credentials.
+            for secret in ${cfg.deployment.policyTokenFile} ${cfg.deployment.secretFile}; do
+              if [[ ! -r "$secret" ]]; then
+                echo "code42-aat: $secret not present yet" >&2
+                exit 1
+              fi
+            done
             export LD_LIBRARY_PATH="/var/opt/code42-aat/lib:/var/opt/code42-aat/lib/common:/opt/code42/lib:/usr/lib:$LD_LIBRARY_PATH" 
             cat > /tmp/code42.deployment.properties<< EOF
             DEPLOYMENT_URL=${cfg.deployment.url}

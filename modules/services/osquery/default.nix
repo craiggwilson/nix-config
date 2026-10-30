@@ -110,6 +110,9 @@
               LogsDirectory = cfg.flags.logger_path;
               StateDirectory = dirname cfg.flags.database_path;
               Restart = "always";
+              # Space out retries so waiting for the materialized secret
+              # files at boot rides past the default start limit.
+              RestartSec = 5;
             };
             wantedBy = [ "multi-user.target" ];
           };
