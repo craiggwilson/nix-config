@@ -1,6 +1,6 @@
 # Obsidian Knowledge Base
 
-The personal knowledge base vault is at `~/Projects/kb`. It covers work, personal projects, research, ideas, and everything in between.
+The personal knowledge base vault is at `~/Projects/github.com/craiggwilson/kb`. It covers work, personal projects, research, ideas, and everything in between.
 
 ## Structure
 
@@ -43,4 +43,4 @@ obsidian vault=kb create name="projects/mvcp/sessions/2026-03-22" content="..."
 obsidian vault=kb search query="search term" limit=10
 ```
 
-Full conventions: `~/Projects/kb/AGENTS.md`
+Full conventions: `~/Projects/github.com/craiggwilson/kb/AGENTS.md`

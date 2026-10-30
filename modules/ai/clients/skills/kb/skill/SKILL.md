@@ -1,11 +1,11 @@
 ---
 name: kb
-description: Personal knowledge base conventions and session workflow for ~/Projects/kb
+description: Personal knowledge base conventions and session workflow for ~/Projects/github.com/craiggwilson/kb
 ---
 
 # Personal Knowledge Base (KB)
 
-Framework for working with the Obsidian knowledge base at `~/Projects/kb`. Full conventions are in `~/Projects/kb/AGENTS.md` — read it at the start of any KB session.
+Framework for working with the Obsidian knowledge base at `~/Projects/github.com/craiggwilson/kb`. Full conventions are in `~/Projects/github.com/craiggwilson/kb/AGENTS.md` — read it at the start of any KB session.
 
 ## Structure
 

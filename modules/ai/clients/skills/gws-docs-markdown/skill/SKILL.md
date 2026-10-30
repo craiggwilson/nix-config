@@ -34,14 +34,14 @@ $MD2GDOC create [--title "Doc Title"] FILE [FILE ...]
 
 ```bash
 # Single file → one tab
-$MD2GDOC create ~/Projects/kb/projects/doc-process/doc-process.md
+$MD2GDOC create ~/Projects/github.com/craiggwilson/kb/projects/doc-process/doc-process.md
 
 # Multiple files → one tab per file
 $MD2GDOC create \
   --title "Doc Process" \
-  ~/Projects/kb/projects/doc-process/doc-process.md \
-  ~/Projects/kb/projects/doc-process/process/01-proposal-process.md \
-  ~/Projects/kb/projects/doc-process/process/02-technical-design-process.md
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/doc-process.md \
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/01-proposal-process.md \
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/02-technical-design-process.md
 
 # Capture document ID
 DOC_ID=$($MD2GDOC create --title "My Doc" file.md)
@@ -63,7 +63,7 @@ $MD2GDOC add-tab --document DOC_ID [--title "Tab Title"] FILE
 ```bash
 $MD2GDOC add-tab \
   --document 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms \
-  ~/Projects/kb/projects/doc-process/process/03-scope-process.md
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/03-scope-process.md
 
 # With explicit tab title
 $MD2GDOC add-tab \
@@ -112,7 +112,7 @@ strip_frontmatter() {
 }
 diff \
   <($MD2GDOC extract-tab --document DOC_ID --tab t.0 2>/dev/null) \
-  <(strip_frontmatter ~/Projects/kb/projects/doc-process/process/00-README.md)
+  <(strip_frontmatter ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/00-README.md)
 ```
 
 ### Update a tab from local changes
@@ -135,14 +135,14 @@ $MD2GDOC update-tab --document DOC_ID --tab TITLE_OR_ID [--files-dir DIR] FILE
 $MD2GDOC update-tab \
   --document 11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE \
   --tab t.0 \
-  ~/Projects/kb/projects/doc-process/process/00-README.md
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/00-README.md
 
 # With wikilink resolution from sibling files
 $MD2GDOC update-tab \
   --document DOC_ID \
   --tab t.0 \
-  --files-dir ~/Projects/kb/projects/doc-process/process \
-  ~/Projects/kb/projects/doc-process/process/00-README.md
+  --files-dir ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process \
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/00-README.md
 ```
 
 ---
@@ -165,7 +165,7 @@ $MD2GDOC sync-local --document DOC_ID --tab TITLE_OR_ID [--files-dir DIR] FILE
 $MD2GDOC sync-local \
   --document 11cZoPFZ--C2XYlQ3E0oFnA5pMww6Q1vdpufSFZNtxhE \
   --tab t.0 \
-  ~/Projects/kb/projects/doc-process/process/00-README.md
+  ~/Projects/github.com/craiggwilson/kb/projects/doc-process/process/00-README.md
 ```
 
 ---

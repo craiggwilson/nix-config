@@ -100,7 +100,7 @@ Use `/kb-archive-project` when a project is fully done.
 2. Set `status: archived` in `<name>.md` frontmatter, update `updated:` date
 3. Move the project directory:
    ```bash
-   # From ~/Projects/kb
+   # From ~/Projects/github.com/craiggwilson/kb
    mkdir -p projects/archive
    mv projects/<name> projects/archive/<name>
    ```

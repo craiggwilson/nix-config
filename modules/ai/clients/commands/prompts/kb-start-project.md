@@ -7,7 +7,7 @@ Create a new project in the KB — directory structure, overview, and initial pr
 ## What This Does
 
 1. Loads the `kb` skill and its `references/project-management.md` reference
-2. Creates `~/Projects/kb/projects/<name>/` directory
+2. Creates `~/Projects/github.com/craiggwilson/kb/projects/<name>/` directory
 3. Creates `projects/<name>/<name>.md` — project overview with frontmatter and skeleton sections
 4. Creates `projects/<name>/progress.md` — initial progress file
 5. Asks for: goal, key people, priority, due date — fills frontmatter accordingly

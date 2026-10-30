@@ -7,7 +7,7 @@ Process all items in the KB inbox — synthesize into notes, enrich existing not
 ## What This Does
 
 1. Loads the `kb` skill and its `references/process-inbox.md` reference
-2. Reads `~/Projects/kb/inbox/inbox.md` in full
+2. Reads `~/Projects/github.com/craiggwilson/kb/inbox/inbox.md` in full
 3. For each item: searches `notes/` for an existing note to enrich, or creates a new one
 4. Updates relevant MOCs in `mocs/`
 5. Clears processed items from `inbox.md`

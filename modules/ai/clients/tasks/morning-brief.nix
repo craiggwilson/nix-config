@@ -11,7 +11,7 @@
         description = "Senior-staff daily brief: triage open PRs and plan the day";
         schedule = "*-*-* 07:00:00";
         prompt = ./prompts/morning-brief.md;
-        workingDirectory = "~/Projects/kb";
+        workingDirectory = "~/Projects/github.com/craiggwilson/kb";
         timeout = "2h";
       };
     };

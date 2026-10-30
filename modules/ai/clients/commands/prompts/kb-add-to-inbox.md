@@ -7,7 +7,7 @@ Add a thought, note, or fragment to the KB inbox.
 ## What This Does
 
 1. Loads the `kb` skill
-2. Appends `$ARGUMENTS` as a new item to `~/Projects/kb/inbox/inbox.md`
+2. Appends `$ARGUMENTS` as a new item to `~/Projects/github.com/craiggwilson/kb/inbox/inbox.md`
 3. Confirms what was added — no further processing
 
 This is a pure capture command. No synthesis, no note creation. Just drop it in.
