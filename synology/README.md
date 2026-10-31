@@ -8,7 +8,7 @@ Each application is a Synology stack. A stack has its own generated
 `compose.yaml` and managed configuration files. `synology-deploy` selects a
 stack by name, copies it to the NAS, and runs it with Docker Compose over SSH.
 
-The initial stack is `homeassistant`.
+The stacks are `homeassistant`, `paperless`, and `yuvomi`.
 
 The deployment expects the Synology `docker` SMB share to be mounted locally
 at `$HOME/mnt/synology/docker`. Set `SYNOLOGY_MOUNT` to use another mount
@@ -29,6 +29,46 @@ nix run .#synology-deploy -- synology homeassistant
 
 An alternate remote directory can be supplied as the third argument. The
 default for the `homeassistant` stack is `/volume3/docker/homeassistant`.
+
+### Yuvomi and Paperless
+
+Both new stacks keep their application data under `/volume3/docker/<stack>`.
+Their secrets are resolved from the local SecretSpec/1Password configuration
+during deployment; no manually maintained `.env` file is needed:
+
+```bash
+mkdir -p "$HOME/mnt/synology/docker/yuvomi" "$HOME/mnt/synology/docker/paperless"
+```
+
+Create these 1Password items once, if they do not already exist:
+
+- `Craig/Yuvomi`: `session_secret`, `db_encryption_key`
+- `Craig/Paperless`: `postgres_password`, `secret_key`
+
+Keep the Yuvomi database encryption key backed up in 1Password; losing it makes
+the encrypted database unrecoverable. Deployment materializes protected secret
+files under each stack's `secrets/` directory and refreshes them on every
+deployment.
+
+Deploy them with:
+
+```bash
+nix run .#synology-deploy -- synology yuvomi
+nix run .#synology-deploy -- synology paperless
+```
+
+Deployment is deliberately non-destructive: existing managed files are compared
+first, missing files are added, and deployment stops instead of overwriting any
+existing file that differs from the Nix-generated version. Secret files are the
+exception: they are intentionally refreshed from SecretSpec on each deploy.
+
+Yuvomi listens on port `3000`; Paperless-ngx listens on port `8010`. After
+creating the Paperless admin account, configure Yuvomi’s Documents module to
+use Paperless at `http://synology:8010` (or the NAS hostname/IP reachable from
+the Yuvomi container) and create the Paperless API token requested by Yuvomi.
+Put both services behind the existing HTTPS reverse-proxy setup before using
+them outside the LAN. Yuvomi’s private-network DMS access is enabled because
+Paperless is a local service.
 
 The Home Assistant data directory is deliberately left on the NAS. Nix
 manages the container definition, but does not replace mutable application

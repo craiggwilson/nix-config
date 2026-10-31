@@ -2,6 +2,8 @@
 let
   stacks = {
     homeassistant = import ./stacks/homeassistant.nix { inherit lib; };
+    paperless = import ./stacks/paperless.nix { };
+    yuvomi = import ./stacks/yuvomi.nix { };
   };
 
   mkStack =
@@ -40,8 +42,9 @@ in
       pkgs.writeShellApplication {
         name = "synology-deploy";
         runtimeInputs = [
+          pkgs.coreutils
           pkgs.openssh
-          pkgs.rsync
+          pkgs.secretspec
         ];
         text = ''
           if [[ $# -lt 2 || $# -gt 3 ]]; then
@@ -68,47 +71,86 @@ in
             exit 1
           fi
 
-          # Sync only Nix-managed stack files through the local SMB mount.
-          # Files created by the application remain on the NAS.
-          rsync --archive --checksum "$stackDirectory/" "$localDirectory/"
-
-          # SSH is only used for the Docker Compose lifecycle operation.
-          # shellcheck disable=SC2029
-          ssh "$host" "cd '$remoteDirectory' && docker compose pull && docker compose up -d"
-        '';
-      };
-
-    synology-pull =
-      { pkgs, ... }:
-      pkgs.writeShellApplication {
-        name = "synology-pull";
-        runtimeInputs = [ pkgs.rsync ];
-        text = ''
-          if [[ $# -ne 2 ]]; then
-            echo "usage: synology-pull STACK DESTINATION" >&2
-            exit 2
-          fi
-
-          stack="$1"
-          destination="$2"
-          mountRoot="''${SYNOLOGY_MOUNT:-$HOME/mnt/synology/docker}"
-          source="$mountRoot/$stack"
-
-          if [[ ! -d "$source" ]]; then
-            echo "Synology SMB mount is not available: $source" >&2
-            echo "Mount the docker share or set SYNOLOGY_MOUNT." >&2
+          if [[ -z ''${SECRETSPEC_FILE:-} || ! -r "$SECRETSPEC_FILE" ]]; then
+            echo "SecretSpec manifest is unavailable." >&2
+            echo "Apply the Home Manager configuration, then retry." >&2
             exit 1
           fi
 
-          mkdir -p "$destination"
-          rsync --archive --checksum \
-            --exclude='.storage/' \
-            --exclude='home-assistant_v2.db*' \
-            --exclude='home-assistant.log*' \
-            --exclude='secrets.yaml' \
-            --exclude='custom_components/' \
-            --exclude='compose.yaml' \
-            "$source/" "$destination/"
+          umask 077
+
+          ${lib.concatMapStringsSep "\n"
+            (
+              stackName:
+              let
+                stackDefinition = stacks.${stackName};
+              in
+              ''
+                if [[ "$stack" == ${lib.escapeShellArg stackName} ]]; then
+                  ${lib.concatMapStringsSep "\n" (
+                    secretPath:
+                    let
+                      secretName = stackDefinition.secrets.${secretPath};
+                    in
+                    ''
+                        targetFile="$localDirectory/${secretPath}"
+                        mkdir -p "$(dirname "$targetFile")"
+                        temporaryFile=$(mktemp "$targetFile.XXXXXX")
+                        trap 'rm -f "$temporaryFile"' EXIT
+                      secretspec get ${lib.escapeShellArg secretName} --file "$SECRETSPEC_FILE" > "$temporaryFile"
+                        chmod 600 "$temporaryFile"
+                        mv -f "$temporaryFile" "$targetFile"
+                        trap - EXIT
+                    ''
+                  ) (builtins.attrNames (stackDefinition.secrets or { }))}
+                fi
+              ''
+            )
+            (
+              builtins.filter (stackName: builtins.attrNames (stacks.${stackName}.secrets or { }) != [ ]) (
+                builtins.attrNames stacks
+              )
+            )
+          }
+
+          # Copy only Nix-managed stack files through the local SMB mount.
+          # Files created by the application remain on the NAS. Refuse to
+          # overwrite a file changed outside Nix; review it before retrying.
+          while IFS= read -r -d "" sourceFile; do
+            relativePath="''${sourceFile#"$stackDirectory/"}"
+            targetFile="$localDirectory/$relativePath"
+            if [[ -e "$targetFile" ]] && ! cmp --silent "$sourceFile" "$targetFile"; then
+              echo "refusing to overwrite changed file: $targetFile" >&2
+              printf 'run this to see the delta:\n  diff -u %q %q\n' \
+                "$targetFile" "$sourceFile" >&2
+              exit 1
+            fi
+          done < <(find -L "$stackDirectory" -type f -print0)
+
+          # Empty directories are meaningful for bind mounts too. Create the
+          # declared stack directories without changing any existing contents.
+          while IFS= read -r -d "" sourceDirectory; do
+            relativePath="''${sourceDirectory#"$stackDirectory/"}"
+            mkdir -p "$localDirectory/$relativePath"
+          done < <(find -L "$stackDirectory" -mindepth 1 -type d -print0)
+
+          while IFS= read -r -d "" sourceFile; do
+            relativePath="''${sourceFile#"$stackDirectory/"}"
+            targetFile="$localDirectory/$relativePath"
+            if [[ ! -e "$targetFile" ]]; then
+              mkdir -p "$(dirname "$targetFile")"
+              # Nix store files are read-only; do not carry that mode onto
+              # mutable files on the NAS share.
+              cp --no-preserve=mode "$sourceFile" "$targetFile"
+            fi
+          done < <(find -L "$stackDirectory" -type f -print0)
+
+          # SSH is only used for the Docker Compose lifecycle operation.
+          # Synology's command-mode PATH omits /usr/local/bin, and its Docker
+          # socket requires root even when the interactive login can find the
+          # client. A TTY lets sudo prompt for the account password once.
+          # shellcheck disable=SC2029
+          ssh -tt "$host" "cd '$remoteDirectory' && sudo /usr/local/bin/docker compose pull && sudo /usr/local/bin/docker compose up -d"
         '';
       };
   };

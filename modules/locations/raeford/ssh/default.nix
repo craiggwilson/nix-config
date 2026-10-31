@@ -6,7 +6,7 @@
     homeManager =
       {
         config,
-        hasTag,
+        host,
         lib,
         ...
       }:
@@ -17,15 +17,25 @@
         # Resolution is backed by locations.raeford.hosts (/etc/hosts).
         machines = [
           "blackflame"
-          "synology"
+          "craiggwilson@synology"
           "unsouled"
         ];
+        parseMachine = machine: {
+          hostname = lib.last (lib.splitString "@" machine);
+          user =
+            if lib.hasInfix "@" machine then lib.head (lib.splitString "@" machine) else config.home.username;
+        };
       in
       {
-        hdwlinux.security.ssh.settings = lib.genAttrs (lib.filter (m: !(hasTag "host:${m}")) machines) (m: {
-          HostName = "${m}.${domain}";
-          User = config.home.username;
-        });
+        hdwlinux.security.ssh.settings = lib.listToAttrs (
+          map (machine: {
+            name = machine.hostname;
+            value = {
+              HostName = "${machine.hostname}.${domain}";
+              User = machine.user;
+            };
+          }) (lib.filter (machine: machine.hostname != host) (map parseMachine machines))
+        );
       };
   };
 }
