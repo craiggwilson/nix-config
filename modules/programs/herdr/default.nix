@@ -103,6 +103,30 @@
 
         # Install plugins that are not yet registered; skip already-installed ones
         # and fail loudly when an install fails.
+        declaredPluginIds = builtins.toJSON (
+          map (plugin: plugin.id) config.hdwlinux.programs.herdr.plugins
+        );
+
+        pruneUndeclaredPlugins = lib.optionalString config.hdwlinux.programs.herdr.pruneUndeclared ''
+          declared_plugins='${declaredPluginIds}'
+          installed_plugins=$(${herdrPkg}/bin/herdr plugin list --json 2>/dev/null \
+            | ${pkgs.jq}/bin/jq -r '.result.plugins[]?.plugin_id') || {
+            errorEcho "herdr: could not list installed plugins; skipping undeclared-plugin pruning"
+            installed_plugins=""
+          }
+
+          while IFS= read -r plugin_id; do
+            [ -z "$plugin_id" ] && continue
+            if ! ${pkgs.jq}/bin/jq -e --arg plugin_id "$plugin_id" \
+                'index($plugin_id) != null' <<< "$declared_plugins" > /dev/null; then
+              verboseEcho "herdr: removing undeclared plugin '$plugin_id'"
+              if ! ${herdrPkg}/bin/herdr plugin uninstall "$plugin_id"; then
+                errorEcho "herdr: could not remove undeclared plugin '$plugin_id'"
+              fi
+            fi
+          done <<< "$installed_plugins"
+        '';
+
         pluginInstallScript = lib.concatMapStringsSep "\n" (
           plugin:
           let
@@ -137,6 +161,8 @@
             fi
           ''
         ) config.hdwlinux.programs.herdr.plugins;
+
+        herdrPluginActivation = pruneUndeclaredPlugins + pluginInstallScript;
 
         # Generate herdr config.toml
         herdrConfig = {
@@ -316,6 +342,15 @@
           default = [ ];
         };
 
+        options.hdwlinux.programs.herdr.pruneUndeclared = lib.mkOption {
+          description = ''
+            Whether Home Manager activation removes installed Herdr plugins that
+            are not declared by this configuration.
+          '';
+          type = lib.types.bool;
+          default = true;
+        };
+
         config = {
           home.packages = [
             herdr
@@ -324,7 +359,7 @@
             pkgs.jq
           ];
 
-          home.activation.herdrPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] pluginInstallScript;
+          home.activation.herdrPlugins = lib.hm.dag.entryAfter [ "writeBoundary" ] herdrPluginActivation;
 
           xdg.configFile."herdr/config.toml".source = herdrToml;
         };
@@ -436,6 +471,27 @@
               key = "prefix+shift+j";
               command = "mroth.jj-status.refresh";
               description = "refresh jj status";
+            }
+          ];
+        }
+      ];
+    };
+  };
+
+  config.substrate.modules.programs.herdr.ttt = {
+    tags = [ "profile:programming" ];
+
+    homeManager = _: {
+      hdwlinux.programs.herdr.plugins = [
+        {
+          id = "ttt.editor";
+          source = "eugenioenko/ttt/herdr-plugin";
+          keybindings = [
+            {
+              key = "alt+e";
+              type = "shell";
+              command = "herdr plugin pane open --plugin ttt.editor --entrypoint editor";
+              description = "open TTT editor";
             }
           ];
         }

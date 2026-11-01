@@ -1,0 +1,13 @@
+{
+  "name": "jujutsu",
+  "displayName": "Jujutsu",
+  "description": "Read-only Jujutsu status, history, and diff information",
+  "version": "0.1.0",
+  "author": "hdwlinux",
+  "entry": "init.lua",
+  "api": 1,
+  "permissions": {
+    "panel.sidebar": true,
+    "system.exec": ["jj"]
+  }
+}
