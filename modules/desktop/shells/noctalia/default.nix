@@ -448,6 +448,9 @@
             };
           };
         };
+
+        # Keep Noctalia from starting alongside another selected shell.
+        systemd.user.services.noctalia.Unit.ConditionEnvironment = "HDWLINUX_SHELL=noctalia";
       };
 
   };

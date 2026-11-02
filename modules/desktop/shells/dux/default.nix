@@ -212,6 +212,7 @@
         ];
 
         systemd.user.services.dms.Unit.ConditionEnvironment = "HDWLINUX_SHELL=dux";
+        systemd.user.services.dcal.Unit.ConditionEnvironment = "HDWLINUX_SHELL=dux";
 
         programs.dank-calendar = {
           enable = true;
