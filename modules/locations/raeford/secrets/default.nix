@@ -1,9 +1,10 @@
 {
+  # NixOS-side CIFS creds: craig mounts //synology/home on raeford hosts
+  # regardless of personal/work profile, so no profile tag here.
   config.substrate.modules.locations.raeford.secrets = {
     tags = [
       "location:raeford"
       "user:craig"
-      "profile:personal"
     ];
 
     nixos = {
