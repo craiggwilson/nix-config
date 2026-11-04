@@ -36,6 +36,10 @@ in
           diskoConfig
         ];
 
+        networking.extraHosts = [
+          "192.168.10.52 blackflame blackflame.raeford.wilsonfamilyhq.com" # wifi
+        ];
+
         boot.kernelPackages = pkgs.linuxPackages_6_18;
 
         hdwlinux.theme.system = "catppuccin";

@@ -6,6 +6,34 @@
       "profile:personal"
     ];
 
+    nixos = {
+      secretspec.entries = {
+        SYNOLOGY_CIFS_PASSWORD = {
+          description = "Password for the Synology SMB account.";
+          ref = {
+            vault = "Craig";
+            item = "Synology - Craig";
+            field = "password";
+          };
+        };
+        synologyCifsCredentials = {
+          description = "Credentials file for Synology SMB mounts.";
+          composed = ''
+            username=craiggwilson
+            password=''${SYNOLOGY_CIFS_PASSWORD}'';
+          file = { };
+        };
+      };
+    };
+  };
+
+  config.substrate.modules.locations.raeford.secrets-craig-personal = {
+    tags = [
+      "location:raeford"
+      "user:craig"
+      "profile:personal"
+    ];
+
     homeManager = {
       secretspec.entries = {
         PAPERLESS_POSTGRES_PASSWORD = {
