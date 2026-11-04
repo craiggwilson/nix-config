@@ -7,16 +7,15 @@ _: {
     };
 
     db = {
+      env_file = [ "/volume3/docker/paperless/secrets/paperless.env" ];
       environment = {
         POSTGRES_DB = "paperless";
         POSTGRES_USER = "paperless";
-        POSTGRES_PASSWORD_FILE = "/run/secrets/postgres_password";
       };
       image = "docker.io/library/postgres:18";
       restart = "unless-stopped";
       volumes = [
         "/volume3/docker/paperless/pgdata:/var/lib/postgresql"
-        "/volume3/docker/paperless/secrets/postgres_password:/run/secrets/postgres_password:ro"
       ];
     };
 
@@ -37,12 +36,11 @@ _: {
         "gotenberg"
         "tika"
       ];
+      env_file = [ "/volume3/docker/paperless/secrets/paperless.env" ];
       environment = {
         PAPERLESS_DBENGINE = "postgresql";
         PAPERLESS_DBHOST = "db";
-        PAPERLESS_DBPASS_FILE = "/run/secrets/postgres_password";
         PAPERLESS_REDIS = "redis://broker:6379";
-        PAPERLESS_SECRET_KEY_FILE = "/run/secrets/secret_key";
         PAPERLESS_OCR_LANGUAGE = "eng";
         PAPERLESS_TIME_ZONE = "America/New_York";
         PAPERLESS_URL = "https://paperless.raeford.wilsonfamilyhq.com";
@@ -57,8 +55,6 @@ _: {
         "/volume3/docker/paperless/media:/usr/src/paperless/media"
         "/volume3/docker/paperless/export:/usr/src/paperless/export"
         "/volume3/docker/paperless/consume:/usr/src/paperless/consume"
-        "/volume3/docker/paperless/secrets/postgres_password:/run/secrets/postgres_password:ro"
-        "/volume3/docker/paperless/secrets/secret_key:/run/secrets/secret_key:ro"
       ];
     };
 
@@ -79,7 +75,6 @@ _: {
   ];
 
   secrets = {
-    "secrets/postgres_password" = "PAPERLESS_POSTGRES_PASSWORD";
-    "secrets/secret_key" = "PAPERLESS_SECRET_KEY";
+    "secrets/paperless.env" = "PAPERLESS_ENV";
   };
 }

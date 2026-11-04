@@ -338,6 +338,7 @@
           # Profile tags
           "profile:ai"
           "profile:gaming"
+          "profile:homelab"
           "profile:personal"
           "profile:programming"
           "profile:work"

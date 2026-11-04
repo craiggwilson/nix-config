@@ -1,7 +1,10 @@
 { lib, ... }:
 let
   stacks = {
+    agentgateway = import ./stacks/agentgateway.nix { };
+    certificates = import ./stacks/certificates.nix { };
     homeassistant = import ./stacks/homeassistant.nix { inherit lib; };
+    keycloak = import ./stacks/keycloak.nix { };
     paperless = import ./stacks/paperless.nix { };
     yuvomi = import ./stacks/yuvomi.nix { };
   };
@@ -30,6 +33,20 @@ let
         path = mkStack pkgs name stack;
       }) stacks
     );
+
+  mkCommands =
+    stacks:
+    lib.listToAttrs (
+      lib.concatLists (
+        lib.mapAttrsToList (
+          stackName: stack:
+          lib.mapAttrsToList (
+            commandName: command: lib.nameValuePair "synology-${stackName}-${commandName}" command
+          ) (stack.commands or { })
+        ) stacks
+      )
+    );
+
 in
 {
   config.substrate.publish.packages = {
@@ -71,9 +88,9 @@ in
             exit 1
           fi
 
-          if [[ -z ''${SECRETSPEC_FILE:-} || ! -r "$SECRETSPEC_FILE" ]]; then
-            echo "SecretSpec manifest is unavailable." >&2
-            echo "Apply the Home Manager configuration, then retry." >&2
+           if [[ -z ''${SECRETSPEC_FILE:-} || ! -r "$SECRETSPEC_FILE" ]]; then
+             echo "SecretSpec manifest is unavailable." >&2
+             echo "Apply the Home Manager configuration, then retry." >&2
             exit 1
           fi
 
@@ -93,14 +110,15 @@ in
                       secretName = stackDefinition.secrets.${secretPath};
                     in
                     ''
-                        targetFile="$localDirectory/${secretPath}"
-                        mkdir -p "$(dirname "$targetFile")"
-                        temporaryFile=$(mktemp "$targetFile.XXXXXX")
-                        trap 'rm -f "$temporaryFile"' EXIT
-                      secretspec get ${lib.escapeShellArg secretName} --file "$SECRETSPEC_FILE" > "$temporaryFile"
-                        chmod 600 "$temporaryFile"
-                        mv -f "$temporaryFile" "$targetFile"
-                        trap - EXIT
+                      targetFile="$localDirectory/${secretPath}"
+                      mkdir -p "$(dirname "$targetFile")"
+                      temporaryFile=$(mktemp "$targetFile.XXXXXX")
+                      trap 'rm -f "$temporaryFile"' EXIT
+                      secretspec get ${lib.escapeShellArg secretName} \
+                        --file "$SECRETSPEC_FILE" \
+                        --reason "Deploy the Synology stack" > "$temporaryFile"
+                      mv -f "$temporaryFile" "$targetFile"
+                      trap - EXIT
                     ''
                   ) (builtins.attrNames (stackDefinition.secrets or { }))}
                 fi
@@ -121,8 +139,10 @@ in
             targetFile="$localDirectory/$relativePath"
             if [[ -e "$targetFile" ]] && ! cmp --silent "$sourceFile" "$targetFile"; then
               echo "refusing to overwrite changed file: $targetFile" >&2
-              printf 'run this to see the delta:\n  diff -u %q %q\n' \
+              printf ' - run this to see the delta:\n  diff -u %q %q\n' \
                 "$targetFile" "$sourceFile" >&2
+              printf '\n - run this to overwrite the change:\n  cp %q %q\n' \
+                "$sourceFile" "$targetFile" >&2
               exit 1
             fi
           done < <(find -L "$stackDirectory" -type f -print0)
@@ -145,13 +165,51 @@ in
             fi
           done < <(find -L "$stackDirectory" -type f -print0)
 
+          # CIFS chmod can affect only the client-side view. Enforce the
+          # permissions once on Synology itself before any service starts.
+          ${lib.concatMapStringsSep "\n"
+            (
+              stackName:
+              let
+                stackDefinition = stacks.${stackName};
+              in
+              ''
+                if [[ "$stack" == ${lib.escapeShellArg stackName} ]]; then
+                  ssh -tt "$host" "sudo chmod 700 '$remoteDirectory/secrets' && ${
+                    lib.concatStringsSep " && " (
+                      map (secretPath: "sudo chmod 600 '$remoteDirectory/${secretPath}'") (
+                        builtins.attrNames (stackDefinition.secrets or { })
+                      )
+                    )
+                  }"
+                fi
+              ''
+            )
+            (
+              builtins.filter (stackName: builtins.attrNames (stacks.${stackName}.secrets or { }) != [ ]) (
+                builtins.attrNames stacks
+              )
+            )
+          }
+
+          ${lib.concatMapStringsSep "\n" (
+            stackName:
+            lib.optionalString (!(stacks.${stackName}.lifecycle or true)) ''
+              if [[ "$stack" == ${lib.escapeShellArg stackName} ]]; then
+                exit 0
+              fi
+            ''
+          ) (builtins.attrNames stacks)}
+
           # SSH is only used for the Docker Compose lifecycle operation.
           # Synology's command-mode PATH omits /usr/local/bin, and its Docker
           # socket requires root even when the interactive login can find the
           # client. A TTY lets sudo prompt for the account password once.
           # shellcheck disable=SC2029
           ssh -tt "$host" "cd '$remoteDirectory' && sudo /usr/local/bin/docker compose pull && sudo /usr/local/bin/docker compose up -d"
+
         '';
       };
-  };
+  }
+  // mkCommands stacks;
 }

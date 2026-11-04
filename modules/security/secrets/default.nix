@@ -30,6 +30,7 @@ in
       { pkgs, config, ... }:
       {
         config.secretspec = {
+          manifestPath = "${config.xdg.configHome}/secretspec/secretspec.toml";
           providers.onepassword = {
             uri = "onepassword://";
 

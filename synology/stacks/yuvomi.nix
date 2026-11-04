@@ -1,5 +1,9 @@
 _: {
   compose.services.yuvomi = {
+    command = [
+      "node"
+      "server/index.js"
+    ];
     container_name = "yuvomi";
     environment = {
       BACKUP_DIR = "/backups";
@@ -24,6 +28,10 @@ _: {
       timeout = "10s";
     };
     image = "ghcr.io/ulsklyc/yuvomi:latest";
+    entrypoint = [
+      "/bin/sh"
+      "/run/yuvomi-entrypoint.sh"
+    ];
     ports = [ "3000:3000" ];
     restart = "unless-stopped";
     volumes = [
@@ -33,8 +41,11 @@ _: {
       "/volume3/docker/yuvomi/documents:/documents"
       "/volume3/docker/yuvomi/secrets/session_secret:/run/secrets/session_secret:ro"
       "/volume3/docker/yuvomi/secrets/db_encryption_key:/run/secrets/db_encryption_key:ro"
+      "/volume3/docker/yuvomi/yuvomi-entrypoint.sh:/run/yuvomi-entrypoint.sh:ro"
     ];
   };
+
+  files."yuvomi-entrypoint.sh" = builtins.readFile ./yuvomi/files/entrypoint.sh;
 
   directories = [
     "data"
