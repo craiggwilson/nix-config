@@ -95,6 +95,174 @@
   "foregroundLayerTransparency": 1,
   "blurLayerOutlineOpacity": 0.4,
   "systemTrayIconTintMode": "monochrome",
+  "controlCenterWidgets": [
+    {
+      "id": "user",
+      "enabled": true,
+      "w": 5,
+      "h": 1,
+      "col": 0,
+      "row": 0
+    },
+    {
+      "id": "settings",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true,
+      "col": 5,
+      "row": 0
+    },
+    {
+      "id": "lock",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true,
+      "col": 6,
+      "row": 0
+    },
+    {
+      "id": "power",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true,
+      "col": 7,
+      "row": 0
+    },
+    {
+      "id": "brightnessSlider",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 0,
+      "row": 2
+    },
+    {
+      "id": "volumeSlider",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 4,
+      "row": 3
+    },
+    {
+      "id": "wifi",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 0,
+      "row": 1
+    },
+    {
+      "id": "bluetooth",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 4,
+      "row": 1
+    },
+    {
+      "id": "darkMode",
+      "enabled": true,
+      "w": 2,
+      "h": 1,
+      "col": 4,
+      "row": 2
+    },
+    {
+      "id": "nightMode",
+      "enabled": true,
+      "w": 2,
+      "h": 1,
+      "col": 6,
+      "row": 2
+    },
+    {
+      "id": "doNotDisturb",
+      "enabled": true,
+      "w": 2,
+      "h": 1,
+      "col": 4,
+      "row": 5
+    },
+    {
+      "id": "idleInhibitor",
+      "enabled": true,
+      "w": 2,
+      "h": 1,
+      "col": 6,
+      "row": 5
+    },
+    {
+      "id": "battery",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 0,
+      "row": 5
+    },
+    {
+      "id": "diskUsage",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 0,
+      "row": 6,
+      "showMountPath": true
+    },
+    {
+      "id": "edit",
+      "enabled": true,
+      "w": 1,
+      "h": 1,
+      "small": true,
+      "col": 7,
+      "row": 6
+    },
+    {
+      "id": "plugin_cast",
+      "enabled": true,
+      "w": 1.5,
+      "h": 1,
+      "col": 4,
+      "row": 6,
+      "small": false
+    },
+    {
+      "id": "colorPicker",
+      "enabled": true,
+      "w": 1.5,
+      "h": 1,
+      "col": 5.5,
+      "row": 6
+    },
+    {
+      "id": "inputVolumeSlider",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 4,
+      "row": 4
+    },
+    {
+      "id": "audioOutput",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 0,
+      "row": 3
+    },
+    {
+      "id": "audioInput",
+      "enabled": true,
+      "w": 4,
+      "h": 1,
+      "col": 0,
+      "row": 4
+    }
+  ],
   "scrollTitleEnabled": true,
   "audioVisualizerEnabled": true,
   "spotlightSectionViewModes": {
@@ -104,36 +272,108 @@
   "dashTabsEvenlySpaced": true,
   "dashTabs": [
     {
-      "id": "overview",
-      "enabled": true
+      "enabled": true,
+      "id": "overview"
     },
     {
-      "id": "media",
-      "enabled": true
+      "enabled": true,
+      "id": "media"
     },
     {
-      "id": "wallpaper",
-      "enabled": false
+      "enabled": false,
+      "id": "wallpaper"
     },
     {
+      "enabled": true,
+      "id": "weather"
+    },
+    {
+      "enabled": true,
+      "id": "wellbeing"
+    },
+    {
+      "enabled": false,
+      "id": "notifications"
+    }
+  ],
+  "dashCards": [
+    {
+      "col": 0,
+      "h": 1,
+      "id": "clock",
+      "row": 0,
+      "w": 2
+    },
+    {
+      "col": 2,
+      "h": 1,
       "id": "weather",
-      "enabled": true
+      "row": 0,
+      "w": 1
     },
     {
-      "id": "wellbeing",
-      "enabled": true
-    },
-    {
+      "col": 0,
+      "h": 2,
       "id": "notifications",
-      "enabled": false
+      "row": 3,
+      "w": 3
+    },
+    {
+      "col": 3,
+      "h": 4,
+      "id": "calendar",
+      "row": 1,
+      "w": 3
+    },
+    {
+      "col": 0,
+      "h": 1,
+      "id": "cpu",
+      "row": 1,
+      "w": 1
+    },
+    {
+      "col": 1,
+      "h": 1,
+      "id": "memory",
+      "row": 1,
+      "w": 1
+    },
+    {
+      "col": 3,
+      "h": 1,
+      "id": "sysmon",
+      "row": 0,
+      "w": 3
+    },
+    {
+      "col": 1,
+      "h": 1,
+      "id": "network",
+      "row": 2,
+      "w": 2
+    },
+    {
+      "col": 0,
+      "h": 1,
+      "id": "disk",
+      "row": 2,
+      "w": 1
+    },
+    {
+      "col": 2,
+      "h": 1,
+      "id": "battery",
+      "row": 1,
+      "w": 1
     }
   ],
   "dashOptions": {
-    "media": {
-      "lyrics": false
-    },
     "calendar": {
       "weekends": true
+    },
+    "media": {
+      "lyrics": false
     }
   },
   "cursorSettings": {

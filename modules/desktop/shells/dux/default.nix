@@ -45,6 +45,13 @@
               mkdir -p "$out"
               cp -r ${source}/${path}/. "$out/"
             '';
+        castSrc = mkPlugin {
+          owner = "Conava";
+          repo = "dux-plugins";
+          path = "Cast";
+          rev = "7b55937e68a3625ddb8243a4f2a23d0e4e42a59a";
+          hash = "sha256-4r+0iUAp1ReNH6L1Svryn7VtqOK7zpmG0xmqjUkjW/I=";
+        };
         dankKDEConnectSrc = mkPlugin {
           owner = "duxlabs-dev";
           repo = "dux-plugins";
@@ -108,6 +115,16 @@
             pkgs.jq
             pkgs.sqlite
             pkgs.cava
+            pkgs.hdwlinux.cast-helper
+            pkgs.hdwlinux.doubletake
+            pkgs.gst_all_1.gstreamer
+            pkgs.gst_all_1.gst-plugins-base
+            pkgs.gst_all_1.gst-plugins-good
+            pkgs.gst_all_1.gst-plugins-bad
+            pkgs.gst_all_1.gst-libav
+            pkgs.pipewire
+            pkgs.libheif
+            pkgs.pulseaudio
             pkgs.kdePackages.kdeconnect-kde
             pkgs.valent
             pkgs.tailscale
@@ -165,6 +182,10 @@
           enableAudioWavelength = false;
           enableCalendarEvents = true;
           plugins = {
+            cast = {
+              src = castSrc;
+              settings.audioTarget = "local";
+            };
             dankKDEConnect.src = dankKDEConnectSrc;
             dankscale = {
               src = dankscaleSrc;

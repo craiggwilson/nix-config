@@ -1,0 +1,11 @@
+diff --git a/internal/daemon/daemon.go b/internal/daemon/daemon.go
+--- a/internal/daemon/daemon.go
++++ b/internal/daemon/daemon.go
+@@ -1194,1 +1194,6 @@ func (d *Daemon) connectAndStream(ctx context.Context, entry *activeStream, target string, port int, suppliedCredential string) {
+-	sink := broadcast.AddSink()
++	sink, sinkErr := broadcast.AddBackpressuredSink()
++	if sinkErr != nil {
++		_ = session.Close()
++		removeStream(fmt.Sprintf("attach video sink: %v", sinkErr))
++		return
++	}

@@ -1,0 +1,15 @@
+diff --git a/airplay.go b/airplay.go
+--- a/airplay.go
++++ b/airplay.go
+@@ -117,3 +117,0 @@ func (a *airplaySession) run() (code string, err error) {
+-	if a.opts.Audio != "local" {
+-		a.h.emit(map[string]any{"event": "warning", "code": "airplaySound"})
+-	}
+@@ -137,2 +137,5 @@ func (a *airplaySession) run() (code string, err error) {
+-	args := []string{"-daemonize", "-socket", sock, "-creds", filepath.Join(data, "doubletake-credentials.json"),
+-		"-no-audio", "-fps", strconv.Itoa(a.opts.FPS), "-target-latency-ms", strconv.Itoa(a.opts.Delay), "-port", strconv.Itoa(a.dev.AirplayPort)}
++	args := []string{"-daemonize", "-socket", sock, "-creds", filepath.Join(data, "doubletake-credentials.json"),
++		"-fps", strconv.Itoa(a.opts.FPS), "-target-latency-ms", strconv.Itoa(a.opts.Delay), "-port", strconv.Itoa(a.dev.AirplayPort)}
++	if a.opts.Audio == "local" {
++		args = append(args, "-no-audio")
++	}

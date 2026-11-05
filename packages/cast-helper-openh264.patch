@@ -1,0 +1,25 @@
+diff --git a/airplay.go b/airplay.go
+--- a/airplay.go
++++ b/airplay.go
+@@ -117,3 +117,0 @@ func (a *airplaySession) run() (code string, err error) {
+-	if a.opts.Audio != "local" {
+-		a.h.emit(map[string]any{"event": "warning", "code": "airplaySound"})
+-	}
+@@ -137,2 +137,5 @@ func (a *airplaySession) run() (code string, err error) {
+-	args := []string{"-daemonize", "-socket", sock, "-creds", filepath.Join(data, "doubletake-credentials.json"),
+-		"-no-audio", "-fps", strconv.Itoa(a.opts.FPS), "-target-latency-ms", strconv.Itoa(a.opts.Delay), "-port", strconv.Itoa(a.dev.AirplayPort)}
++	args := []string{"-daemonize", "-socket", sock, "-creds", filepath.Join(data, "doubletake-credentials.json"),
++		"-fps", strconv.Itoa(a.opts.FPS), "-target-latency-ms", strconv.Itoa(a.opts.Delay), "-port", strconv.Itoa(a.dev.AirplayPort)}
++	if a.opts.Audio == "local" {
++		args = append(args, "-no-audio")
++	}
+@@ -145,7 +145,3 @@ func (a *airplaySession) run() (code string, err error) {
+-	// doubletake's automatic choice is the Vulkan encoder, which sends no
+-	// frames from a real screen at 60 fps (doubletake 0.5.0, AMD); VA-API,
+-	// which Chromecast mirroring uses too, works.
+-	if hasElement("vah264enc") {
+-		args = append(args, "-hwaccel", "vaapi")
+-	}
++	// OpenH264 avoids receiver-specific VA-API bitstream compatibility issues.
++	args = append(args, "-hwaccel", "openh264")
+ 	if a.opts.AirplayPorts != "" {
