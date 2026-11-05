@@ -37,6 +37,7 @@ _: {
         "tika"
       ];
       env_file = [ "/volume3/docker/paperless/secrets/paperless.env" ];
+      extra_hosts = [ "auth.wilsonfamilyhq.com:192.168.100.50" ];
       environment = {
         PAPERLESS_DBENGINE = "postgresql";
         PAPERLESS_DBHOST = "db";

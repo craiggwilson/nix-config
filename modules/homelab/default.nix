@@ -145,11 +145,27 @@
               };
             };
 
+            PAPERLESS_OIDC_CLIENT_SECRET = {
+              description = "Keycloak OIDC client secret for Paperless-ngx.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "keycloak";
+                field = "paperless_client_secret";
+              };
+            };
+
             PAPERLESS_ENV = {
               composed = ''
                 PAPERLESS_DBPASS=''${PAPERLESS_POSTGRES_PASSWORD}
                 PAPERLESS_SECRET_KEY=''${PAPERLESS_SECRET_KEY}
                 POSTGRES_PASSWORD=''${PAPERLESS_POSTGRES_PASSWORD}
+                PAPERLESS_APPS=allauth.socialaccount.providers.openid_connect
+                PAPERLESS_SOCIALACCOUNT_PROVIDERS={"openid_connect":{"SCOPE":["openid","profile","email"],"OAUTH_PKCE_ENABLED":true,"APPS":[{"provider_id":"keycloak","name":"Keycloak","client_id":"paperless","secret":"''${PAPERLESS_OIDC_CLIENT_SECRET}","settings":{"server_url":"https://auth.wilsonfamilyhq.com/realms/wilsonfamilyhq.com/.well-known/openid-configuration"}}]}}
+                PAPERLESS_SOCIALACCOUNT_ALLOW_SIGNUPS=false
+                PAPERLESS_SOCIAL_AUTO_SIGNUP=false
+                PAPERLESS_OAUTH_CALLBACK_BASE_URL=https://paperless.raeford.wilsonfamilyhq.com
+                PAPERLESS_ACCOUNT_DEFAULT_HTTP_PROTOCOL=https
               '';
               description = "Paperless-ngx database and application environment file.";
               file.path = "${config.xdg.configHome}/secretspec/paperless.env";

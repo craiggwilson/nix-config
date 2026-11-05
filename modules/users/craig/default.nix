@@ -120,7 +120,7 @@ in
             {
               group = "users";
               local = "/home/${name}/mnt/synology/docker";
-              remote = "//synology/docker";
+              remote = "//synology.raeford.wilsonfamilyhq.com/docker";
               owner = "${name}";
               credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
@@ -128,7 +128,7 @@ in
             {
               group = "users";
               local = "/home/${name}/mnt/synology/games";
-              remote = "//synology/games";
+              remote = "//synology.raeford.wilsonfamilyhq.com/games";
               owner = "${name}";
               credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
@@ -136,7 +136,7 @@ in
             {
               group = "users";
               local = "/home/${name}/mnt/synology/music";
-              remote = "//synology/music";
+              remote = "//synology.raeford.wilsonfamilyhq.com/music";
               owner = "${name}";
               credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
@@ -144,7 +144,7 @@ in
             {
               group = "users";
               local = "/home/${name}/mnt/synology/photos";
-              remote = "//synology/photo";
+              remote = "//synology.raeford.wilsonfamilyhq.com/photo";
               owner = "${name}";
               credentialsFile = synologyCredentialsFile;
               username = "craiggwilson";
@@ -156,7 +156,7 @@ in
               {
                 group = "users";
                 local = "/home/${name}/mnt/synology/home";
-                remote = "//synology/home";
+                remote = "//synology.raeford.wilsonfamilyhq.com/home";
                 owner = "${name}";
                 credentialsFile = synologyCredentialsFile;
                 username = "craiggwilson";
