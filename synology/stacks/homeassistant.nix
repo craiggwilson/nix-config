@@ -5,6 +5,7 @@ in
 {
   compose.services.homeassistant = {
     container_name = "homeassistant";
+    extra_hosts = [ "auth.wilsonfamilyhq.com:192.168.100.50" ];
     environment.TZ = "America/New_York";
     image = "ghcr.io/home-assistant/home-assistant:stable";
     network_mode = "host";
