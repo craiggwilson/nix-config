@@ -190,6 +190,30 @@
                 field = "session_secret";
               };
             };
+
+            YUVOMI_OIDC_CLIENT_SECRET = {
+              description = "Keycloak OIDC client secret for Yuvomi.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "keycloak";
+                field = "yuvomi_client_secret";
+              };
+            };
+
+            YUVOMI_ENV = {
+              composed = ''
+                BASE_URL=https://yuvomi.raeford.wilsonfamilyhq.com
+                OIDC_ISSUER=https://auth.wilsonfamilyhq.com/realms/wilsonfamilyhq.com
+                OIDC_CLIENT_ID=yuvomi
+                OIDC_CLIENT_SECRET=''${YUVOMI_OIDC_CLIENT_SECRET}
+                OIDC_REDIRECT_URI=https://yuvomi.raeford.wilsonfamilyhq.com/api/v1/auth/oidc/callback
+                OIDC_ALLOW_SIGNUP=false
+                AUTH_ALLOW_PASSWORD_LOGIN=true
+              '';
+              description = "Yuvomi Keycloak OIDC environment file.";
+              file.path = "${config.xdg.configHome}/secretspec/yuvomi.env";
+            };
           };
         };
       };

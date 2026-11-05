@@ -13,7 +13,7 @@ _: {
       MODULES_DIR = "/app/modules";
       NODE_ENV = "production";
       SESSION_SECRET_FILE = "/run/secrets/session_secret";
-      SESSION_SECURE = "false";
+      SESSION_SECURE = "true";
     };
     healthcheck = {
       test = [
@@ -27,6 +27,8 @@ _: {
       start_period = "10s";
       timeout = "10s";
     };
+    env_file = [ "/volume3/docker/yuvomi/secrets/yuvomi.env" ];
+    extra_hosts = [ "auth.wilsonfamilyhq.com:192.168.100.50" ];
     image = "ghcr.io/ulsklyc/yuvomi:latest";
     entrypoint = [
       "/bin/sh"
@@ -58,5 +60,6 @@ _: {
   secrets = {
     "secrets/db_encryption_key" = "YUVOMI_DB_ENCRYPTION_KEY";
     "secrets/session_secret" = "YUVOMI_SESSION_SECRET";
+    "secrets/yuvomi.env" = "YUVOMI_ENV";
   };
 }
