@@ -13,7 +13,7 @@
             general = {
               lock_cmd = "pidof hyprlock || hyprlock";
               before_sleep_cmd = "loginctl lock-session";
-              after_sleep_cmd = "hyprctl dispatch dpms on || niri msg action power-on-monitors";
+                after_sleep_cmd = "hyprctl -i 0 dispatch dpms on || niri msg action power-on-monitors";
             };
 
             listener = [
@@ -24,8 +24,8 @@
               }
               {
                 timeout = 240;
-                on-timeout = "if pgrep -x hyprlock; then hyprctl dispatch dpms off || niri msg action power-off-monitors; fi";
-                on-resume = "hyprctl dispatch dpms on || niri msg action power-on-monitors";
+                on-timeout = "if pgrep -x hyprlock; then hyprctl -i 0 dispatch dpms off || niri msg action power-off-monitors; fi";
+                on-resume = "hyprctl -i 0 dispatch dpms on || niri msg action power-on-monitors";
               }
               {
                 timeout = 300;
@@ -33,8 +33,8 @@
               }
               {
                 timeout = 360;
-                on-timeout = "hyprctl dispatch dpms off || niri msg action power-off-monitors";
-                on-resume = "hyprctl dispatch dpms on || niri msg action power-on-monitors";
+                on-timeout = "hyprctl -i 0 dispatch dpms off || niri msg action power-off-monitors";
+                on-resume = "hyprctl -i 0 dispatch dpms on || niri msg action power-on-monitors";
               }
               {
                 timeout = 1800;

@@ -170,7 +170,6 @@ in
           settings = {
             config = {
               misc = {
-                background_color = rgb colors.base00;
                 disable_hyprland_logo = true;
                 disable_splash_rendering = true;
               };

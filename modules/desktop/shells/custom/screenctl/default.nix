@@ -73,9 +73,9 @@
                   done
                 '';
                 window = recordCommand ''
-                  hyprctl clients -j \
+                  hyprctl -i 0 clients -j \
                     | jq -r ".[] | select(.workspace.id \
-                    | IN($(hyprctl -j monitors | jq 'map(.activeWorkspace.id) | join(",")' | tr -d \")))" \
+                    | IN($(hyprctl -i 0 -j monitors | jq 'map(.activeWorkspace.id) | join(",")' | tr -d \")))" \
                     | jq -r ".at,.size" \
                     | jq -s "add" \
                     | jq '_nwise(4)' \

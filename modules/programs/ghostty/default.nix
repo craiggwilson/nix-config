@@ -32,7 +32,7 @@
             gtk-titlebar = false;
             window-padding-x = 0;
             window-padding-y = 0;
-            window-padding-balance = 0;
+            window-padding-balance = false;
             font-family = "FiraCode Nerd Font Mono";
             font-size = 11;
             keybind = [
