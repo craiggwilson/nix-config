@@ -8,10 +8,6 @@
         hdwlinux = {
           ai.clients.mcpServers.homeassistant.http = {
             url = "https://homeassistant.raeford.wilsonfamilyhq.com/api/mcp";
-            headers.Authorization = {
-              prefix = "Bearer ";
-              secret = "HOMEASSISTANT_MCP_TOKEN";
-            };
           };
 
           programs.rclone.remotes = {
@@ -51,14 +47,6 @@
           };
         };
 
-        secretspec.entries.HOMEASSISTANT_MCP_TOKEN = {
-          description = "Home Assistant long-lived access token for MCP clients.";
-          ref = {
-            vault = "Craig";
-            item = "Home Assistant";
-            field = "mcp_token";
-          };
-        };
       };
   };
 }

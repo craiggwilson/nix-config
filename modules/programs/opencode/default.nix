@@ -175,6 +175,23 @@
             _: value: if builtins.isString value then value else "${value.prefix}{env:${value.secret}}"
           ) headers;
 
+        mcpOauth =
+          oauth:
+          let
+            client = oauth.clients.opencode or { };
+          in
+          {
+            client_id = client.clientId;
+            callback_port = client.callbackPort;
+            redirect_uri = client.redirectUri;
+          }
+          // lib.optionalAttrs (oauth.discoveryUrl != null) {
+            auth_server_metadata_url = oauth.discoveryUrl;
+          }
+          // lib.optionalAttrs (oauth.scopes != [ ]) {
+            scope = lib.concatStringsSep " " oauth.scopes;
+          };
+
         mcpServers =
           lib.mapAttrs
             (
@@ -189,6 +206,7 @@
                   type = "remote";
                   url = server.http.url;
                   headers = mcpHeaders server.http.headers;
+                  oauth = if server.http.oauth == null then { } else mcpOauth server.http.oauth;
                 }
             )
             # oh-my-opencode-slim supplies Context7 itself; avoid starting the shared
