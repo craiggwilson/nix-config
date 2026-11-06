@@ -97,170 +97,179 @@
   "systemTrayIconTintMode": "monochrome",
   "controlCenterWidgets": [
     {
+      "col": 0,
+      "enabled": true,
+      "h": 1,
       "id": "user",
-      "enabled": true,
-      "w": 5,
-      "h": 1,
-      "col": 0,
-      "row": 0
+      "row": 0,
+      "w": 5
     },
     {
-      "id": "settings",
-      "enabled": true,
-      "w": 1,
-      "h": 1,
-      "small": true,
       "col": 5,
-      "row": 0
+      "enabled": true,
+      "h": 1,
+      "id": "settings",
+      "row": 0,
+      "small": true,
+      "w": 1
     },
     {
+      "col": 6,
+      "enabled": true,
+      "h": 1,
       "id": "lock",
-      "enabled": true,
-      "w": 1,
-      "h": 1,
+      "row": 0,
       "small": true,
-      "col": 6,
-      "row": 0
+      "w": 1
     },
     {
+      "col": 7,
+      "enabled": true,
+      "h": 1,
       "id": "power",
-      "enabled": true,
-      "w": 1,
-      "h": 1,
+      "row": 0,
       "small": true,
-      "col": 7,
-      "row": 0
+      "w": 1
     },
     {
+      "col": 0,
+      "enabled": true,
+      "h": 1,
       "id": "brightnessSlider",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 0,
-      "row": 2
+      "row": 2,
+      "w": 4
     },
     {
+      "col": 4,
+      "enabled": true,
+      "h": 1,
       "id": "volumeSlider",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 4,
-      "row": 3
+      "row": 3,
+      "w": 4
     },
     {
+      "col": 1,
+      "enabled": true,
+      "h": 1,
       "id": "wifi",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 0,
-      "row": 1
+      "row": 1,
+      "w": 4
     },
     {
+      "col": 5,
+      "enabled": true,
+      "h": 1,
       "id": "bluetooth",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 4,
-      "row": 1
+      "row": 1,
+      "w": 3
     },
     {
+      "col": 4,
+      "enabled": true,
+      "h": 1,
       "id": "darkMode",
-      "enabled": true,
-      "w": 2,
-      "h": 1,
-      "col": 4,
-      "row": 2
+      "row": 2,
+      "w": 2
     },
     {
+      "col": 6,
+      "enabled": true,
+      "h": 1,
       "id": "nightMode",
-      "enabled": true,
-      "w": 2,
-      "h": 1,
-      "col": 6,
-      "row": 2
+      "row": 2,
+      "w": 2
     },
     {
-      "id": "doNotDisturb",
-      "enabled": true,
-      "w": 2,
-      "h": 1,
       "col": 4,
-      "row": 5
+      "enabled": true,
+      "h": 1,
+      "id": "doNotDisturb",
+      "row": 5,
+      "w": 2
     },
     {
-      "id": "idleInhibitor",
-      "enabled": true,
-      "w": 2,
-      "h": 1,
       "col": 6,
-      "row": 5
+      "enabled": true,
+      "h": 1,
+      "id": "idleInhibitor",
+      "row": 5,
+      "w": 2
     },
     {
+      "col": 0,
+      "enabled": true,
+      "h": 1,
       "id": "battery",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 0,
-      "row": 5
+      "row": 5,
+      "w": 4
     },
     {
+      "col": 0,
+      "enabled": true,
+      "h": 1,
       "id": "diskUsage",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 0,
       "row": 6,
-      "showMountPath": true
+      "showMountPath": true,
+      "w": 4
     },
     {
+      "col": 7,
+      "enabled": true,
+      "h": 1,
       "id": "edit",
+      "row": 6,
+      "small": true,
+      "w": 1
+    },
+    {
+      "col": 4,
+      "enabled": true,
+      "h": 1,
+      "id": "plugin_cast",
+      "row": 6,
+      "small": false,
+      "w": 1.5
+    },
+    {
+      "col": 5.5,
+      "enabled": true,
+      "h": 1,
+      "id": "colorPicker",
+      "row": 6,
+      "w": 1.5
+    },
+    {
+      "col": 4,
+      "enabled": true,
+      "h": 1,
+      "id": "inputVolumeSlider",
+      "row": 4,
+      "w": 4
+    },
+    {
+      "col": 0,
+      "enabled": true,
+      "h": 1,
+      "id": "audioOutput",
+      "row": 3,
+      "w": 4
+    },
+    {
+      "col": 0,
+      "enabled": true,
+      "h": 1,
+      "id": "audioInput",
+      "row": 4,
+      "w": 4
+    },
+    {
+      "id": "plugin_warpToggle",
       "enabled": true,
       "w": 1,
       "h": 1,
-      "small": true,
-      "col": 7,
-      "row": 6
-    },
-    {
-      "id": "plugin_cast",
-      "enabled": true,
-      "w": 1.5,
-      "h": 1,
-      "col": 4,
-      "row": 6,
-      "small": false
-    },
-    {
-      "id": "colorPicker",
-      "enabled": true,
-      "w": 1.5,
-      "h": 1,
-      "col": 5.5,
-      "row": 6
-    },
-    {
-      "id": "inputVolumeSlider",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 4,
-      "row": 4
-    },
-    {
-      "id": "audioOutput",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
       "col": 0,
-      "row": 3
-    },
-    {
-      "id": "audioInput",
-      "enabled": true,
-      "w": 4,
-      "h": 1,
-      "col": 0,
-      "row": 4
+      "row": 1,
+      "small": true
     }
   ],
   "scrollTitleEnabled": true,

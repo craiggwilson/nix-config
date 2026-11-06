@@ -205,10 +205,7 @@
             };
           }
           // lib.optionalAttrs isWork {
-            warpToggle = {
-              src = warpToggleSrc;
-              settings.enabled = false;
-            };
+            warpToggle.src = warpToggleSrc;
           };
           settings = builtins.fromJSON (builtins.readFile ./settings.json) // {
             currentThemeName = "custom";
