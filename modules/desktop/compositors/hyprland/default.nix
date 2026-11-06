@@ -183,6 +183,10 @@ in
                 gaps_out = 20;
                 border_size = 2;
                 layout = "scrolling";
+                snap = {
+                  enabled = true;
+                  respect_gaps = true;
+                };
                 "col.active_border" = rgb colors.base0E;
                 "col.inactive_border" = rgb colors.base03;
               };
@@ -201,6 +205,10 @@ in
                   color = rgba colors.base00 "99";
                   range = 4;
                   render_power = 3;
+                };
+
+                wobble = {
+                  enabled = true;
                 };
 
                 dim_special = 0.2;
@@ -224,6 +232,7 @@ in
                 kb_rules = "";
                 follow_mouse = 2;
                 mouse_refocus = false;
+                swallow_focus_click = false;
 
                 touchpad = {
                   natural_scroll = true;
