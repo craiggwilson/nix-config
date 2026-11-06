@@ -322,14 +322,14 @@
     },
     {
       "col": 0,
-      "h": 2,
+      "h": 4,
       "id": "notifications",
       "row": 3,
       "w": 3
     },
     {
       "col": 3,
-      "h": 4,
+      "h": 6,
       "id": "calendar",
       "row": 1,
       "w": 3

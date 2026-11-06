@@ -9,6 +9,7 @@
     homeManager =
       {
         config,
+        host,
         inputs,
         lib,
         pkgs,
@@ -207,7 +208,7 @@
           // lib.optionalAttrs isWork {
             warpToggle.src = warpToggleSrc;
           };
-          settings = builtins.fromJSON (builtins.readFile ./settings.json) // {
+          settings = builtins.fromJSON (builtins.readFile ./${host}-settings.json) // {
             currentThemeName = "custom";
             customThemeFile = "${config.xdg.configHome}/dms/themes/hdwlinux-dms.json";
           };
