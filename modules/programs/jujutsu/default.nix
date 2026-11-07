@@ -61,7 +61,6 @@
             git = {
               colocate = true;
               private-commits = "private()";
-              sign-on-push = true;
               write-change-id-header = true;
             };
 
@@ -77,6 +76,10 @@
             revset-aliases = {
               "immutable_heads()" = "builtin_immutable_heads() | remote_bookmarks()";
               "private()" = "description(glob:'private:*')";
+            };
+
+            revsets = {
+              git-sign-on-push = "~signed() & mine()";
             };
 
             signing = {
