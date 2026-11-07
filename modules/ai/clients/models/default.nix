@@ -163,61 +163,25 @@
     homeManager =
       { lib, ... }:
       let
-        # Personal hosts route all aliases through the opencode-go provider
-        go = model: {
-          provider = "agentgateway";
-          model = "opencode-go/openai/${model}";
+        # Personal hosts route aliases through agentgateway's tier aliases
+        # (llm.virtualModels in the gateway config); the failover chain lives
+        # there, so each alias is a single entry that can be retargeted at the
+        # gateway without touching OpenCode.
+        tier = name: {
+          provider = "agentgateway-virtual";
+          model = name;
         };
       in
       {
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
-          analysis = {
-            models = [
-              (go "gpt-5.6-luna")
-              (go "qwen3.7-plus")
-            ];
-          };
-          balanced = {
-            models = [
-              (go "mimo-v2.5-pro")
-              (go "mimo-v2.5")
-            ];
-          };
-          code-review = {
-            models = [
-              (go "kimi-k2.7-code")
-              (go "mimo-v2.5-pro")
-            ];
-          };
-          coding = {
-            models = [
-              (go "kimi-k2.7-code")
-              (go "mimo-v2.5")
-            ];
-          };
-          fast = {
-            models = [
-              (go "qwen3.8-flash")
-              (go "glm-5.3-flash")
-              (go "mimo-v2.5")
-            ];
-          };
-          orchestration = {
-            models = [
-              (go "qwen3.8-max")
-              (go "qwen3.7-max")
-            ];
-          };
-          research = {
-            models = [
-              (go "gpt-5.6-luna")
-            ];
-          };
-          writing = {
-            models = [
-              (go "gpt-5.6-luna")
-            ];
-          };
+          analysis.models = [ (tier "smart") ];
+          balanced.models = [ (tier "balanced") ];
+          code-review.models = [ (tier "coding") ];
+          coding.models = [ (tier "coding") ];
+          fast.models = [ (tier "fast") ];
+          orchestration.models = [ (tier "smart") ];
+          research.models = [ (tier "smart") ];
+          writing.models = [ (tier "smart") ];
         };
       };
   };

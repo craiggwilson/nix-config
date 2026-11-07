@@ -122,22 +122,6 @@
           };
         };
 
-        agentgatewayModelNames = lib.unique (
-          lib.concatMap (alias: map (entry: entry.model) alias.models) (
-            lib.attrValues config.hdwlinux.ai.clients.models.aliases
-          )
-        );
-
-        agentgatewayModels = lib.listToAttrs (
-          map (model: {
-            name = model;
-            value = {
-              modelID = model;
-              name = model;
-            };
-          }) agentgatewayModelNames
-        );
-
         # Build providers config from hdwlinux.ai.clients.models.providers
         # Only include providers that have metadata and at least one model —
         # a provider with metadata but no models (e.g. grove on personal
@@ -270,7 +254,6 @@
               agentgateway = {
                 package = "@opencode/ai/providers/openai-compatible";
                 settings.baseURL = "https://agents.wilsonfamilyhq.com/v1";
-                models = agentgatewayModels;
               };
             };
             # v2 dropped small_model; the built-in title agent carries the fast model now.

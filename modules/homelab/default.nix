@@ -65,6 +65,16 @@
               };
             };
 
+            AGENTGATEWAY_GITHUB_COPILOT_TOKEN = {
+              description = "GitHub Copilot token (OAuth device flow via `gh auth login`) for the agentgateway Copilot provider.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "agentgateway";
+                field = "github_copilot_token";
+              };
+            };
+
             AGENTGATEWAY_OIDC_COOKIE_SECRET = {
               description = "Agentgateway OIDC session cookie encryption key.";
               providers = [ "onepassword_homelab" ];
@@ -77,6 +87,7 @@
 
             AGENTGATEWAY_OIDC_ENV = {
               composed = ''
+                GH_COPILOT_TOKEN=''${AGENTGATEWAY_GITHUB_COPILOT_TOKEN}
                 OIDC_COOKIE_SECRET=''${AGENTGATEWAY_OIDC_COOKIE_SECRET}
                 OPENCODE_GO_API_KEY=''${AGENTGATEWAY_OPENCODE_GO_API_KEY}
                 UI_CLIENT_SECRET=''${KEYCLOAK_AGENTGATEWAY_UI_CLIENT_SECRET}
