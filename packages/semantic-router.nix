@@ -2,12 +2,12 @@
   substrate.packages.semantic-router =
     { lib, pkgs, ... }:
     let
-      version = "0.3.0";
+      version = "0.4.0";
       src = pkgs.fetchFromGitHub {
         owner = "vllm-project";
         repo = "semantic-router";
-        rev = "f08056e793434ad5ccec8054fe34d43baff52fdd";
-        hash = "sha256-rJJUmpRcnFrjuYT4OQf7HVl01MIYogRPNKouMYbnF6c=";
+        rev = "v0.4.0";
+        hash = "sha256-vvNvehhmBpN8RkqxFsUelVzSH24qFr+6hkKRdfB3rtA=";
       };
 
       mlBinding = pkgs.rustPlatform.buildRustPackage {

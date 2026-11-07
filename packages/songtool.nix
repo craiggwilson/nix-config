@@ -7,7 +7,7 @@
       src = pkgs.fetchFromGitHub {
         owner = "craiggwilson";
         repo = "songtool";
-        rev = "master";
+        rev = "9b28b723133f29e14b8b4cf16d96a290fae154c9";
         sha256 = "sha256-vWMRc6x/IlDcaGN5jkXHbieMY2ncfdh9MjwYaUw115M=";
       };
 

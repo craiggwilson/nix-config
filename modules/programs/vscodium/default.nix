@@ -201,23 +201,6 @@
           };
         };
 
-        typescriptLayer = {
-          extensions = with pkgs.vscode-extensions; [
-            biomejs.biome
-          ];
-          settings = {
-            "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css][graphql]" = {
-              "editor.codeActionsOnSave" = {
-                "quickfix.biome" = "explicit";
-                "source.organizeImports.biome" = "explicit";
-              };
-              "editor.defaultFormatter" = "biomejs.biome";
-              "editor.formatOnSave" = true;
-            };
-            "biome.suggestInstallingGlobally" = false;
-          };
-        };
-
         pythonLayer = {
           extensions = with pkgs.vscode-extensions; [
             ms-python.python
@@ -331,7 +314,6 @@
           nix = mkProfile [ nixLayer ];
           rust = mkProfile [ rustLayer ];
           go = mkProfile [ goLayer ];
-          typescript = mkProfile [ typescriptLayer ];
           python = mkProfile [ pythonLayer ];
           java = mkProfile [ javaLayer ];
         };

@@ -3,14 +3,14 @@
     { lib, pkgs, ... }:
     let
       pname = "slackcli";
-      version = "0.17.0";
+      version = "0.19.0";
 
       src = pkgs.fetchFromGitHub {
         owner = "shaharia-lab";
         repo = "slackcli";
         # Pin the release tag so the vendored dependency tree matches the source.
-        rev = "v0.17.0";
-        hash = "sha256-EPvs4bjq+mbaLy0Pd/YZHXvPMTFvLJQsf8DsJh4w7x8=";
+        rev = "v0.19.0";
+        hash = "sha256-3IdnOy2OwfzZnqTOluNQ/uIY5Ahk11tbkBebHyconk0=";
       };
 
       # `bun install` is the only step that needs the network, so it is isolated

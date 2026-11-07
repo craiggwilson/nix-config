@@ -1,19 +1,19 @@
 { pkgs, ... }:
 pkgs.stdenvNoCC.mkDerivation {
   pname = "obsidian-file-ignore";
-  version = "1.1.1";
+  version = "1.1.4";
 
   src = pkgs.fetchurl {
-    url = "https://github.com/Feng6611/Obsidian-File-Ignore/releases/download/1.1.1/main.js";
-    hash = "sha256-5tMWHxAdnlJhFkHWU+oGpZ1t+HZI49H0SRX4ZvbJ0pU=";
+    url = "https://github.com/Feng6611/Obsidian-File-Ignore/releases/download/1.1.4/main.js";
+    hash = "sha256-muw1gqwNc1s89Z+8w1o1Zl0uxR6FZaDT5UFWk/VU9JU=";
   };
   manifest = pkgs.fetchurl {
-    url = "https://github.com/Feng6611/Obsidian-File-Ignore/releases/download/1.1.1/manifest.json";
-    hash = "sha256-xZfjtD0Q/qXT8YlFcgreCQ5KmaNCxE8Tgu8ueGFfmk0=";
+    url = "https://github.com/Feng6611/Obsidian-File-Ignore/releases/download/1.1.4/manifest.json";
+    hash = "sha256-6xdHD6FNvubPG2ttdmJeOLE9qX5xkB5f6AEpIlDHtwA=";
   };
   css = pkgs.fetchurl {
-    url = "https://github.com/Feng6611/Obsidian-File-Ignore/releases/download/1.1.1/styles.css";
-    hash = "sha256-L+WAQUtVhN/cXaql5RODB89eAma59+TRLzNXUJ48xUE=";
+    url = "https://github.com/Feng6611/Obsidian-File-Ignore/releases/download/1.1.4/styles.css";
+    hash = "sha256-zPIGGXJuqw9qAU92RSxDqHVB7F2a4KwxCWX3iD4WzIY=";
   };
 
   unpackPhase = "true";

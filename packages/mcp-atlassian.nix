@@ -12,12 +12,12 @@
 
       markdown-to-confluence = python3Packages.buildPythonPackage rec {
         pname = "markdown-to-confluence";
-        version = "0.6.3";
+        version = "0.6.5";
         format = "wheel";
 
         src = pkgs.fetchurl {
-          url = "https://files.pythonhosted.org/packages/6d/1f/ad58a85343b2739a8c867e31599fee54733ce4634d428eeda35d0a58cba8/markdown_to_confluence-0.6.3-py3-none-any.whl";
-          sha256 = "sha256-I9QZUCUzzlkZYrTNdjCNH81HRTMrV8Gl9nc7gjL51CM=";
+          url = "https://files.pythonhosted.org/packages/b0/9a/fd541e53e8d15ad68edc5ade102772ad58f033b4ac67ccf1e2d1daaf5c8a/markdown_to_confluence-0.6.5-py3-none-any.whl";
+          sha256 = "sha256-dbfFV635TP9IkPPFupdt5ju+H0WXhwiMMIjqJ6OiUBg=";
         };
 
         dependencies = [

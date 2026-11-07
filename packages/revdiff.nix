@@ -6,16 +6,13 @@
       ...
     }:
     let
-      version = "1.13.0";
+      version = "1.14.0";
 
-      # Pinned to master (9ff3562, 2026-10-25): the OpenCode v2 CLI plugin in
-      # plugins/opencode/v2/ is newer than the v1.13.0 release, and this config
-      # runs OpenCode v2. Repin to a release tag once one ships the v2 plugin.
       src = pkgs.fetchFromGitHub {
         owner = "umputun";
         repo = "revdiff";
-        rev = "9ff3562d2480da0e02ec7469c0ef093e389c078e";
-        hash = "sha256-y3sFtVRikhYSoRrLN/di4U/r2NvpWP23IuKF3++1jsg=";
+        rev = "v1.14.0";
+        hash = "sha256-x0pst0Rlu4+43gb7EPzl6bjXO5+QqWP9EBbD+QJzEO0=";
       };
     in
     pkgs.buildGoModule {

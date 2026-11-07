@@ -7,11 +7,11 @@
 
       music21 = pythonPkgs.buildPythonPackage rec {
         pname = "music21";
-        version = "10.5.1";
+        version = "10.5.2";
 
         src = pkgs.fetchurl {
-          url = "https://files.pythonhosted.org/packages/15/12/dee0eef7c82a63e83eea94bdcde97c66ab55213d89cee1347d2d11601faa/music21-10.5.1-py3-none-any.whl";
-          hash = "sha256-3DMJSYxMlc69+NTyDIaN62tjvOHZKcrU9Rp8zJgph7E=";
+          url = "https://files.pythonhosted.org/packages/be/a3/4948b2326e5957d54e3a754ee66d23d44126996986bb31eb47e22d06df9b/music21-10.5.2-py3-none-any.whl";
+          hash = "sha256-26hpbq+rcJokS28YxkOZ7czPTpbd0eDk3n7/CikcLew=";
         };
 
         format = "wheel";
@@ -32,17 +32,17 @@
 
       bravura = pkgs.fetchurl {
         name = "Bravura.otf";
-        url = "https://raw.githubusercontent.com/steinbergmedia/bravura/bravura-1.392/redist/otf/Bravura.otf";
-        hash = "sha256-3KLZDIhDenAbHC5x+lTnb5+kHX3u6TXXTchx6mbs/dI=";
+        url = "https://raw.githubusercontent.com/steinbergmedia/bravura/bravura-1.482/redist/otf/Bravura.otf";
+        hash = "sha256-zfD4k+4f22S39nE9ce4Nz8NJwKwBQpqORRsBqeefXzs=";
       };
 
       verovio = pythonPkgs.buildPythonPackage rec {
         pname = "verovio";
-        version = "6.3.0";
+        version = "6.4.1";
 
         src = pkgs.fetchurl {
-          url = "https://files.pythonhosted.org/packages/a7/23/25d6a382968815baf686099d519064c3444aaad7297b6e6c507c5608f225/verovio-6.3.0-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl";
-          hash = "sha256-CJanCKWxMMxbqzoWjXBDWtiz5UaSCI5+Xigf7xHAsF0=";
+          url = "https://files.pythonhosted.org/packages/03/22/c98513dfe1d31681080ea742d8a9a8e7dc83e68d9528b35913298687824e/verovio-6.4.1-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl";
+          hash = "sha256-wZMR7CixE+F5tUd5K2CLkBUJu9BlYV2FvziyrTEUbhI=";
         };
 
         format = "wheel";

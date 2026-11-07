@@ -35,7 +35,7 @@
     };
 
     dux-shell = {
-      url = "github:duxlabs-dev/dux-shell/v2.0.0";
+      url = "github:duxlabs-dev/dux-shell/v2.1.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -90,10 +90,9 @@
     };
 
     opencode = {
-      # Pinned to a dev rev: the v2.0.32 tag's nix packaging is broken (the
-      # node_modules fileset omits the root script/ dir the cli build imports).
-      # d85746a is dev with the fix; repin to a v2.0.33+ tag when one lands.
-      url = "github:anomalyco/opencode/d85746a054924241a7edde736eefd079dff9bc00";
+      # v2.2.6's upstream node_modules hash is stale; the local overlay below
+      # supplies the hash from the fixed-output build.
+      url = "github:anomalyco/opencode/v2.2.6";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -209,6 +208,27 @@
           # opencode v2 — exposes pkgs.opencode and pkgs.opencode-desktop from
           # the opencode flake instead of nixpkgs' 1.x
           inputs.opencode.overlays.default
+
+      # OpenCode v2.2.6 ships a stale node_modules hash for x86_64-linux.
+          # Keep the release source pinned, but use the hash observed from the
+          # reproducible fixed-output build until upstream refreshes hashes.json.
+          (final: _prev:
+            let
+              node_modules = final.callPackage "${inputs.opencode}/nix/node_modules.nix" {
+                rev = "dc2ffcf8bf26f9e669b6aa22b95f50e12be15e06";
+                hash = builtins.getAttr final.stdenv.hostPlatform.system {
+                  "x86_64-linux" = "sha256-O2hF8pGUSArKgYBeP99oOW3iXVVZl5bV5WPTp3E7JIA=";
+                  "aarch64-linux" = "sha256-INQvojH68t0J1Hc61N1dJvTJzl89afkQNrUcahxOs9g=";
+                  "aarch64-darwin" = "sha256-AU2AUkdlL1g+hBkMZX93gQeQy6u8F0Gyzuk48yoN8as=";
+                };
+              };
+            in
+            {
+              opencode = final.callPackage "${inputs.opencode}/nix/opencode.nix" {
+                inherit node_modules;
+              };
+            }
+          )
 
           # Stable nixpkgs for packages not in unstable
           (final: _prev: {

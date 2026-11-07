@@ -1,19 +1,19 @@
 { pkgs, ... }:
 pkgs.stdenvNoCC.mkDerivation {
   pname = "obsidian-terminal";
-  version = "3.27.1";
+  version = "3.29.0";
 
   src = pkgs.fetchurl {
-    url = "https://github.com/polyipseity/obsidian-terminal/releases/download/3.27.1/main.js";
-    hash = "sha256-/5m87A0EJSJ0KUECii52a6L4JHjbv8RhxfWMJY7wIE8=";
+    url = "https://github.com/polyipseity/obsidian-terminal/releases/download/3.29.0/main.js";
+    hash = "sha256-prj33l0S2ieqTMJG14/4K9x2vHOejyyUgm5vPeKTtp8=";
   };
   manifest = pkgs.fetchurl {
-    url = "https://github.com/polyipseity/obsidian-terminal/releases/download/3.27.1/manifest.json";
-    hash = "sha256-1bhdzHSfYoAkrIpm3D0Q5p0RU/wTU5Nf8ch72xpQMvg=";
+    url = "https://github.com/polyipseity/obsidian-terminal/releases/download/3.29.0/manifest.json";
+    hash = "sha256-Pf0/ysY/TbdJHFUGpxbFIhNZYxoNfm0QuOHUYQUr0mk=";
   };
   css = pkgs.fetchurl {
-    url = "https://github.com/polyipseity/obsidian-terminal/releases/download/3.27.1/styles.css";
-    hash = "sha256-cVp9j7TXFXupaMkJsRHQP9bCSFOszx3Pqe1D/dg6yg4=";
+    url = "https://github.com/polyipseity/obsidian-terminal/releases/download/3.29.0/styles.css";
+    hash = "sha256-BOnyZ+LDhMGavyCOch678g5ornFZO4MIoJtqWCddN9U=";
   };
 
   unpackPhase = "true";

@@ -50,46 +50,46 @@
           owner = "Conava";
           repo = "dux-plugins";
           path = "Cast";
-          rev = "7b55937e68a3625ddb8243a4f2a23d0e4e42a59a";
-          hash = "sha256-4r+0iUAp1ReNH6L1Svryn7VtqOK7zpmG0xmqjUkjW/I=";
+           rev = "9763ee8c8d97d1731f57e886f91ce306f495cd67";
+           hash = "sha256-zlzR2G2cW+VLE2ONzP59zWZFVAkYaYBgP416U3GgVSM=";
         };
         dankKDEConnectSrc = mkPlugin {
           owner = "duxlabs-dev";
           repo = "dux-plugins";
           path = "DankKDEConnect";
-          rev = "b827c2296cd45a73bf9318f16a261c9edeec8339";
-          hash = "sha256-OYCjryGkZ9DlMSS0DlaKzA/qRxXI+cAbO3uee+9Y+Kg=";
+           rev = "e06aa40b1cb2b9ce50d3ee75f2874af05ae1763f";
+           hash = "sha256-ksqeIRE5dZrbCXPr1p35aJd0ZLLEV926Tv8cJDtaPok=";
         };
         dankscaleSrc = mkPlugin {
           owner = "dwright134";
           repo = "dms-dankscale";
-          rev = "bddebf0e2935ba23b0614ff9af5bf8f4ed6d3d9f";
-          hash = "sha256-o5kcFV7VAmHJqsKgnjDuuryubnuI9U+GQIPOlENZ5ao=";
+           rev = "fb21277e45a2c77eeb53de48a2008f07ea6892aa";
+           hash = "sha256-YyFdgds1XBBVo4RYJTpK6z/U35vyEV01vYFoyTNM98M=";
         };
         herdrAgentMonitorSrc = mkPlugin {
           owner = "Mor-dev";
           repo = "herdr-agent-monitor";
-          rev = "c6b731ba9f00c37deef04b1e70251fb1b729c1df";
-          hash = "sha256-58dZiKCDCTcVm5SAoEhOz19xuYB2paJ/85h5j29Uq1g=";
+           rev = "9474c46444600d5d39da16c7cc3239861834b6e3";
+           hash = "sha256-e1lJs22k9UtzbozyMOn6V1PUDwCjpHt+/W8IOZywRwk=";
         };
         homeAssistantMonitorSrc = mkPlugin {
           owner = "xxyangyoulin";
           repo = "dms-plugin-hass";
-          rev = "60593eccfad53d987e3520d8c040d6f8a1c31acd";
-          hash = "sha256-LweJ+ccXtoG+P27ZI0rAaTacyz/w6pQSQov6eQMIjrM=";
+           rev = "f76224ead8de03b94fff5f4f1821fdd1279acb85";
+           hash = "sha256-yyg1IkumcjyMxJ1aBR3/rnnxIrBpWDOR/pNKfeQ9wYg=";
         };
         openTrackerBarSrc = mkPlugin {
           owner = "wsmajt";
           repo = "OpenTrackerBar";
-          rev = "42e34a78ebd27ee31f2c596be72e0b91468adf50";
-          hash = "sha256-7vIMxQwdNoBy6Z0DG9FV+TI7r8+C51BFDaSqgOJqsZw=";
+           rev = "a2fcb5c0e788185ac2d2828e4ed42de78c87073d";
+           hash = "sha256-2yI30jIWn2fdiTU8LkQO2AzbJEBXn/iF8x4vOmuAE+E=";
         };
         quickCaptureSrc = mkPlugin {
           owner = "hthienloc";
           repo = "dms-plugins";
           path = "quickCapture";
-          rev = "afcf5b73be5d09b801b50d31717dfc03fb4596e7";
-          hash = "sha256-vbfZaAOyMcYVp3Xf1WR1REOc6rVCh8Ou9x6bt/EReFI=";
+           rev = "b7ec1d6cd0fa1d42cab7c2f5996305c34897275c";
+           hash = "sha256-KTp5FB/QFIvbsVX00aQSO5/DGv5qeFzClbj63p4qUUg=";
         };
         warpToggleSrc = mkPlugin {
           owner = "ahmed-mekky";

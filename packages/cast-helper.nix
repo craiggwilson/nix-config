@@ -3,13 +3,13 @@
     { lib, pkgs, ... }:
     pkgs.buildGoModule {
       pname = "cast-helper";
-      version = "0.1.0-unstable-2026-10-24";
+      version = "0.2.0";
 
       src = pkgs.fetchFromGitHub {
         owner = "Conava";
         repo = "dux-cast";
-        rev = "4d3869e7faf0501ab82742ee608dfd6eb7a39ef8";
-        hash = "sha256-hF7a2kQmkTm2YxS7LFvul8V5iS8FZ/fGlgLTypcEOz4=";
+        rev = "v0.2.0";
+        hash = "sha256-39pZjbktT/mFBesS089QnW01qefsQQAE4iHJb4wMeDg=";
       };
 
       vendorHash = "sha256-JdnJBwV2DHo/1EZ5v6bxC1JK/5PUIZeRmjroMnZrQoQ=";

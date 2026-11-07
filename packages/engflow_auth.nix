@@ -10,11 +10,11 @@
 
       src = builtins.fetchGit {
         url = "ssh://git@github.com/EngFlow/auth.git";
-        ref = "v0.0.13";
-        rev = "ffc364db401afaafd1ed111bf94a829505902896";
+        ref = "v0.0.14";
+        rev = "394a6159959cf83a24dd735e5d06b3b4c728da0e";
       };
 
-      vendorHash = "sha256-fVtoonsRNN7DbbRs9UGnpdF2ktYAzUD5au1tsrhyfOA=";
+      vendorHash = "sha256-lub4IVkSLhy5qkxgjINKb+Xmq8SYPxJaHa3acukPwNE=";
 
       subPackages = [ "./cmd/engflow_auth" ];
 
