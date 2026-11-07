@@ -20,6 +20,7 @@ _: {
     environment = {
       ISSUER_URL = "https://auth.wilsonfamilyhq.com/realms/wilsonfamilyhq.com";
       REDIRECT_URI = "https://agents.wilsonfamilyhq.com/oauth/callback";
+      RUST_LOG = "debug";
       UI_CLIENT_ID = "agentgateway-ui";
     };
     env_file = [ "/volume3/docker/agentgateway/secrets/oidc.env" ];

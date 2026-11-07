@@ -122,6 +122,22 @@
           };
         };
 
+        agentgatewayModelNames = lib.unique (
+          lib.concatMap (alias: map (entry: entry.model) alias.models) (
+            lib.attrValues config.hdwlinux.ai.clients.models.aliases
+          )
+        );
+
+        agentgatewayModels = lib.listToAttrs (
+          map (model: {
+            name = model;
+            value = {
+              modelID = model;
+              name = model;
+            };
+          }) agentgatewayModelNames
+        );
+
         # Build providers config from hdwlinux.ai.clients.models.providers
         # Only include providers that have metadata and at least one model —
         # a provider with metadata but no models (e.g. grove on personal
@@ -254,7 +270,13 @@
           skills = config.hdwlinux.ai.clients.skills;
 
           settings = {
-            inherit providers;
+            providers = providers // {
+              agentgateway = {
+                package = "@opencode/ai/providers/openai-compatible";
+                settings.baseURL = "https://agents.wilsonfamilyhq.com/v1";
+                models = agentgatewayModels;
+              };
+            };
             # v2 dropped small_model; the built-in title agent carries the fast model now.
             agents = agentConfig // {
               title.model = resolveAlias "fast";
@@ -279,6 +301,7 @@
       {
         config,
         lib,
+        pkgs,
         ...
       }:
       let
@@ -332,6 +355,19 @@
       {
         programs.opencode.settings.plugins = [
           "opencode-mem"
+          {
+            package = "${pkgs.hdwlinux.opencode-keycloak-auth}/lib/node_modules/opencode-keycloak-auth";
+            options = {
+              baseUrl = "https://agents.wilsonfamilyhq.com/v1";
+              callbackPort = 52818;
+              clientId = "opencode";
+              issuer = "https://auth.wilsonfamilyhq.com/realms/wilsonfamilyhq.com";
+              offlineAccess = true;
+              providerId = "agentgateway";
+              redirectPath = "/callback";
+              scopes = "openid profile email offline_access";
+            };
+          }
         ];
 
         xdg.configFile."opencode/opencode-mem.jsonc" = {

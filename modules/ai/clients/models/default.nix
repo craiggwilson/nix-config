@@ -165,8 +165,8 @@
       let
         # Personal hosts route all aliases through the opencode-go provider
         go = model: {
-          provider = "opencode-go";
-          inherit model;
+          provider = "agentgateway";
+          model = "opencode-go/openai/${model}";
         };
       in
       {
@@ -211,13 +211,11 @@
           research = {
             models = [
               (go "gpt-5.6-luna")
-              (go "qwen3.6-plus")
             ];
           };
           writing = {
             models = [
               (go "gpt-5.6-luna")
-              (go "qwen3.6-plus")
             ];
           };
         };
