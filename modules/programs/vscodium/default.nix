@@ -226,6 +226,13 @@
           };
         };
 
+        terraformLayer = {
+          extensions = with pkgs.vscode-extensions; [
+            hashicorp.terraform
+          ];
+          settings = { };
+        };
+
         # ---------------------------------------------------------------------------
         # Helpers
         # ---------------------------------------------------------------------------
@@ -316,6 +323,7 @@
           go = mkProfile [ goLayer ];
           python = mkProfile [ pythonLayer ];
           java = mkProfile [ javaLayer ];
+          terraform = mkProfile [ terraformLayer ];
         };
 
         mmsProfile = mkProfile [
