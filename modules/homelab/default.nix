@@ -136,6 +136,36 @@
               };
             };
 
+            HINDSIGHT_API_KEY = {
+              description = "API key for the self-hosted Hindsight memory service.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "hindsight";
+                field = "api_key";
+              };
+            };
+
+            HINDSIGHT_ENV = {
+              composed = ''
+                HINDSIGHT_API_TENANT_API_KEY=''${HINDSIGHT_API_KEY}
+                HINDSIGHT_CP_ACCESS_KEY=''${HINDSIGHT_UI_ACCESS_KEY}
+                HINDSIGHT_CP_DATAPLANE_API_KEY=''${HINDSIGHT_API_KEY}
+              '';
+              description = "Hindsight API and Control Plane environment file.";
+              file.path = "${config.xdg.configHome}/secretspec/hindsight.env";
+            };
+
+            HINDSIGHT_UI_ACCESS_KEY = {
+              description = "Access key for the self-hosted Hindsight Control Plane.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "hindsight";
+                field = "ui_access_key";
+              };
+            };
+
             PAPERLESS_POSTGRES_PASSWORD = {
               description = "PostgreSQL password for the Paperless-ngx Synology stack.";
               providers = [ "onepassword_homelab" ];

@@ -4,6 +4,7 @@ let
     agentgateway = import ./stacks/agentgateway.nix { };
     certificates = import ./stacks/certificates.nix { };
     homeassistant = import ./stacks/homeassistant.nix { inherit lib; };
+    hindsight = import ./stacks/hindsight.nix { };
     keycloak = import ./stacks/keycloak.nix { };
     paperless = import ./stacks/paperless.nix { };
     yuvomi = import ./stacks/yuvomi.nix { };
