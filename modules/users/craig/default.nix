@@ -189,6 +189,15 @@ in
               };
               file.path = "${config.home.homeDirectory}/.ssh/id_rsa";
             };
+            HINDSIGHT_API_TOKEN = lib.mkIf (hasTag "profile:ai") {
+              description = "API token for the self-hosted Hindsight memory service.";
+              providers = [ "onepassword" ];
+              ref = {
+                vault = "Craig";
+                item = "Hindsight";
+                field = "api_key";
+              };
+            };
             GITHUB_API_TOKEN = lib.mkIf (hasTag "profile:programming") {
               description = "GitHub API token for API access and nix flake fetches.";
               ref = {

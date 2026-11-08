@@ -138,10 +138,10 @@
 
             HINDSIGHT_API_KEY = {
               description = "API key for the self-hosted Hindsight memory service.";
-              providers = [ "onepassword_homelab" ];
+              providers = [ "onepassword" ];
               ref = {
-                vault = "Homelab";
-                item = "hindsight";
+                vault = "Craig";
+                item = "Hindsight";
                 field = "api_key";
               };
             };

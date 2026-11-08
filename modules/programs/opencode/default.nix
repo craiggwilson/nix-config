@@ -219,7 +219,9 @@
         # reference, aggregated here so OpenCode's {env:...} substitution can
         # resolve them at exec time.
         secretspec.scopes.ai_clients_opencode.secrets =
-          config.hdwlinux.ai.clients.mcpServersSecretNames ++ config.hdwlinux.ai.clients.providerSecretNames;
+          config.hdwlinux.ai.clients.mcpServersSecretNames
+          ++ config.hdwlinux.ai.clients.providerSecretNames
+          ++ lib.optional (config.secretspec.entries ? HINDSIGHT_API_TOKEN) "HINDSIGHT_API_TOKEN";
         xdg.configFile = lib.mkMerge [
           (lib.mapAttrs' (
             name: command: lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
@@ -294,6 +296,46 @@
             };
           }
         ];
+      };
+  };
+
+  config.substrate.modules.programs.opencode.hindsight = {
+    tags = [ "profile:ai" ];
+
+    homeManager =
+      { pkgs, ... }:
+      {
+        programs.opencode.settings.plugins = [
+          "${pkgs.hdwlinux.hindsight-coding-agents}/lib/node_modules/@vectorize-io/hindsight-coding-agents"
+        ];
+
+        home.file.".hindsight/coding-agent.json".text = builtins.toJSON {
+          apiUrl = "http://synology.raeford.wilsonfamilyhq.com:8888";
+          autoInject = "recall";
+          bankId = "craig-interactive";
+          defaultBankConfig = {
+            enable_auto_consolidation = false;
+            enable_observations = false;
+          };
+          manageBankConfig = true;
+          autoUpdate = false;
+          pageTriggerType = "manual";
+          recallOptions = {
+            budget = "low";
+            max_tokens = 2000;
+            types = null;
+          };
+          retainMetadata = {
+            repo = "{gitProject}";
+            workspace = "{project}";
+          };
+          retainExtractionMode = "chunks";
+          retainTags = [
+            "project:{gitProject}"
+            "workspace:{project}"
+          ];
+          toolGuideExtra = "This is Craig's shared interactive-coding bank. Use project/workspace tags to distinguish repositories, and prefer matching project context for code-specific decisions. User preferences are shared across projects; verify implementation details against the current repository.";
+        };
       };
   };
 
