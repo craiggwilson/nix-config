@@ -106,6 +106,15 @@
               RUNTIME_PM_ON_BAT = "";
             };
           };
+
+          # The Thunderbolt dock's RTL8153 ethernet (0bda:8153) is armed as a
+          # USB wake source by default; on a busy LAN it fires within seconds
+          # of suspend entry, aborting the suspend (xhci 00:0d.0 returns -EBUSY)
+          # or waking the machine right back up. The dock's keyboard/mouse sit
+          # behind the PCH xHCI (00:14.0) and keep their wake paths.
+          udev.extraRules = ''
+            ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="0bda", ATTR{idProduct}=="8153", ATTR{power/wakeup}="disabled"
+          '';
         };
       };
 

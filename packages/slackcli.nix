@@ -43,7 +43,10 @@
 
         outputHashMode = "recursive";
         outputHashAlgo = "sha256";
-        outputHash = "sha256-B58jhoBrJQQgdr2xOUPg+UHwGl2XwmqJUDPGj6yh174=";
+        # bun's node_modules layout drifts between bun versions even with a
+        # frozen lockfile; this hash is for bun 1.4.4. Re-pin whenever the
+        # nixpkgs bun major/minor changes.
+        outputHash = "sha256-5+ClahiCetQ4E4tMhvRGDEVdt0N5T4Aw8CO2loWwXGA=";
       };
     in
     pkgs.stdenv.mkDerivation rec {

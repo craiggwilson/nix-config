@@ -8,6 +8,7 @@
   "blurBorderEnabled": false,
   "wallpaperFillMode": "Fill",
   "useAutoLocation": false,
+  "lockBeforeSuspend": true,
   "fontFamily": "DejaVu Sans Mono",
   "textRenderType": 0,
   "dockConfigs": [

@@ -7,7 +7,9 @@
 
       src = pkgs.fetchzip {
         url = "https://fastdl.mongodb.org/mongocli/mongodb-atlas-cli_1.59.4_linux_x86_64.tar.gz";
-        hash = "sha256-WWulhCRdf6g6DezMAqBMmXyw8lf3N7fLJ0gAvOCA2wo=";
+        # Upstream repacked this tarball in place (S3 etag v4, 2026-10-29);
+        # version-pinned URL, content drift expected occasionally.
+        hash = "sha256-XWUsnoNBLtuQ7cCy4GzaOq265bVw5BkmcjTdVtsuyAo=";
       };
 
       installPhase = ''
