@@ -370,7 +370,30 @@
               })
             ];
 
-            xdg.mimeApps.defaultApplications."text/plain" = "code.desktop";
+            # Only codium.desktop is actually installed — the `code` wrapper
+            # above has no desktop file, so "code.desktop" IDs in mimeapps
+            # resolve to nothing and gio silently falls back to whatever
+            # desktop file happens to register the type.
+            xdg.mimeApps.defaultApplications = lib.genAttrs [
+              "application/json"
+              "application/x-php"
+              "application/yaml"
+              "text/css"
+              "text/markdown"
+              "text/plain"
+              "text/x-c++hdr"
+              "text/x-c++src"
+              "text/x-chdr"
+              "text/x-csrc"
+              "text/x-diff"
+              "text/x-dsrc"
+              "text/x-java"
+              "text/x-nix"
+              "text/x-pascal"
+              "text/x-perl"
+              "text/x-python"
+              "text/x-sql"
+            ] (_: "codium.desktop");
           }
           (lib.mkIf (hasTag "user:craig" && hasTag "profile:work") (
             mkCanonicalSettings "mms" mmsProfile._settings
