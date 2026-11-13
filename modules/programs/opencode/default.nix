@@ -382,7 +382,9 @@
       in
       {
         programs.opencode.settings.plugins = [
-          "oh-my-opencode-slim@beta"
+          # Unpinned (latest): the @beta dist-tag is stranded at 3.0.0-beta.13,
+          # which predates OpenCode v2 multiplexer pane support (3.0.x stable).
+          "oh-my-opencode-slim"
         ];
 
         xdg.configFile."opencode/oh-my-opencode-slim.json" = {
