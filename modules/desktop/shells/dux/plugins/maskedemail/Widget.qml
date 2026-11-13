@@ -57,6 +57,10 @@ PluginComponent {
     }
 
     function refreshList() {
+        // Never fetch while the panel is closed: each run is a
+        // maskedemail-cli process nobody is looking at.
+        if (!root.interactionActive)
+            return
         listProcess.running = true
     }
 
@@ -114,12 +118,14 @@ PluginComponent {
         environment: ({ "MASKED_EMAIL": root.copyEmail })
     }
 
-    Component.onCompleted: root.refreshList()
+    // Fetch on open (popout or inline expansion) and refresh on the timer
+    // only while the panel stays open; a closed panel never runs the CLI.
+    onInteractionActiveChanged: root.refreshList()
 
     Timer {
         interval: 60000
-        running: true
         repeat: true
+        running: root.interactionActive
         onTriggered: root.refreshList()
     }
 
