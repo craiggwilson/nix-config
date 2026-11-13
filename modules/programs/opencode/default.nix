@@ -271,69 +271,17 @@
       };
   };
 
-  config.substrate.modules.programs.opencode.opencode-mem = {
+  # Keycloak-backed OIDC for the agentgateway provider; the plugin is packaged
+  # locally and carries the connection options.
+  config.substrate.modules.programs.opencode.keycloak-auth = {
     tags = [
       "profile:ai"
     ];
 
     homeManager =
-      {
-        config,
-        lib,
-        pkgs,
-        ...
-      }:
-      let
-        # Use the primary model from the analysis alias so the memory plugin follows
-        # the same host-specific provider routing as the rest of OpenCode.
-        resolvePrimaryAlias =
-          aliasName: lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
-
-        analysisModel = resolvePrimaryAlias "analysis";
-
-        opencodeMemConfig = {
-          storagePath = "~/.opencode-mem/data";
-
-          opencodeProvider = analysisModel.provider;
-          opencodeModel = analysisModel.model;
-
-          embeddingModel = "Xenova/nomic-embed-text-v1";
-
-          memory = {
-            defaultScope = "project";
-          };
-
-          webServerEnabled = false;
-          webServerPort = 4747;
-          webServerHost = "127.0.0.1";
-
-          autoCaptureEnabled = true;
-          autoCaptureLanguage = "auto";
-
-          showAutoCaptureToasts = true;
-          showUserProfileToasts = true;
-          showErrorToasts = true;
-
-          userProfileAnalysisInterval = 10;
-          userProfileMaxContextBytes = 32768;
-          maxMemories = 25;
-
-          compaction = {
-            enabled = true;
-            memoryLimit = 10;
-          };
-
-          chatMessage = {
-            enabled = true;
-            maxMemories = 3;
-            excludeCurrentSession = true;
-            injectOn = "first";
-          };
-        };
-      in
+      { pkgs, ... }:
       {
         programs.opencode.settings.plugins = [
-          "opencode-mem"
           {
             package = "${pkgs.hdwlinux.opencode-keycloak-auth}/lib/node_modules/opencode-keycloak-auth";
             options = {
@@ -348,10 +296,6 @@
             };
           }
         ];
-
-        xdg.configFile."opencode/opencode-mem.jsonc" = {
-          text = builtins.toJSON opencodeMemConfig;
-        };
       };
   };
 
