@@ -367,6 +367,25 @@
     };
   };
 
+  # Interactive plan review: exposes submit_plan to OpenCode's built-in plan
+  # agent via the default plan-agent workflow. The wrapped OpenCode build takes
+  # the plugin's CLI runtime fallback, so the CLI must be on PATH.
+  config.substrate.modules.programs.opencode.plannotator = {
+    tags = [
+      "profile:ai"
+    ];
+
+    homeManager =
+      { pkgs, ... }:
+      {
+        home.packages = [ pkgs.hdwlinux.plannotator ];
+
+        programs.opencode.settings.plugins = [
+          "@plannotator/opencode"
+        ];
+      };
+  };
+
   config.substrate.modules.programs.opencode.oh-my-opencode-slim = {
     tags = [
       "profile:ai"
