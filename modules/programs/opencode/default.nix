@@ -295,8 +295,7 @@
       };
   };
 
-  # Keycloak-backed OIDC for the agentgateway provider; the plugin is packaged
-  # locally and carries the connection options.
+  # Register Keycloak as a reusable OAuth integration for OpenCode providers.
   config.substrate.modules.programs.opencode.keycloak-auth = {
     tags = [
       "profile:ai"
@@ -309,12 +308,11 @@
           {
             package = "${pkgs.hdwlinux.opencode-keycloak-auth}/lib/node_modules/opencode-keycloak-auth";
             options = {
-              baseUrl = "https://agents.wilsonfamilyhq.com/v1";
               callbackPort = 52818;
               clientId = "opencode";
               issuer = "https://auth.wilsonfamilyhq.com/realms/wilsonfamilyhq.com";
               offlineAccess = true;
-              providerId = "agentgateway";
+              providerId = "wilsonfamilyhq";
               redirectPath = "/callback";
               scopes = "openid profile email offline_access";
             };
