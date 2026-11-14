@@ -1,0 +1,38 @@
+--- a/main.js
++++ b/main.js
+@@ -56,8 +56,9 @@
+ const SORTS = [
+   { id: "priority", label: "Priority", icon: "clock" },
+   { id: "grouped", label: "Grouped by space", icon: "layers" },
++  { id: "machine", label: "Grouped by machine", icon: "server" },
+ ];
+-const sortOf = () => SORTS.find((s) => s.id === shared("agents.sort")) ?? SORTS[0];
++const sortOf = () => SORTS.find((s) => s.id === shared("agents.sort")) ?? SORTS.find((s) => s.id === "machine");
+ const SECTION = { 4: "Needs you", 3: "Done", 2: "Working", 1: "Idle" };
+ const SECTION_STATUS = { 4: "blocked", 3: "done", 2: "working" };
+ 
+@@ -230,6 +231,7 @@
+     const tabCounts = new Map();
+     for (const a of list) tabCounts.set(a.tab, (tabCounts.get(a.tab) ?? 0) + 1);
+     const byPriority = sort.id === "priority";
++    const byMachine = sort.id === "machine";
+     const urgency = new Map(list.map((a) => [a.address, Math.max(this.rank(a), ...this.tree(all, a.address).map((s) => RANK[kidStatus(s.t, this.listed)] ?? 0))]));
+     const rankOf = (a) => urgency.get(a.address);
+     if (byPriority) list = [...list].sort((x, y) => rankOf(y) - rankOf(x) || this.since(y) - this.since(x) || y.seq - x.seq);
+@@ -367,12 +369,14 @@
+ 
+     // Groups in list order: spaces (grouped) or priority sections. Agents of a
+     // space are next to each other in agents(), so neighbours make a group.
++    // Machines too: spaces are listed local machine first, then by machine.
+     const groups = pinned.length ? [{ id: "pinned", label: "Pinned", status: null, members: pinned }] : [];
+     for (const a of rest) {
+       const r = rankOf(a) || RANK.idle;
+-      const id = byPriority ? `sec-${r}` : `sp-${a.space}`;
++      const machine = a.address.includes("/") ? a.address.split("/")[0] : null;
++      const id = byPriority ? `sec-${r}` : byMachine ? `m-${machine ?? "here"}` : `sp-${a.space}`;
+       if (groups.at(-1)?.id === id) groups.at(-1).members.push(a);
+-      else groups.push({ id, label: byPriority ? SECTION[r] : a.space_name || "", status: byPriority ? SECTION_STATUS[r] : null, members: [a] });
++      else groups.push({ id, label: byPriority ? SECTION[r] : byMachine ? (machine ?? "This machine") : a.space_name || "", status: byPriority ? SECTION_STATUS[r] : null, members: [a] });
+     }
+ 
+     // A group's header; it folds the group. Folded, it says how many and the most urgent state.
