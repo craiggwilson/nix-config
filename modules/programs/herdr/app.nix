@@ -25,9 +25,8 @@
         # Desktop keybinds matched to the herdr TUI keymap
         # (modules/programs/herdr/default.nix) on top of herdr-app's shipped
         # defaults. Custom chords are alt/alt+shift only — no leaders, no
-        # ctrl additions — and a shipped default our alt chord duplicates is
-        # dropped (the palette's alt+p moves to plannotator; the palette
-        # stays on the app's ctrl+shift+p). The TUI's prefix (alt+a)
+        # ctrl additions. Alt+p keeps the app palette action; ctrl+shift+p
+        # remains its other binding. The TUI's prefix (alt+a)
         # bindings have no app equivalent — keys.json binds single chords
         # only — so those actions keep the app's shipped shortcuts. TUI
         # tabs map to app tabs, TUI workspaces to app spaces.
@@ -87,12 +86,10 @@
             "alt-shift-." = "agent.next";
             "alt-shift-," = "agent.prev";
 
-            # Mods. plannotator takes the prime chord (its palette
-            # replacement stays on the app's ctrl+shift+p). The scratch
-            # terminal (our app/scratch mod) is a modal terminal over
-            # everything, one per space, toggled hidden-and-back.
+            # Mods. The scratch terminal (our app/scratch mod) is a modal
+            # terminal over everything, one per space, toggled hidden-and-back.
             "alt-`" = "scratch.toggle";
-            "alt-p" = "tab-host.toggle:plannotator";
+            "alt-p" = "app.palette";
             "alt-o" = "mod.open:obsidian";
             "alt-m" = "herdwatch.toggle";
 
@@ -153,8 +150,6 @@
         # What they run, from each repo's own disclosure and a code review:
         # - herdr-app-jj (sebcbi1): jj and git in the space's folder, on
         #   this machine and on connected ones. No network.
-        # - herdr-mod-plannotator (gadenbuie): the plannotator CLI, and curl
-        #   to the local Inbox on 127.0.0.1 only. Reads Plannotator's store.
         # - herdr-mod-tab-host (gadenbuie): sh -c running the show commands
         #   that installed mods declare in their mod.json.
         # - herdr-ttt (cha2maru): sh/hc to find ttt; if missing it can offer
@@ -170,12 +165,6 @@
           repo = "herdr-app-jj";
           rev = "1ffdc17f5f36b50f3ee502fadf5abf3f4742c1fd";
           hash = "sha256-WH5221VZXo6W1kLg390HQha26Y+Mzx9CQWK2QIxcG/c=";
-        };
-        plannotatorSrc = pkgs.fetchFromGitHub {
-          owner = "gadenbuie";
-          repo = "herdr-mod-plannotator";
-          rev = "d0a156b355f9bba1eb9d20f5abca783fa08d9bd6";
-          hash = "sha256-llRI/DWzcp0MSaoT7q5ja0KhYCFc/2pK54UqycsTWLw=";
         };
         tabHostSrc = pkgs.fetchFromGitHub {
           owner = "gadenbuie";
@@ -210,19 +199,6 @@
           chmod -R +w $out
           substituteInPlace $out/main.js \
             --replace-fail '`''${home}/.herdr/worktrees`' '`''${home}/Projects/workspaces`'
-        '';
-
-        # plannotator: the panel finds the running Inbox through its store
-        # folder (inbox.json there carries the port). Upstream expects
-        # ~/.plannotator/inbox; plannotator 0.28 keeps the store at
-        # ~/.local/share/plannotator/inbox with no knob the mod could read,
-        # hence the one-line substitution. Fails loudly if upstream moves
-        # the constant.
-        plannotatorMod = pkgs.runCommand "herdr-plannotator" { } ''
-          cp -r ${plannotatorSrc}/mods/plannotator $out
-          chmod -R +w $out
-          substituteInPlace $out/main.js \
-            --replace-fail '`''${home()}/.plannotator/inbox`' '`''${home()}/.local/share/plannotator/inbox`'
         '';
 
         # ttt-tabs ships the tab bar's Files/Changes buttons; which appear
@@ -270,8 +246,8 @@
             '';
 
         # Every mod to install: name -> source folder. Fetched from the
-        # pinned repos above (jj-workspace and plannotator with a one-line
-        # substitution each), two derived from the app's own shipped mods,
+        # pinned repos above (jj-workspace with a one-line substitution),
+        # two derived from the app's own shipped mods,
         # and the scratch terminal (app/scratch) ours.
         mods = {
           agents-machines = agentsMachinesMod;
@@ -281,7 +257,6 @@
           jj-status = "${jjSrc}/mods/jj-status";
           jj-workspace = jjWorkspaceMod;
           obsidian = "${obsidianSrc}/mods/obsidian";
-          plannotator = plannotatorMod;
           scratch = "${./app/scratch}";
           spaces-jj = spacesJjMod;
           tab-host = "${tabHostSrc}/mods/tab-host";
@@ -311,6 +286,10 @@
               verboseEcho "herdr-app: installed mod '${name}'"
             '') mods
           )}
+
+          # Remove the old Nix-managed panel so tab-host no longer exposes it.
+          chmod -R u+w "$app_home/mods/plannotator" 2>/dev/null || true
+          rm -rf "$app_home/mods/plannotator"
 
           # Our layout ("hdwlinux"): a clone of the shipped main layout —
           # jj mods, agents grouped by machine, the ttt-tabs + tab-host tab
