@@ -230,7 +230,25 @@
         secretspec.scopes = lib.mkIf (mcpSecretNames != [ ]) {
           ai_clients_opencode.secrets = mcpSecretNames;
         };
+        # Keep terminal-only preferences in OpenCode's separate CLI config.
         xdg.configFile = lib.mkMerge [
+          {
+            "opencode/cli.json" = {
+              force = true;
+              text = builtins.toJSON {
+                "$schema" = "https://opencode.ai/v2/cli.json";
+                animations = true;
+                diffs.wrap = "word";
+                session = {
+                  sidebar = "auto";
+                  scrollbar = false;
+                  thinking = "hide";
+                };
+                terminal.copy = "manual";
+                theme.name = "opencode";
+              };
+            };
+          }
           (lib.mapAttrs' (
             name: command: lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
           ) config.hdwlinux.ai.clients.commands)

@@ -24,9 +24,9 @@
 
         # Desktop keybinds matched to the herdr TUI keymap
         # (modules/programs/herdr/default.nix) on top of herdr-app's shipped
-        # defaults. Custom chords are alt/alt+shift only — no leaders, no
-        # ctrl additions. Alt+p keeps the app palette action; ctrl+shift+p
-        # remains its other binding. The TUI's prefix (alt+a)
+        # defaults. Custom chords are alt/alt+shift except terminal Ctrl+C/V.
+        # Alt+p keeps the app palette action; ctrl+shift+p remains its other
+        # binding. The TUI's prefix (alt+a)
         # bindings have no app equivalent — keys.json binds single chords
         # only — so those actions keep the app's shipped shortcuts. TUI
         # tabs map to app tabs, TUI workspaces to app spaces.
@@ -112,15 +112,17 @@
             "shift-f2" = "space.rename";
           };
 
-          # Terminal focus: herdr-app shipped defaults, kept as is.
+          # Terminal focus: copy selections with Ctrl+C, but leave interrupts
+          # alone when there is no selection; Ctrl+V is ordinary paste.
           terminal = {
             "ctrl-backspace" = sendKey "\"\\u0017\"";
+            "ctrl-c" = "terminal.copy";
             "ctrl-left" = sendKey "\"\\u001bb\"";
             "ctrl-right" = sendKey "\"\\u001bf\"";
             "ctrl-shift-c" = "terminal.copy";
             "ctrl-shift-v" = "terminal.paste";
             "ctrl-shift-f" = "terminal.search";
-            "ctrl-v" = "terminal.paste_image";
+            "ctrl-v" = "terminal.paste";
             "ctrl-insert" = "terminal.copy";
             "shift-insert" = "terminal.paste";
           };
