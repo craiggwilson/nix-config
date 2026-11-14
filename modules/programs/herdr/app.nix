@@ -212,6 +212,19 @@
             --replace-fail '`''${home}/.herdr/worktrees`' '`''${home}/Projects/workspaces`'
         '';
 
+        # plannotator: the panel finds the running Inbox through its store
+        # folder (inbox.json there carries the port). Upstream expects
+        # ~/.plannotator/inbox; plannotator 0.28 keeps the store at
+        # ~/.local/share/plannotator/inbox with no knob the mod could read,
+        # hence the one-line substitution. Fails loudly if upstream moves
+        # the constant.
+        plannotatorMod = pkgs.runCommand "herdr-plannotator" { } ''
+          cp -r ${plannotatorSrc}/mods/plannotator $out
+          chmod -R +w $out
+          substituteInPlace $out/main.js \
+            --replace-fail '`''${home()}/.plannotator/inbox`' '`''${home()}/.local/share/plannotator/inbox`'
+        '';
+
         # ttt-tabs ships the tab bar's Files/Changes buttons; which appear
         # comes from the app's shared "workspace.panels" state (set once by
         # the welcome screen). Ours is the layout's panel stack — Changes
@@ -257,9 +270,9 @@
             '';
 
         # Every mod to install: name -> source folder. Fetched from the
-        # pinned repos above (one with a local substitution for its workspace
-        # root), two
-        # derived from the app's own shipped mods.
+        # pinned repos above (jj-workspace and plannotator with a one-line
+        # substitution each), two derived from the app's own shipped mods,
+        # and the scratch terminal (app/scratch) ours.
         mods = {
           agents-machines = agentsMachinesMod;
           herdwatch = "${herdwatchSrc}/mods/herdwatch";
@@ -268,7 +281,7 @@
           jj-status = "${jjSrc}/mods/jj-status";
           jj-workspace = jjWorkspaceMod;
           obsidian = "${obsidianSrc}/mods/obsidian";
-          plannotator = "${plannotatorSrc}/mods/plannotator";
+          plannotator = plannotatorMod;
           scratch = "${./app/scratch}";
           spaces-jj = spacesJjMod;
           tab-host = "${tabHostSrc}/mods/tab-host";

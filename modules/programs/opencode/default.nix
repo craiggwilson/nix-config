@@ -211,7 +211,15 @@
             )
             # oh-my-opencode-slim supplies Context7 itself; avoid starting the shared
             # local server a second time for OpenCode. Other clients still receive it.
-            (lib.removeAttrs config.hdwlinux.ai.clients.mcpServers [ "context7-mcp" ]);
+            # Same for plannotator-inbox: OpenCode takes the @plannotator/opencode
+            # plugin (programs.opencode.plannotator), whose replies arrive inside
+            # the session — the stdio server is Claude Code's connection.
+            (
+              lib.removeAttrs config.hdwlinux.ai.clients.mcpServers [
+                "context7-mcp"
+                "plannotator-inbox"
+              ]
+            );
 
       in
       {
@@ -313,20 +321,57 @@
 
   # Interactive plan review: exposes submit_plan to OpenCode's built-in plan
   # agent via the default plan-agent workflow. The wrapped OpenCode build takes
-  # the plugin's CLI runtime fallback, so the CLI must be on PATH.
+  # the plugin's CLI runtime fallback, so the CLI must be on PATH. The plugin
+  # also carries the Plannotator Inbox tool — off until config.json says
+  # otherwise (the activation below) — the channel agents use to leave
+  # questions, summaries and reviews for the person without a session open.
   config.substrate.modules.programs.opencode.plannotator = {
     tags = [
       "profile:ai"
     ];
 
     homeManager =
-      { pkgs, ... }:
+      { lib, pkgs, ... }:
       {
         home.packages = [ pkgs.hdwlinux.plannotator ];
 
         programs.opencode.settings.plugins = [
           "@plannotator/opencode"
         ];
+
+        # The Inbox server: agent tool calls start a stopped one, but on a
+        # fresh boot nothing does until then — and the herdr panel reads it
+        # from the first press. One idempotent start at login: it attaches
+        # to a running server, and daemonizes out of systemd's reach (agent
+        # calls bring a dead one back).
+        systemd.user.services.plannotator-inbox = {
+          Unit.Description = "Plannotator Inbox: messages between coding agents and the person";
+          Service = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+            ExecStart = "${lib.getExe pkgs.hdwlinux.plannotator} inbox --background";
+          };
+          Install.WantedBy = [ "default.target" ];
+        };
+
+        # The Inbox's own Settings page writes config.json too, so merge in
+        # place and touch the file only when the flag is not set yet.
+        home.activation.plannotatorInboxTool = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+          f="$HOME/.local/share/plannotator/config.json"
+          tmp="$(mktemp)"
+          if [ -f "$f" ]; then
+            ${pkgs.jq}/bin/jq '.inboxTool = ((.inboxTool // {}) + { opencode: true })' "$f" >"$tmp"
+          else
+            printf '{"inboxTool":{"opencode":true}}\n' >"$tmp"
+          fi
+          if cmp -s "$tmp" "$f"; then
+            rm -f "$tmp"
+          else
+            run mkdir -p "$(dirname "$f")"
+            run mv "$tmp" "$f"
+            verboseEcho "plannotator: inbox tool enabled for OpenCode"
+          fi
+        '';
       };
   };
 
