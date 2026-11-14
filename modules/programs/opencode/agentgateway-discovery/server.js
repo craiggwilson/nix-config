@@ -1,6 +1,6 @@
 import { Model, Plugin, Provider } from "@opencode/plugin";
 import { resolveAgentGatewayAuth } from "./auth.js";
-import { groupAgentGatewayModel, mapAgentGatewayModel } from "./model.js";
+import { groupAgentGatewayModel, mapAgentGatewayModel, providerDefinition } from "./model.js";
 
 const PROVIDER_ID = "agentgateway";
 const REFRESH_EVENTS = new Set([
@@ -31,6 +31,7 @@ export default Plugin.define({
     const abort = new AbortController();
     let inventory = new Map();
     let dynamicIntegrationID;
+    let sourceProvider;
     let refreshing;
     let refreshPending = false;
     const discoverySettings = ctx.options ?? {};
@@ -38,8 +39,7 @@ export default Plugin.define({
     await ctx.provider.transform((editor) => {
       for (const { group, models } of inventory.values()) {
         const groupProviderID = Provider.ID.make(group.id);
-        const definition = editor.get(providerID);
-        const source = definition?.provider ?? definition;
+        const source = providerDefinition(editor.get(providerID), sourceProvider);
         if (!source) continue;
 
         const settings = { ...source.settings };
@@ -67,6 +67,7 @@ export default Plugin.define({
 
     const refreshOnce = async () => {
       const provider = await findProvider(ctx);
+      sourceProvider = provider;
       const configuredGroups = discoverySettings.providerGroups;
       if (!Array.isArray(configuredGroups)) return;
       const baseURL = provider?.settings?.baseURL;

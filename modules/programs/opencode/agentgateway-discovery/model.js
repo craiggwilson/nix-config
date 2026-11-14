@@ -63,6 +63,11 @@ function providerID(owner) {
   return `agentgateway-${suffix}`;
 }
 
+export function providerDefinition(record, fallback) {
+  // User-configured providers can be absent while OpenCode first registers transforms.
+  return record?.provider ?? record ?? fallback;
+}
+
 export function groupAgentGatewayModel(model, configuredGroups = [], defaultPackage) {
   if (!model || typeof model.id !== "string" || !model.id.trim()) return undefined;
 

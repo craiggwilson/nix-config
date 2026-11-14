@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { resolveAgentGatewayAuth } from "./auth.js";
-import { groupAgentGatewayModel, mapAgentGatewayModel } from "./model.js";
+import { groupAgentGatewayModel, mapAgentGatewayModel, providerDefinition } from "./model.js";
 
 test("maps AgentGateway limits, modalities, and capabilities", () => {
   const model = mapAgentGatewayModel({
@@ -44,6 +44,14 @@ test("uses the context_length alias and conservative capability defaults", () =>
   assert.equal(model.capabilities.tools, true);
   assert.equal(model.capabilities.temperature, undefined);
   assert.deepEqual(model.capabilities.input, ["text"]);
+});
+
+test("falls back to the configured provider when the transform editor has not loaded it", () => {
+  const configured = { id: "agentgateway", settings: { baseURL: "https://agents.example/v1" } };
+  const editorProvider = { id: "agentgateway", settings: { baseURL: "https://editor.example/v1" } };
+
+  assert.equal(providerDefinition(undefined, configured), configured);
+  assert.equal(providerDefinition({ provider: editorProvider }, configured), editorProvider);
 });
 
 test("rejects records without a nonempty model ID", () => {

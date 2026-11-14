@@ -18,7 +18,7 @@
           {
             package = "${plugin}";
             options = {
-              authIntegration = "agentgateway";
+              authIntegration = "wilsonfamilyhq";
               # Keep matching rules in plugin options so discovery can run during plugin startup.
               providerGroups = [
                 {
