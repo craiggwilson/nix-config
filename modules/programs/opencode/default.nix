@@ -212,14 +212,24 @@
             # oh-my-opencode-slim supplies Context7 itself; avoid starting the shared
             # local server a second time for OpenCode. Other clients still receive it.
             (lib.removeAttrs config.hdwlinux.ai.clients.mcpServers [ "context7-mcp" ]);
+        mcpSecretNames = config.hdwlinux.ai.clients.mcpServersSecretNames;
+        opencodePackage =
+          if mcpSecretNames == [ ] then
+            pkgs.opencode
+          else
+            wrap.package {
+              package = pkgs.opencode;
+              name = "opencode";
+              secrets.scope = "ai_clients_opencode";
+            };
 
       in
       {
-        # The launcher scope: every secret the MCP servers and model providers
-        # reference, aggregated here so OpenCode's {env:...} substitution can
-        # resolve them at exec time.
-        secretspec.scopes.ai_clients_opencode.secrets =
-          config.hdwlinux.ai.clients.mcpServersSecretNames ++ config.hdwlinux.ai.clients.providerSecretNames;
+        # Only remote MCP headers need the launcher scope. Model credentials are
+        # managed by OpenCode, and local MCP servers resolve their own scopes.
+        secretspec.scopes = lib.mkIf (mcpSecretNames != [ ]) {
+          ai_clients_opencode.secrets = mcpSecretNames;
+        };
         xdg.configFile = lib.mkMerge [
           (lib.mapAttrs' (
             name: command: lib.nameValuePair "opencode/prompts/commands/${name}.md" { source = command.prompt; }
@@ -235,11 +245,7 @@
         programs.opencode = {
           enable = true;
 
-          package = wrap.package {
-            package = pkgs.opencode;
-            name = "opencode";
-            secrets.scope = "ai_clients_opencode";
-          };
+          package = opencodePackage;
 
           # The MCP servers are rendered below rather than taken from
           # programs.mcp.servers, which cannot carry a secret header.

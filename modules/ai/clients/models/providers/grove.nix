@@ -49,10 +49,10 @@
           lib.nameValuePair "grove-${type}" {
             displayName = "Grove ${spec.name}";
             models = mkModels groveModels.${type};
-            secret = "GROVE_API_KEY";
 
             # The gateway authenticates with an `api-key` header, not the SDK's
-            # native Bearer auth, so OpenCode must send the credential itself.
+            # native Bearer auth, so OpenCode reads it from its managed server
+            # environment.
             settings.opencode = {
               env = [ "GROVE_API_KEY" ];
               headers."api-key" = "{env:GROVE_API_KEY}";
@@ -62,15 +62,6 @@
           }
         ) providerSpecs;
 
-        # Shared by all three providers; the key already lives in 1Password.
-        secretspec.entries.GROVE_API_KEY = {
-          description = "Grove AI Gateway API key for the grove-* model providers";
-          ref = {
-            field = "primary_api_key";
-            item = "Grove";
-            vault = "Work";
-          };
-        };
       };
   };
 }

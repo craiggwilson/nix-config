@@ -77,12 +77,6 @@
                 default = { };
               };
 
-              secret = lib.mkOption {
-                description = "Name of the `secretspec` entry holding this provider's API key.";
-                type = lib.types.nullOr lib.types.str;
-                default = null;
-              };
-
               settings = lib.mkOption {
                 description = "Client-specific provider settings, keyed by client (e.g. opencode).";
                 type = lib.types.attrsOf lib.types.anything;

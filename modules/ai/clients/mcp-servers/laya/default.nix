@@ -63,8 +63,7 @@
           ];
         };
 
-        # Usage policy ships with the tools it governs; clients render it into
-        # their rules dir (opencode loads every rule, claude-code on demand).
+        # Usage policy ships with the tools it governs; OpenCode loads every rule.
         hdwlinux.ai.clients.rules.laya = {
           description = "When and how to use the laya_* System-1 decision tools (triage, routing, gating)";
           loadMode = "auto";

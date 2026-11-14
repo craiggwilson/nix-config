@@ -15,8 +15,7 @@
         ...
       }:
       let
-        # secretspec resolves work_mcp at exec time; the arguments carrying the
-        # tokens sit on the core, inside that chain, so they expand afterwards.
+        # secretspec injects the variables mcp-atlassian reads when it starts.
         mcp = wrap.package {
           package = pkgs.hdwlinux.mcp-atlassian;
           secrets.scope = "work_mcp";
@@ -25,10 +24,6 @@
             "https://jira.mongodb.org"
             "--confluence-url"
             "https://wiki.corp.mongodb.com"
-            "--jira-personal-token"
-            "\"\$JIRA_ACCESS_TOKEN\""
-            "--confluence-personal-token"
-            "\"\$CONFLUENCE_ACCESS_TOKEN\""
           ];
         };
       in
@@ -58,6 +53,14 @@
                 field = "personal-access-token";
               };
             };
+            JIRA_PERSONAL_TOKEN = {
+              description = "Personal access token for the MongoDB Jira MCP server.";
+              ref = {
+                vault = "Work";
+                item = "Jira";
+                field = "personal-access-token";
+              };
+            };
             jiraConfig = {
               description = "Jira CLI configuration for the MongoDB instance.";
               ref = {
@@ -75,10 +78,18 @@
                 field = "personal-access-token";
               };
             };
+            CONFLUENCE_PERSONAL_TOKEN = {
+              description = "Personal access token for the MongoDB Confluence MCP server.";
+              ref = {
+                vault = "Work";
+                item = "Confluence";
+                field = "personal-access-token";
+              };
+            };
           };
           scopes.work_mcp.secrets = [
-            "JIRA_ACCESS_TOKEN"
-            "CONFLUENCE_ACCESS_TOKEN"
+            "JIRA_PERSONAL_TOKEN"
+            "CONFLUENCE_PERSONAL_TOKEN"
           ];
         };
       };

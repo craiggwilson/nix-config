@@ -171,9 +171,8 @@
           }) config.hdwlinux.ai.clients.skills
         );
 
-        # Augment has no equivalent of OpenCode's {env:...} or Claude Code's
-        # ${...} header substitution, so a server needing a secret is left out
-        # rather than written out with a header that cannot resolve.
+        # Augment cannot resolve secrets in MCP HTTP headers, so servers that
+        # need them are left out rather than written with unresolved headers.
         mcpServers =
           lib.mapAttrs
             (

@@ -372,21 +372,6 @@
             ) config.hdwlinux.ai.clients.mcpServers;
           };
 
-          providerSecretNames = lib.mkOption {
-            description = ''
-              Names of the `secretspec` entries providers declared with
-              `models.providers.<name>.secret`. A client uses this to request
-              the secrets it needs in its own environment.
-            '';
-            type = lib.types.listOf lib.types.str;
-            readOnly = true;
-            default = lib.unique (
-              lib.filter (s: s != null) (
-                map (p: p.secret) (lib.attrValues config.hdwlinux.ai.clients.models.providers)
-              )
-            );
-          };
-
           rules = lib.mkOption {
             description = "Rule definitions for AI assistants.";
             type = lib.types.attrsOf ruleType;
