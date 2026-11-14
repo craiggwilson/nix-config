@@ -403,7 +403,6 @@
   },
   "notepadShowLineNumbers": false,
   "notepadSlideoutSide": "right",
-  "muxType": "herdr",
   "muxUseCustomCommand": false,
   "osdPosition": 4,
   "connectedFrameBarStyleBackups": {
@@ -715,16 +714,7 @@
       "hoverPopouts": false,
       "id": "bar1792801906713",
       "innerPadding": 4,
-      "leftWidgets": [
-        {
-          "enabled": true,
-          "id": "herdrAgentMonitor"
-        },
-        {
-          "enabled": true,
-          "id": "maskedemail"
-        }
-      ],
+      "leftWidgets": [],
       "maximizeWidgetIcons": false,
       "maximizeWidgetText": false,
       "name": "Utility Bar",

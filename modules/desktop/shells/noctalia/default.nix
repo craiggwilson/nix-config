@@ -208,10 +208,8 @@
                 "icefish/phone-connect"
                 "alok-debnath/shelf"
                 "tordex/processes"
-                "craig/maskedemail"
               ]
               ++ lib.optionals hasAI [
-                "hy4ri/herdr"
                 "zumik3-del/opencode-go-usage"
               ]
               ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
@@ -231,30 +229,17 @@
                   location = "https://github.com/noctalia-dev/community-plugins";
                   enabled = true;
                 }
-                {
-                  name = "hdwlinux";
-                  kind = "path";
-                  location = "${./plugins}";
-                  enabled = true;
-                }
               ];
             };
 
             plugin_settings = {
               "aristides/udiskie".manager_placement = "attached";
 
-              "craig/maskedemail".manager_placement = "attached";
-
               "davemhammer/obsidian" = {
                 vault_path = "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb";
                 daily_folder = "daily";
                 manager_open_near_click = false;
                 manager_placement = "attached";
-              };
-
-              "hy4ri/herdr" = {
-                panel_open_near_click = false;
-                show_other_machines = true;
               };
 
               "samuelskovbakke/calculator-plus".panel_open_near_click = false;
@@ -326,10 +311,7 @@
                 ])
               ]
               ++ lib.optionals hasAI [
-                # Herdr turns red when an agent is blocked, so this wants to be
-                # glanceable rather than tucked behind a panel.
                 (mkCapsule "ai" [
-                  "herdr"
                   "opencode"
                 ])
               ];
@@ -369,7 +351,6 @@
               show_on_workspace_switch = false;
               start = [
                 "widget"
-                "maskedemail"
               ];
             };
 
@@ -429,12 +410,10 @@
               udiskie.type = "aristides/udiskie:status";
               visualizer.type = "audio_visualizer";
               workspaces.hide_when_empty = false;
-              maskedemail.type = "craig/maskedemail:maskedemail";
               opencode.bar_limit = "month";
               widget.type = "samuelskovbakke/calculator-plus:widget";
             }
             // lib.optionalAttrs hasAI {
-              herdr.type = "hy4ri/herdr:bar";
               opencode.type = "zumik3-del/opencode-go-usage:bar";
             }
             // lib.optionalAttrs hasProgramming {

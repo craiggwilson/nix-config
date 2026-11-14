@@ -11,14 +11,10 @@
         ...
       }:
       let
-        # dux-shell polls `maskedemail-cli list` about once a minute, so this
-        # wrapper must not resolve its token at exec time: every secretspec
-        # resolution is an `op read` billed against 1Password's account-wide
-        # daily read budget (~1,000/day on a personal account), which the
-        # poller alone exhausts — rate-limiting every other secretspec consumer
-        # until the 24-hour window resets. The token is materialized once per
-        # login/generation by secretspec-materialize.service instead, and read
-        # from that file here: no provider round trip per poll.
+        # Read the token from a file materialized once per login by
+        # secretspec-materialize.service, rather than resolving it at exec
+        # time: each secretspec resolution is an `op read` against
+        # 1Password's daily read budget.
         tokenFile = config.secretspec.entries.MASKEDEMAIL_TOKEN.file.path;
 
         maskedemail = wrap.package {

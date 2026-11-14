@@ -66,23 +66,11 @@
           rev = "fb21277e45a2c77eeb53de48a2008f07ea6892aa";
           hash = "sha256-YyFdgds1XBBVo4RYJTpK6z/U35vyEV01vYFoyTNM98M=";
         };
-        herdrAgentMonitorSrc = mkPlugin {
-          owner = "Mor-dev";
-          repo = "herdr-agent-monitor";
-          rev = "9474c46444600d5d39da16c7cc3239861834b6e3";
-          hash = "sha256-e1lJs22k9UtzbozyMOn6V1PUDwCjpHt+/W8IOZywRwk=";
-        };
         homeAssistantMonitorSrc = mkPlugin {
           owner = "xxyangyoulin";
           repo = "dms-plugin-hass";
           rev = "f76224ead8de03b94fff5f4f1821fdd1279acb85";
           hash = "sha256-yyg1IkumcjyMxJ1aBR3/rnnxIrBpWDOR/pNKfeQ9wYg=";
-        };
-        openTrackerBarSrc = mkPlugin {
-          owner = "wsmajt";
-          repo = "OpenTrackerBar";
-          rev = "a2fcb5c0e788185ac2d2828e4ed42de78c87073d";
-          hash = "sha256-2yI30jIWn2fdiTU8LkQO2AzbJEBXn/iF8x4vOmuAE+E=";
         };
         quickCaptureSrc = mkPlugin {
           owner = "hthienloc";
@@ -97,7 +85,6 @@
           rev = "3bee1e952c626071167c4e0aedad6241f7f624e0";
           hash = "sha256-SgUWuMG5bDuFbdXvWmSUfgOyiq2kX/6iovUIWITDxsE=";
         };
-        maskedemailSrc = ./plugins/maskedemail;
         dms = wrap.package {
           package = dmsPackage;
 
@@ -187,10 +174,7 @@
               src = dankscaleSrc;
               settings.lastAccount = "craiggwilson@github";
             };
-            herdrAgentMonitor.src = herdrAgentMonitorSrc;
             homeAssistantMonitor.src = homeAssistantMonitorSrc;
-            openTrackerBar.src = openTrackerBarSrc;
-            maskedemail.src = maskedemailSrc;
             quickCapture = {
               src = quickCaptureSrc;
               settings = {
