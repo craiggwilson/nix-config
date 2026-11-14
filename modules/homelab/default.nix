@@ -75,6 +75,16 @@
               };
             };
 
+            AGENTGATEWAY_HINDSIGHT_API_KEY = {
+              description = "Static API key for Hindsight's outbound LLM traffic through agentgateway.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "agentgateway";
+                field = "hindsight_api_key";
+              };
+            };
+
             AGENTGATEWAY_OIDC_COOKIE_SECRET = {
               description = "Agentgateway OIDC session cookie encryption key.";
               providers = [ "onepassword_homelab" ];
@@ -94,6 +104,56 @@
               '';
               description = "Agentgateway OIDC environment file.";
               file.path = "${config.xdg.configHome}/secretspec/agentgateway-oidc.env";
+            };
+
+            HINDSIGHT_API_KEY = {
+              description = "API key for the self-hosted Hindsight memory service.";
+              providers = [ "onepassword" ];
+              ref = {
+                vault = "Craig";
+                item = "Hindsight";
+                field = "api_key";
+              };
+            };
+
+            HINDSIGHT_DB_PASSWORD = {
+              description = "PostgreSQL password for the Hindsight Synology stack. Use a URL-safe value.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "hindsight";
+                field = "db_password";
+              };
+            };
+
+            HINDSIGHT_DB_ENV = {
+              composed = ''
+                POSTGRES_PASSWORD=''${HINDSIGHT_DB_PASSWORD}
+              '';
+              description = "Hindsight PostgreSQL environment file.";
+              file.path = "${config.xdg.configHome}/secretspec/hindsight-db.env";
+            };
+
+            HINDSIGHT_ENV = {
+              composed = ''
+                HINDSIGHT_API_DATABASE_URL=postgresql://hindsight:''${HINDSIGHT_DB_PASSWORD}@db:5432/hindsight
+                HINDSIGHT_API_LLM_API_KEY=''${AGENTGATEWAY_HINDSIGHT_API_KEY}
+                HINDSIGHT_API_TENANT_USERS=craig:''${HINDSIGHT_API_KEY}
+                HINDSIGHT_CP_ACCESS_KEY=''${HINDSIGHT_UI_ACCESS_KEY}
+                HINDSIGHT_CP_DATAPLANE_API_KEY=''${HINDSIGHT_API_KEY}
+              '';
+              description = "Hindsight API and Control Plane environment file.";
+              file.path = "${config.xdg.configHome}/secretspec/hindsight.env";
+            };
+
+            HINDSIGHT_UI_ACCESS_KEY = {
+              description = "Access key for the self-hosted Hindsight Control Plane.";
+              providers = [ "onepassword_homelab" ];
+              ref = {
+                vault = "Homelab";
+                item = "hindsight";
+                field = "ui_access_key";
+              };
             };
 
             KEYCLOAK_AGENTGATEWAY_UI_CLIENT_SECRET = {

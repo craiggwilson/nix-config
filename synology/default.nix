@@ -3,6 +3,7 @@ let
   stacks = {
     agentgateway = import ./stacks/agentgateway.nix { };
     certificates = import ./stacks/certificates.nix { };
+    hindsight = import ./stacks/hindsight.nix { };
     homeassistant = import ./stacks/homeassistant.nix { inherit lib; };
     keycloak = import ./stacks/keycloak.nix { };
     paperless = import ./stacks/paperless.nix { };
@@ -201,12 +202,24 @@ in
             ''
           ) (builtins.attrNames stacks)}
 
+          # Stacks that build an image pull their base image during the build
+          # instead; pulling the local image tag would fail.
+          composeAction="pull"
+          ${lib.concatMapStringsSep "\n" (
+            stackName:
+            lib.optionalString (stacks.${stackName}.buildOnDeploy or false) ''
+              if [[ "$stack" == ${lib.escapeShellArg stackName} ]]; then
+                composeAction="build"
+              fi
+            ''
+          ) (builtins.attrNames stacks)}
+
           # SSH is only used for the Docker Compose lifecycle operation.
           # Synology's command-mode PATH omits /usr/local/bin, and its Docker
           # socket requires root even when the interactive login can find the
           # client. A TTY lets sudo prompt for the account password once.
           # shellcheck disable=SC2029
-          ssh -tt "$host" "cd '$remoteDirectory' && sudo /usr/local/bin/docker compose pull && sudo /usr/local/bin/docker compose up -d"
+          ssh -tt "$host" "cd '$remoteDirectory' && sudo /usr/local/bin/docker compose $composeAction && sudo /usr/local/bin/docker compose up -d"
 
         '';
       };

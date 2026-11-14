@@ -8,8 +8,8 @@ Each application is a Synology stack. A stack has its own generated
 `compose.yaml` and managed configuration files. `synology-deploy` selects a
 stack by name, copies it to the NAS, and runs it with Docker Compose over SSH.
 
-The stacks are `agentgateway`, `certificates`, `homeassistant`, `keycloak`,
-`paperless`, and `yuvomi`.
+The stacks are `agentgateway`, `certificates`, `hindsight`, `homeassistant`,
+`keycloak`, `paperless`, and `yuvomi`.
 
 The deployment expects the Synology `docker` SMB share to be mounted locally
 at `$HOME/mnt/synology/docker`. Set `SYNOLOGY_MOUNT` to use another mount
@@ -200,6 +200,41 @@ nix run .#synology-agentgateway-refresh-copilot-catalog
 
 From OpenCode the models appear as `agentgateway/copilot/<model>` (for
 example `agentgateway/copilot/claude-sonnet-5.5`).
+
+### Hindsight
+
+Memory service at `https://hindsight.wilsonfamilyhq.com:8443` (API port `8888`)
+with the Control Plane on port `9999`. The API and PostgreSQL run as separate
+containers in one stack; PostgreSQL uses the `pgvector` image and data lives in
+`/volume3/docker/hindsight/pgdata`.
+
+The API image is built on deploy from `synology/hindsight-static-keys/`. It adds
+the upstream `StaticKeysTenantExtension`, so every `user_id:api_key` pair in
+`HINDSIGHT_API_TENANT_USERS` gets its own `user_<id>` schema.
+
+```bash
+nix run .#synology-deploy -- synology hindsight
+```
+
+Secrets come from 1Password via SecretSpec:
+
+- `Craig/Hindsight` `api_key`: the key for user `craig`
+- `Homelab/hindsight` `db_password`, `ui_access_key`
+- `Homelab/agentgateway` `hindsight_api_key`: outbound LLM key
+
+Add a user by adding another `user_id:api_key` pair in
+`modules/homelab/default.nix`; the schema is created on first authenticated
+request. Keys must be ASCII and contain no commas. Keep the database password
+URL-safe because it is embedded in `HINDSIGHT_API_DATABASE_URL`. To provision
+every configured schema up front instead of on first use:
+
+```bash
+sudo /usr/local/bin/docker compose -f /volume3/docker/hindsight/compose.yaml \
+  exec hindsight /app/api/.venv/bin/hindsight-admin run-db-migration
+```
+
+Hindsight calls the agentgateway listener on port `4001`; that listener and its
+static key are configured in agentgateway's `config.yaml`, not in this stack.
 
 ### Certificates
 
