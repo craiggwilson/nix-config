@@ -174,13 +174,33 @@
         },
         {
           "id": "status",
-          "type": "block",
-          "content": {
-            "mod": "jj-status"
-          },
+          "type": "row",
+          "resizable": false,
           "size": {
             "px": 28
-          }
+          },
+          "children": [
+            {
+              "id": "scratch",
+              "type": "block",
+              "content": {
+                "mod": "scratch"
+              },
+              "size": {
+                "px": 44
+              }
+            },
+            {
+              "id": "status-original",
+              "type": "block",
+              "content": {
+                "mod": "jj-status"
+              },
+              "size": {
+                "weight": 1
+              }
+            }
+          ]
         }
       ],
       "resizable": false

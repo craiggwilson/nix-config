@@ -1,4 +1,4 @@
-{ ... }:
+_:
 {
   substrate.packages.opencode-keycloak-auth =
     { pkgs, ... }:

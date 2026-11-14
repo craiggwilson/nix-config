@@ -7,6 +7,7 @@
 
     homeManager =
       {
+        config,
         lib,
         pkgs,
         ...
@@ -87,7 +88,10 @@
             "alt-shift-," = "agent.prev";
 
             # Mods. plannotator takes the prime chord (its palette
-            # replacement stays on the app's ctrl+shift+p).
+            # replacement stays on the app's ctrl+shift+p). The scratch
+            # terminal (our app/scratch mod) is a modal terminal over
+            # everything, one per space, toggled hidden-and-back.
+            "alt-`" = "scratch.toggle";
             "alt-p" = "tab-host.toggle:plannotator";
             "alt-o" = "mod.open:obsidian";
             "alt-m" = "herdwatch.toggle";
@@ -265,6 +269,7 @@
           jj-workspace = jjWorkspaceMod;
           obsidian = "${obsidianSrc}/mods/obsidian";
           plannotator = "${plannotatorSrc}/mods/plannotator";
+          scratch = "${./app/scratch}";
           spaces-jj = spacesJjMod;
           tab-host = "${tabHostSrc}/mods/tab-host";
           ttt-tabs = "${tttSrc}/mods/ttt-tabs";
@@ -344,6 +349,14 @@
         '';
       in
       {
+        # The compositor scratch workspaces launch herdr-app through the
+        # desktop apps abstraction (app-herdr); super+t keeps app-terminal —
+        # ghostty — as the standalone terminal.
+        hdwlinux.desktop.apps.herdr = lib.mkIf (config ? hdwlinux.desktop.apps) {
+          package = herdrApp;
+          desktopName = "herdr-app.desktop";
+        };
+
         home.packages = [ herdrApp ];
 
         home.activation.herdrAppConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] installHerdrAppConfig;

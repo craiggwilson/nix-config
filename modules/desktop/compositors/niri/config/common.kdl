@@ -157,6 +157,7 @@ workspace "stash" { }
 
 window-rule {
     match app-id=r#"^scratch*"#
+    match app-id="herdr-app"
     open-on-workspace "stash"
     open-floating true
 
@@ -165,7 +166,7 @@ window-rule {
     default-column-display "tabbed"
 }
 
-spawn-at-startup "app-terminal" "--class=scratch.terminal"
+spawn-at-startup "app-herdr"
 
 binds { 
     Mod+C hotkey-overlay-title="Clear Dynamic Cast Target" { clear-dynamic-cast-target; }

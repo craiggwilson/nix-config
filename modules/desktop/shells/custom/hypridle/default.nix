@@ -13,7 +13,7 @@
             general = {
               lock_cmd = "pidof hyprlock || hyprlock";
               before_sleep_cmd = "loginctl lock-session";
-                after_sleep_cmd = "hyprctl -i 0 dispatch dpms on || niri msg action power-on-monitors";
+              after_sleep_cmd = "hyprctl -i 0 dispatch dpms on || niri msg action power-on-monitors";
             };
 
             listener = [

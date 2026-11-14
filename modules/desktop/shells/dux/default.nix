@@ -50,46 +50,46 @@
           owner = "Conava";
           repo = "dux-plugins";
           path = "Cast";
-           rev = "9763ee8c8d97d1731f57e886f91ce306f495cd67";
-           hash = "sha256-zlzR2G2cW+VLE2ONzP59zWZFVAkYaYBgP416U3GgVSM=";
+          rev = "9763ee8c8d97d1731f57e886f91ce306f495cd67";
+          hash = "sha256-zlzR2G2cW+VLE2ONzP59zWZFVAkYaYBgP416U3GgVSM=";
         };
         dankKDEConnectSrc = mkPlugin {
           owner = "duxlabs-dev";
           repo = "dux-plugins";
           path = "DankKDEConnect";
-           rev = "e06aa40b1cb2b9ce50d3ee75f2874af05ae1763f";
-           hash = "sha256-ksqeIRE5dZrbCXPr1p35aJd0ZLLEV926Tv8cJDtaPok=";
+          rev = "e06aa40b1cb2b9ce50d3ee75f2874af05ae1763f";
+          hash = "sha256-ksqeIRE5dZrbCXPr1p35aJd0ZLLEV926Tv8cJDtaPok=";
         };
         dankscaleSrc = mkPlugin {
           owner = "dwright134";
           repo = "dms-dankscale";
-           rev = "fb21277e45a2c77eeb53de48a2008f07ea6892aa";
-           hash = "sha256-YyFdgds1XBBVo4RYJTpK6z/U35vyEV01vYFoyTNM98M=";
+          rev = "fb21277e45a2c77eeb53de48a2008f07ea6892aa";
+          hash = "sha256-YyFdgds1XBBVo4RYJTpK6z/U35vyEV01vYFoyTNM98M=";
         };
         herdrAgentMonitorSrc = mkPlugin {
           owner = "Mor-dev";
           repo = "herdr-agent-monitor";
-           rev = "9474c46444600d5d39da16c7cc3239861834b6e3";
-           hash = "sha256-e1lJs22k9UtzbozyMOn6V1PUDwCjpHt+/W8IOZywRwk=";
+          rev = "9474c46444600d5d39da16c7cc3239861834b6e3";
+          hash = "sha256-e1lJs22k9UtzbozyMOn6V1PUDwCjpHt+/W8IOZywRwk=";
         };
         homeAssistantMonitorSrc = mkPlugin {
           owner = "xxyangyoulin";
           repo = "dms-plugin-hass";
-           rev = "f76224ead8de03b94fff5f4f1821fdd1279acb85";
-           hash = "sha256-yyg1IkumcjyMxJ1aBR3/rnnxIrBpWDOR/pNKfeQ9wYg=";
+          rev = "f76224ead8de03b94fff5f4f1821fdd1279acb85";
+          hash = "sha256-yyg1IkumcjyMxJ1aBR3/rnnxIrBpWDOR/pNKfeQ9wYg=";
         };
         openTrackerBarSrc = mkPlugin {
           owner = "wsmajt";
           repo = "OpenTrackerBar";
-           rev = "a2fcb5c0e788185ac2d2828e4ed42de78c87073d";
-           hash = "sha256-2yI30jIWn2fdiTU8LkQO2AzbJEBXn/iF8x4vOmuAE+E=";
+          rev = "a2fcb5c0e788185ac2d2828e4ed42de78c87073d";
+          hash = "sha256-2yI30jIWn2fdiTU8LkQO2AzbJEBXn/iF8x4vOmuAE+E=";
         };
         quickCaptureSrc = mkPlugin {
           owner = "hthienloc";
           repo = "dms-plugins";
           path = "quickCapture";
-           rev = "b7ec1d6cd0fa1d42cab7c2f5996305c34897275c";
-           hash = "sha256-KTp5FB/QFIvbsVX00aQSO5/DGv5qeFzClbj63p4qUUg=";
+          rev = "b7ec1d6cd0fa1d42cab7c2f5996305c34897275c";
+          hash = "sha256-KTp5FB/QFIvbsVX00aQSO5/DGv5qeFzClbj63p4qUUg=";
         };
         warpToggleSrc = mkPlugin {
           owner = "ahmed-mekky";
@@ -98,9 +98,6 @@
           hash = "sha256-SgUWuMG5bDuFbdXvWmSUfgOyiq2kX/6iovUIWITDxsE=";
         };
         maskedemailSrc = ./plugins/maskedemail;
-        opentracker = wrap.package {
-          package = pkgs.hdwlinux.opentracker-cli;
-        };
         dms = wrap.package {
           package = dmsPackage;
 
@@ -129,7 +126,6 @@
             pkgs.kdePackages.kdeconnect-kde
             pkgs.valent
             pkgs.tailscale
-            opentracker
             config.programs.opencode.package
           ]
           ++ lib.optional isWork pkgs.cloudflare-warp;
@@ -172,7 +168,6 @@
       {
         home.packages = [
           dmsOverview
-          opentracker
         ];
 
         programs.dank-material-shell = {

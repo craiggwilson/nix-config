@@ -312,29 +312,6 @@
         "type": "github"
       }
     },
-    "herdr": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "rust-overlay": [
-          "rust-overlay"
-        ]
-      },
-      "locked": {
-        "lastModified": 1793278609,
-        "narHash": "sha256-0B58jR/v1vxbK7cwoq++SnOCsED0sHDkgqVMvsrjezE=",
-        "owner": "herdrdev",
-        "repo": "herdr",
-        "rev": "ee5bfb5041bb3e4a49d591c72308aae3c81ecdde",
-        "type": "github"
-      },
-      "original": {
-        "owner": "herdrdev",
-        "repo": "herdr",
-        "type": "github"
-      }
-    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -836,7 +813,6 @@
         "flake-parts": "flake-parts",
         "googleworkspace-cli": "googleworkspace-cli",
         "hdwlinux-private": "hdwlinux-private",
-        "herdr": "herdr",
         "home-manager": "home-manager",
         "import-tree": "import-tree_2",
         "kolide-launcher": "kolide-launcher",

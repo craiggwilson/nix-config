@@ -32,6 +32,11 @@
             type = appType;
             default = null;
           };
+          herdr = lib.mkOption {
+            description = "The Herdr desktop app for coding agents.";
+            type = appType;
+            default = null;
+          };
           webBrowser = lib.mkOption {
             description = "The default web browser.";
             type = appType;

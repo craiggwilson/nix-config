@@ -51,12 +51,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    herdr = {
-      url = "github:herdrdev/herdr";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.rust-overlay.follows = "rust-overlay";
-    };
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -209,10 +203,11 @@
           # the opencode flake instead of nixpkgs' 1.x
           inputs.opencode.overlays.default
 
-      # OpenCode v2.2.6 ships a stale node_modules hash for x86_64-linux.
+          # OpenCode v2.2.6 ships a stale node_modules hash for x86_64-linux.
           # Keep the release source pinned, but use the hash observed from the
           # reproducible fixed-output build until upstream refreshes hashes.json.
-          (final: _prev:
+          (
+            final: _prev:
             let
               node_modules = final.callPackage "${inputs.opencode}/nix/node_modules.nix" {
                 rev = "dc2ffcf8bf26f9e669b6aa22b95f50e12be15e06";

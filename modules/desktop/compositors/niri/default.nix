@@ -85,7 +85,7 @@
           toggleFloating = "toggle-window-floating";
           toggleFullscreen = "fullscreen-window";
           toggleOverview = "toggle-overview";
-          toggleScratchpad = ''spawn "niri-scratchpad" "target" "--spawn" "app-terminal --class=scratch.terminal" "appid" "scratch.terminal"'';
+          toggleScratchpad = ''spawn "niri-scratchpad" "target" "--spawn" "app-herdr" "appid" "herdr-app"'';
           toggleTabbedDisplay = "toggle-column-tabbed-display";
         };
         nativeActions =

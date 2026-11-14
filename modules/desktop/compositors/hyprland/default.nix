@@ -6,38 +6,36 @@ in
   config.substrate.modules.desktop.compositors.hyprland = {
     tags = [ "desktop:compositors:hyprland" ];
 
-    nixos =
-      _:
-      {
-        programs.hyprland = {
-          enable = true;
-          xwayland.enable = xwaylandEnabled;
-        };
-
-        hdwlinux.desktop.compositors.hyprland = {
-          command = "/run/current-system/sw/bin/start-hyprland";
-          comment = "A dynamic tiling Wayland compositor";
-          desktopName = "Hyprland";
-          prettyName = "Hyprland";
-        };
-
-        environment.sessionVariables = {
-          GSK_RENDERER = "gl";
-        };
-
-        xdg.portal = {
-          enable = true;
-          config.Hyprland = {
-            default = [
-              "hyprland"
-              "gtk"
-              "wlr"
-            ];
-            "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
-          };
-          xdgOpenUsePortal = true;
-        };
+    nixos = _: {
+      programs.hyprland = {
+        enable = true;
+        xwayland.enable = xwaylandEnabled;
       };
+
+      hdwlinux.desktop.compositors.hyprland = {
+        command = "/run/current-system/sw/bin/start-hyprland";
+        comment = "A dynamic tiling Wayland compositor";
+        desktopName = "Hyprland";
+        prettyName = "Hyprland";
+      };
+
+      environment.sessionVariables = {
+        GSK_RENDERER = "gl";
+      };
+
+      xdg.portal = {
+        enable = true;
+        config.Hyprland = {
+          default = [
+            "hyprland"
+            "gtk"
+            "wlr"
+          ];
+          "org.freedesktop.impl.portal.Secret" = [ "gnome-keyring" ];
+        };
+        xdgOpenUsePortal = true;
+      };
+    };
 
     homeManager =
       {
@@ -260,7 +258,7 @@ in
             hl.animation({ leaf = "borderangle", enabled = true, speed = 8, bezier = "default" })
             hl.animation({ leaf = "fade", enabled = true, speed = 7, bezier = "default" })
             hl.animation({ leaf = "workspaces", enabled = true, speed = 6, bezier = "default", style = "slidevert" })
-            hl.workspace_rule({ workspace = "special:dropdown", gaps_in = 5, gaps_out = 30, on_created_empty = "app-terminal", border_size = 0, no_rounding = true, persistent = false })
+            hl.workspace_rule({ workspace = "special:dropdown", gaps_in = 5, gaps_out = 30, on_created_empty = "app-herdr", border_size = 0, no_rounding = true, persistent = false })
             ${mouseBindings}
             ${gestures}
             local horizontalGestureDirection = 0
@@ -295,7 +293,7 @@ in
             for _, rule in ipairs(opacity_rules) do hl.window_rule(rule) end
             hl.window_rule({ name = "password-manager", match = { class = "^(1password)$" }, no_screen_share = true })
             hl.window_rule({ name = "password-manager-quick-access", match = { title = "^Quick Access — 1Password$" }, float = true, center = true, stay_focused = true })
-            hl.window_rule({ name = "scratch-terminal", match = { class = "^(com.mitchellh.ghostty)$" }, workspace = "special:dropdown" })
+            hl.window_rule({ name = "scratch-herdr", match = { class = "^(herdr-app)$" }, workspace = "special:dropdown" })
             hl.layer_rule({ name = "waybar-blur", match = { namespace = "^waybar$" }, blur = true, ignore_alpha = true })
             hl.layer_rule({ name = "notifications-blur", match = { namespace = "^notifications$" }, blur = true, ignore_alpha = true })
             hl.layer_rule({ name = "vicinae-blur", match = { namespace = "^vicinae$" }, blur = true, ignore_alpha = true, dim_around = true })

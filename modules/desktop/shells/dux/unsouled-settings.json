@@ -16,9 +16,7 @@
       "id": "dock",
       "name": "Dock",
       "enabled": false,
-      "screenPreferences": [
-        "all"
-      ],
+      "screenPreferences": ["all"],
       "showOnLastDisplay": true,
       "position": 2,
       "mode": "compact",
@@ -86,9 +84,7 @@
   "currentThemeCategory": "custom",
   "popupTransparency": 1,
   "floatingWindowSyncGlobal": true,
-  "dmsWindowsFloatingSeeded": [
-    "hyprland"
-  ],
+  "dmsWindowsFloatingSeeded": ["hyprland"],
   "widgetColorMode": "default",
   "defaultTaskCalendarId": "8b357f0c-59d5-4089-97f5-41b79fe92fb3",
   "barElevationEnabled": false,
@@ -553,9 +549,7 @@
           "id": "notificationButton"
         }
       ],
-      "screenPreferences": [
-        "all"
-      ],
+      "screenPreferences": ["all"],
       "showOnLastDisplay": true,
       "showOnWindowsOpen": false,
       "spacing": 4,
@@ -578,10 +572,6 @@
       "borderThickness": 1,
       "bottomGap": 0,
       "centerWidgets": [
-        {
-          "enabled": true,
-          "id": "openTrackerBar"
-        },
         {
           "enabled": true,
           "id": "clock"
@@ -691,9 +681,7 @@
           "id": "notificationButton"
         }
       ],
-      "screenPreferences": [
-        "all"
-      ],
+      "screenPreferences": ["all"],
       "showOnLastDisplay": true,
       "showOnWindowsOpen": false,
       "spacing": 4,
@@ -730,10 +718,6 @@
       "leftWidgets": [
         {
           "enabled": true,
-          "id": "openTrackerBar"
-        },
-        {
-          "enabled": true,
           "id": "herdrAgentMonitor"
         },
         {
@@ -750,9 +734,7 @@
       "popupGapsManual": 4,
       "position": 3,
       "rightWidgets": [],
-      "screenPreferences": [
-        "all"
-      ],
+      "screenPreferences": ["all"],
       "showOnLastDisplay": true,
       "showOnWindowsOpen": false,
       "spacing": 4,
