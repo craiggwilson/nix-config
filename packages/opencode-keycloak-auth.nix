@@ -16,11 +16,11 @@ _:
         mkdir -p "$pluginDir"
         cp -R ./* "$pluginDir/"
 
-        # Keep the plugin reusable: the provider ID is the display identity instead
-        # of a provider-specific integration name baked into the upstream bundle.
+        # Keep integration IDs configurable while labeling saved credentials by provider.
         substituteInPlace "$pluginDir/dist/index.js" \
           --replace-fail 'integration.name = INTEGRATION_NAME;' 'integration.name = id;' \
-          --replace-fail 'name: "Keycloak",' 'name: id,'
+          --replace-fail 'name: "Keycloak",' 'name: id,' \
+          --replace-fail $'    method: { id, type: "oauth", label },\n    authorize,\n    refresh\n  });' $'    method: { id, type: "oauth", label },\n    authorize,\n    refresh,\n    label: () => "Keycloak"\n  });'
       '';
 
       meta = {
