@@ -1,6 +1,9 @@
 {
   config.substrate.modules.programs.maskedemail = {
-    tags = [ "user:craig" ];
+    tags = [
+      "user:craig"
+      "core:security:secrets"
+    ];
 
     homeManager =
       {

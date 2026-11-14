@@ -1,9 +1,6 @@
 {
   config.substrate.modules.programs.herdr.core = {
-    tags = [
-      "profile:ai"
-      "profile:programming"
-    ];
+    tags = [ "user:craig" ];
 
     homeManager =
       {

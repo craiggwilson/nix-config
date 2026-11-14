@@ -19,6 +19,7 @@
           "blackflame"
           "craiggwilson@synology"
           "unsouled"
+          "wintersteel"
         ];
         parseMachine = machine: {
           hostname = lib.last (lib.splitString "@" machine);

@@ -208,8 +208,9 @@ Before installing, boot the factory DGX OS once and apply available firmware
 updates. Factory firmware may not boot NixOS until it has been updated. Then
 boot a NixOS ARM64 installer and generate the machine-specific hardware
 configuration for reference. The Disko layout is in
-`modules/hosts/wintersteel/_disko.nix`; verify that `/dev/nvme0n1` is the
-internal disk before applying it because Disko will erase the selected disk.
+`modules/hosts/wintersteel/_disko.nix`; it targets the Kioxia drive by
+`/dev/disk/by-id/nvme-EG6_KIOXIA_2048GB_2GLCT1TNZ464`. Verify that path from the
+live installer before applying it because Disko will erase the selected disk.
 
 ```bash
 sudo nixos-generate-config --root /mnt --dir /tmp/wintersteel-hardware
@@ -227,10 +228,17 @@ and `home` subvolumes. It does not create swap initially: swapping model data
 to the SSD would be a severe latency cliff for an AI-serving box. Add a
 dedicated swap device later if operational testing shows that is preferable.
 
-This initial host is intentionally headless: it uses the minimal `craig@server`
-profile for Home Manager, while desktop-specific tags are enabled only by
-desktop hosts. Root SSH login is disabled. Services such as llama.cpp should run
-as systemd services and do not require Craig to be logged in.
+This initial host is intentionally headless: `craig@server` is limited to base
+tools, Herdr Core (enabled for any `user:craig` account), and the llama.cpp
+service; desktop, theming, and programming profiles are not enabled.
+Root SSH login is disabled. Services such as llama.cpp and Herdr Core
+run without requiring Craig to be logged in.
+
+The host also runs Herdr Core as a lingering user service. From a Herdr client
+with SSH access over Tailscale, add it as a machine with
+`hc machine add craig@wintersteel --name wintersteel`; agents and their
+processes can then run on the GB10 and remain available after logout. Agent
+installations and model/provider routing are configured separately.
 
 Once the disk layout is known, validate and build the host with:
 

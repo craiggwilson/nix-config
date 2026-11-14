@@ -72,8 +72,7 @@ in
         "core:ssh"
         "core:tools:system"
         "user:${name}"
-      ]
-      ++ commonTags;
+      ];
     };
   };
 
@@ -81,14 +80,7 @@ in
     tags = [ "user:${name}" ];
 
     nixos =
-      {
-        config,
-        hasTag,
-        ...
-      }:
-      let
-        synologyCredentialsFile = config.secretspec.entries.synologyCifsCredentials.file.path;
-      in
+      { hasTag, ... }:
       {
         nix.settings = {
           trusted-users = [ name ];
@@ -123,114 +115,73 @@ in
         programs._1password-gui.polkitPolicyOwners = lib.mkIf (
           hasTag "desktop" && hasTag "core:security:passwordmanager"
         ) [ name ];
-
-        hdwlinux.filesystems.cifs.mounts =
-          (lib.optionals (hasTag "location:raeford" && hasTag "profile:personal") [
-            {
-              group = "users";
-              local = "/home/${name}/mnt/synology/docker";
-              remote = "//synology.raeford.wilsonfamilyhq.com/docker";
-              owner = "${name}";
-              credentialsFile = synologyCredentialsFile;
-              username = "craiggwilson";
-            }
-            {
-              group = "users";
-              local = "/home/${name}/mnt/synology/games";
-              remote = "//synology.raeford.wilsonfamilyhq.com/games";
-              owner = "${name}";
-              credentialsFile = synologyCredentialsFile;
-              username = "craiggwilson";
-            }
-            {
-              group = "users";
-              local = "/home/${name}/mnt/synology/music";
-              remote = "//synology.raeford.wilsonfamilyhq.com/music";
-              owner = "${name}";
-              credentialsFile = synologyCredentialsFile;
-              username = "craiggwilson";
-            }
-            {
-              group = "users";
-              local = "/home/${name}/mnt/synology/photos";
-              remote = "//synology.raeford.wilsonfamilyhq.com/photo";
-              owner = "${name}";
-              credentialsFile = synologyCredentialsFile;
-              username = "craiggwilson";
-            }
-          ])
-          ++ (lib.optionals
-            (hasTag "location:raeford" && (hasTag "profile:personal" || hasTag "profile:work"))
-            [
-              {
-                group = "users";
-                local = "/home/${name}/mnt/synology/home";
-                remote = "//synology.raeford.wilsonfamilyhq.com/home";
-                owner = "${name}";
-                credentialsFile = synologyCredentialsFile;
-                username = "craiggwilson";
-              }
-            ]
-          );
-
       };
+
+    homeManager = _: {
+      hdwlinux.user = {
+        inherit
+          name
+          fullName
+          email
+          publicKey
+          ;
+      };
+
+      home.shellAliases = {
+        "nix-update" = ''
+          set -e
+          # nix flake update doesn't write flake.lock when the source is a jj
+          # repo because jj's git backend causes nix to resolve the flake from
+          # an immutable store path. Work around by temporarily hiding .git so
+          # nix uses the path: fetcher and writes directly to the filesystem.
+          _nix_config_dir=$(git -C "''${1:-.}" rev-parse --show-toplevel 2>/dev/null || echo "''${1:-.}")
+          mv "$_nix_config_dir/.git" "$_nix_config_dir/.git.bak"
+          nix flake update --flake "$_nix_config_dir" --allow-dirty-locks || { mv "$_nix_config_dir/.git.bak" "$_nix_config_dir/.git"; return 1; }
+          mv "$_nix_config_dir/.git.bak" "$_nix_config_dir/.git"
+        '';
+        "start" = "xdg-open";
+        "use" = "hdwlinux develop";
+      };
+
+      home.stateVersion = "23.05";
+    };
+  };
+
+  # Declared apart from the user module because the secretspec option only
+  # exists on hosts with the secrets capability.
+  substrate.modules.users."${name}-secrets" = {
+    tags = [
+      "user:${name}"
+      "core:security:secrets"
+    ];
 
     homeManager =
       { config, hasTag, ... }:
       {
-        hdwlinux.user = {
-          inherit
-            name
-            fullName
-            email
-            publicKey
-            ;
-        };
-
-        secretspec = {
-          entries = {
-            personalSshKey = {
-              description = "Personal SSH private key used for signing and authenticated git access.";
-              ref = {
-                vault = "Craig";
-                item = "SSH Key - Craig";
-                field = "private key";
-              };
-              file.path = "${config.home.homeDirectory}/.ssh/id_rsa";
+        secretspec.entries = {
+          personalSshKey = {
+            description = "Personal SSH private key used for signing and authenticated git access.";
+            ref = {
+              vault = "Craig";
+              item = "SSH Key - Craig";
+              field = "private key";
             };
-            GITHUB_API_TOKEN = lib.mkIf (hasTag "profile:programming") {
-              description = "GitHub API token for API access and nix flake fetches.";
-              ref = {
-                vault = "Craig";
-                item = "Github";
-                field = "api_token";
-              };
-            };
-            NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasTag "profile:programming") {
-              description = "Nix GitHub access-tokens file composed from GITHUB_API_TOKEN.";
-              composed = "access-tokens = github.com=\${GITHUB_API_TOKEN}";
-              file.path = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
+            file.path = "${config.home.homeDirectory}/.ssh/id_rsa";
+          };
+          GITHUB_API_TOKEN = lib.mkIf (hasTag "profile:programming") {
+            description = "GitHub API token for API access and nix flake fetches.";
+            ref = {
+              vault = "Craig";
+              item = "Github";
+              field = "api_token";
             };
           };
+          NIX_GITHUB_ACCESS_TOKENS = lib.mkIf (hasTag "profile:programming") {
+            description = "Nix GitHub access-tokens file composed from GITHUB_API_TOKEN.";
+            composed = "access-tokens = github.com=\${GITHUB_API_TOKEN}";
+            file.path = "${config.xdg.configHome}/hdwlinux/secrets/nixGithubAccessTokens";
+          };
         };
-
-        home.shellAliases = {
-          "nix-update" = ''
-            set -e
-            # nix flake update doesn't write flake.lock when the source is a jj
-            # repo because jj's git backend causes nix to resolve the flake from
-            # an immutable store path. Work around by temporarily hiding .git so
-            # nix uses the path: fetcher and writes directly to the filesystem.
-            _nix_config_dir=$(git -C "''${1:-.}" rev-parse --show-toplevel 2>/dev/null || echo "''${1:-.}")
-            mv "$_nix_config_dir/.git" "$_nix_config_dir/.git.bak"
-            nix flake update --flake "$_nix_config_dir" --allow-dirty-locks || { mv "$_nix_config_dir/.git.bak" "$_nix_config_dir/.git"; return 1; }
-            mv "$_nix_config_dir/.git.bak" "$_nix_config_dir/.git"
-          '';
-          "start" = "xdg-open";
-          "use" = "hdwlinux develop";
-        };
-
-        home.stateVersion = "23.05";
       };
   };
 }

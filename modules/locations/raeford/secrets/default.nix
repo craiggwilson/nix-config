@@ -5,6 +5,7 @@
     tags = [
       "location:raeford"
       "user:craig"
+      "core:security:secrets"
     ];
 
     nixos = {

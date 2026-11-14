@@ -1,9 +1,9 @@
 {
   disko.devices.disk.main = {
     type = "disk";
-    # The Dell configuration has one internal NVMe drive. Confirm this from
-    # the installer before running disko: this operation is destructive.
-    device = "/dev/nvme0n1";
+    # Identified on DGX OS as the internal Kioxia EG6 2 TB drive. Verify this
+    # same by-id path from the installer before running disko; formatting is destructive.
+    device = "/dev/disk/by-id/nvme-EG6_KIOXIA_2048GB_2GLCT1TNZ464";
     content = {
       type = "gpt";
       partitions = {

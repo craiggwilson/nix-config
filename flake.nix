@@ -34,6 +34,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    dgx-spark = {
+      url = "github:graham33/nixos-dgx-spark/c646a19a5df3316c1b0e79e2025d59f8deb704de";
+      inputs.disko.follows = "disko";
+      inputs.flake-parts.follows = "flake-parts";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     dux-shell = {
       url = "github:duxlabs-dev/dux-shell/v2.1.1";
       inputs.nixpkgs.follows = "nixpkgs";

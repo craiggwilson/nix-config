@@ -1,4 +1,4 @@
-{ ... }:
+_:
 let
   hostname = "wintersteel";
   diskoConfig = import ./_disko.nix;
@@ -21,6 +21,7 @@ in
       "capability:cuda"
       "core:networking:tailscale"
       "hardware:dell-pro-max-gb10"
+      "location:raeford"
       "service:ai:llm"
     ];
   };
@@ -38,14 +39,14 @@ in
         # externally-created-package-set assertion.
         nixpkgs.config = lib.mkForce { };
 
-        hdwlinux.theme.system = "catppuccin";
+        hdwlinux.theme.system = "none";
 
         # Home Manager renamed this mode from `sdSwitch` to `sd-switch`.
         home-manager.users.craig.systemd.user.startServices = lib.mkForce "sd-switch";
         home-manager.users.craig.hdwlinux.services.llama-cpp.host = "0.0.0.0";
 
+        # Llama.cpp is intentionally reachable from both the Ethernet LAN and tailnet.
         networking.firewall.allowedTCPPorts = [ 9292 ];
-        users.users.craig.linger = true;
         security.sudo.wheelNeedsPassword = false;
         services.openssh.settings.PermitRootLogin = "no";
         system.stateVersion = "26.05";
