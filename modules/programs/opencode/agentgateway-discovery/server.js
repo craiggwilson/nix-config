@@ -1,6 +1,6 @@
 import { Model, Plugin, Provider } from "@opencode/plugin";
 import { resolveAgentGatewayAuth } from "./auth.js";
-import { groupAgentGatewayModel, mapAgentGatewayModel, providerDefinition } from "./model.js";
+import { groupAgentGatewayModel, groupBaseURL, mapAgentGatewayModel, providerDefinition } from "./model.js";
 
 const PROVIDER_ID = "agentgateway";
 const REFRESH_EVENTS = new Set([
@@ -42,7 +42,7 @@ export default Plugin.define({
         const source = providerDefinition(editor.get(providerID), sourceProvider);
         if (!source) continue;
 
-        const settings = { ...source.settings };
+        const settings = { ...source.settings, baseURL: groupBaseURL(group, source.settings?.baseURL) };
         const info = {
           ...Provider.Info.empty(groupProviderID),
           name: group.name,
@@ -107,7 +107,8 @@ export default Plugin.define({
           id,
           { group: state.group, models: [...state.models.values()] },
         ]));
-        const changed = JSON.stringify(nextInventory) !== JSON.stringify(inventory);
+        // Maps stringify to "{}", so compare their entries or a change is never seen.
+        const changed = JSON.stringify([...nextInventory]) !== JSON.stringify([...inventory]);
         inventory = nextInventory;
         if (changed) await ctx.provider.reload();
       } catch (error) {

@@ -2,9 +2,17 @@ const DEFAULT_CONTEXT = 200_000;
 const DEFAULT_OUTPUT = 32_000;
 
 const FORMAT_PACKAGES = {
+  anthropic: "@opencode/ai/providers/anthropic-compatible",
   completions: "@opencode/ai/providers/openai-compatible",
+  gemini: "@opencode/ai/providers/google",
   responses: "@opencode/ai/providers/openai-compatible/responses",
 };
+
+// Gemini clients call /v1beta/models/{model}:generateContent, not /v1.
+export function groupBaseURL(group, baseURL) {
+  if (typeof baseURL !== "string") return baseURL;
+  return group.clientFormat === "gemini" ? baseURL.replace(/\/v1\/?$/, "/v1beta") : baseURL;
+}
 
 function positiveInteger(value) {
   return Number.isSafeInteger(value) && value > 0 ? value : undefined;
@@ -83,6 +91,7 @@ export function groupAgentGatewayModel(model, configuredGroups = [], defaultPack
   const formatPackage = FORMAT_PACKAGES[config.clientFormat];
 
   return {
+    clientFormat: config.clientFormat,
     id: typeof config.id === "string" && config.id ? config.id : providerID(owner),
     modelID: model.id.startsWith(modelIdPrefix) ? model.id.slice(modelIdPrefix.length) : model.id,
     name: typeof config.name === "string" && config.name ? config.name : `AgentGateway - ${owner}`,

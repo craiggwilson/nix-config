@@ -69,6 +69,7 @@ test("groups by AgentGateway owned_by and preserves the route model ID", () => {
       clientFormat: "responses",
     },
   ], "@opencode/ai/providers/openai-compatible"), {
+    clientFormat: "responses",
     id: "agentgateway-copilot",
     modelID: "claude-sonnet-5.5",
     name: "AgentGateway - Copilot",
@@ -84,6 +85,7 @@ test("groups by AgentGateway owned_by and preserves the route model ID", () => {
       clientFormat: "completions",
     },
   ], "@opencode/ai/providers/openai-compatible"), {
+    clientFormat: "completions",
     id: "agentgateway-opencode-go",
     modelID: "qwen3.8-max",
     name: "AgentGateway - OpenCode Go",
@@ -142,4 +144,14 @@ test("uses the provider integration ID when no override is configured", async ()
   const auth = await resolveAgentGatewayAuth(provider, ctx);
   assert.equal(auth.headers.get("authorization"), "Bearer test-key");
   assert.equal(auth.integrationID, "gateway-auth");
+});
+
+test("selects the native package per client format and the Gemini base path", async () => {
+  const { groupBaseURL } = await import("./model.js");
+  const groups = [{ clientFormat: "anthropic", ownedBy: "x" }, { clientFormat: "gemini", ownedBy: "y" }];
+
+  assert.equal(groupAgentGatewayModel({ id: "a", owned_by: "x" }, groups, "d").package, "@opencode/ai/providers/anthropic-compatible");
+  assert.equal(groupAgentGatewayModel({ id: "a", owned_by: "y" }, groups, "d").package, "@opencode/ai/providers/google");
+  assert.equal(groupBaseURL(groups[1], "https://gw.example/v1"), "https://gw.example/v1beta");
+  assert.equal(groupBaseURL(groups[0], "https://gw.example/v1"), "https://gw.example/v1");
 });

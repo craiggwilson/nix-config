@@ -13,6 +13,7 @@
         ...
       }:
       let
+        agentgatewayGroups = import ./_agentgateway-groups.nix;
         # Resolve an alias to its ordered "provider/model" fallback chain.
         # First entry is the primary model.
         resolveAliases =
@@ -20,7 +21,7 @@
           let
             alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
           in
-          map (m: "${m.provider}/${m.model}") alias.models;
+          map (agentgatewayGroups.resolve lib) alias.models;
 
         # Primary "provider/model" for single-model consumers (agent definitions, title)
         resolveAlias = aliasName: lib.head (resolveAliases aliasName);
@@ -92,75 +93,36 @@
           template = "{file:${config.home.homeDirectory}/.config/opencode/prompts/commands/${name}.md}";
         }) config.hdwlinux.ai.clients.commands;
 
+        modelProviders = config.hdwlinux.ai.clients.models.providers;
+
+        # OpenCode's spelling of each API format; a provider can pin its own package.
+        formatPackages = {
+          anthropic = "@opencode/ai/providers/anthropic-compatible";
+          completions = "@opencode/ai/providers/openai-compatible";
+          gemini = "@opencode/ai/providers/google";
+          responses = "@opencode/ai/providers/openai-compatible/responses";
+        };
+
+        # The discovery plugin derives agentgateway's groups from this provider;
+        # clients already ship the built-in ones.
+        providers = lib.mapAttrs (
+          _: provider:
+          {
+            name = provider.displayName;
+            package =
+              provider.settings.opencode.package or formatPackages.${
+                if lib.elem "completions" provider.formats then "completions" else lib.head provider.formats
+              };
+            settings.baseURL = provider.baseURL;
+          }
+          // lib.optionalAttrs (provider.auth != null) {
+            env = [ provider.auth.secret ];
+            headers.${provider.auth.header} = "${provider.auth.prefix}{env:${provider.auth.secret}}";
+          }
+        ) (lib.filterAttrs (_: p: p.baseURL != null && !p.builtin) modelProviders);
         ruleInstructions = lib.mapAttrsToList (
           name: _rule: "${config.home.homeDirectory}/.config/opencode/prompts/rules/${name}.md"
         ) config.hdwlinux.ai.clients.rules;
-
-        # Provider metadata: OpenCode-specific configuration for each provider
-        providerMeta = {
-          "llama.cpp" = {
-            package = "aisdk:@ai-sdk/openai-compatible";
-            settings = lib.optionalAttrs (config.hdwlinux ? services.llama-cpp) {
-              baseURL = "http://${config.hdwlinux.services.llama-cpp.host}:${toString config.hdwlinux.services.llama-cpp.port}/v1";
-            };
-            # llama.cpp models may have additional opencode-specific settings
-            transformModel =
-              slug: model:
-              let
-                llmModel = config.hdwlinux.ai.llm.models.${slug} or { };
-                oc = llmModel.settings.opencode or { };
-              in
-              {
-                modelID = slug;
-                name = model.displayName;
-                limit = {
-                  context = model.limits.context;
-                  output = model.limits.output;
-                };
-              }
-              // lib.optionalAttrs (oc ? tool_call) { capabilities.tools = oc.tool_call; };
-          };
-        };
-
-        # Build providers config from hdwlinux.ai.clients.models.providers
-        # Only include providers that have metadata and at least one model —
-        # a provider with metadata but no models (e.g. grove on personal
-        # hosts) would render as an empty entry.
-        providers =
-          lib.mapAttrs
-            (
-              providerKey: provider:
-              let
-                # Provider modules can carry their own OpenCode wiring
-                # (settings.opencode); the static metadata below covers the
-                # providers that don't.
-                meta = providerMeta.${providerKey} or (provider.settings.opencode or { });
-                transformModel =
-                  meta.transformModel or (slug: model: {
-                    modelID = slug;
-                    name = model.displayName;
-                    limit = {
-                      context = model.limits.context;
-                      output = model.limits.output;
-                    };
-                  });
-              in
-              lib.filterAttrs (_: value: value != null) {
-                package = meta.package or null;
-                name = provider.displayName;
-                models = lib.mapAttrs (slug: model: transformModel slug model) provider.models;
-              }
-              // lib.optionalAttrs (meta ? settings && meta.settings != { }) { inherit (meta) settings; }
-              // lib.optionalAttrs (meta ? headers && meta.headers != { }) { inherit (meta) headers; }
-              // lib.optionalAttrs (meta ? env && meta.env != [ ]) { inherit (meta) env; }
-            )
-            (
-              lib.filterAttrs (_: p: p.models != { }) (
-                lib.filterAttrs (
-                  k: p: providerMeta ? ${k} || p.settings ? opencode
-                ) config.hdwlinux.ai.clients.models.providers
-              )
-            );
 
         # Opencode theme derived from the active hdwlinux theme colors
         opencodeTheme = import ./_theme.nix config.hdwlinux.theme.colors;
@@ -274,12 +236,7 @@
           skills = config.hdwlinux.ai.clients.skills;
 
           settings = {
-            providers = providers // {
-              agentgateway = {
-                package = "@opencode/ai/providers/openai-compatible";
-                settings.baseURL = "https://agents.wilsonfamilyhq.com/v1";
-              };
-            };
+            inherit providers;
             # v2 dropped small_model; the built-in title agent carries the fast model now.
             agents = agentConfig // {
               title.model = resolveAlias "fast";
@@ -341,9 +298,11 @@
     homeManager =
       {
         config,
+        lib,
         ...
       }:
       let
+        agentgatewayGroups = import ./_agentgateway-groups.nix;
         # Resolve an alias to its ordered "provider/model" fallback chain consumed by
         # oh-my-opencode-slim. First entry is the primary model.
         resolveAliases =
@@ -351,7 +310,7 @@
           let
             alias = config.hdwlinux.ai.clients.models.aliases.${aliasName};
           in
-          map (m: "${m.provider}/${m.model}") alias.models;
+          map (agentgatewayGroups.resolve lib) alias.models;
 
         # A single host-aware preset: aliases resolve to opencode-go models on personal
         # hosts and grove models on the work host, so no per-host preset switching is needed
