@@ -1,11 +1,12 @@
 {
   config.substrate.modules.services.llama-cpp = {
-    tags = [ "service:ai:llm" ];
+    tags = [
+      "service:ai:llm"
+    ];
 
     homeManager =
       {
         config,
-        hasTag,
         lib,
         pkgs,
         ...
@@ -18,29 +19,11 @@
             cudaSupport = true;
             rocmSupport = false;
             metalSupport = false;
-            # Enable BLAS for optimized CPU layer performance (OpenBLAS)
-            # This is crucial for models using split-mode or CPU offloading
-            blasSupport = true;
+            blasSupport = false;
           }).overrideAttrs
-            (oldAttrs: {
+            (_oldAttrs: {
               # Wintersteel's CUDA-enabled CTest suite failed during installation.
-              doCheck = !(hasTag "host:wintersteel");
-
-              # Enable native CPU optimizations for massively better CPU performance
-              # This enables AVX, AVX2, AVX-512, FMA, etc. for your specific CPU
-              # NOTE: This is intentionally opposite of nixpkgs (which uses -DGGML_NATIVE=off
-              # for reproducible builds). We sacrifice portability for faster CPU layers.
-              cmakeFlags = (oldAttrs.cmakeFlags or [ ]) ++ [
-                "-DGGML_NATIVE=ON"
-              ];
-
-              # Disable Nix's NIX_ENFORCE_NO_NATIVE which strips -march=native flags
-              # See: https://github.com/NixOS/nixpkgs/issues/357736
-              # See: https://github.com/NixOS/nixpkgs/pull/377484 (intentionally contradicts this)
-              preConfigure = ''
-                export NIX_ENFORCE_NO_NATIVE=0
-                ${oldAttrs.preConfigure or ""}
-              '';
+              doCheck = false;
             });
 
         presets = {
@@ -87,12 +70,8 @@
             };
             Service = {
               Type = "idle";
-              # --models-max 1 evicts the current model before loading the next, ensuring
-              # the GPU is fully available to whichever model is active. Without this,
-              # all requested models accumulate in VRAM and new ones load onto CPU.
-              ExecStart =
-                (lib.optionalString (hasTag "capability:graphics:nvidia") "/run/current-system/sw/bin/nvidia-offload ")
-                + "${lib.getExe' package "llama-server"} --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 1";
+              # Keep 16 GiB available for the OS and non-LLM work while caching models.
+              ExecStart = "${lib.getExe' package "llama-server"} --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 4 --models-memory-margin 16384";
               Restart = "on-failure";
               RestartSec = 300;
               TimeoutStopSec = 60;

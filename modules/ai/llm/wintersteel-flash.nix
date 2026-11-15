@@ -16,12 +16,13 @@
           ];
           priority = 20;
           settings.llama-cpp = {
-            ctx-size = 262144;
+            fit = "off";
             flash-attn = true;
-            mlock = true;
-            mmap = true;
-            n-gpu-layers = 999;
-            parallel = 1;
+            kv-unified-per-slot = 262144;
+            load-mode = "none";
+            mmproj-offload = true;
+            n-gpu-layers = "all";
+            parallel = 2;
           };
           files = [
             {
