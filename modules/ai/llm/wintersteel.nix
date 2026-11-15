@@ -1,6 +1,9 @@
 {
   config.substrate.modules.ai.llm.wintersteel = {
-    tags = [ "host:wintersteel" ];
+    tags = [
+      "host:wintersteel"
+      "service:ai:llm:models"
+    ];
 
     homeManager = {
       config.hdwlinux.ai.llm.models = {

@@ -71,7 +71,7 @@ in
                 }
               )
             );
-            default = [ ];
+            default = { };
           };
         };
       };

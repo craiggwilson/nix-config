@@ -386,6 +386,7 @@
           # Service tags
           "service:ai:image-generation"
           "service:ai:llm"
+          "service:ai:llm:models"
           "service:gaming-streaming"
 
           # User identity

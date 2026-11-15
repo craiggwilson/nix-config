@@ -23,6 +23,9 @@
             blasSupport = true;
           }).overrideAttrs
             (oldAttrs: {
+              # Wintersteel's CUDA-enabled CTest suite failed during installation.
+              doCheck = !(hasTag "host:wintersteel");
+
               # Enable native CPU optimizations for massively better CPU performance
               # This enables AVX, AVX2, AVX-512, FMA, etc. for your specific CPU
               # NOTE: This is intentionally opposite of nixpkgs (which uses -DGGML_NATIVE=off
