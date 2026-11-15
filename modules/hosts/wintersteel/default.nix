@@ -23,6 +23,7 @@ in
       "hardware:dell-pro-max-gb10"
       "location:raeford"
       "service:ai:llm"
+      "service:ai:llm:models"
     ];
   };
 
@@ -47,7 +48,7 @@ in
 
         # Llama.cpp is intentionally reachable from both the Ethernet LAN and tailnet.
         networking.firewall.allowedTCPPorts = [ 9292 ];
-        security.sudo.wheelNeedsPassword = false;
+        security.sudo.wheelNeedsPassword = true;
         services.openssh.settings.PermitRootLogin = "no";
         system.stateVersion = "26.05";
       };

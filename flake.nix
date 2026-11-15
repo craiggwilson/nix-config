@@ -386,6 +386,7 @@
           # Service tags
           "service:ai:image-generation"
           "service:ai:llm"
+          "service:ai:llm:flash-next"
           "service:ai:llm:models"
           "service:gaming-streaming"
 
