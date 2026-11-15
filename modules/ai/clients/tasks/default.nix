@@ -12,6 +12,7 @@
       }:
       let
         tasks = config.hdwlinux.ai.clients.tasks;
+        agentgatewayGroups = import ../../programs/opencode/_agentgateway-groups.nix;
 
         # Resolve an alias to its primary "provider/model" string for opencode's --model flag.
         resolveAlias =
@@ -19,7 +20,7 @@
           let
             primary = lib.head config.hdwlinux.ai.clients.models.aliases.${aliasName}.models;
           in
-          "${primary.provider}/${primary.model}";
+          agentgatewayGroups.resolve lib primary;
 
         taskConfig =
           name: task:

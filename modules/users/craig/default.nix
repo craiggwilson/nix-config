@@ -42,8 +42,6 @@ in
         "profile:programming"
         "role:audio-production"
         "role:video-production"
-        "service:ai:image-generation"
-        "service:ai:llm"
       ]
       ++ commonTags;
     };

@@ -10,40 +10,6 @@
         ...
       }:
       let
-        # Resolve one provider/model entry to its full model info including provider.
-        # Returns the model with provider info attached.
-        resolveModel =
-          entry:
-          let
-            providers = config.hdwlinux.ai.clients.models.providers;
-            provider = providers.${entry.provider} or null;
-            model = if provider != null then provider.models.${entry.model} or null else null;
-          in
-          if provider == null then
-            throw "Provider '${entry.provider}' not found for alias entry '${entry.provider}/${entry.model}'"
-          else if model == null then
-            throw "Model '${entry.model}' not found in provider '${entry.provider}'"
-          else
-            model
-            // {
-              provider = {
-                inherit (provider) name displayName;
-              };
-            };
-
-        # Resolve an alias to its full ordered fallback chain of model infos.
-        # The first entry is the primary model; subsequent entries are fallbacks.
-        resolveAliases =
-          aliasName:
-          let
-            aliases = config.hdwlinux.ai.clients.models.aliases;
-            alias = aliases.${aliasName} or null;
-          in
-          if alias == null then throw "Alias '${aliasName}' not found" else map resolveModel alias.models;
-
-        # Resolve an alias to its primary (first) model info.
-        resolveAlias = aliasName: lib.head (resolveAliases aliasName);
-
         toolPermission = lib.types.enum [
           "allow"
           "ask"
@@ -306,28 +272,6 @@
       in
       {
         options.hdwlinux.ai.clients = {
-          resolveAlias = lib.mkOption {
-            description = ''
-              Function to resolve an alias to its primary model info including provider.
-              Returns the model with provider info attached.
-              Usage: resolveAlias "coding"
-            '';
-            type = lib.types.functionTo lib.types.anything;
-            readOnly = true;
-            default = resolveAlias;
-          };
-
-          resolveAliases = lib.mkOption {
-            description = ''
-              Function to resolve an alias to its full ordered fallback chain of model infos.
-              Each entry has provider info attached. The first entry is the primary model.
-              Usage: resolveAliases "coding"
-            '';
-            type = lib.types.functionTo lib.types.anything;
-            readOnly = true;
-            default = resolveAliases;
-          };
-
           agents = lib.mkOption {
             description = "Agent (subagent) definitions for AI assistants.";
             type = lib.types.attrsOf agentType;
