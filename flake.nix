@@ -312,7 +312,9 @@
           "core:ssh"
           "core:tools"
           "core:tools:cloud-sync"
+          "core:tools:nix"
           "core:tools:system"
+          "core:tools:version-control"
 
           # Desktop tags
           "desktop"
@@ -368,7 +370,11 @@
           "profile:gaming"
           "profile:homelab"
           "profile:personal"
-          "profile:programming"
+          {
+            "profile:programming" = [
+              "core:tools:version-control"
+            ];
+          }
           "profile:work"
 
           # Role tags

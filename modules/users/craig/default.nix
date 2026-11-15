@@ -27,6 +27,7 @@ in
         "core:networking:tailscale"
         "core:ssh"
         "core:tools:cloud-sync"
+        "core:tools:nix"
         "core:tools:system"
         "desktop"
         "desktop:compositors:hyprland"
@@ -54,6 +55,7 @@ in
         "core:base"
         "core:security:passwordmanager"
         "core:ssh"
+        "core:tools:nix"
         "core:tools:system"
         "desktop"
         "desktop:compositors:hyprland"
@@ -70,7 +72,9 @@ in
       tags = [
         "core:base"
         "core:ssh"
+        "core:tools:nix"
         "core:tools:system"
+        "core:tools:version-control"
         "user:${name}"
       ];
     };

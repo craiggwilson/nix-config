@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.nh = {
-    tags = [ "profile:programming" ];
+    tags = [ "core:tools:nix" ];
 
     nixos = { config, ... }: {
       programs.nh = {

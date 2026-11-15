@@ -1,10 +1,12 @@
 {
   config.substrate.modules.programs.git = {
-    tags = [ "profile:programming" ];
+    tags = [ "core:tools:version-control" ];
 
     homeManager =
       {
         config,
+        hasTag,
+        lib,
         pkgs,
         ...
       }:
@@ -93,7 +95,7 @@
           ${config.hdwlinux.user.email} ${config.hdwlinux.user.publicKey}
         '';
 
-        home.packages = [
+        home.packages = lib.optionals (hasTag "profile:programming") [
           (pkgs.writeShellApplication {
             name = "git-find";
             runtimeInputs = [

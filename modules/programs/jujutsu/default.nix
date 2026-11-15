@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.jujutsu = {
-    tags = [ "profile:programming" ];
+    tags = [ "core:tools:version-control" ];
 
     homeManager =
       { config, ... }:
