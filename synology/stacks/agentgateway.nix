@@ -183,7 +183,7 @@ _: {
           "$modelsUrl" > "$responseFile"
 
         jq --exit-status '
-          # The upstream models response carries each model's wire format in `api`
+          # The upstream models response carries each model wire format in `api`
           # (keys: chat-completions | responses | messages | generate-content). Route by
           # that instead of id prefixes so new models land in the right provider by default.
           # Provider names must match the gateway llm.providers entries in config.yaml.

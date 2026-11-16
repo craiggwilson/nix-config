@@ -177,14 +177,14 @@
       in
       {
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
-          analysis.models = [ (tier "smart") ];
+          analysis.models = [ (tier "analysis") ];
           balanced.models = [ (tier "balanced") ];
-          code-review.models = [ (tier "coding") ];
+          code-review.models = [ (tier "code-review") ];
           coding.models = [ (tier "coding") ];
           fast.models = [ (tier "fast") ];
-          orchestration.models = [ (tier "smart") ];
-          research.models = [ (tier "smart") ];
-          writing.models = [ (tier "smart") ];
+          orchestration.models = [ (tier "orchestration") ];
+          research.models = [ (tier "research") ];
+          writing.models = [ (tier "writing") ];
         };
       };
   };
