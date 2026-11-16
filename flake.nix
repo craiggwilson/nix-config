@@ -232,6 +232,11 @@
             }
           )
 
+          # openspec 2.x from upstream instead of nixpkgs' 1.x
+          (final: _prev: {
+            openspec = inputs.openspec.packages.${final.stdenv.hostPlatform.system}.default;
+          })
+
           # Stable nixpkgs for packages not in unstable
           (final: _prev: {
             stable = import inputs.nixpkgs-stable {

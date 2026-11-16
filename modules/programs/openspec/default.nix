@@ -6,9 +6,14 @@
     ];
 
     homeManager =
-      { pkgs, ... }:
+      { pkgs, wrap, ... }:
       {
-        home.packages = [ pkgs.openspec ];
+        home.packages = [
+          (wrap.package {
+            package = pkgs.openspec;
+            env.OPENSPEC_TELEMETRY = "0";
+          })
+        ];
       };
   };
 }
