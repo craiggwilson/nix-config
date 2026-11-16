@@ -37,7 +37,6 @@ in
         "desktop:shells:noctalia"
         "profile:ai"
         "profile:gaming"
-        "profile:homelab"
         "profile:personal"
         "profile:programming"
         "role:audio-production"
