@@ -199,9 +199,12 @@
     homeManager =
       { lib, ... }:
       let
-        # Work host routes aliases through the grove gateway (declared
-        # statically in the opencode module) and directly to fireworks.ai for
-        # open-source models. grove-misc model keys are the gateway's API IDs.
+        # Work host routes aliases through Grove (the AI Gateway upstream;
+        # providers auto-provisioned by the grove-gateway OpenCode plugin) and
+        # directly to fireworks.ai for open-source models. ai-gateway-* model
+        # keys come from the plugin's catalog (models.jsonc upstream). No
+        # deepseek: it is being retired for us. Fireworks "latest" routers
+        # track the current generation (GLM 5.3, Kimi K3.1 Pro).
         mk = provider: model: { inherit provider model; };
         fw = model: mk "fireworks-ai" "accounts/fireworks/models/${model}";
         router = model: mk "fireworks-ai" "accounts/fireworks/routers/${model}";
@@ -210,62 +213,62 @@
         hdwlinux.ai.clients.models.aliases = lib.mkDefault {
           analysis = {
             models = [
-              (router "glm-latest")
-              (mk "grove-misc" "FW-GLM-5.2")
-              (mk "grove-openai" "gpt-5.6-terra")
-              (mk "grove-anthropic" "claude-opus-4-7")
+              (fw "kimi-k3p1-pro")
+              (mk "ai-gateway-misc" "fw-kimi-k3")
+              (mk "ai-gateway-anthropic" "claude-opus-5-5")
+              (mk "ai-gateway-openai" "gpt-6.1-sol")
             ];
           };
           balanced = {
             models = [
-              (fw "kimi-k3")
-              (mk "grove-anthropic" "claude-sonnet-5")
+              (router "glm-latest")
+              (mk "ai-gateway-anthropic" "claude-sonnet-5-5")
             ];
           };
           code-review = {
             models = [
               (router "glm-latest")
-              (mk "grove-misc" "FW-GLM-5.2")
-              (mk "grove-openai" "gpt-5.4")
-              (fw "kimi-k3")
+              (mk "ai-gateway-misc" "fw-glm-5.3")
+              (mk "ai-gateway-openai" "gpt-6.1-sol")
+              (fw "kimi-k3p1-pro")
             ];
           };
           coding = {
             models = [
-              (router "deepseek-pro-latest")
-              (mk "grove-misc" "FW-DeepSeek-V4-Pro")
-              (fw "kimi-k3")
-              (mk "grove-openai" "gpt-5.3-codex")
+              (fw "kimi-k3p1-pro")
+              (mk "ai-gateway-misc" "fw-kimi-k3")
+              (mk "ai-gateway-openai" "gpt-6.1-sol")
+              (mk "ai-gateway-openai" "gpt-5.3-codex")
             ];
           };
           fast = {
             models = [
-              (router "deepseek-flash-latest")
-              (mk "grove-anthropic" "claude-haiku-4-5")
-              (mk "grove-openai" "gpt-5.4-mini")
-              (mk "grove-misc" "DeepSeek-V4-Flash")
+              (router "glm-flash-latest")
+              (mk "ai-gateway-openai" "gpt-6-luna")
+              (mk "ai-gateway-openai" "gpt-5.4-mini")
+              (mk "ai-gateway-anthropic" "claude-haiku-4-5")
             ];
           };
           orchestration = {
             models = [
-              (mk "grove-anthropic" "claude-opus-4-8")
-              (mk "grove-openai" "gpt-5.6-sol")
+              (mk "ai-gateway-anthropic" "claude-opus-5-5")
+              (mk "ai-gateway-openai" "gpt-6.1-sol")
               (fw "qwen3p8-max")
             ];
           };
           research = {
             models = [
-              (mk "grove-openai" "gpt-5.6-luna")
-              (mk "grove-openai" "gpt-5.4")
-              (mk "grove-misc" "FW-GLM-5.2")
+              (mk "ai-gateway-openai" "gpt-6-luna")
+              (mk "ai-gateway-openai" "gpt-6.1-sol")
+              (mk "ai-gateway-misc" "fw-glm-5.3")
               (router "glm-latest")
             ];
           };
           writing = {
             models = [
-              (mk "grove-openai" "gpt-5.6-luna")
-              (mk "grove-openai" "gpt-5.5")
-              (fw "kimi-k3")
+              (mk "ai-gateway-openai" "gpt-6-luna")
+              (mk "ai-gateway-openai" "gpt-5.5")
+              (fw "kimi-k3p1-pro")
             ];
           };
         };

@@ -313,7 +313,7 @@
           map (agentgatewayGroups.resolve lib) alias.models;
 
         # A single host-aware preset: aliases resolve to opencode-go models on personal
-        # hosts and grove models on the work host, so no per-host preset switching is needed
+        # hosts and AI Gateway models on the work host, so no per-host preset switching is needed
         hdwlinux = {
           orchestrator = {
             model = resolveAliases "orchestration";

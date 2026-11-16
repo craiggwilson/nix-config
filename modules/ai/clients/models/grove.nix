@@ -6,34 +6,26 @@
       "profile:ai"
     ];
 
-    homeManager =
-      _:
-      let
-        # v1.3.0's gateway is what the current key works with. Upstream has
-        # since moved to ai-gateway.corp.mongodb.com with an `x-api-key` header
-        # and a different key — update here when migrating.
-        baseURL = "https://grove-gateway-prod.azure-api.net/grove-foundry-prod";
-
-        # The gateway exposes three API flavors behind the same key, which it
-        # authenticates with an `api-key` header rather than Bearer auth.
-        flavor = name: path: format: package: {
-          formats = [ format ];
-          auth = {
-            header = "api-key";
-            prefix = "";
-            secret = "GROVE_API_KEY";
-          };
-          displayName = "Grove ${name}";
-          baseURL = "${baseURL}${path}";
-          settings.opencode.package = package;
-        };
-      in
-      {
-        hdwlinux.ai.clients.models.providers = {
-          grove-anthropic = flavor "Anthropic" "/anthropic/v1" "anthropic" "aisdk:@ai-sdk/anthropic";
-          grove-misc = flavor "Misc" "/openai/v1" "completions" "aisdk:@ai-sdk/openai-compatible";
-          grove-openai = flavor "OpenAI" "/openai/v1" "responses" "aisdk:@ai-sdk/openai";
-        };
+    homeManager.hdwlinux.ai.clients.models.providers = {
+      # The grove-gateway OpenCode plugin (see programs.opencode.grove-gateway)
+      # auto-provisions these providers, their auth, and their model catalog,
+      # so the registry only records their ids for alias resolution. The ids
+      # are upstream's canonical `ai-gateway-*` names — the service was renamed
+      # from Grove to AI Gateway upstream (AII-803), and the plugin rewrites
+      # old `grove-*` ids in memory with a warning per reference, so aliases
+      # use the real runtime ids even though everyone calls it Grove.
+      ai-gateway-anthropic = {
+        builtin = true;
+        displayName = "Grove Anthropic";
       };
+      ai-gateway-misc = {
+        builtin = true;
+        displayName = "Grove Misc";
+      };
+      ai-gateway-openai = {
+        builtin = true;
+        displayName = "Grove OpenAI";
+      };
+    };
   };
 }
