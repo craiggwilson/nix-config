@@ -19,6 +19,7 @@ in
     tags = [
       "host:${hostname}"
       "capability:cuda"
+      "core:base"
       "core:networking:tailscale"
       "hardware:dell-pro-max-gb10"
       "location:raeford"

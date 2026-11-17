@@ -11,6 +11,7 @@ in
     tags = [
       "host:${hostname}"
       "capability:cuda"
+      "capability:deploy"
       "capability:displaylink"
       "capability:gaming-controller"
       "capability:firmware"

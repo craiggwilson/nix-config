@@ -27,3 +27,8 @@ yarn.lock
 
 # OS
 Thumbs.db
+
+# Panix runtime artifacts
+panix.yml
+panix.*.log
+out.log

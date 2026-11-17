@@ -31,7 +31,6 @@
         config = {
           environment.systemPackages = with pkgs; [
             cacert
-            deploy-rs
             nixfmt
             nix-prefetch-git
           ];

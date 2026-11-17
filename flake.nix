@@ -279,12 +279,14 @@
           })
 
         ];
+
         tags.definitions = [
           # Capability tags
           "capability:audio"
           "capability:bluetooth"
           "capability:camera"
           "capability:cuda"
+          "capability:deploy"
           "capability:displaylink"
           "capability:filesystem:cifs"
           "capability:filesystem:envfs"
@@ -303,6 +305,10 @@
           "capability:virtualization:docker"
           "capability:virtualization:podman"
           "capability:virtualization:waydroid"
+
+          # Build mode tags
+          "build:local"
+          "build:remote"
 
           # Core tags
           "core:base"
