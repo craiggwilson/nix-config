@@ -6,7 +6,9 @@
     homeManager =
       { lib, ... }:
       {
-        hdwlinux.ai.clients.skills = lib.mapAttrs (name: _: ./skill + "/${name}") (builtins.readDir ./skill);
+        hdwlinux.ai.clients.skills = lib.mapAttrs (name: _: ./skill + "/${name}") (
+          builtins.readDir ./skill
+        );
       };
   };
 }

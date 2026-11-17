@@ -1,5 +1,4 @@
-_:
-{
+_: {
   substrate.packages.opencode-keycloak-auth =
     { pkgs, ... }:
     pkgs.stdenvNoCC.mkDerivation {
