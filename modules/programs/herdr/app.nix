@@ -87,7 +87,9 @@
             "alt-shift-," = "agent.prev";
 
             # Mods. The scratch terminal (our app/scratch mod) is a modal
-            # terminal over everything, one per space, toggled hidden-and-back.
+            # terminal over everything, one per space (shared across
+            # machines: it lives on the space's machine, found by its label
+            # from any machine), toggled hidden-and-back.
             "alt-`" = "scratch.toggle";
             "alt-p" = "app.palette";
             "alt-o" = "mod.open:obsidian";
