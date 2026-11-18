@@ -206,6 +206,8 @@
                   scrollbar = false;
                   thinking = "hide";
                 };
+                # No session tabs: herdr's multiplexer owns the panes.
+                tabs.mode = "off";
                 terminal.copy = "manual";
                 theme.name = "opencode";
               };
