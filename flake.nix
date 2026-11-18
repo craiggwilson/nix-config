@@ -385,6 +385,7 @@
             ];
           }
           "profile:work"
+          "profile:server"
 
           # Role tags
           "role:audio-production"

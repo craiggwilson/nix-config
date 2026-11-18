@@ -72,6 +72,7 @@ in
         "core:tools:nix"
         "core:tools:system"
         "core:tools:version-control"
+        "profile:server"
         "user:${name}"
       ];
     };

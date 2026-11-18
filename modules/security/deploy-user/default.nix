@@ -23,10 +23,16 @@ in
             home = "/var/lib/deploy";
             createHome = true;
             shell = pkgs.bash;
+            extraGroups = [ "wheel" ];
             openssh.authorizedKeys.keys = [ config.hdwlinux.security.deployUser.sshPublicKey ];
           };
 
           users.groups.deploy = { };
+
+          # Allow the deploy user to connect to the local Nix daemon for remote
+          # ssh-ng builds and to realise store paths during evaluation.
+          nix.settings.trusted-users = [ "deploy" ];
+          nix.settings.allowed-users = [ "deploy" ];
 
           # The deploy user exists solely to run automated deployments. It is
           # authenticated by a dedicated SSH key and confined to this role, so
