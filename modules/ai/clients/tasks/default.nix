@@ -48,6 +48,19 @@
             exports = lib.concatStringsSep "\n" (
               lib.mapAttrsToList (k: v: ''export ${k}="${v}"'') task.environment
             );
+            tokenFile =
+              if config.secretspec.entries ? HINDSIGHT_API_TOKEN then
+                config.secretspec.entries.HINDSIGHT_API_TOKEN.file.path
+              else
+                null;
+            tokenExport = lib.optionalString (tokenFile != null) ''
+              # Hindsight token is materialized to disk by secretspec; load it
+              # into the environment for this unattended run.
+              tokenFile=${lib.escapeShellArg tokenFile}
+              if [[ -r "$tokenFile" ]]; then
+                export HINDSIGHT_API_TOKEN="$(<"$tokenFile")"
+              fi
+            '';
             scriptBin = pkgs.writeShellScriptBin serviceName ''
               # Unattended runs need the agent's tools on PATH; the user manager
               # starts with a minimal environment.
@@ -62,6 +75,7 @@
                 )
               }:$PATH"
               ${exports}
+              ${tokenExport}
               exec ${lib.getExe config.programs.opencode.package} run ${flags} "$(cat ${lib.escapeShellArg promptFile})"
             '';
             # When a secrets scope is set, wrap the script so secretspec resolves

@@ -9,6 +9,16 @@ Run context: you run unattended around 07:00 with no human watching. Do not ask
 questions — make reasonable assumptions and note them inline. When done, write
 the files and stop. Do **not** commit to jj; Craig reviews and commits himself.
 
+## Memory
+
+You run in `~/Projects/github.com/craiggwilson/kb`, so your Hindsight bank is the
+personal `craig` bank. Before writing the brief, recall relevant life context
+with `hindsight_reflect`: Craig's active projects, recurring commitments,
+priorities, and any recent decisions that should shape today. Treat recalled
+memory as a starting point, not current truth — verify anything time-sensitive
+against the brief inputs. When you finish, summarize any new durable decisions
+or preferences so the session is retained usefully.
+
 ## Output model
 
 You produce two kinds of artifact, with different lifecycles:

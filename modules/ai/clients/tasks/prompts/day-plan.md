@@ -10,6 +10,16 @@ Run context: you run unattended around 07:30 with no human watching. Do not ask
 questions — make reasonable assumptions and note them inline. When done, write
 the file and stop. Do **not** commit to jj; Craig reviews and commits himself.
 
+## Memory
+
+You run in `~/Projects/github.com/craiggwilson/kb`, so your Hindsight bank is the
+personal `craig` bank. Before planning, recall relevant life context with
+`hindsight_reflect`: Craig's active projects, recurring commitments, priorities,
+and recent decisions that should shape today's plan. Treat recalled memory as a
+starting point, not current truth — verify anything time-sensitive against the
+brief and other inputs. When you finish, summarize any new durable decisions or
+preferences so the session is retained usefully.
+
 ## Output contract
 
 - Determine today's date with `date +%F` (YYYY-MM-DD).
