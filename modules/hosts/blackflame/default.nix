@@ -77,6 +77,13 @@ in
           { cloudflare.name = "cloudflare"; }
         ];
 
+        # The built-in mic picks up the laptop fan; expose a noise-suppressed
+        # virtual source for the voice client while leaving the raw mic intact.
+        hdwlinux.hardware.audio.noiseSuppression = {
+          enable = true;
+          mics = [ "alsa_input.pci-0000_00_1f.3.analog-stereo" ];
+        };
+
         hdwlinux.theme.system = "catppuccin";
         system.stateVersion = "23.05";
       };
