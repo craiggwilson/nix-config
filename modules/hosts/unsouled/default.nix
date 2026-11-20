@@ -36,10 +36,6 @@ in
           diskoConfig
         ];
 
-        # Because unsouled uses WARP underneath, local network DNS resolution doesn't occur. Therefore
-        # we are going to use the hostsfile to point at the important local network resources.
-        networking.extraHosts = "192.168.10.52 blackflame blackflame.raeford.wilsonfamilyhq.com";
-
         boot.kernelPackages = pkgs.linuxPackages_6_18;
 
         hdwlinux.theme.system = "catppuccin";

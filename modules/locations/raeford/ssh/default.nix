@@ -14,7 +14,7 @@
         domain = config.hdwlinux.networking.domain;
         # LAN machines/devices reachable as <name>.<domain>;
         # each host gets entries for all others, never itself.
-        # Resolution is backed by locations.raeford.hosts (/etc/hosts).
+        # Resolution is backed by locations.raeford.networking (/etc/hosts).
         machines = [
           "blackflame"
           "craiggwilson@synology"
