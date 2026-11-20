@@ -26,6 +26,9 @@
             mmproj-offload = true;
             n-gpu-layers = "all";
             parallel = 3;
+            # The GGUF embeds Qwen's MTP head (blk.64.nextn.*); it self-drafts with no extra model.
+            spec-draft-n-max = 3;
+            spec-type = "draft-mtp";
           };
           files = [
             {
@@ -59,6 +62,10 @@
             mmproj-offload = true;
             n-gpu-layers = "all";
             parallel = 2;
+            # The QAT GGUF strips the MTP head, so gemma drafts with an EAGLE-3 speculator instead.
+            spec-draft-n-max = 4;
+            spec-draft-p-min = 0.5;
+            spec-type = "draft-eagle3";
             temp = 1.0;
             top-k = 64;
             top-p = 0.95;
@@ -75,6 +82,13 @@
               repo = "unsloth/gemma-4-26B-A4B-it-qat-GGUF";
               name = "mmproj-BF16.gguf";
               sha256 = "7b06953ccdbe8cf363f47841a7afaacd2b1c2ff9a8d6b426fdec7521a6878744";
+            }
+            # EAGLE-3 draft head trained for this exact target model (RedHatAI checkpoint, community GGUF).
+            {
+              type = "huggingface";
+              repo = "williamliao/gemma-4-26B-A4B-it-speculator.eagle3-F16-GGUF";
+              name = "gemma-4-26B-A4B-it-speculator.eagle3-Q8_0.gguf";
+              sha256 = "7e4eb3e400608378b89a66a3af5707539f54ff64571697af1a8b3779bdd52a24";
             }
           ];
         };

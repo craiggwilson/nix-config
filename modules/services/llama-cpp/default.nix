@@ -40,6 +40,10 @@
           // lib.optionalAttrs (builtins.length v.paths > 1) {
             mmproj = builtins.elemAt v.paths 1;
           }
+          // lib.optionalAttrs (builtins.length v.paths > 2) {
+            # A third file is a speculative-decoding draft model (e.g. an EAGLE-3 head).
+            model-draft = builtins.elemAt v.paths 2;
+          }
           // (v.settings.llama-cpp or { })
         ) config.hdwlinux.ai.llm.models;
       in
