@@ -61,7 +61,7 @@
             load-mode = "none";
             mmproj-offload = true;
             n-gpu-layers = "all";
-            parallel = 2;
+            parallel = 1;
             # The QAT GGUF strips the MTP head, so gemma drafts with an EAGLE-3 speculator instead.
             spec-draft-n-max = 4;
             spec-draft-p-min = 0.5;
