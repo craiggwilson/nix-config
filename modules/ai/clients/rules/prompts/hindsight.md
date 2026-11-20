@@ -1,9 +1,11 @@
 # Hindsight Memory
 
 You have long-term memory through the Hindsight plugin. The current bank is
-chosen automatically from the working directory: one bank per repo for coding
-work (`coding-agent::{gitProject}`), and the `craig` personal bank when working
-in `~/Projects/github.com/craiggwilson/kb` or the home directory.
+chosen automatically from the working directory:
+
+- Coding work in `nix-config`, `nix-private`, `substrate`, or `homelab` → `wilsonfamilyhq`.
+- The MongoDB work vault at `~/Projects/github.com/craiggwilson/kb-work` → `mongodb`.
+- The personal vault at `~/Projects/github.com/craiggwilson/kb` or the home directory → `craig`.
 
 ## At the start of a session
 

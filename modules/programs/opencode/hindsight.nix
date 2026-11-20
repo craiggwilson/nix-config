@@ -7,6 +7,7 @@
       let
         home = config.home.homeDirectory;
         kb = "${home}/Projects/github.com/craiggwilson/kb";
+        kbWork = "${home}/Projects/github.com/craiggwilson/kb-work";
 
         # Paths assigned to each named bank. mapPathToBank is generated from
         # this so the configuration reads as bank -> paths.
@@ -17,6 +18,7 @@
             "${home}/Projects/github.com/craiggwilson/substrate"
             "${home}/Projects/github.com/craiggwilson/homelab"
           ];
+          mongodb = [ kbWork ];
           craig = [ kb ];
           # Org roots, not individual repos: mapPathToBank matches on longest
           # path prefix, so every repo beneath these orgs — including future
@@ -70,10 +72,11 @@
             manageBankConfig = false;
             inherit mapPathToBank;
             banks = {
-              # The KB is explicitly routed to "craig" above. For non-repo
-              # paths Hindsight falls back to the directory basename, so a
-              # session started directly in /home/craig resolves to
-              # "coding-agent::craig"; converge that onto the personal bank.
+              # Vault paths are explicitly routed above: kb -> craig and
+              # kb-work -> mongodb. For non-repo paths Hindsight falls back to
+              # the directory basename, so a session started directly in
+              # /home/craig resolves to "coding-agent::craig"; converge that
+              # onto the personal bank.
               "coding-agent::craig" = {
                 bank = "craig";
               };
@@ -85,8 +88,16 @@
                 };
                 customPages = {
                   "Life dashboard" = {
-                    source_query = "What are Craig's current active projects, recurring commitments, upcoming deadlines, and recent decisions across personal and work life?";
+                    source_query = "What are Craig's current active personal projects, recurring commitments, upcoming deadlines, and recent decisions?";
                   };
+                };
+              };
+              mongodb = {
+                # Tag provenance so work memories still show which vault or
+                # repo they came from.
+                retainTags = [ "project:{gitProject}" ];
+                retainMetadata = {
+                  repo = "{gitProject}";
                 };
               };
               wilsonfamilyhq = {

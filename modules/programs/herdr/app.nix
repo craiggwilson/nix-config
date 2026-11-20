@@ -140,10 +140,10 @@
 
         keysFile = jsonFormat.generate "herdr-app-keys.json" keys;
 
-        # Obsidian mod config, pinned to the kb vault (the mod's auto-detection
+        # Obsidian mod config, pinned to the work vault (the mod's auto-detection
         # needs Obsidian running). Installed once: edits after that stick.
         obsidianConfig = (pkgs.formats.json { }).generate "herdr-app-obsidian.json" {
-          vault = "~/Projects/github.com/craiggwilson/kb";
+          vault = "~/Projects/github.com/craiggwilson/kb-work";
         };
 
         # Third-party mods, fetched and pinned. To update one, bump both rev

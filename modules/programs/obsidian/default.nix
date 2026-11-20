@@ -41,6 +41,7 @@
           cli.enable = true;
 
           vaults.kb.target = "Projects/github.com/craiggwilson/kb";
+          vaults."kb-work".target = "Projects/github.com/craiggwilson/kb-work";
 
           defaultSettings = {
             app = {

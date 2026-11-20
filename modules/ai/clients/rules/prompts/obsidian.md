@@ -1,20 +1,44 @@
 # Obsidian Knowledge Base
 
-The personal knowledge base vault is at `~/Projects/github.com/craiggwilson/kb`. It covers work, personal projects, research, ideas, and everything in between.
+Craig uses two Obsidian vaults:
 
-## Structure
+- **`kb`** at `~/Projects/github.com/craiggwilson/kb` — personal projects and reference.
+- **`kb-work`** at `~/Projects/github.com/craiggwilson/kb-work` — MongoDB work context (projects, PRs, briefings, daily plans, codebases, notes, reference).
+
+## Vault Structure
+
+### `kb` (personal)
 
 ```
 kb/
 ├── home.md              # Vault index
-├── people/              # One file per person
+├── inbox/               # Raw capture
 ├── projects/<name>/     # One dir per project
 │   ├── <name>.md        # Project overview
 │   ├── progress.md      # Current state — read this first
 │   └── sessions/        # YYYY-MM-DD.md session notes
+├── templates/           # Obsidian templates
+└── AGENTS.md            # Full conventions
+```
+
+### `kb-work` (MongoDB work)
+
+```
+kb-work/
+├── home.md              # Vault index
+├── briefings/           # Morning briefs
+├── codebases/<name>/    # Codebase orientation
+├── daily/               # Day plans and daily notes
+├── docs/                # MongoDB design-doc writing artifacts
+├── inbox/               # Raw capture
+├── mocs/                # Maps of Content
+├── notes/               # Atomic zettelkasten notes
+├── people/              # One file per person
+├── prs/                 # Durable PR working files
+├── projects/<name>/     # One dir per project
 ├── reference/           # Stable lookup facts
-├── research/            # Synthesized deep-dive notes
-└── AGENTS.md            # Full conventions — read this for detail
+├── templates/           # Obsidian templates
+└── AGENTS.md            # Full conventions
 ```
 
 ## Session Workflow
@@ -28,19 +52,21 @@ kb/
 
 ## Skills
 
-Load these when working with the vault:
+Load these when working with a vault:
 
-- `obsidian-cli` — Read, create, search, append via the `obsidian` CLI (requires Obsidian open). Use `vault=kb`.
+- `obsidian-cli` — Read, create, search, append via the `obsidian` CLI (requires Obsidian open). Use `vault=kb` or `vault=kb-work` as appropriate.
 - `obsidian-markdown` — Obsidian Flavored Markdown: wikilinks, callouts, frontmatter, tags.
 - `obsidian-bases` — Create/edit `.base` database views over vault notes.
-- `kb` — Personal KB conventions: file types, frontmatter schemas, linking patterns.
+- `kb` — Conventions for the personal `kb` vault.
 
 ## CLI Quick Reference
 
 ```bash
-obsidian vault=kb read file="projects/mvcp/progress"
-obsidian vault=kb create name="projects/mvcp/sessions/2026-03-22" content="..."
-obsidian vault=kb search query="search term" limit=10
+obsidian vault=kb read file="projects/bloobiverse/progress"
+obsidian vault=kb-work read file="projects/mvcp/progress"
+obsidian vault=kb-work search query="search term" limit=10
 ```
 
-Full conventions: `~/Projects/github.com/craiggwilson/kb/AGENTS.md`
+Full conventions:
+- `~/Projects/github.com/craiggwilson/kb/AGENTS.md` for the personal vault
+- `~/Projects/github.com/craiggwilson/kb-work/AGENTS.md` for the work vault

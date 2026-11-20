@@ -236,7 +236,7 @@
               "aristides/udiskie".manager_placement = "attached";
 
               "davemhammer/obsidian" = {
-                vault_path = "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb";
+                vault_path = "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb-work";
                 daily_folder = "daily";
                 manager_open_near_click = false;
                 manager_placement = "attached";

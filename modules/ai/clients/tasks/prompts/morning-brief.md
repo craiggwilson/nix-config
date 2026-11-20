@@ -11,19 +11,20 @@ the files and stop. Do **not** commit to jj; Craig reviews and commits himself.
 
 ## Memory
 
-You run in `~/Projects/github.com/craiggwilson/kb`, so your Hindsight bank is the
-personal `craig` bank. Before writing the brief, recall relevant life context
-with `hindsight_reflect`: Craig's active projects, recurring commitments,
-priorities, and any recent decisions that should shape today. Treat recalled
-memory as a starting point, not current truth — verify anything time-sensitive
-against the brief inputs. When you finish, summarize any new durable decisions
-or preferences so the session is retained usefully.
+You run in `~/Projects/github.com/craiggwilson/kb-work`, and your Hindsight bank
+for this task is `mongodb`. Before writing the brief, recall relevant MongoDB work
+context with `hindsight_reflect`: Craig's active MongoDB projects, recurring
+work commitments, priorities, and any recent technical or organizational
+decisions that should shape today. Treat recalled memory as a starting point,
+not current truth — verify anything time-sensitive against the brief inputs.
+When you finish, summarize any new durable decisions or preferences so the
+session is retained usefully.
 
 ## Output model
 
 You produce two kinds of artifact, with different lifecycles:
 
-1. **The daily brief** — `~/Projects/github.com/craiggwilson/kb/briefings/<YYYY-MM-DD>.md`. Short,
+1. **The daily brief** — `~/Projects/github.com/craiggwilson/kb-work/briefings/<YYYY-MM-DD>.md`. Short,
    ranked, actionable: a two-minute read. It is a *view*, not a dumping ground —
    detail lives in the per-item working files, which the brief links to. Its
    frontmatter (alphabetized), followed by a `# Morning brief — <YYYY-MM-DD>`
@@ -58,7 +59,7 @@ framing.
 
 ### Per-PR working files
 
-Path: `~/Projects/github.com/craiggwilson/kb/prs/<org>-<repo>/<number>.md`, where `<org>-<repo>` is the
+Path: `~/Projects/github.com/craiggwilson/kb-work/prs/<org>-<repo>/<number>.md`, where `<org>-<repo>` is the
 repository with `/` replaced by `-`, lowercased (e.g. `10gen/mms` →
 `prs/10gen-mms/192252.md`). The number alone is the filename — always
 reconstruct this path from the repo and PR number; never guess a slug.
@@ -197,7 +198,7 @@ it clears at least one bar (requested-reviewer PRs always qualify):
 ### Deduplication (the attention log)
 
 To avoid re-surfacing the same PRs day after day, keep a durable ledger at
-`~/Projects/github.com/craiggwilson/kb/briefings/attention-log.md`. It records every PR this section has
+`~/Projects/github.com/craiggwilson/kb-work/briefings/attention-log.md`. It records every PR this section has
 surfaced and the `updatedAt` you last saw, so an unchanged PR is not repeated.
 
 Create it if missing, with this frontmatter and an empty `## PRs` table:
@@ -329,7 +330,7 @@ large or high-blast-radius changes.
 
 ### Durable per-doc files and change detection
 
-Each doc gets a durable working file at `~/Projects/github.com/craiggwilson/kb/docs/<slug>.md`, where
+Each doc gets a durable working file at `~/Projects/github.com/craiggwilson/kb-work/docs/<slug>.md`, where
 `<slug>` is the lowercased Jira key (e.g. `docs/writing-39502.md`). Frontmatter
 (alphabetized):
 

@@ -1,35 +1,33 @@
 ---
 name: kb
-description: Personal knowledge base conventions and session workflow for ~/Projects/github.com/craiggwilson/kb
+description: Personal knowledge base conventions and session workflow for the `kb` vault at ~/Projects/github.com/craiggwilson/kb
 ---
 
 # Personal Knowledge Base (KB)
 
-Framework for working with the Obsidian knowledge base at `~/Projects/github.com/craiggwilson/kb`. Full conventions are in `~/Projects/github.com/craiggwilson/kb/AGENTS.md` — read it at the start of any KB session.
+Framework for working with the personal Obsidian vault at `~/Projects/github.com/craiggwilson/kb`. Full conventions are in `~/Projects/github.com/craiggwilson/kb/AGENTS.md` — read it at the start of any KB session.
+
+> For MongoDB work, use the `kb-work` vault at `~/Projects/github.com/craiggwilson/kb-work` instead.
 
 ## Structure
 
 | Location | Purpose |
 |:---------|:--------|
 | `inbox/inbox.md` | Raw capture buffer — drop anything here |
-| `notes/<topic>.md` | Atomic zettelkasten notes (flat, title-based) |
-| `mocs/<area>.md` | Maps of Content — curated entry points into notes |
 | `projects/<name>/` | Project overview, progress, and session files |
-| `reference/<topic>.md` | Stable lookup facts |
-| `people/<name>.md` | One file per person |
-| `codebases/<name>/` | Codebase orientation notes |
+| `templates/` | Obsidian templates |
+| `AGENTS.md` | Full vault conventions |
 
 ## File Types
 
 | Type | Schema |
 |:-----|:-------|
-| `note` | Atomic zettelkasten note — one idea, densely linked |
-| `moc` | Map of Content — navigable entry point into a topic cluster |
 | `project` | Project overview — goals, status, people, todos |
 | `progress` | Current state snapshot — read first, update last |
 | `session` | What happened in a work session |
-| `reference` | Stable lookup facts |
+| `decision` | A decision record |
 | `person` | Who someone is |
+| `reference` | Stable lookup facts |
 
 ## Session Workflow
 
@@ -50,19 +48,16 @@ Framework for working with the Obsidian knowledge base at `~/Projects/github.com
 ## Frontmatter
 
 All files have YAML frontmatter with **alphabetized** fields. Key fields:
-- `type`: categorizes the note (note, moc, project, progress, session, reference, person)
+- `type`: categorizes the note (project, progress, session, decision, reference, person)
 - `updated`: ISO 8601 date, updated whenever the file changes
-- `project`: wikilink to project overview, e.g. `"[[projects/mvcp/mvcp]]"`
+- `project`: wikilink to project overview, e.g. `"[[projects/bloobiverse/bloobiverse]]"`
 
 ## Internal Links
 
 Use Obsidian wikilinks with full vault-root paths:
 ```
-[[notes/active-passive-design]]
-[[mocs/atlas-control-plane]]
-[[projects/mvcp/progress|progress]]
+[[projects/bloobiverse/progress|progress]]
 [[people/craig-wilson|Craig Wilson]]
-[[reference/mongodb/fiscal-calendar]]
 ```
 
 ## Reference Guide
@@ -71,8 +66,6 @@ Load detailed guidance based on context:
 
 | Topic | Reference | Load When |
 |:------|:----------|:----------|
-| Zettelkasten | `references/zettelkasten.md` | Creating or linking notes, unsure what belongs in notes/ vs elsewhere |
-| Research | `references/research.md` | Conducting research, creating new notes from investigation |
 | Project management | `references/project-management.md` | Starting, continuing, or completing a project |
 | Inbox processing | `references/process-inbox.md` | Processing inbox, synthesizing captures, clearing inbox items |
 
@@ -81,5 +74,4 @@ Load detailed guidance based on context:
 ❌ Creating a note without first checking if one already exists  
 ❌ Ending a session without updating `progress.md`  
 ❌ Using git instead of jj  
-❌ Putting atomic knowledge in projects/ instead of notes/  
-❌ Creating a MOC with fewer than 3 linked notes  
+❌ Putting knowledge that belongs in `notes/` inside a project file

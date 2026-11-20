@@ -12,18 +12,19 @@ the file and stop. Do **not** commit to jj; Craig reviews and commits himself.
 
 ## Memory
 
-You run in `~/Projects/github.com/craiggwilson/kb`, so your Hindsight bank is the
-personal `craig` bank. Before planning, recall relevant life context with
-`hindsight_reflect`: Craig's active projects, recurring commitments, priorities,
-and recent decisions that should shape today's plan. Treat recalled memory as a
-starting point, not current truth — verify anything time-sensitive against the
-brief and other inputs. When you finish, summarize any new durable decisions or
-preferences so the session is retained usefully.
+You run in `~/Projects/github.com/craiggwilson/kb-work`, and your Hindsight bank
+for this task is `mongodb`. Before planning, recall relevant MongoDB work context
+with `hindsight_reflect`: Craig's active MongoDB projects, recurring work
+commitments, priorities, and recent technical or organizational decisions that
+should shape today's plan. Treat recalled memory as a starting point, not
+current truth — verify anything time-sensitive against the brief and other
+inputs. When you finish, summarize any new durable decisions or preferences so
+the session is retained usefully.
 
 ## Output contract
 
 - Determine today's date with `date +%F` (YYYY-MM-DD).
-- Write the plan to `~/Projects/github.com/craiggwilson/kb/daily/<YYYY-MM-DD>.md`.
+- Write the plan to `~/Projects/github.com/craiggwilson/kb-work/daily/<YYYY-MM-DD>.md`.
 - The daily note may already exist with Craig's own notes in it. You own
   **only** the section delimited by these markers (create them if absent,
   otherwise replace only what is between them — never touch content outside
@@ -57,7 +58,7 @@ preferences so the session is retained usefully.
 
 ## Inputs
 
-1. **Today's brief** — `~/Projects/github.com/craiggwilson/kb/briefings/<YYYY-MM-DD>.md`. Every action
+1. **Today's brief** — `~/Projects/github.com/craiggwilson/kb-work/briefings/<YYYY-MM-DD>.md`. Every action
    item in it (replies owed, LGTMs to give, reviews, decisions) becomes a plan
    item, linked to its source (`[[prs/…]]`, `[[docs/…]]`). If the brief is
    missing or incomplete, note that and plan from the other inputs.
@@ -67,7 +68,7 @@ preferences so the session is retained usefully.
    overdue, and due soon.
    Include tasks due today and tasks likely to matter soon in the plan. Treat
    these as actionable inputs, not just a reference list.
-4. **KB projects** — read `~/Projects/github.com/craiggwilson/kb/projects/*/progress.md` (and a
+4. **KB projects** — read `~/Projects/github.com/craiggwilson/kb-work/projects/*/progress.md` (and a
    project's overview note when progress points at it). Surface unfinished
    requirements, blockers, and next steps that are **yours to act on** — do not
    plan other people's work.
@@ -86,6 +87,6 @@ tag (`(brief)` / `(calendar)` / `(task)` / `(project)` / `(saved)`).
 - `## Meetings` — today's meetings: time, name, one line of prep needed, and
   which plan items they touch.
 - `## Carry-over` — unfinished items from yesterday's plan
-  (`~/Projects/github.com/craiggwilson/kb/daily/<yesterday>.md`, its plan section), each folded into
+  (`~/Projects/github.com/craiggwilson/kb-work/daily/<yesterday>.md`, its plan section), each folded into
   today's `## Plan` if still relevant. If nothing carries over, omit this
   section.
