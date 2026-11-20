@@ -8,6 +8,7 @@
     homeManager =
       {
         config,
+        hasTag,
         lib,
         pkgs,
         ...
@@ -16,6 +17,15 @@
         herdrApp = pkgs.hdwlinux.herdr-app;
 
         jsonFormat = pkgs.formats.json { };
+
+        # The obsidian mod is pinned to one vault; work profile opens the
+        # MongoDB work vault, personal opens the personal vault.
+        isWork = hasTag "user:craig" && hasTag "profile:work";
+        obsidianVault =
+          if isWork then
+            "~/Projects/github.com/craiggwilson/kb-work"
+          else
+            "~/Projects/github.com/craiggwilson/kb";
 
         # keys.json's send: values are terminal control characters, spelled
         # here as JSON escapes for fromJSON; toJSON escapes them right back
@@ -140,10 +150,10 @@
 
         keysFile = jsonFormat.generate "herdr-app-keys.json" keys;
 
-        # Obsidian mod config, pinned to the work vault (the mod's auto-detection
+        # Obsidian mod config, pinned to one vault (the mod's auto-detection
         # needs Obsidian running). Installed once: edits after that stick.
         obsidianConfig = (pkgs.formats.json { }).generate "herdr-app-obsidian.json" {
-          vault = "~/Projects/github.com/craiggwilson/kb-work";
+          vault = obsidianVault;
         };
 
         # Third-party mods, fetched and pinned. To update one, bump both rev

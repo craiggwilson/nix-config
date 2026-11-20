@@ -236,7 +236,13 @@
               "aristides/udiskie".manager_placement = "attached";
 
               "davemhammer/obsidian" = {
-                vault_path = "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb-work";
+                # Work profile uses the MongoDB work vault; personal uses the
+                # personal vault.
+                vault_path =
+                  if isWork then
+                    "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb-work"
+                  else
+                    "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb";
                 daily_folder = "daily";
                 manager_open_near_click = false;
                 manager_placement = "attached";

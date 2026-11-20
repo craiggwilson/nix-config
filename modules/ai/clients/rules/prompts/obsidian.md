@@ -57,7 +57,7 @@ Load these when working with a vault:
 - `obsidian-cli` — Read, create, search, append via the `obsidian` CLI (requires Obsidian open). Use `vault=kb` or `vault=kb-work` as appropriate.
 - `obsidian-markdown` — Obsidian Flavored Markdown: wikilinks, callouts, frontmatter, tags.
 - `obsidian-bases` — Create/edit `.base` database views over vault notes.
-- `kb` — Conventions for the personal `kb` vault.
+- `kb` — Shared conventions for both the `kb` (personal) and `kb-work` (work) vaults.
 
 ## CLI Quick Reference
 
