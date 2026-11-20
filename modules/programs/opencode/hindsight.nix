@@ -6,27 +6,22 @@
       { config, lib, ... }:
       let
         home = config.home.homeDirectory;
-        kb = "${home}/Projects/github.com/craiggwilson/kb";
-        kbWork = "${home}/Projects/github.com/craiggwilson/kb-work";
 
         # Paths assigned to each named bank. mapPathToBank is generated from
         # this so the configuration reads as bank -> paths.
         bankPaths = {
+          craig = [ "${home}/Projects/github.com/craiggwilson/kb" ];
+          mongodb = [
+            "${home}/Projects/github.com/craiggwilson/kb-work"
+            "${home}/Projects/github.com/10gen"
+            "${home}/Projects/github.com/mongodb"
+            "${home}/Projects/github.com/xgen-cloud"
+          ];
           wilsonfamilyhq = [
             "${home}/Projects/github.com/craiggwilson/nix-config"
             "${home}/Projects/github.com/craiggwilson/nix-private"
             "${home}/Projects/github.com/craiggwilson/substrate"
             "${home}/Projects/github.com/craiggwilson/homelab"
-          ];
-          mongodb = [ kbWork ];
-          craig = [ kb ];
-          # Org roots, not individual repos: mapPathToBank matches on longest
-          # path prefix, so every repo beneath these orgs — including future
-          # clones — routes to the work bank.
-          mongodb = [
-            "${home}/Projects/github.com/10gen"
-            "${home}/Projects/github.com/mongodb"
-            "${home}/Projects/github.com/xgen-cloud"
           ];
         };
 
@@ -103,14 +98,6 @@
               wilsonfamilyhq = {
                 # Tag provenance so memories from the shared infrastructure
                 # bank still show which repo they came from.
-                retainTags = [ "project:{gitProject}" ];
-                retainMetadata = {
-                  repo = "{gitProject}";
-                };
-              };
-              mongodb = {
-                # Same provenance tagging as the shared infra bank: many work
-                # repos share one bank, so memories must stay attributable.
                 retainTags = [ "project:{gitProject}" ];
                 retainMetadata = {
                   repo = "{gitProject}";
