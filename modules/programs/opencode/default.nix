@@ -345,28 +345,6 @@
           orchestrator = {
             model = resolveAliases "orchestration";
           };
-          oracle = {
-            model = resolveAliases "analysis";
-          };
-          librarian = {
-            model = resolveAliases "research";
-            mcps = [
-              "context7"
-              "gh_grep"
-            ];
-          };
-          explorer = {
-            model = resolveAliases "fast";
-          };
-          designer = {
-            model = resolveAliases "balanced";
-          };
-          fixer = {
-            model = resolveAliases "coding";
-          };
-          observer = {
-            model = resolveAliases "writing";
-          };
         };
       in
       {
@@ -384,12 +362,26 @@
               main_pane_size = 60;
             };
             preset = "hdwlinux";
-            disabled_agents = [ ];
+            # The orchestrator routes to our own agents
+            # (hdwlinux.ai.clients.agents) instead of these built-ins; its
+            # prompt is ours too (orchestrator.md below).
+            disabled_agents = [
+              "council"
+              "designer"
+              "explorer"
+              "fixer"
+              "librarian"
+              "observer"
+              "oracle"
+            ];
             presets = {
               inherit hdwlinux;
             };
           };
         };
+
+        # Replaces oh-my-opencode-slim's built-in orchestrator prompt whole.
+        xdg.configFile."opencode/oh-my-opencode-slim/orchestrator.md".source = ./orchestrator.md;
       };
   };
 }
