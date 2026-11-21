@@ -226,42 +226,44 @@
                   default = { };
                 };
                 oauth = lib.mkOption {
-                  description = "OAuth metadata and per-harness client settings for the MCP server.";
+                  description = "OAuth settings for the MCP server; false disables OAuth for header-authenticated servers.";
                   type = lib.types.nullOr (
-                    lib.types.submodule {
-                      options = {
-                        clients = lib.mkOption {
-                          description = "OAuth client settings keyed by consuming harness.";
-                          type = lib.types.attrsOf (
-                            lib.types.submodule {
-                              options = {
-                                callbackPort = lib.mkOption {
-                                  type = lib.types.nullOr lib.types.port;
-                                  default = null;
+                    lib.types.either lib.types.bool (
+                      lib.types.submodule {
+                        options = {
+                          clients = lib.mkOption {
+                            description = "OAuth client settings keyed by consuming harness.";
+                            type = lib.types.attrsOf (
+                              lib.types.submodule {
+                                options = {
+                                  callbackPort = lib.mkOption {
+                                    type = lib.types.nullOr lib.types.port;
+                                    default = null;
+                                  };
+                                  clientId = lib.mkOption {
+                                    type = lib.types.nullOr lib.types.str;
+                                    default = null;
+                                  };
+                                  redirectUri = lib.mkOption {
+                                    type = lib.types.nullOr lib.types.str;
+                                    default = null;
+                                  };
                                 };
-                                clientId = lib.mkOption {
-                                  type = lib.types.nullOr lib.types.str;
-                                  default = null;
-                                };
-                                redirectUri = lib.mkOption {
-                                  type = lib.types.nullOr lib.types.str;
-                                  default = null;
-                                };
-                              };
-                            }
-                          );
-                          default = { };
+                              }
+                            );
+                            default = { };
+                          };
+                          discoveryUrl = lib.mkOption {
+                            type = lib.types.nullOr lib.types.str;
+                            default = null;
+                          };
+                          scopes = lib.mkOption {
+                            type = lib.types.listOf lib.types.str;
+                            default = [ ];
+                          };
                         };
-                        discoveryUrl = lib.mkOption {
-                          type = lib.types.nullOr lib.types.str;
-                          default = null;
-                        };
-                        scopes = lib.mkOption {
-                          type = lib.types.listOf lib.types.str;
-                          default = [ ];
-                        };
-                      };
-                    }
+                      }
+                    )
                   );
                   default = null;
                 };

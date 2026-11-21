@@ -154,6 +154,23 @@
             scope = lib.concatStringsSep " " oauth.scopes;
           };
 
+        mcpSecretLoads = lib.concatMapStringsSep "\n" (
+          name:
+          let
+            secretFile = config.secretspec.entries.${name}.file.path;
+          in
+          ''
+            secretName=${lib.escapeShellArg name}
+            secretFile=${lib.escapeShellArg secretFile}
+            if [[ ! -s "$secretFile" ]]; then
+              printf '%s\n' "opencode: MCP secret file for $secretName is missing or empty; restart secretspec-materialize.service" >&2
+              exit 1
+            fi
+            printf -v "$secretName" '%s' "$(<"$secretFile")"
+            export "$secretName"
+          ''
+        ) mcpSecretNames;
+
         mcpServers =
           lib.mapAttrs
             (
@@ -168,11 +185,17 @@
                   type = "remote";
                   url = server.http.url;
                   headers = mcpHeaders server.http.headers;
-                  oauth = if server.http.oauth == null then { } else mcpOauth server.http.oauth;
+                  oauth =
+                    if server.http.oauth == null then
+                      { }
+                    else if builtins.isBool server.http.oauth then
+                      server.http.oauth
+                    else
+                      mcpOauth server.http.oauth;
                 }
             )
-            # oh-my-opencode-slim supplies Context7 itself; avoid starting the shared
-            # local server a second time for OpenCode. Other clients still receive it.
+            # OpenCode uses the shared remote Context7 server; other MCP clients
+            # retain the local stdio server.
             (lib.removeAttrs config.hdwlinux.ai.clients.mcpServers [ "context7-mcp" ]);
         mcpSecretNames = config.hdwlinux.ai.clients.mcpServersSecretNames;
         opencodePackage =
@@ -182,16 +205,18 @@
             wrap.package {
               package = pkgs.opencode;
               name = "opencode";
-              secrets.scope = "ai_clients_opencode";
+              # Load materialized MCP secrets from disk so OpenCode does not
+              # resolve 1Password-backed values on every launch.
+              preHook = mcpSecretLoads;
             };
 
       in
       {
-        # Only remote MCP headers need the launcher scope. Model credentials are
-        # managed by OpenCode, and local MCP servers resolve their own scopes.
-        secretspec.scopes = lib.mkIf (mcpSecretNames != [ ]) {
-          ai_clients_opencode.secrets = mcpSecretNames;
-        };
+        # MCP header secrets are materialized once per login and loaded by the
+        # OpenCode launcher, rather than resolved by secretspec at each launch.
+        secretspec.entries = lib.genAttrs mcpSecretNames (_: {
+          file = { };
+        });
         # Keep terminal-only preferences in OpenCode's separate CLI config.
         xdg.configFile = lib.mkMerge [
           {
