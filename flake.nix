@@ -91,9 +91,9 @@
     };
 
     opencode = {
-      # v2.2.6's upstream node_modules hash is stale; the local overlay below
-      # supplies the hash from the fixed-output build.
-      url = "github:anomalyco/opencode/v2.2.6";
+      # OMO-slim master requires OpenCode v2.3.0 or newer. v2.3.2's
+      # upstream node_modules hash may need the local override below.
+      url = "tarball+https://codeload.github.com/anomalyco/opencode/tar.gz/c0ad18b402eb2827fc1ee71c171b1177b3fc02d1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -209,16 +209,15 @@
           # the opencode flake instead of nixpkgs' 1.x
           inputs.opencode.overlays.default
 
-          # OpenCode v2.2.6 ships a stale node_modules hash for x86_64-linux.
-          # Keep the release source pinned, but use the hash observed from the
-          # reproducible fixed-output build until upstream refreshes hashes.json.
+          # v2.3.2 ships a stale x86_64-linux node_modules hash; use the
+          # hash from the reproducible fixed-output build.
           (
             final: _prev:
             let
               node_modules = final.callPackage "${inputs.opencode}/nix/node_modules.nix" {
-                rev = "dc2ffcf8bf26f9e669b6aa22b95f50e12be15e06";
+                rev = "c0ad18b402eb2827fc1ee71c171b1177b3fc02d1";
                 hash = builtins.getAttr final.stdenv.hostPlatform.system {
-                  "x86_64-linux" = "sha256-O2hF8pGUSArKgYBeP99oOW3iXVVZl5bV5WPTp3E7JIA=";
+                  "x86_64-linux" = "sha256-TZJtdK3IULtOnbeYjrYZy9U47etQ63V7BplXGVstNPI=";
                   "aarch64-linux" = "sha256-INQvojH68t0J1Hc61N1dJvTJzl89afkQNrUcahxOs9g=";
                   "aarch64-darwin" = "sha256-AU2AUkdlL1g+hBkMZX93gQeQy6u8F0Gyzuk48yoN8as=";
                 };

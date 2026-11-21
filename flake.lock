@@ -882,18 +882,14 @@
         ]
       },
       "locked": {
-        "lastModified": 1794005389,
-        "narHash": "sha256-6Of4/r4SKYtxMbHISu8/4yzSpCfHNGuTwfKdAKjNJnM=",
-        "owner": "anomalyco",
-        "repo": "opencode",
-        "rev": "dc2ffcf8bf26f9e669b6aa22b95f50e12be15e06",
-        "type": "github"
+        "lastModified": 1794961686,
+        "narHash": "sha256-yEdLD000KJPNkuowiy4g+sHV+7dm3xazKTEf15ZIYKs=",
+        "type": "tarball",
+        "url": "https://codeload.github.com/anomalyco/opencode/tar.gz/c0ad18b402eb2827fc1ee71c171b1177b3fc02d1"
       },
       "original": {
-        "owner": "anomalyco",
-        "ref": "v2.2.6",
-        "repo": "opencode",
-        "type": "github"
+        "type": "tarball",
+        "url": "https://codeload.github.com/anomalyco/opencode/tar.gz/c0ad18b402eb2827fc1ee71c171b1177b3fc02d1"
       }
     },
     "openspec": {
