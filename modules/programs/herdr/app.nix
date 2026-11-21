@@ -240,9 +240,10 @@
               (cd $out && patch -p1 < ${./app/spaces-jj.patch})
             '';
 
-        # agents-machines: the shipped agents list with a "Grouped by
-        # machine" view, defaulted on (a hand choice in the sort menu still
-        # wins — the default only applies while agents.sort is unset). Also
+        # agents-machines: the shipped agents list, always grouped by machine
+        # first (local, then remote by name), with the shipped space and
+        # priority views nested under each machine. It also names each
+        # agent's tab after the agent's session title (a hand rename wins). Also
         # from the app's own source; the app restores the shipped "agents"
         # mod whole on every start, so the patched copy lives under a new
         # name and the layout points at it.
