@@ -260,6 +260,15 @@
               printf '{ "place": "none", "title": "Agents", "cloned_from": { "name": "agents", "version": "%s" } }\n' "$version" > $out/mod.json
             '';
 
+        # plan-view: a Markdown plan in a pane beside its agent, with mermaid
+        # blocks rendered by mermaid-cli (path baked in: mods exec with the
+        # user's PATH, which needn't have mmdc).
+        planViewMod = pkgs.runCommand "herdr-plan-view" { } ''
+          cp -r ${./app/plan-view} $out
+          chmod -R +w $out
+          substituteInPlace $out/main.js --replace-fail '@mmdc@' '${lib.getExe pkgs.mermaid-cli}'
+        '';
+
         # Every mod to install: name -> source folder. Fetched from the
         # pinned repos above (jj-workspace with a one-line substitution),
         # two derived from the app's own shipped mods,
@@ -272,6 +281,7 @@
           jj-status = "${jjSrc}/mods/jj-status";
           jj-workspace = jjWorkspaceMod;
           obsidian = "${obsidianSrc}/mods/obsidian";
+          plan-view = planViewMod;
           scratch = "${./app/scratch}";
           spaces-jj = spacesJjMod;
           tab-host = "${tabHostSrc}/mods/tab-host";
@@ -364,7 +374,23 @@
           desktopName = "herdr-app.desktop";
         };
 
-        home.packages = [ herdrApp ];
+        home.packages = [
+          herdrApp
+          # Opens a Markdown plan in a plan-view pane beside the focused pane.
+          (pkgs.writeShellApplication {
+            name = "plan-show";
+            runtimeInputs = [
+              herdrApp
+              pkgs.jq
+            ];
+            text = ''
+              [ $# -eq 1 ] || { echo "usage: plan-show <plan.md>" >&2; exit 2; }
+              file=$(realpath -e "$1")
+              herdr-app "do" pane.split --direction right --mod plan-view \
+                --props "$(jq -nc --arg f "$file" '{file: $f}')"
+            '';
+          })
+        ];
 
         home.activation.herdrAppConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] installHerdrAppConfig;
       };
