@@ -77,6 +77,9 @@
           in
           lib.unique (split.right ++ split.wrong);
 
+        # The orchestrator is registered by oh-my-opencode-slim (from our prompt
+        # and the same model alias), so it is left out here to avoid a second
+        # definition competing with the plugin's.
         agentConfig = lib.mapAttrs (
           name: agent:
           {
@@ -86,7 +89,7 @@
             request.body.temperature = agent.temperature;
           }
           // lib.optionalAttrs (agent.tools != { }) { permissions = transformTools agent.tools; }
-        ) config.hdwlinux.ai.clients.agents;
+        ) (lib.removeAttrs config.hdwlinux.ai.clients.agents [ "orchestrator" ]);
 
         commandConfig = lib.mapAttrs (name: command: {
           inherit (command) description;
@@ -326,6 +329,7 @@
       {
         config,
         lib,
+        pkgs,
         ...
       }:
       let
@@ -343,15 +347,17 @@
         # hosts and AI Gateway models on the work host, so no per-host preset switching is needed
         hdwlinux = {
           orchestrator = {
-            model = resolveAliases "orchestration";
+            model = resolveAliases config.hdwlinux.ai.clients.agents.orchestrator.model;
           };
         };
       in
       {
         programs.opencode.settings.plugins = [
-          # Unpinned (latest): the @beta dist-tag is stranded at 3.0.0-beta.13,
-          # which predates OpenCode v2 multiplexer pane support (3.0.x stable).
-          "oh-my-opencode-slim"
+          # Pinned to master for the Herdr Desktop adapter (HC_TERMINAL_ID), which
+          # is not in 3.0.7. Bump rev and the source/deps hashes in the package.
+          {
+            package = "${pkgs.hdwlinux.oh-my-opencode-slim}/lib/node_modules/oh-my-opencode-slim";
+          }
         ];
 
         xdg.configFile."opencode/oh-my-opencode-slim.json" = {
@@ -364,7 +370,7 @@
             preset = "hdwlinux";
             # The orchestrator routes to our own agents
             # (hdwlinux.ai.clients.agents) instead of these built-ins; its
-            # prompt is ours too (orchestrator.md below).
+            # prompt is ours too (agents/prompts/orchestrator.md, below).
             disabled_agents = [
               "council"
               "designer"
@@ -380,8 +386,10 @@
           };
         };
 
-        # Replaces oh-my-opencode-slim's built-in orchestrator prompt whole.
-        xdg.configFile."opencode/oh-my-opencode-slim/orchestrator.md".source = ./orchestrator.md;
+        # Replaces oh-my-opencode-slim's built-in orchestrator prompt whole with
+        # our orchestrator agent's (hdwlinux.ai.clients.agents.orchestrator).
+        xdg.configFile."opencode/oh-my-opencode-slim/orchestrator.md".source =
+          config.hdwlinux.ai.clients.agents.orchestrator.prompt;
       };
   };
 }
