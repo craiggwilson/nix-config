@@ -10,6 +10,16 @@
         # Agent definitions without content paths (computed automatically)
         # Consolidated from 26 agents to 12 role-based agents
         agents = {
+          # Primary agent. oh-my-opencode-slim registers it in opencode (its
+          # scheduling tools are tied to this name); see the opencode module.
+          orchestrator = {
+            color = colors.base0E;
+            description = "Plans, delegates to specialists (subagents or an hc agent team), reconciles and verifies their work. Use to hand off a whole multi-step task.";
+            mode = "primary";
+            model = "orchestration";
+            temperature = 0.3;
+          };
+
           # Core Development Agents
           coder = {
             color = colors.base0D;
