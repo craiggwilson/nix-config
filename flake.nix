@@ -375,20 +375,28 @@
           "location:raeford"
 
           # Profile tags
+          "profile:3d-printing"
           "profile:ai"
+          "profile:cloud-infrastructure"
+          "profile:database-development"
+          "profile:email-management"
           "profile:gaming"
-          "profile:personal"
+          "profile:jvm-development"
+          "profile:media"
+          "profile:music-notation"
           {
             "profile:programming" = [
               "core:tools:version-control"
             ];
           }
-          "profile:work"
+          "profile:team-collaboration"
           "profile:server"
 
           # Role tags
           "role:audio-production"
           "role:laptop"
+          { "role:managed-endpoint" = [ "service:cloudflare-warp" ]; }
+          "role:server"
           { "role:video-production" = [ "capability:v4l2loopback" ]; }
           "role:workstation"
 
@@ -397,10 +405,14 @@
           "service:ai:llm"
           "service:ai:llm:flash-next"
           "service:ai:llm:models"
+          "service:auto-upgrade"
+          "service:cloudflare-warp"
           "service:gaming-streaming"
 
           # User identity
           "user:craig"
+          "user:craig:personal"
+          "user:craig:work"
 
         ];
       };

@@ -16,6 +16,7 @@ in
     "${name}@personal" = {
       tags = [
         "user:${name}"
+        "user:${name}:personal"
         "capability:audio"
         "capability:displaylink"
         "capability:filesystem:cifs"
@@ -35,9 +36,12 @@ in
         "desktop:flatpaks"
         "desktop:shells:dux"
         "desktop:shells:noctalia"
+        "profile:3d-printing"
         "profile:ai"
+        "profile:email-management"
         "profile:gaming"
-        "profile:personal"
+        "profile:media"
+        "profile:music-notation"
         "profile:programming"
         "role:audio-production"
         "role:video-production"
@@ -47,6 +51,7 @@ in
     "${name}@work" = {
       tags = [
         "user:${name}"
+        "user:${name}:work"
         "capability:filesystem:cifs"
         "capability:filesystem:envfs"
         "core:base"
@@ -60,8 +65,12 @@ in
         "desktop:shells:dux"
         "desktop:shells:noctalia"
         "profile:ai"
+        "profile:cloud-infrastructure"
+        "profile:database-development"
+        "profile:email-management"
+        "profile:jvm-development"
         "profile:programming"
-        "profile:work"
+        "profile:team-collaboration"
       ]
       ++ commonTags;
     };
@@ -119,7 +128,7 @@ in
         ) [ name ];
       };
 
-    homeManager = _: {
+    homeManager = {
       hdwlinux.user = {
         inherit
           name

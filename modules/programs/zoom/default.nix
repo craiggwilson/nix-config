@@ -2,8 +2,7 @@
   config.substrate.modules.programs.zoom = {
     tags = [
       "desktop"
-      "user:craig"
-      "profile:work"
+      "profile:team-collaboration"
     ];
 
     homeManager =

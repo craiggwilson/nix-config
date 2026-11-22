@@ -23,6 +23,7 @@ in
       "core:networking:tailscale"
       "hardware:dell-pro-max-gb10"
       "location:raeford"
+      "role:server"
       "service:ai:llm"
       "service:ai:llm:models"
     ];

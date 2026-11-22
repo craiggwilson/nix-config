@@ -1,9 +1,6 @@
 {
   config.substrate.modules.services.falcon-sensor = {
-    tags = [
-      "user:craig"
-      "profile:work"
-    ];
+    tags = [ "role:managed-endpoint" ];
 
     nixos =
       {

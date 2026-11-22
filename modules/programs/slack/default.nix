@@ -2,8 +2,7 @@
   config.substrate.modules.programs.slack = {
     tags = [
       "desktop"
-      "user:craig"
-      "profile:work"
+      "profile:team-collaboration"
     ];
 
     homeManager =

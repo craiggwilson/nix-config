@@ -2,8 +2,7 @@
   config.substrate.modules.ai.clients.skills.slackcli = {
     tags = [
       "profile:ai"
-      "user:craig"
-      "profile:work"
+      "profile:team-collaboration"
     ];
 
     homeManager = {

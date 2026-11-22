@@ -1,6 +1,6 @@
 {
   config.substrate.modules.security.sudo.server = {
-    tags = [ "profile:server" ];
+    tags = [ "role:server" ];
     nixos = {
       security.sudo.enable = false;
       security.sudo-rs = {

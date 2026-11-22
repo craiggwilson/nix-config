@@ -1,8 +1,9 @@
 {
-  config.substrate.modules.ai.clients.mcp-servers.fastmail-mcp = {
+  config.substrate.modules.users.craig.personal.fastmail-mcp = {
     tags = [
+      "user:craig:personal"
       "profile:ai"
-      "profile:personal"
+      "profile:email-management"
     ];
 
     homeManager = {

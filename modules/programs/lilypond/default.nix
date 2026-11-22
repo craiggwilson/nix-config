@@ -1,6 +1,6 @@
 {
   config.substrate.modules.programs.lilypond = {
-    tags = [ "profile:personal" ];
+    tags = [ "profile:music-notation" ];
 
     homeManager =
       { pkgs, ... }:

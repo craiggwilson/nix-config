@@ -21,8 +21,10 @@ in
       "core:ssh"
       "hardware:dell-xps-15-9520"
       "location:raeford"
+      "role:managed-endpoint"
       "role:video-production"
       "role:workstation"
+      "service:auto-upgrade"
     ];
   };
 

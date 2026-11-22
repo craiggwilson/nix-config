@@ -19,7 +19,7 @@
       }:
       let
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
-        isWork = hasTag "user:craig" && hasTag "profile:work";
+        hasCloudflareWarp = hasTag "service:cloudflare-warp";
         dmsPackage = inputs.dux-shell.lib.mkDmsShell pkgs;
         mkPlugin =
           {
@@ -115,7 +115,7 @@
             pkgs.tailscale
             config.programs.opencode.package
           ]
-          ++ lib.optional isWork pkgs.cloudflare-warp;
+          ++ lib.optional hasCloudflareWarp pkgs.cloudflare-warp;
         };
         theme = pkgs.formats.json { };
         themeFile = theme.generate "hdwlinux-dms.json" {
@@ -184,7 +184,7 @@
               };
             };
           }
-          // lib.optionalAttrs isWork {
+          // lib.optionalAttrs hasCloudflareWarp {
             warpToggle.src = warpToggleSrc;
           };
           settings = builtins.fromJSON (builtins.readFile ./${host}-settings.json) // {

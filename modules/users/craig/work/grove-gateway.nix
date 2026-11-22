@@ -1,13 +1,15 @@
 {
-  config.substrate.modules.programs.opencode.grove-gateway = {
+  config.substrate.modules.users.craig.work.grove-gateway = {
     tags = [
-      "user:craig"
-      "profile:work"
+      "user:craig:work"
       "profile:ai"
     ];
 
     homeManager =
-      { pkgs, ... }:
+      {
+        pkgs,
+        ...
+      }:
       {
         programs.opencode.settings.plugins = [
           {

@@ -1,9 +1,6 @@
 {
   config.substrate.modules.programs.maskedemail = {
-    tags = [
-      "user:craig"
-      "core:security:secrets"
-    ];
+    tags = [ "profile:email-management" ];
 
     homeManager =
       {
@@ -14,23 +11,23 @@
         ...
       }:
       let
-        # Read the token from a file materialized once per login by
-        # secretspec-materialize.service, rather than resolving it at exec
-        # time: each secretspec resolution is an `op read` against
-        # 1Password's daily read budget.
-        tokenFile = config.secretspec.entries.MASKEDEMAIL_TOKEN.file.path;
+        cfg = config.hdwlinux.programs.maskedemail;
 
-        maskedemail = wrap.package {
-          package = pkgs.hdwlinux.maskedemail-cli;
-          preHook = ''
-            tokenFile=${lib.escapeShellArg tokenFile}
-            if [[ ! -s "$tokenFile" ]]; then
-              echo "maskedemail-cli: token file $tokenFile is missing or empty; restart secretspec-materialize.service" >&2
-              exit 1
-            fi
-            export MASKEDEMAIL_TOKEN="$(<"$tokenFile")"
-          '';
-        };
+        maskedemail =
+          if cfg.tokenFile == null then
+            pkgs.hdwlinux.maskedemail-cli
+          else
+            wrap.package {
+              package = pkgs.hdwlinux.maskedemail-cli;
+              preHook = ''
+                tokenFile=${lib.escapeShellArg cfg.tokenFile}
+                if [[ ! -s "$tokenFile" ]]; then
+                  echo "maskedemail-cli: token file $tokenFile is missing or empty" >&2
+                  exit 1
+                fi
+                export MASKEDEMAIL_TOKEN="$(<"$tokenFile")"
+              '';
+            };
 
         maskedemailNew = pkgs.writeShellApplication {
           name = "maskedemail-new";
@@ -45,26 +42,18 @@
             notify-send "Masked email created" "$addr"
           '';
         };
-
       in
       {
-        home.packages = [
+        options.hdwlinux.programs.maskedemail.tokenFile = lib.mkOption {
+          default = null;
+          description = "Path to the file containing the masked-email API token; null uses the unwrapped CLI.";
+          type = lib.types.nullOr lib.types.str;
+        };
+
+        config.home.packages = [
           maskedemail
           maskedemailNew
         ];
-
-        secretspec.entries.MASKEDEMAIL_TOKEN = {
-          description = "Fastmail Masked Email API token for maskedemail-cli";
-          ref = {
-            vault = "Craig";
-            item = "Fastmail";
-            field = "maskedemail_token";
-          };
-
-          # Materialized to ~/.local/state/secretspec/files/MASKEDEMAIL_TOKEN
-          # by the user oneshot; see the wrapper comment for why.
-          file = { };
-        };
       };
   };
 }

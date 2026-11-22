@@ -1,6 +1,6 @@
 {
-  config.substrate.modules.security.sudo.personal = {
-    tags = [ "profile:personal" ];
+  config.substrate.modules.security.sudo.workstation = {
+    tags = [ "role:workstation" ];
     nixos = {
       security.sudo.enable = false;
       security.sudo-rs = {

@@ -389,11 +389,11 @@
         "import-tree": "import-tree"
       },
       "locked": {
-        "lastModified": 1794950536,
-        "narHash": "sha256-ehLSUeE8gCYyDz7fs2LgqQWP/DthHIERt48iyaQFSJw=",
+        "lastModified": 1795459267,
+        "narHash": "sha256-wo05nOadPFtZCd8Gm4f7VUb9ijJyX8rHYxcfDe3+K9A=",
         "owner": "craiggwilson",
         "repo": "nix-private",
-        "rev": "f46506dce20e71f82b57c8240fd7b0c97439d787",
+        "rev": "5a2c06ff1751be13241bf5c92f501c349d567852",
         "type": "github"
       },
       "original": {

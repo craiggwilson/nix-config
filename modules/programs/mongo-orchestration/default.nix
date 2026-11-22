@@ -1,9 +1,6 @@
 {
   config.substrate.modules.programs.mongo-orchestration = {
-    tags = [
-      "user:craig"
-      "profile:work"
-    ];
+    tags = [ "profile:database-development" ];
 
     homeManager =
       { pkgs, ... }:

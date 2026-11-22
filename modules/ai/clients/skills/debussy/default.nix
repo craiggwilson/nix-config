@@ -2,7 +2,7 @@
   config.substrate.modules.ai.clients.skills.debussy = {
     tags = [
       "profile:ai"
-      "profile:personal"
+      "profile:music-notation"
     ];
 
     homeManager = {

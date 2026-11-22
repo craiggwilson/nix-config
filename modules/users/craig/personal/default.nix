@@ -1,15 +1,18 @@
 {
   config.substrate.modules.users.craig.personal = {
-    tags = [ "profile:personal" ];
+    tags = [
+      "user:craig:personal"
+      "core:security:secrets"
+      "core:tools:cloud-sync"
+    ];
 
     homeManager =
-      { config, ... }:
+      {
+        config,
+        ...
+      }:
       {
         hdwlinux = {
-          ai.clients.mcpServers.homeassistant.http = {
-            url = "https://homeassistant.raeford.wilsonfamilyhq.com/api/mcp";
-          };
-
           programs.rclone.remotes = {
             onedrive = {
               config = {

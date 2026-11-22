@@ -1,9 +1,8 @@
 {
   config.substrate.modules.programs.mongodb = {
     tags = [
+      "profile:database-development"
       "profile:programming"
-      "user:craig"
-      "profile:work"
     ];
 
     homeManager =

@@ -8,24 +8,19 @@
     homeManager =
       {
         config,
-        hasTag,
         lib,
         pkgs,
         ...
       }:
       let
+        cfg = config.hdwlinux.programs.herdr;
         herdrApp = pkgs.hdwlinux.herdr-app;
 
         jsonFormat = pkgs.formats.json { };
 
-        # The obsidian mod is pinned to one vault; work profile opens the
-        # MongoDB work vault, personal opens the personal vault.
-        isWork = hasTag "user:craig" && hasTag "profile:work";
-        obsidianVault =
-          if isWork then
-            "~/Projects/github.com/craiggwilson/kb-work"
-          else
-            "~/Projects/github.com/craiggwilson/kb";
+        # The obsidian mod is pinned to the configured vault; auto-detection
+        # needs Obsidian running.
+        obsidianVault = "~/Projects/github.com/craiggwilson/${cfg.vault}";
 
         # keys.json's send: values are terminal control characters, spelled
         # here as JSON escapes for fromJSON; toJSON escapes them right back

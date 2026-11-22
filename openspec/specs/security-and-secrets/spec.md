@@ -53,10 +53,10 @@ The deployment account SHALL use its configurable SSH key and SHALL be distinct 
 
 #### Scenario: Interactive-user privilege remains separate
 
-- **WHEN** an interactive user is evaluated under the personal, work, or server sudo module
+- **WHEN** an interactive user is evaluated under the workstation or server sudo module
 - **THEN** sudo-rs SHALL remain enabled with wheel restriction and password requirement
 - **AND** the deploy account's NOPASSWD rule SHALL NOT make the interactive user's commands passwordless
-- **Source:** [interactive sudo profiles](../../../modules/security/sudo/personal.nix#L2-L16), [deploy-only sudo rule](../../../modules/security/deploy-user/default.nix#L37-L50)
+- **Source:** [interactive sudo profiles](../../../modules/security/sudo/workstation.nix#L2-L16), [deploy-only sudo rule](../../../modules/security/deploy-user/default.nix#L37-L50)
 
 ### Requirement: SSH client defaults avoid implicit forwarding and default host configuration
 

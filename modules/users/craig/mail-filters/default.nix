@@ -461,24 +461,33 @@ let
   };
 in
 {
-  config.substrate.modules.programs.mail-filters.work = {
+  config.substrate.modules.users.craig.mail-filters.work = {
     tags = [
-      "user:craig"
-      "profile:work"
+      "user:craig:work"
+      "profile:email-management"
     ];
 
     homeManager =
-      { pkgs, ... }:
+      {
+        pkgs,
+        ...
+      }:
       {
         home.packages = [ (mkProfile pkgs "work" workRules) ];
       };
   };
 
-  config.substrate.modules.programs.mail-filters.personal = {
-    tags = [ "profile:personal" ];
+  config.substrate.modules.users.craig.mail-filters.personal = {
+    tags = [
+      "user:craig:personal"
+      "profile:email-management"
+    ];
 
     homeManager =
-      { pkgs, ... }:
+      {
+        pkgs,
+        ...
+      }:
       {
         home.packages = [ (mkProfile pkgs "personal" personalRules) ];
       };

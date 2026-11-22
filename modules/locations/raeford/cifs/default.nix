@@ -11,8 +11,6 @@
     nixos =
       {
         config,
-        hasTag,
-        lib,
         ...
       }:
       let
@@ -28,16 +26,9 @@
         };
       in
       {
-        hdwlinux.filesystems.cifs.mounts =
-          (lib.optionals (hasTag "profile:personal") [
-            (mount "docker" "docker")
-            (mount "games" "games")
-            (mount "music" "music")
-            (mount "photos" "photo")
-          ])
-          ++ (lib.optionals (hasTag "profile:personal" || hasTag "profile:work") [
-            (mount "home" "home")
-          ]);
+        hdwlinux.filesystems.cifs.mounts = [
+          (mount "home" "home")
+        ];
       };
   };
 }

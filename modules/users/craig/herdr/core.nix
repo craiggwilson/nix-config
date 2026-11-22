@@ -1,5 +1,5 @@
 {
-  config.substrate.modules.programs.herdr.core = {
+  config.substrate.modules.users.craig.herdr.core = {
     tags = [ "user:craig" ];
 
     homeManager =

@@ -1,9 +1,6 @@
 {
   config.substrate.modules.services.osquery = {
-    tags = [
-      "user:craig"
-      "profile:work"
-    ];
+    tags = [ "role:managed-endpoint" ];
 
     nixos =
       {

@@ -2,7 +2,7 @@
   config.substrate.modules.programs.calibre = {
     tags = [
       "desktop"
-      "profile:personal"
+      "profile:media"
     ];
 
     homeManager =

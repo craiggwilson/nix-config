@@ -2,9 +2,8 @@
   config.substrate.modules.programs.idea = {
     tags = [
       "desktop"
+      "profile:jvm-development"
       "profile:programming"
-      "user:craig"
-      "profile:work"
     ];
 
     homeManager =

@@ -1,8 +1,7 @@
 {
   config.substrate.modules.programs.aws-cli = {
     tags = [
-      "user:craig"
-      "profile:work"
+      "profile:cloud-infrastructure"
       "profile:programming"
     ];
 

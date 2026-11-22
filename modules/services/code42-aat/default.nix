@@ -1,9 +1,6 @@
 {
   config.substrate.modules.services.code42-aat = {
-    tags = [
-      "user:craig"
-      "profile:work"
-    ];
+    tags = [ "role:managed-endpoint" ];
 
     nixos =
       {

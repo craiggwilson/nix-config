@@ -1,9 +1,8 @@
 {
-  config.substrate.modules.ai.clients.tasks.morning-brief = {
+  config.substrate.modules.users.craig.work.tasks.morning-brief = {
     tags = [
+      "user:craig:work"
       "profile:ai"
-      "user:craig"
-      "profile:work"
     ];
 
     homeManager = {

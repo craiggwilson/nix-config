@@ -1,8 +1,8 @@
 {
   config.substrate.modules.users.craig.work = {
     tags = [
-      "user:craig"
-      "profile:work"
+      "user:craig:work"
+      "core:security:secrets"
     ];
 
     homeManager =

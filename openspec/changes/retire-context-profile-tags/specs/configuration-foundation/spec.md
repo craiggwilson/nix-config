@@ -49,6 +49,12 @@ Tags SHALL be the only module selection mechanism. Reusable modules SHALL be sel
 - **WHEN** a user instance declares `profile:cloud-infrastructure` but not `profile:database-development` (or the reverse)
 - **THEN** only the tools of the declared category SHALL be installed for that user
 
+#### Scenario: Programming selects generic Evergreen without work credentials
+
+- **WHEN** `craig@personal` is evaluated with `profile:programming` and without `user:craig:work`
+- **THEN** the generic `evergreen` package SHALL be installed
+- **AND** the work-only Evergreen credential and composed-config entries SHALL be absent
+
 #### Scenario: Reusable modules ignore identity
 
 - **WHEN** a user other than Craig declares a category tag such as `profile:3d-printing`
@@ -67,15 +73,22 @@ Tags SHALL be the only module selection mechanism. Reusable modules SHALL be sel
 
 ### Requirement: Craig-owned configuration is selected by identity and instance
 
-Configuration that belongs to Craig's accounts (secrets references, MCP servers, model routing, mail filters, NAS mounts, knowledge-base vault, scheduled AI tasks) SHALL live under Craig's user modules, SHALL require `user:craig`, and SHALL distinguish `craig@work`, `craig@personal` and `craig@server` through the user instance itself rather than through a tag.
+Instance-specific Craig-owned Home Manager configuration SHALL use `user:craig:work` or `user:craig:personal` identity-leaf tags. Shared Craig configuration may use `user:craig`; reusable modules SHALL NOT use the identity leaves. The work/personal leaves SHALL be assigned only to the matching Craig user instances. The sole NixOS exception SHALL be the personal CIFS media-mount module, which combines `user:craig:personal` with `location:raeford` and `capability:filesystem:cifs`.
 
 #### Scenario: Work-instance settings stay on the work instance
 
 - **WHEN** `craig@work` is evaluated
-- **THEN** its work account settings (for example Grove model routing and work MCP servers) SHALL be present
+- **THEN** its work account settings (for example Grove model routing and work MCP servers) SHALL be selected by `user:craig:work`
 - **AND** `craig@personal` and `craig@server` SHALL NOT receive them
 
 #### Scenario: Other users get no Craig configuration
 
-- **WHEN** a user without `user:craig` shares a host with a Craig instance
+- **WHEN** a user without `user:craig:work` or `user:craig:personal` shares a host with a Craig instance
 - **THEN** that user SHALL receive no Craig-owned configuration
+- **AND** assigning the same functional category tags to that user SHALL NOT select Craig's account configuration
+
+#### Scenario: Personal CIFS mounts use the documented NixOS exception
+
+- **WHEN** `blackflame` is evaluated with `craig@personal`, `location:raeford`, and `capability:filesystem:cifs`
+- **THEN** the personal media mounts SHALL be present
+- **AND** `unsouled`, `wintersteel`, and `minimal` SHALL NOT receive those personal media mounts

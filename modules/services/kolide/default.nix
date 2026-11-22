@@ -1,9 +1,6 @@
 {
   config.substrate.modules.services.kolide = {
-    tags = [
-      "user:craig"
-      "profile:work"
-    ];
+    tags = [ "role:managed-endpoint" ];
     nixos =
       { inputs, ... }:
       {

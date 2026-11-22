@@ -2,7 +2,7 @@
   config.substrate.modules.programs.musescore = {
     tags = [
       "desktop"
-      "profile:personal"
+      "profile:music-notation"
     ];
 
     homeManager =

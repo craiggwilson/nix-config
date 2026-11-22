@@ -28,13 +28,14 @@
         ...
       }:
       let
+        cfg = config.hdwlinux.programs.noctalia;
         colors = config.hdwlinux.theme.colors;
         wallpaper = config.hdwlinux.theme.wallpaper;
 
         hasAI = hasTag "profile:ai";
+        hasCloudflareWarp = hasTag "service:cloudflare-warp";
         hasProgramming = hasTag "profile:programming";
         hasTailscale = hasTag "core:networking:tailscale";
-        isWork = hasTag "user:craig" && hasTag "profile:work";
 
         # tordex/processes shells out to a bare `python`, and alok-debnath/shelf
         # both probes `python3` for a GTK 4 import and then runs its drop
@@ -213,7 +214,7 @@
                 "zumik3-del/opencode-go-usage"
               ]
               ++ lib.optionals hasProgramming [ "raycursive/github-prs" ]
-              ++ lib.optionals isWork [ "levi/warp" ]
+              ++ lib.optionals hasCloudflareWarp [ "levi/warp" ]
               ++ lib.optionals hasTailscale [ "rylos/tailnet" ];
 
               source = [
@@ -236,13 +237,7 @@
               "aristides/udiskie".manager_placement = "attached";
 
               "davemhammer/obsidian" = {
-                # Work profile uses the MongoDB work vault; personal uses the
-                # personal vault.
-                vault_path =
-                  if isWork then
-                    "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb-work"
-                  else
-                    "${config.home.homeDirectory}/Projects/github.com/craiggwilson/kb";
+                vault_path = "${config.home.homeDirectory}/Projects/github.com/craiggwilson/${cfg.vault}";
                 daily_folder = "daily";
                 manager_open_near_click = false;
                 manager_placement = "attached";
@@ -270,7 +265,7 @@
             // lib.optionalAttrs hasTailscale {
               "rylos/tailnet".panel_open_near_click = false;
             }
-            // lib.optionalAttrs isWork {
+            // lib.optionalAttrs hasCloudflareWarp {
               "levi/warp".panel_open_near_click = false;
             };
 
@@ -294,7 +289,7 @@
                     "network"
                   ]
                   ++ lib.optionals hasTailscale [ "tailnet" ]
-                  ++ lib.optionals isWork [ "warp" ]
+                  ++ lib.optionals hasCloudflareWarp [ "warp" ]
                   ++ [
                     "kdeconnect"
                     "bluetooth"
@@ -425,7 +420,7 @@
             // lib.optionalAttrs hasProgramming {
               github.type = "raycursive/github-prs:bar";
             }
-            // lib.optionalAttrs isWork {
+            // lib.optionalAttrs hasCloudflareWarp {
               warp.type = "levi/warp:warp";
             }
             // lib.optionalAttrs hasTailscale {
