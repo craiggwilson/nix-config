@@ -8,7 +8,6 @@
 
     homeManager =
       {
-        config,
         pkgs,
         wrap,
         ...

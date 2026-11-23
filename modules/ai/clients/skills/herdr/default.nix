@@ -24,8 +24,14 @@
       in
       {
         hdwlinux.ai.clients.skills = {
-          herdr-app = mkSkill "herdr-app" "Use when changing what the user sees in herdr-app: spaces, tabs, panes, layouts, mods, focus, opening a pane or mod beside the agent (herdr-app do/ls/status/commands)." pkgs.hdwlinux.herdr-app;
-          herdr-core = mkSkill "herdr-core" "Use when starting, reading, messaging, waiting on or cleaning up agents and programs in herdr terminals, including sub-agents and other agents' terminals (hc)." pkgs.hdwlinux.herdr-core;
+          herdr-app =
+            mkSkill "herdr-app"
+              "Use when changing what the user sees in herdr-app: spaces, tabs, panes, layouts, mods, focus, opening a pane or mod beside the agent (herdr-app do/ls/status/commands)."
+              pkgs.hdwlinux.herdr-app;
+          herdr-core =
+            mkSkill "herdr-core"
+              "Use when starting, reading, messaging, waiting on or cleaning up agents and programs in herdr terminals, including sub-agents and other agents' terminals (hc)."
+              pkgs.hdwlinux.herdr-core;
         };
       };
   };

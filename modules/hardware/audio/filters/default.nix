@@ -79,7 +79,7 @@ in
       };
 
     nixos =
-      { config, lib, ... }:
+      { config, ... }:
       let
         cfg = config.hdwlinux.hardware.audio.noiseSuppression;
         rules = optionals (cfg.enable && cfg.mics != [ ]) (map ruleForMic cfg.mics);
