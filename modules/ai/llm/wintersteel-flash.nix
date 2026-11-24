@@ -19,6 +19,7 @@
             fit = "off";
             flash-attn = true;
             kv-unified-per-slot = 262144;
+            load-on-startup = false;
             load-mode = "none";
             mmproj-offload = true;
             n-gpu-layers = "all";

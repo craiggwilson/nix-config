@@ -14,17 +14,28 @@
       let
         cfg = config.hdwlinux.services.llama-cpp;
 
-        package =
-          (pkgs.llama-cpp.override {
-            cudaSupport = true;
-            rocmSupport = false;
-            metalSupport = false;
-            blasSupport = false;
-          }).overrideAttrs
-            (_oldAttrs: {
-              # Wintersteel's CUDA-enabled CTest suite failed during installation.
-              doCheck = false;
-            });
+        # Unsloth's prebuilt bundles the CUDA 13.3 runtime with SM 120/121 kernels
+        # for the GB10 and decodes looped MoE models up to 1.9x faster than
+        # mainline llama.cpp; our nixpkgs pin predates Inkling 2 support.
+        package = pkgs.stdenv.mkDerivation {
+          pname = "llama-cpp";
+          version = "b12649-mix-c7059d6";
+
+          src = pkgs.fetchurl {
+            url = "https://github.com/unslothai/llama.cpp/releases/download/b12649-mix-c7059d6/app-b12649-mix-c7059d6-linux-arm64-cuda13-portable.tar.gz";
+            sha256 = "641f0e7ec5dd82d2654947a77fb0d29c089f13fb60420e3b5e540306df7dcfff";
+          };
+
+          dontUnpack = true;
+          dontConfigure = true;
+          dontBuild = true;
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out
+            tar -xzf $src -C $out
+            runHook postInstall
+          '';
+        };
 
         presets = {
           "*" = {
@@ -75,7 +86,7 @@
             Service = {
               Type = "idle";
               # Keep 16 GiB available for the OS and non-LLM work while caching models.
-              ExecStart = "${lib.getExe' package "llama-server"} --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 4 --models-memory-margin 16384";
+              ExecStart = "${package}/llama-server --host ${cfg.host} --port ${lib.toString cfg.port} --models-preset ${config.xdg.configHome}/llama-cpp/models.ini --models-max 4 --models-memory-margin 16384";
               Restart = "on-failure";
               RestartSec = 300;
               TimeoutStopSec = 60;

@@ -7,7 +7,7 @@
 
     homeManager = {
       config.hdwlinux.ai.llm.models = {
-        "Qwen3.8-27B-UD-Q4_K_XL" = {
+        "Inkling-2-Mini-UD-Q4_K_XL" = {
           type = "gguf";
           categories = [
             "coding"
@@ -16,7 +16,7 @@
           ];
           priority = 10;
           settings.llama-cpp = {
-            # q8_0 KV halves the per-slot cost of the 262144-token context (~8 GiB vs ~16 GiB).
+            # Looping means 48 KV caches for the 262144-token context; q8_0 halves the per-slot cost.
             cache-type-k = "q8_0";
             cache-type-v = "q8_0";
             fit = "off";
@@ -25,23 +25,36 @@
             load-mode = "none";
             mmproj-offload = true;
             n-gpu-layers = "all";
+            # The DSpark drafter (third file) is small; keep it fully on the GPU.
+            n-gpu-layers-draft = 99;
             parallel = 3;
-            # The GGUF embeds Qwen's MTP head (blk.64.nextn.*); it self-drafts with no extra model.
-            spec-draft-n-max = 3;
-            spec-type = "draft-mtp";
+            # Depth 2 is the fastest for this model; the third draft token is rarely accepted.
+            spec-draft-n-max = 2;
+            spec-type = "draft-dspark";
+            # TML's recommended sampling; greedy underuses the DSpark drafter.
+            min-p = 0.0;
+            temp = 1.0;
+            top-k = 0;
+            top-p = 1.0;
           };
           files = [
             {
               type = "huggingface";
-              repo = "unsloth/Qwen3.8-27B-GGUF";
-              name = "Qwen3.8-27B-UD-Q4_K_XL.gguf";
-              sha256 = "sha256-Kl81ZfOc+IUQPaWRGCwSZtpkdFc3tCtFL9PmdTafEhE=";
+              repo = "unsloth/Inkling-2-Mini-GGUF";
+              name = "Inkling-2-Mini-UD-Q4_K_XL.gguf";
+              sha256 = "e64276656f072e9b2197a61723667cbdb71da66a716ffd966e572c21088f3cd3";
             }
             {
               type = "huggingface";
-              repo = "unsloth/Qwen3.8-27B-GGUF";
+              repo = "unsloth/Inkling-2-Mini-GGUF";
               name = "mmproj-F16.gguf";
-              sha256 = "sha256-y7hBqe4GNrLsFy9buN8uqN/rAekP58YSZYHWYqC05D4=";
+              sha256 = "3bff75ffeb2d6e0371ba7bd42e30d26a7d98aea681fa44b03b5a20891cfa2c5f";
+            }
+            {
+              type = "huggingface";
+              repo = "unsloth/Inkling-2-Mini-GGUF";
+              name = "dspark-Inkling-2-Mini-Q8_0.gguf";
+              sha256 = "3da00cf7c31bbe5662b3c0d373ecf782d74d32ef43990acc158ce60c2add72e0";
             }
           ];
         };
