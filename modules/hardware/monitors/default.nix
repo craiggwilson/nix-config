@@ -79,6 +79,9 @@
         monitorsWithEdidOverride = lib.filterAttrs (
           _: monitor: monitor.edidOverride != null
         ) config.hdwlinux.hardware.monitors;
+        hasDisplaylink = builtins.any (monitor: monitor.displaylink or false) (
+          builtins.attrValues config.hdwlinux.hardware.monitors
+        );
 
         edidDir = pkgs.runCommand "edid-files" { } ''
           mkdir -p $out
@@ -170,7 +173,7 @@
           /etc/hdwlinux/edid-fix || true
         '';
 
-        powerManagement.resumeCommands = ''
+        powerManagement.resumeCommands = lib.mkIf (!hasDisplaylink) ''
           sleep 10
           /etc/hdwlinux/edid-fix || true
         '';

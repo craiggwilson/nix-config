@@ -12,6 +12,9 @@
         needsDisplaylink = builtins.any (m: m.displaylink or false) (
           builtins.attrValues (config.hdwlinux.hardware.monitors or { })
         );
+        needsEdidFix = builtins.any (m: (m.edidOverride or null) != null) (
+          builtins.attrValues (config.hdwlinux.hardware.monitors or { })
+        );
       in
       {
         services.xserver.videoDrivers = lib.mkIf needsDisplaylink [ "displaylink" ];
@@ -24,6 +27,10 @@
         powerManagement.resumeCommands = lib.mkIf needsDisplaylink (
           lib.mkAfter ''
             ${lib.getExe' pkgs.systemd "systemctl"} restart dlm.service
+            ${lib.optionalString needsEdidFix ''
+              sleep 10
+              /etc/hdwlinux/edid-fix || true
+            ''}
           ''
         );
 
