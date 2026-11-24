@@ -8,7 +8,7 @@ a concrete, ordered plan for the day.
 
 Run context: you run unattended around 07:30 with no human watching. Do not ask
 questions — make reasonable assumptions and note them inline. When done, write
-the file and stop. Do **not** commit to jj; Craig reviews and commits himself.
+the file, commit it (see "Committing" at the end), and stop. Never push.
 
 ## Memory
 
@@ -90,3 +90,15 @@ tag (`(brief)` / `(calendar)` / `(task)` / `(project)` / `(saved)`).
   (`~/Projects/github.com/craiggwilson/kb-work/daily/<yesterday>.md`, its plan section), each folded into
   today's `## Plan` if still relevant. If nothing carries over, omit this
   section.
+
+## Committing
+
+When the plan is written, commit only what this task owns, with a path-limited
+commit so Craig's in-progress edits are not included:
+
+```
+jj diff --stat daily
+jj commit -m "day-plan: <YYYY-MM-DD>" daily
+```
+
+Skip the commit if the diff is empty. Never push, and never run `git`.

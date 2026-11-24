@@ -7,7 +7,7 @@ today and maintain the durable working files he acts from.
 
 Run context: you run unattended around 07:00 with no human watching. Do not ask
 questions — make reasonable assumptions and note them inline. When done, write
-the files and stop. Do **not** commit to jj; Craig reviews and commits himself.
+the files, commit them (see "Committing" at the end), and stop. Never push.
 
 ## Memory
 
@@ -48,6 +48,25 @@ You produce two kinds of artifact, with different lifecycles:
 
 Determine today's date with `date +%F` (YYYY-MM-DD). Follow the KB's
 Obsidian-markdown conventions (wikilinks, callouts, alphabetized frontmatter).
+
+### Shared brief file
+
+The `atlas-analytics` task runs before you and creates today's brief if it does not
+exist, owning the `<!-- section:atlas-analytics -->` block. Treat that block as
+read-only: never edit, move, or delete it, and keep it directly after the H1 heading
+(your summary note, if any, goes between the heading and that block). Everything
+below that says "create markers if absent, replace only between them" applies to your
+own sections only.
+
+### Signal bar
+
+Craig's feedback: most of what gets surfaced is unimportant. The default is to
+**omit**. An item earns a place only if it would change what he does today — he must
+decide, reply, review, unblock someone, or he would be unhappy to learn about it
+late. "Just be aware" is not a recommendation: such items are dropped, never listed.
+When unsure, omit. Caps per section (excluding My Open PRs): at most 5 items. Overflow
+is reported as a bare count ("N more below the bar"); never list it, and never
+enumerate PRs by number in a "routine" bucket.
 
 ### Continuity
 
@@ -116,6 +135,9 @@ Body:
 - Append one dated line to `## Log` describing the delta.
 - Update `status` and `updated` in frontmatter.
 
+If nothing changed since the last run (same head SHA, no new comments or review
+state changes), leave the file untouched — no log line, no `updated` bump.
+
 ### Accuracy
 
 Drafted replies are paste-ready, so do not assert codebase facts you have not
@@ -178,15 +200,20 @@ What to consider (union of two sets):
 - **Watchlist:** open PRs in `10gen/mms` that were opened or updated in roughly
   the last two days. Use `gh search prs --repo=10gen/mms --state=open` with an
   updated-since filter (compute the date with `date`).
-- **Requested reviewer:** any open PR where Craig is a requested reviewer
-  (`gh search prs --review-requested=@me --state=open`), across every repo the
-  token can see, regardless of age.
+- **Requested of you directly:** open PRs where Craig himself is a requested
+  reviewer — `gh search prs --state=open --limit 100 -- is:pr user-review-requested:@me`
+  — across every repo the token can see, regardless of age. Do **not** use
+  `review-requested:@me` as the always-qualifies set: it includes requests that
+  arrive only through team/CODEOWNERS assignment (about 50 of 60 at last count), which
+  are noise. A team-only request is treated like a watchlist PR and must clear the
+  rubric.
 
-Exclude PRs Craig authored — those are covered by the section above; never list
-a PR in both.
+Exclude PRs Craig authored — those are covered by the section above — and PRs
+labelled `atlas-analytics`, which the Atlas Analytics section covers; never list a PR
+in two sections.
 
-Filter the watchlist set by this importance rubric — a PR earns a place only if
-it clears at least one bar (requested-reviewer PRs always qualify):
+Filter by this importance rubric — a PR earns a place only if it clears at least one
+bar *and* is not routine (directly requested PRs always qualify):
 
 - Architecture, new systems, or service-boundary changes
 - Security-relevant: authn/authz, secrets, network exposure, data handling
@@ -194,6 +221,11 @@ it clears at least one bar (requested-reviewer PRs always qualify):
 - Data integrity, availability, backpressure, or failure-mode changes
 - Public API or contract changes
 - Large or high-blast-radius changes
+
+Routine, never surfaced even if they brush a bar: dependency and CVE bumps, Renovate
+config, feature-flag cleanup, release backports, new-system skeletons and scaffolds,
+UI copy or styling, test-only changes, mechanical refactors, and the individual PRs
+of a stack that is already surfaced (surface the stack once, by its head).
 
 ### Deduplication (the attention log)
 
@@ -214,7 +246,7 @@ updated: <YYYY-MM-DD>
 
 Table columns: `PR` (linked `repo#number`) · `last_updatedAt` (the ISO
 `updatedAt` you last saw) · `first_surfaced` (date) · `last_surfaced` (date) ·
-`role` (`watchlist` | `review-requested`).
+`role` (`watchlist` | `review-requested`; the latter means requested of you directly).
 
 Flow each run:
 
@@ -227,9 +259,12 @@ Flow each run:
      `last_updatedAt` → surface it, tag `(updated since <last_surfaced>)`.
    - **Unchanged watchlist** — in the ledger, `updatedAt` not newer →
      **suppress** (do not list). It has already been surfaced and nothing moved.
-   - **Requested-reviewer** — always surface regardless of change, because it is
-     an open ask on you; tag it `awaiting your review since <first_surfaced>` so
-     the aging is visible.
+   - **Requested of you directly** (`user-review-requested`) — surface because it
+     is an open ask on you. If it is new or changed, give it a full subsection
+     tagged `awaiting your review since <first_surfaced>`; if unchanged, fold it
+     into a single trailing line ("Still waiting on you: …") rather than a
+     subsection.
+   - **Team-only request** — treat as watchlist (rubric-filtered, deduped).
 4. After writing the brief block, update the ledger: upsert a row for every
    candidate you evaluated (new rows for new PRs; bump `last_updatedAt` and
    `last_surfaced` for ones you surfaced), set frontmatter `updated:` to today,
@@ -243,10 +278,11 @@ description) to write:
   state tag (`(new)` / `(updated since …)` / `awaiting your review since …`).
 - **What it changes** — one or two lines.
 - **Why it matters to you** — which rubric bar(s) it clears.
-- **Recommendation** — one of: review it yourself / ping a specific owner /
-  just be aware. Do **not** draft review comments; this is triage, not review.
+- **Recommendation** — one of: review it yourself / ping a specific owner.
+  Do **not** draft review comments; this is triage, not review. If neither
+  applies, the PR does not belong in the section.
 
-Ordering: requested-reviewer PRs first, then new, then updated. Keep the section
+Ordering: directly requested PRs first, then new, then updated. Keep the section
 tight — if nothing new or changed clears the bar, write "Nothing new in the
 watchlist needs your attention today." Do not pad it to look busy, and do not
 relist suppressed PRs.
@@ -283,9 +319,9 @@ note the failure in the brief.
      AND status not in (Closed, Done, Resolved)
    ```
 
-   Treat these like requested-reviewer PRs: always list them, newest-due first,
-   with aging. De-prioritize (but still mention briefly) ones whose due date is
-   long past and status is `Backlog` — those are usually abandoned.
+   Treat these like directly requested PRs: always list them, newest-due first,
+   with aging. Omit (do not mention) ones whose due date is long past and status
+   is `Backlog` — those are usually abandoned.
 
 2. **Atlas watchlist (rubric-filtered).** Recently touched Atlas-tagged docs:
 
@@ -376,7 +412,7 @@ Write a `## Documents` heading, then:
 
 Keep it tight. If nothing is pending your LGTM and nothing new or changed clears
 the bar, write "No documents need your attention today." Do not relist stable
-docs.
+docs, and do not list docs you skipped reading.
 
 ## Section: Slack
 
@@ -403,13 +439,18 @@ Resolve Craig's Slack user ID with `slackcli auth whoami` (the `U0…` id). Read
 the Slack cursor from the attention log's `## Slack` section (below); on a first
 run, scan the last two days (`date -d '2 days ago' +%F`).
 
-Run these searches, each with `after:<cursor-date>` appended:
+Run these searches, each with `after:<D>` appended, where `<D>` is the cursor date
+**minus one day** (Slack's `after:` is exclusive and day-granular, so the cursor date
+itself would miss messages posted later that day; the permalink log below removes the
+overlap):
 
-1. **Mentions** — `<@<user-id>>` — always surface every result.
+1. **Mentions** — `<@<user-id>>` — surface every result that asks something of him
+   or needs a decision.
 2. **Rubric terms** — one search per term, judged against the rubric:
-   `migration`, `architecture`, `incident`, `outage`, `sev`, `security`,
-   `deprecation`, `postmortem`, `design review`, `RFC`, `control plane`,
-   `monolith`.
+   `incident`, `outage`, `sev1`, `sev2`, `postmortem`.
+
+Skip results from channels whose name starts with `firebolt`; the Atlas Analytics
+section covers them.
 
 Search is relevance-ranked, not exhaustive — treat results as a high-signal
 sample, not complete history. Do not attempt `conversations read` or
@@ -419,7 +460,7 @@ sample, not complete history. Do not attempt `conversations read` or
 
 The attention log's `## Slack` section holds:
 
-- `last_scanned: <date>` — the cursor; the next run scans `after:` this date.
+- `last_scanned: <date>` — the cursor; the next run scans from this date minus one day.
 - A list of already-surfaced message permalinks (prune entries older than 7
   days to stay bounded).
 
@@ -432,9 +473,9 @@ permalinks.
 Apply the same importance rubric family: architecture / new systems / service
 boundaries · security · cross-cutting infrastructure, build/deploy, migration
 out of the monolith · data integrity / availability / failure modes · public
-API or contract changes · incidents and postmortems. Mentions of Craig always
-qualify. A message that is merely conversation — planning chatter, kudos, ops
-noise — does not.
+API or contract changes · incidents and postmortems. A mention of Craig qualifies
+when it asks something of him or needs his decision; a message that is merely
+conversation — planning chatter, kudos, FYIs, ops noise — does not.
 
 For threads, read the parent context with
 `slackcli conversations get` or the permalink when needed to judge, but do not
@@ -446,8 +487,20 @@ Write a `## Slack` heading, then one ranked item per surfaced message/thread:
 
 - `### <channel> — <one-line summary>` with the permalink and date.
 - **Why it matters** — the rubric bar it clears (or `mention`).
-- **Recommendation** — reply / read the thread / ping an owner / just be aware.
-  Do not draft replies; this is triage.
+- **Recommendation** — reply / read the thread / ping an owner. Do not draft
+  replies; this is triage.
 
 Ordering: mentions first, then by importance. If nothing clears the bar, write
 "Nothing in Slack needs your attention today." Do not pad.
+
+## Committing
+
+When all files are written, commit only what this task owns, with a path-limited
+commit so Craig's in-progress edits are not included:
+
+```
+jj diff --stat briefings prs docs
+jj commit -m "morning-brief: <YYYY-MM-DD>" briefings prs docs
+```
+
+Skip the commit if the diff is empty. Never push, and never run `git`.

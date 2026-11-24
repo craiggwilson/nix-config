@@ -13,6 +13,10 @@
         workingDirectory = "~/Projects/github.com/craiggwilson/kb-work";
         timeout = "2h";
         environment.HINDSIGHT_BANK_ID = "mongodb";
+
+        # atlas-analytics creates the brief file and owns its own section;
+        # running after it also serializes the jj commits in the shared vault.
+        after = [ "atlas-analytics" ];
       };
     };
   };
