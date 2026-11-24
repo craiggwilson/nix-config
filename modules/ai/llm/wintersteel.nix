@@ -16,9 +16,9 @@
           ];
           priority = 10;
           settings.llama-cpp = {
-            # Looping means 48 KV caches for the 262144-token context; q8_0 halves the per-slot cost.
-            cache-type-k = "q8_0";
-            cache-type-v = "q8_0";
+            # f16 KV benchmarks faster at long contexts; the Spark has room for the larger cache.
+            cache-type-k = "f16";
+            cache-type-v = "f16";
             fit = "off";
             flash-attn = true;
             kv-unified-per-slot = 262144;
