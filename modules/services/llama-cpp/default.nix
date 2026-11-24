@@ -29,10 +29,21 @@
           dontUnpack = true;
           dontConfigure = true;
           dontBuild = true;
+          nativeBuildInputs = [ pkgs.makeWrapper ];
           installPhase = ''
             runHook preInstall
             mkdir -p $out
             tar -xzf $src -C $out
+            wrapProgram $out/llama-server \
+              --set GGML_BACKEND_PATH "$out/libggml-cuda.so" \
+              --prefix LD_LIBRARY_PATH : "${
+                lib.makeLibraryPath [
+                  pkgs.cudaPackages.cuda_cudart
+                  pkgs.cudaPackages.libcublas
+                  pkgs.openssl
+                  pkgs.stdenv.cc.cc.lib
+                ]
+              }:/run/opengl-driver/lib"
             runHook postInstall
           '';
         };
