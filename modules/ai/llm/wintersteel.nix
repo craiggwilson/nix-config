@@ -59,6 +59,27 @@
           ];
         };
 
+        "Qwen3-8B-Q8_0" = {
+          type = "gguf";
+          categories = [ "fast" ];
+          settings.llama-cpp = {
+            fit = "off";
+            flash-attn = true;
+            kv-unified-per-slot = 8192;
+            load-mode = "none";
+            n-gpu-layers = "all";
+            parallel = 2;
+          };
+          files = [
+            {
+              type = "huggingface";
+              repo = "Qwen/Qwen3-8B-GGUF";
+              name = "Qwen3-8B-Q8_0.gguf";
+              sha256 = "408b955510e196121c1c375201744783b5c9a43c7956d73fc78df54c66e883d6";
+            }
+          ];
+        };
+
         "Qwen3-Embedding-8B-Q8_0" = {
           type = "gguf";
           categories = [ "embedding" ];
