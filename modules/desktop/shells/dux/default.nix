@@ -21,6 +21,19 @@
         colors = config.hdwlinux.theme.colors.hexWithHashtag;
         hasCloudflareWarp = hasTag "service:cloudflare-warp";
         dmsPackage = inputs.dux-shell.lib.mkDmsShell pkgs;
+        # Dux's privacy indicator counts WirePlumber's noise-suppression
+        # filter chain as microphone activity: it is a virtual
+        # Stream/Input/Audio node with no app consuming it. Skip virtual
+        # nodes so only real capture apps light the indicator.
+        dmsPrivacyPatched = dmsPackage.overrideAttrs (old: {
+          # Patch in the original build so bin/dms embeds the patched QML path.
+          postInstall = old.postInstall + ''
+            substituteInPlace $out/share/quickshell/dms/Services/PrivacyService.qml \
+              --replace-fail \
+                'if (!looksLikeSystemVirtualMic(node)) {' \
+                'if (!looksLikeSystemVirtualMic(node) && node.properties?.["node.virtual"] !== "true") {'
+          '';
+        });
         mkPlugin =
           {
             owner,
@@ -86,7 +99,7 @@
           hash = "sha256-SgUWuMG5bDuFbdXvWmSUfgOyiq2kX/6iovUIWITDxsE=";
         };
         dms = wrap.package {
-          package = dmsPackage;
+          package = dmsPrivacyPatched;
 
           runtimeInputs = [
             pkgs.gpu-screen-recorder
