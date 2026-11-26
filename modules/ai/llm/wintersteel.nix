@@ -65,7 +65,7 @@
           settings.llama-cpp = {
             fit = "off";
             flash-attn = true;
-            kv-unified-per-slot = 8192;
+            kv-unified-per-slot = 32768;
             load-mode = "none";
             n-gpu-layers = "all";
             parallel = 2;
