@@ -29,6 +29,21 @@
           };
           Install.WantedBy = [ "default.target" ];
         };
+
+        # Refresh the always-on service after UWSM publishes the graphical
+        # session environment, which its boot-started process cannot inherit.
+        systemd.user.services.herdr-core-session-refresh = {
+          Unit = {
+            Description = "Refresh herdr-core environment for graphical session";
+            After = [ "graphical-session.target" ];
+            ConditionEnvironment = "WAYLAND_DISPLAY";
+          };
+          Service = {
+            Type = "oneshot";
+            ExecStart = "${pkgs.systemd}/bin/systemctl --user restart herdr-core.service";
+          };
+          Install.WantedBy = [ "graphical-session.target" ];
+        };
       };
 
     # Linger keeps the user manager — and the herdr-core service with it —
