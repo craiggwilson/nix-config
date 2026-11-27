@@ -12,11 +12,6 @@
             loadMode = "auto";
           };
 
-          hindsight = {
-            description = "Use Hindsight long-term memory: recall at start, verify claims, capture outcomes";
-            loadMode = "always";
-          };
-
           jujutsu = {
             description = "Version control using Jujutsu (jj)";
             loadMode = "always";
