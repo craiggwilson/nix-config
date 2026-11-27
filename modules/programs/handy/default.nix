@@ -3,24 +3,9 @@
     tags = [ "desktop" ];
 
     homeManager =
-      { lib, pkgs, ... }:
+      { pkgs, ... }:
       {
         home.packages = [ pkgs.handy ];
-
-        systemd.user.services.handy = {
-          Unit = {
-            Description = "Handy speech-to-text service";
-            After = [ "graphical-session-pre.target" ];
-            PartOf = [ "graphical-session.target" ];
-          };
-
-          Service = {
-            ExecStart = "${lib.getExe pkgs.handy} --start-hidden";
-            Restart = "on-failure";
-          };
-
-          Install.WantedBy = [ "graphical-session.target" ];
-        };
 
         hdwlinux.desktop.actions = {
           toggleHandyTranscription = {
